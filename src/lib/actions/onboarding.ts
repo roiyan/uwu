@@ -1,7 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -22,10 +20,11 @@ import {
 } from "@/lib/schemas/event";
 import type { ActionResult } from "@/lib/auth-guard";
 
-// buildCoupleSlug already appends a 6-char random base36 suffix, so a
-// clash on events.slug (UNIQUE) is vanishingly unlikely. Skipping the
-// pre-flight SELECT saves a round-trip on every first onboarding; if a
-// clash does happen the transaction surfaces 23505 and the user retries.
+type Next = { next: string };
+
+// buildCoupleSlug already appends 6 chars of base36 entropy; slug collision
+// on events.slug (UNIQUE) is vanishingly unlikely — if it ever happens the
+// transaction surfaces 23505 and the user retries.
 
 async function defaultStarterPackageId() {
   const [p] = await db
@@ -36,10 +35,17 @@ async function defaultStarterPackageId() {
   return p?.id ?? null;
 }
 
+// NOTE: onboarding actions intentionally do NOT call redirect() or
+// revalidatePath(). The client drives navigation via router.push() after the
+// success toast, which uses Next's prefetched chunks (soft nav, no full SSR).
+// revalidatePath('/onboarding', 'layout') here used to nuke the whole router
+// cache and force a ~2-4 s SSR on the destination — exactly the symptom users
+// reported. Returning { next } keeps the client in charge of the transition.
+
 export async function saveMempelaiAction(
-  _: ActionResult | null,
+  _: ActionResult<Next> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<Next>> {
   const t0 = performance.now();
   const user = await requireAuthedUser();
   const parsed = mempelaiSchema.safeParse({
@@ -55,17 +61,14 @@ export async function saveMempelaiAction(
 
   const existing = await getCurrentEventForUser(user.id);
   const title = `${brideName.split(" ")[0]} & ${groomName.split(" ")[0]}`;
-
-  let eventId: string;
   const now = new Date();
+
   if (existing) {
-    eventId = existing.event.id;
-    // Independent table writes — fire in parallel.
     await Promise.all([
       db
         .update(events)
         .set({ title, updatedAt: now })
-        .where(eq(events.id, eventId)),
+        .where(eq(events.id, existing.event.id)),
       db
         .update(couples)
         .set({
@@ -75,16 +78,12 @@ export async function saveMempelaiAction(
           groomNickname: groomNickname || null,
           updatedAt: now,
         })
-        .where(eq(couples.eventId, eventId)),
+        .where(eq(couples.eventId, existing.event.id)),
     ]);
   } else {
-    // First-time path: slug is generated client-side; starter pkg lookup
-    // is the only dependency we need before the transaction.
     const slug = buildCoupleSlug(brideName, groomName);
     const starter = await defaultStarterPackageId();
-    // events.id is needed by couples FK, so must sequence these two — but
-    // wrap in a single transaction to avoid two auth round-trips.
-    eventId = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const [created] = await tx
         .insert(events)
         .values({
@@ -101,25 +100,22 @@ export async function saveMempelaiAction(
         groomName,
         groomNickname: groomNickname || null,
       });
-      return created.id;
     });
   }
 
   console.log(`[ACTION] saveMempelai: ${Math.round(performance.now() - t0)}ms`);
-  revalidatePath("/onboarding", "layout");
-  revalidatePath("/dashboard", "layout");
-  redirect("/onboarding/jadwal");
+  return { ok: true, data: { next: "/onboarding/jadwal" } };
 }
 
 export async function saveJadwalAction(
-  _: ActionResult | null,
+  _: ActionResult<Next> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<Next>> {
   const t0 = performance.now();
   const user = await requireAuthedUser();
   const existing = await getCurrentEventForUser(user.id);
   if (!existing) {
-    redirect("/onboarding/mempelai");
+    return { ok: true, data: { next: "/onboarding/mempelai" } };
   }
   const eventId = existing.event.id;
 
@@ -156,20 +152,18 @@ export async function saveJadwalAction(
   });
 
   console.log(`[ACTION] saveJadwal: ${Math.round(performance.now() - t0)}ms`);
-  revalidatePath("/onboarding", "layout");
-  revalidatePath("/dashboard", "layout");
-  redirect("/onboarding/tema");
+  return { ok: true, data: { next: "/onboarding/tema" } };
 }
 
 export async function saveTemaAction(
-  _: ActionResult | null,
+  _: ActionResult<Next> | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<ActionResult<Next>> {
   const t0 = performance.now();
   const user = await requireAuthedUser();
   const existing = await getCurrentEventForUser(user.id);
   if (!existing) {
-    redirect("/onboarding/mempelai");
+    return { ok: true, data: { next: "/onboarding/mempelai" } };
   }
   const eventId = existing.event.id;
 
@@ -203,13 +197,10 @@ export async function saveTemaAction(
   ]);
 
   console.log(`[ACTION] saveTema: ${Math.round(performance.now() - t0)}ms`);
-  revalidatePath("/onboarding", "layout");
-  revalidatePath("/dashboard", "layout");
-  redirect("/onboarding/selesai");
+  return { ok: true, data: { next: "/onboarding/selesai" } };
 }
 
-export async function finishOnboardingAction() {
+export async function finishOnboardingAction(): Promise<ActionResult<Next>> {
   await requireAuthedUser();
-  revalidatePath("/dashboard", "layout");
-  redirect("/dashboard");
+  return { ok: true, data: { next: "/dashboard" } };
 }

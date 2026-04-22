@@ -1,8 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { saveTemaAction } from "@/lib/actions/onboarding";
+import { useToast } from "@/components/shared/Toast";
 
 type ThemeOption = {
   id: string;
@@ -36,10 +38,27 @@ export function TemaPicker({
   selectedId: string | null;
 }) {
   const [picked, setPicked] = useState<string | null>(selectedId);
-  const [state, formAction, pending] = useActionState(saveTemaAction, null);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const toast = useToast();
+  const [pending, startTransition] = useTransition();
+
+  function handleSubmit(form: FormData) {
+    setError(null);
+    toast.success("Tersimpan");
+    startTransition(async () => {
+      const res = await saveTemaAction(null, form);
+      if (res.ok) {
+        router.push(res.data!.next);
+      } else {
+        setError(res.error);
+        toast.error(res.error);
+      }
+    });
+  }
 
   return (
-    <form action={formAction} className="mt-8 space-y-6">
+    <form action={handleSubmit} className="mt-8 space-y-6">
       <input type="hidden" name="themeId" value={picked ?? ""} />
       <div className="grid gap-4 md:grid-cols-3">
         {themes.map((t) => {
@@ -82,9 +101,9 @@ export function TemaPicker({
         })}
       </div>
 
-      {state && !state.ok && (
+      {error && (
         <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
-          {state.error}
+          {error}
         </p>
       )}
 
@@ -98,9 +117,15 @@ export function TemaPicker({
         <button
           type="submit"
           disabled={pending || !picked}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
         >
-          {pending ? "Menyimpan..." : "Gunakan tema ini"}
+          {pending && (
+            <span
+              aria-hidden
+              className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+            />
+          )}
+          <span>{pending ? "Menyimpan..." : "Gunakan tema ini"}</span>
         </button>
       </div>
     </form>

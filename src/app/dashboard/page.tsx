@@ -124,7 +124,7 @@ export default async function DashboardBerandaPage() {
         </div>
         <div className="flex gap-2">
           <Link
-            href={`/${bundle.event.slug}`}
+            href="/preview"
             target="_blank"
             rel="noreferrer"
             className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"

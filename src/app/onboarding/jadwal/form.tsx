@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { saveJadwalAction } from "@/lib/actions/onboarding";
 import { VenueMapField } from "@/components/shared/VenueMapField";
-import { SaveButton } from "@/components/shared/SaveButton";
+import { useToast } from "@/components/shared/Toast";
 
 export type ScheduleRow = {
   label: string;
@@ -35,7 +36,10 @@ function blankRow(): ScheduleRow {
 
 export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
   const [rows, setRows] = useState<ScheduleRow[]>(initial);
-  const [state, formAction] = useActionState(saveJadwalAction, null);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const toast = useToast();
+  const [pending, startTransition] = useTransition();
 
   function update(idx: number, patch: Partial<ScheduleRow>) {
     setRows((r) => r.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -45,8 +49,22 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
     setRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
   }
 
+  function handleSubmit(form: FormData) {
+    setError(null);
+    toast.success("Tersimpan");
+    startTransition(async () => {
+      const res = await saveJadwalAction(null, form);
+      if (res.ok) {
+        router.push(res.data!.next);
+      } else {
+        setError(res.error);
+        toast.error(res.error);
+      }
+    });
+  }
+
   return (
-    <form action={formAction} className="mt-8 space-y-6">
+    <form action={handleSubmit} className="mt-8 space-y-6">
       <input type="hidden" name="schedules" value={JSON.stringify(rows)} />
 
       {rows.map((row, idx) => (
@@ -140,9 +158,9 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
         </button>
       )}
 
-      {state && !state.ok && (
+      {error && (
         <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
-          {state.error}
+          {error}
         </p>
       )}
 
@@ -153,7 +171,19 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
         >
           Kembali
         </Link>
-        <SaveButton idleLabel="Lanjut" />
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex items-center gap-2 rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+        >
+          {pending && (
+            <span
+              aria-hidden
+              className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+            />
+          )}
+          <span>{pending ? "Menyimpan..." : "Lanjut"}</span>
+        </button>
       </div>
     </form>
   );
