@@ -25,29 +25,41 @@ export function Stepper({ current, reached }: { current: StepId; reached: StepId
         const canNav = isReached || isPast || isActive;
 
         const dotBase =
-          "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-colors";
+          "flex h-9 w-9 items-center justify-center rounded-full text-xs font-medium transition-colors";
+
+        const activeStyle: React.CSSProperties | undefined = isActive
+          ? {
+              background: "var(--brand-gradient)",
+              color: "#fff",
+              boxShadow:
+                "0 0 0 4px rgba(184,160,208,0.18), 0 8px 20px -6px rgba(184,160,208,0.4)",
+            }
+          : undefined;
         const dotClass = isActive
-          ? "bg-navy text-ink-inverse shadow-[0_0_0_4px_rgba(30,58,95,0.12)]"
+          ? ""
           : canNav
-            ? "bg-navy text-ink-inverse"
-            : "bg-surface-muted text-ink-hint";
+            ? "bg-[color:var(--color-brand-blue)] text-white"
+            : "bg-white/10 text-white/40";
 
         const labelClass = isActive
-          ? "text-navy font-medium"
+          ? "font-medium text-white"
           : canNav
-            ? "text-ink"
-            : "text-ink-hint";
+            ? "text-white/80"
+            : "text-white/40";
 
         const content = (
           <div className="flex items-center gap-3">
-            <span className={`${dotBase} ${dotClass}`}>{idx + 1}</span>
+            <span className={`${dotBase} ${dotClass}`} style={activeStyle}>
+              {idx + 1}
+            </span>
             <span className={`text-sm ${labelClass}`}>{step.label}</span>
           </div>
         );
 
-        const connectorClass = canNav
-          ? "bg-navy/40"
-          : "bg-[color:var(--border-ghost)]";
+        // Gradient connector once the step is reached, dim otherwise.
+        const connectorStyle: React.CSSProperties = canNav
+          ? { background: "var(--brand-gradient)", opacity: 0.5 }
+          : { background: "rgba(255,255,255,0.08)" };
 
         return (
           <li key={step.id} className="flex flex-1 items-center gap-3">
@@ -57,7 +69,7 @@ export function Stepper({ current, reached }: { current: StepId; reached: StepId
               content
             )}
             {idx < STEPS.length - 1 && (
-              <span className={`h-px flex-1 ${connectorClass}`} />
+              <span className="h-px flex-1" style={connectorStyle} />
             )}
           </li>
         );

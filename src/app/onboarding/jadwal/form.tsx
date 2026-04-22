@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { saveJadwalAction } from "@/lib/actions/onboarding";
@@ -19,7 +19,7 @@ export type ScheduleRow = {
 };
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-[color:var(--color-brand-lavender)]/50 focus:ring-2 focus:ring-[color:var(--color-brand-lavender)]/30 [color-scheme:dark]";
 
 function blankRow(): ScheduleRow {
   return {
@@ -37,9 +37,9 @@ function blankRow(): ScheduleRow {
 export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
   const [rows, setRows] = useState<ScheduleRow[]>(initial);
   const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
   const router = useRouter();
   const toast = useToast();
-  const [pending, startTransition] = useTransition();
 
   function update(idx: number, patch: Partial<ScheduleRow>) {
     setRows((r) => r.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -49,22 +49,26 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
     setRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
   }
 
-  // Fire-and-forget: by the time the user reaches this step the event
-  // already exists, so navigating before the UPDATE commits is safe —
-  // the next page only re-queries the event row which is unchanged on
-  // its key columns. If the save eventually fails, surface an error
-  // toast and send the user back to fix it.
+  // Fire-and-forget — tema page no longer redirects back on missing schedules,
+  // so navigating before the INSERT commits is safe. If save fails, bounce back.
   function handleSubmit(form: FormData) {
     setError(null);
+    setPending(true);
     toast.success("Tersimpan");
     router.push("/onboarding/tema");
-    startTransition(async () => {
-      const res = await saveJadwalAction(null, form);
-      if (!res.ok) {
-        toast.error(res.error);
+    saveJadwalAction(null, form)
+      .then((res) => {
+        if (!res.ok) {
+          toast.error(res.error || "Gagal menyimpan. Silakan coba lagi.");
+          router.push("/onboarding/jadwal");
+          setError(res.error ?? null);
+        }
+      })
+      .catch(() => {
+        toast.error("Koneksi gagal. Silakan coba lagi.");
         router.push("/onboarding/jadwal");
-      }
-    });
+      })
+      .finally(() => setPending(false));
   }
 
   return (
@@ -72,14 +76,17 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
       <input type="hidden" name="schedules" value={JSON.stringify(rows)} />
 
       {rows.map((row, idx) => (
-        <div key={idx} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
+        <div
+          key={idx}
+          className="rounded-2xl border border-white/10 bg-[color:var(--color-dark-surface)] p-6 shadow-2xl"
+        >
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg text-ink">Acara {idx + 1}</h2>
+            <h2 className="font-display text-lg text-white/90">Acara {idx + 1}</h2>
             {rows.length > 1 && (
               <button
                 type="button"
                 onClick={() => remove(idx)}
-                className="text-xs text-ink-hint transition-colors hover:text-rose"
+                className="text-xs text-white/50 transition-colors hover:text-red-400"
               >
                 Hapus
               </button>
@@ -87,7 +94,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-medium text-ink">Label acara</span>
+              <span className="text-sm font-medium text-white/70">Label acara</span>
               <input
                 required
                 value={row.label}
@@ -97,7 +104,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-ink">Tanggal</span>
+              <span className="text-sm font-medium text-white/70">Tanggal</span>
               <input
                 required
                 type="date"
@@ -107,7 +114,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-ink">Mulai</span>
+              <span className="text-sm font-medium text-white/70">Mulai</span>
               <input
                 type="time"
                 value={row.startTime}
@@ -116,7 +123,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
               />
             </label>
             <label className="block">
-              <span className="text-sm font-medium text-ink">Selesai</span>
+              <span className="text-sm font-medium text-white/70">Selesai</span>
               <input
                 type="time"
                 value={row.endTime}
@@ -125,7 +132,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
               />
             </label>
             <label className="block md:col-span-2">
-              <span className="text-sm font-medium text-ink">Nama tempat</span>
+              <span className="text-sm font-medium text-white/70">Nama tempat</span>
               <input
                 value={row.venueName}
                 onChange={(e) => update(idx, { venueName: e.target.value })}
@@ -134,7 +141,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
               />
             </label>
             <label className="block md:col-span-2">
-              <span className="text-sm font-medium text-ink">Alamat</span>
+              <span className="text-sm font-medium text-white/70">Alamat</span>
               <input
                 value={row.venueAddress}
                 onChange={(e) => update(idx, { venueAddress: e.target.value })}
@@ -156,14 +163,14 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
         <button
           type="button"
           onClick={() => setRows((r) => [...r, blankRow()])}
-          className="w-full rounded-2xl border border-dashed border-[color:var(--border-medium)] bg-surface-card/50 px-4 py-3 text-sm text-ink-muted transition-colors hover:text-navy"
+          className="w-full rounded-2xl border border-dashed border-white/15 bg-white/5 px-4 py-3 text-sm text-white/50 transition-colors hover:border-white/25 hover:text-white/80"
         >
           + Tambah Acara
         </button>
       )}
 
       {error && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+        <p className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-300">
           {error}
         </p>
       )}
@@ -171,14 +178,14 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
       <div className="flex justify-between">
         <Link
           href="/onboarding/mempelai"
-          className="rounded-full border border-[color:var(--border-medium)] px-6 py-3 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
+          className="rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
         >
-          Kembali
+          ← Kembali
         </Link>
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-brand px-8 py-3 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
         >
           {pending && (
             <span
@@ -186,7 +193,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
               className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
             />
           )}
-          <span>{pending ? "Menyimpan..." : "Lanjut"}</span>
+          <span>{pending ? "Menyimpan..." : "Selanjutnya →"}</span>
         </button>
       </div>
     </form>

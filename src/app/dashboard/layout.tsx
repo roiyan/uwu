@@ -6,22 +6,18 @@ import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events"
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { BottomTab } from "@/components/dashboard/BottomTab";
 
-export default async function DashboardLayout({
+// Synchronous shell — children paint immediately. Auth + sidebar data both
+// resolve inside Suspense boundaries so one slow query can't block the other
+// half of the screen.
+export default function DashboardLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  // Middleware already validated the JWT on this request, so we can read the
-  // signed cookie locally (~5ms) instead of round-tripping to Supabase Auth
-  // (~200-400ms). That unlocks the child's loading.tsx to render nearly
-  // instantly on every navigation.
-  const user = await getSessionUserFast();
-  if (!user) redirect("/login?next=/dashboard");
-
   return (
     <div className="flex min-h-screen bg-surface-base">
       <Suspense fallback={<SidebarSkeleton />}>
-        <SidebarWithData userId={user.id} />
+        <SidebarWithData />
       </Suspense>
       <div className="flex flex-1 flex-col pb-20 lg:pb-0">{children}</div>
       <BottomTab />
@@ -29,14 +25,15 @@ export default async function DashboardLayout({
   );
 }
 
-async function SidebarWithData({ userId }: { userId: string }) {
-  const current = await getCurrentEventForUser(userId);
+async function SidebarWithData() {
+  const user = await getSessionUserFast();
+  if (!user) redirect("/login?next=/dashboard");
+
+  const current = await getCurrentEventForUser(user.id);
   if (!current) redirect("/onboarding/mempelai");
 
   const bundle = await getEventBundle(current.event.id);
   if (!bundle?.couple) redirect("/onboarding/mempelai");
-  if (bundle.schedules.length === 0) redirect("/onboarding/jadwal");
-  if (!bundle.event.themeId) redirect("/onboarding/tema");
 
   const couple = bundle.couple;
   const coupleLabel =
@@ -65,10 +62,7 @@ function SidebarSkeleton() {
       <div className="mt-2 h-3 w-40 animate-pulse rounded bg-white/10" />
       <div className="mt-8 flex-1 space-y-2">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="h-9 w-full animate-pulse rounded-lg bg-white/5"
-          />
+          <div key={i} className="h-9 w-full animate-pulse rounded-lg bg-white/5" />
         ))}
       </div>
     </aside>

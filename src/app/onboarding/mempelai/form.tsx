@@ -13,7 +13,7 @@ type Defaults = {
 };
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-[color:var(--color-brand-lavender)]/50 focus:ring-2 focus:ring-[color:var(--color-brand-lavender)]/30";
 
 export function MempelaiForm({ defaults }: { defaults: Defaults }) {
   const router = useRouter();
@@ -21,15 +21,9 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  // Fire-and-forget: navigate optimistically on the assumption the save
-  // succeeds (it almost always does). If it doesn't, we bounce back with
-  // an error toast. The next page re-fetches from DB on mount, so as long
-  // as the save commits before the user submits the next step we're fine.
-  // Exception: first-ever submit creates the event — the next page's
-  // getCurrentEventForUser would race. We handle that by awaiting when
-  // the existing event doesn't exist yet. The form doesn't know that
-  // locally, so we rely on the server action being fast (~300ms with
-  // fast session auth) for first-time users.
+  // Awaits the save — first-time mempelai CREATES the event, and the
+  // next page needs that event to exist. Fast session auth keeps this
+  // ~300-500ms on a warm Lambda.
   function handleSubmit(form: FormData) {
     setError(null);
     toast.success("Tersimpan");
@@ -46,11 +40,11 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
 
   return (
     <form action={handleSubmit} className="mt-8 space-y-6">
-      <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-        <h2 className="font-display text-lg text-ink">Mempelai Wanita</h2>
+      <section className="rounded-2xl border border-white/10 bg-[color:var(--color-dark-surface)] p-6 shadow-2xl">
+        <h2 className="font-display text-lg text-white/90">Mempelai Wanita</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-medium text-ink">Nama lengkap</span>
+            <span className="text-sm font-medium text-white/70">Nama lengkap</span>
             <input
               name="brideName"
               required
@@ -60,7 +54,7 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-ink">Nama panggilan</span>
+            <span className="text-sm font-medium text-white/70">Nama panggilan</span>
             <input
               name="brideNickname"
               defaultValue={defaults.brideNickname ?? ""}
@@ -69,13 +63,13 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
             />
           </label>
         </div>
-      </div>
+      </section>
 
-      <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-        <h2 className="font-display text-lg text-ink">Mempelai Pria</h2>
+      <section className="rounded-2xl border border-white/10 bg-[color:var(--color-dark-surface)] p-6 shadow-2xl">
+        <h2 className="font-display text-lg text-white/90">Mempelai Pria</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-medium text-ink">Nama lengkap</span>
+            <span className="text-sm font-medium text-white/70">Nama lengkap</span>
             <input
               name="groomName"
               required
@@ -85,7 +79,7 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-ink">Nama panggilan</span>
+            <span className="text-sm font-medium text-white/70">Nama panggilan</span>
             <input
               name="groomNickname"
               defaultValue={defaults.groomNickname ?? ""}
@@ -94,10 +88,10 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
             />
           </label>
         </div>
-      </div>
+      </section>
 
       {error && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+        <p className="rounded-md border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-300">
           {error}
         </p>
       )}
@@ -106,7 +100,7 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl bg-gradient-brand px-8 py-3 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
         >
           {pending && (
             <span
@@ -114,7 +108,7 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
               className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
             />
           )}
-          <span>{pending ? "Menyimpan..." : "Lanjut"}</span>
+          <span>{pending ? "Menyimpan..." : "Selanjutnya →"}</span>
         </button>
       </div>
     </form>

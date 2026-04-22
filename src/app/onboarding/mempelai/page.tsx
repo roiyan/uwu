@@ -13,8 +13,10 @@ export default function MempelaiStep() {
       <Stepper current="mempelai" reached={["mempelai"]} />
 
       <section className="mt-10">
-        <h1 className="font-display text-3xl text-ink">Ceritakan tentang mempelai</h1>
-        <p className="mt-2 text-sm text-ink-muted">
+        <h1 className="font-display text-3xl text-white">
+          Ceritakan tentang <span className="italic text-gradient">mempelai</span>
+        </h1>
+        <p className="mt-2 text-sm text-white/60">
           Nama ini akan tampil di undangan dan dashboard Anda. Anda bisa mengubahnya kapan saja.
         </p>
       </section>

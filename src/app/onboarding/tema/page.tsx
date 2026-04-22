@@ -17,8 +17,10 @@ export default function TemaStep() {
         reached={["mempelai", "jadwal", "tema"]}
       />
       <section className="mt-10">
-        <h1 className="font-display text-3xl text-ink">Pilih tema undangan</h1>
-        <p className="mt-2 text-sm text-ink-muted">
+        <h1 className="font-display text-3xl text-white">
+          Pilih <span className="italic text-gradient">tema</span> undangan
+        </h1>
+        <p className="mt-2 text-sm text-white/60">
           Anda bisa mengubah tema setelah ini. Tema akan mewarnai halaman undangan tamu.
         </p>
       </section>
@@ -29,6 +31,9 @@ export default function TemaStep() {
   );
 }
 
+// Loader tolerates missing or still-propagating data — the previous step's
+// UPDATE may still be committing when the user arrives (fire-and-forget).
+// Only bounce back when we're confident the event itself doesn't exist.
 async function TemaPickerLoader() {
   const user = await requireAuthedUser();
   const current = await getCurrentEventForUser(user.id);
@@ -39,7 +44,6 @@ async function TemaPickerLoader() {
     listThemes(),
   ]);
   if (!bundle || !bundle.couple) redirect("/onboarding/mempelai");
-  if (bundle.schedules.length === 0) redirect("/onboarding/jadwal");
 
   return (
     <TemaPicker
@@ -62,7 +66,7 @@ function PickerSkeleton() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="h-72 animate-pulse rounded-2xl bg-surface-card/60"
+          className="h-72 animate-pulse rounded-2xl bg-white/5"
         />
       ))}
     </div>
