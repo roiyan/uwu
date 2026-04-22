@@ -1,21 +1,16 @@
+import { Suspense } from "react";
 import { requireAuthedUser } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import { Stepper } from "@/components/onboarding/Stepper";
 import { MempelaiForm } from "./form";
 
-export default async function MempelaiStep() {
-  const user = await requireAuthedUser();
-  const current = await getCurrentEventForUser(user.id);
-  const bundle = current ? await getEventBundle(current.event.id) : null;
-
-  const reached: ("mempelai" | "jadwal" | "tema" | "selesai")[] = ["mempelai"];
-  if (bundle?.couple) reached.push("jadwal");
-  if (bundle && bundle.schedules.length > 0) reached.push("tema");
-  if (bundle?.event.themeId) reached.push("selesai");
-
+// Fresh users hit this page the instant they finish registering, so the shell
+// (stepper + heading + blank form) paints without waiting on any DB calls.
+// The existing-data merge streams in once requireAuthedUser + bundle resolve.
+export default function MempelaiStep() {
   return (
     <div>
-      <Stepper current="mempelai" reached={reached} />
+      <Stepper current="mempelai" reached={["mempelai"]} />
 
       <section className="mt-10">
         <h1 className="font-display text-3xl text-ink">Ceritakan tentang mempelai</h1>
@@ -24,14 +19,37 @@ export default async function MempelaiStep() {
         </p>
       </section>
 
-      <MempelaiForm
-        defaults={{
-          brideName: bundle?.couple?.brideName ?? "",
-          brideNickname: bundle?.couple?.brideNickname ?? "",
-          groomName: bundle?.couple?.groomName ?? "",
-          groomNickname: bundle?.couple?.groomNickname ?? "",
-        }}
-      />
+      <Suspense
+        fallback={
+          <MempelaiForm
+            defaults={{
+              brideName: "",
+              brideNickname: "",
+              groomName: "",
+              groomNickname: "",
+            }}
+          />
+        }
+      >
+        <MempelaiFormLoader />
+      </Suspense>
     </div>
+  );
+}
+
+async function MempelaiFormLoader() {
+  const user = await requireAuthedUser();
+  const current = await getCurrentEventForUser(user.id);
+  const bundle = current ? await getEventBundle(current.event.id) : null;
+
+  return (
+    <MempelaiForm
+      defaults={{
+        brideName: bundle?.couple?.brideName ?? "",
+        brideNickname: bundle?.couple?.brideNickname ?? "",
+        groomName: bundle?.couple?.groomName ?? "",
+        groomNickname: bundle?.couple?.groomNickname ?? "",
+      }}
+    />
   );
 }

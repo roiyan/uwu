@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAuthedUser } from "@/lib/auth-guard";
@@ -34,25 +35,92 @@ function formatDate(iso: string) {
   });
 }
 
+// Page shell (header, action buttons, grid layout) paints immediately.
+// Each data-heavy card streams in independently via Suspense boundaries
+// so one slow query doesn't block the entire page.
 export default async function DashboardBerandaPage() {
   const user = await requireAuthedUser();
-  const current = await getCurrentEventForUser(user.id);
+  return (
+    <main className="flex-1 px-6 py-8 lg:px-10">
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header userId={user.id} />
+      </Suspense>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Suspense fallback={<ProgressSkeleton />}>
+            <ProgressBlock userId={user.id} />
+          </Suspense>
+        </div>
+
+        <div className="space-y-4">
+          <Suspense fallback={<StatCardSkeleton label="Tamu" />}>
+            <GuestsStatCard userId={user.id} />
+          </Suspense>
+          <Suspense fallback={<StatCardSkeleton label="RSVP" />}>
+            <RsvpStatCard userId={user.id} />
+          </Suspense>
+          <Suspense fallback={<StatCardSkeleton label="Status" />}>
+            <PublishStatCard userId={user.id} />
+          </Suspense>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+async function Header({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) redirect("/onboarding");
+  const bundle = await getEventBundle(current.event.id);
+  if (!bundle) redirect("/onboarding");
+  const firstSchedule = bundle.schedules[0];
+
+  return (
+    <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="text-xs uppercase tracking-[0.25em] text-ink-hint">
+          Selamat datang
+        </p>
+        <h1 className="mt-1 font-display text-3xl text-navy">
+          {bundle.couple?.brideName?.split(" ")[0]} &amp;{" "}
+          {bundle.couple?.groomName?.split(" ")[0]}
+        </h1>
+        {firstSchedule && (
+          <p className="mt-1 text-sm text-ink-muted">
+            {firstSchedule.label} • {formatDate(firstSchedule.eventDate)}
+          </p>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <Link
+          href="/preview"
+          target="_blank"
+          rel="noreferrer"
+          className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
+        >
+          👁 Pratinjau
+        </Link>
+        <Link
+          href="/dashboard/website"
+          className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+        >
+          Edit Undangan
+        </Link>
+      </div>
+    </header>
+  );
+}
+
+async function ProgressBlock({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
   if (!current) redirect("/onboarding");
   const bundle = await getEventBundle(current.event.id);
   if (!bundle) redirect("/onboarding");
 
-  const [guestCount, statusCounts, confirmedAttendees] = await Promise.all([
-    countLiveGuests(bundle.event.id),
-    countGuestsByStatus(bundle.event.id),
-    sumAttendees(bundle.event.id),
-  ]);
-  const firstSchedule = bundle.schedules[0];
-
+  const guestCount = await countLiveGuests(bundle.event.id);
   const hasCoupleStory = Boolean(bundle.couple?.story || bundle.couple?.quote);
   const hasCoverPhoto = Boolean(bundle.couple?.coverPhotoUrl);
-  const hasGuests = guestCount > 0;
-  const isPublished = bundle.event.isPublished;
-
   const steps: SetupStep[] = [
     {
       id: "couple",
@@ -94,111 +162,127 @@ export default async function DashboardBerandaPage() {
       label: "Tambah tamu",
       description: "Import atau tambah tamu satu per satu.",
       href: "/dashboard/guests",
-      done: hasGuests,
+      done: guestCount > 0,
     },
     {
       id: "publish",
       label: "Publikasikan undangan",
       description: "Aktifkan undangan agar dapat dibagikan ke tamu.",
       href: "/dashboard/settings",
-      done: isPublished,
+      done: bundle.event.isPublished,
     },
   ];
+  return <ProgressSetupCard steps={steps} />;
+}
 
+async function GuestsStatCard({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const count = await countLiveGuests(current.event.id);
   return (
-    <main className="flex-1 px-6 py-8 lg:px-10">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs uppercase tracking-[0.25em] text-ink-hint">
-            Selamat datang
-          </p>
-          <h1 className="mt-1 font-display text-3xl text-navy">
-            {bundle.couple?.brideName?.split(" ")[0]} &amp;{" "}
-            {bundle.couple?.groomName?.split(" ")[0]}
-          </h1>
-          {firstSchedule && (
-            <p className="mt-1 text-sm text-ink-muted">
-              {firstSchedule.label} • {formatDate(firstSchedule.eventDate)}
-            </p>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Link
-            href="/preview"
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
-          >
-            👁 Pratinjau
-          </Link>
-          <Link
-            href="/dashboard/website"
-            className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
-          >
-            Edit Undangan
-          </Link>
-        </div>
-      </header>
+    <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
+      <p className="text-xs uppercase tracking-wide text-ink-hint">Tamu</p>
+      <p className="mt-2 font-display text-3xl text-ink">{count}</p>
+      <p className="text-xs text-ink-muted">total tamu terdaftar</p>
+      <Link
+        href="/dashboard/guests"
+        className="mt-4 inline-block text-xs font-medium text-navy hover:underline"
+      >
+        Kelola tamu →
+      </Link>
+    </section>
+  );
+}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <ProgressSetupCard steps={steps} />
-        </div>
+async function RsvpStatCard({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const [statusCounts, confirmedAttendees] = await Promise.all([
+    countGuestsByStatus(current.event.id),
+    sumAttendees(current.event.id),
+  ]);
+  return (
+    <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
+      <p className="text-xs uppercase tracking-wide text-ink-hint">RSVP</p>
+      <p className="mt-2 font-display text-3xl text-ink">
+        {statusCounts.hadir}
+        <span className="text-base text-ink-muted"> hadir</span>
+      </p>
+      <p className="text-xs text-ink-muted">
+        {confirmedAttendees} orang dikonfirmasi
+      </p>
+      <dl className="mt-3 space-y-1 text-xs text-ink-muted">
+        <StatRow label="Dibuka" value={statusCounts.dibuka} dot="var(--color-rsvp-dibuka)" />
+        <StatRow label="Tidak Hadir" value={statusCounts.tidak_hadir} dot="var(--color-rsvp-tidak-hadir)" />
+        <StatRow label="Belum direspons" value={statusCounts.baru + statusCounts.diundang} dot="var(--color-rsvp-baru)" />
+      </dl>
+      <Link
+        href="/dashboard/analytics"
+        className="mt-4 inline-block text-xs font-medium text-navy hover:underline"
+      >
+        Lihat analytics →
+      </Link>
+    </section>
+  );
+}
 
-        <div className="space-y-4">
-          <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
-            <p className="text-xs uppercase tracking-wide text-ink-hint">Tamu</p>
-            <p className="mt-2 font-display text-3xl text-ink">{guestCount}</p>
-            <p className="text-xs text-ink-muted">total tamu terdaftar</p>
-            <Link
-              href="/dashboard/guests"
-              className="mt-4 inline-block text-xs font-medium text-navy hover:underline"
-            >
-              Kelola tamu →
-            </Link>
-          </section>
+async function PublishStatCard({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const bundle = await getEventBundle(current.event.id);
+  if (!bundle) return null;
+  const isPublished = bundle.event.isPublished;
+  return (
+    <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
+      <p className="text-xs uppercase tracking-wide text-ink-hint">Status</p>
+      <p className="mt-2 font-display text-lg text-ink">
+        {isPublished ? "Dipublikasikan" : "Belum dipublikasikan"}
+      </p>
+      <p className="text-xs text-ink-muted">
+        {isPublished
+          ? "Undangan dapat diakses tamu Anda."
+          : "Undangan masih tersembunyi dari publik."}
+      </p>
+      <Link
+        href="/dashboard/settings"
+        className="mt-4 inline-block text-xs font-medium text-navy hover:underline"
+      >
+        Pengaturan publikasi →
+      </Link>
+    </section>
+  );
+}
 
-          <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
-            <p className="text-xs uppercase tracking-wide text-ink-hint">RSVP</p>
-            <p className="mt-2 font-display text-3xl text-ink">
-              {statusCounts.hadir}
-              <span className="text-base text-ink-muted"> hadir</span>
-            </p>
-            <p className="text-xs text-ink-muted">
-              {confirmedAttendees} orang dikonfirmasi
-            </p>
-            <dl className="mt-3 space-y-1 text-xs text-ink-muted">
-              <StatRow label="Dibuka" value={statusCounts.dibuka} dot="var(--color-rsvp-dibuka)" />
-              <StatRow label="Tidak Hadir" value={statusCounts.tidak_hadir} dot="var(--color-rsvp-tidak-hadir)" />
-              <StatRow label="Belum direspons" value={statusCounts.baru + statusCounts.diundang} dot="var(--color-rsvp-baru)" />
-            </dl>
-            <Link
-              href="/dashboard/analytics"
-              className="mt-4 inline-block text-xs font-medium text-navy hover:underline"
-            >
-              Lihat analytics →
-            </Link>
-          </section>
+function HeaderSkeleton() {
+  return (
+    <header className="mb-8 space-y-2">
+      <div className="h-3 w-32 animate-pulse rounded bg-surface-muted" />
+      <div className="h-9 w-56 animate-pulse rounded bg-surface-muted" />
+      <div className="h-4 w-40 animate-pulse rounded bg-surface-muted" />
+    </header>
+  );
+}
 
-          <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
-            <p className="text-xs uppercase tracking-wide text-ink-hint">Status</p>
-            <p className="mt-2 font-display text-lg text-ink">
-              {isPublished ? "Dipublikasikan" : "Belum dipublikasikan"}
-            </p>
-            <p className="text-xs text-ink-muted">
-              {isPublished
-                ? "Undangan dapat diakses tamu Anda."
-                : "Undangan masih tersembunyi dari publik."}
-            </p>
-            <Link
-              href="/dashboard/settings"
-              className="mt-4 inline-block text-xs font-medium text-navy hover:underline"
-            >
-              Pengaturan publikasi →
-            </Link>
-          </section>
-        </div>
+function ProgressSkeleton() {
+  return (
+    <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
+      <div className="h-6 w-48 animate-pulse rounded bg-surface-muted" />
+      <div className="mt-4 h-2 w-full animate-pulse rounded-full bg-surface-muted" />
+      <div className="mt-5 space-y-2">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="h-12 animate-pulse rounded-lg bg-surface-muted/60" />
+        ))}
       </div>
-    </main>
+    </section>
+  );
+}
+
+function StatCardSkeleton({ label }: { label: string }) {
+  return (
+    <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
+      <p className="text-xs uppercase tracking-wide text-ink-hint">{label}</p>
+      <div className="mt-2 h-8 w-16 animate-pulse rounded bg-surface-muted" />
+      <div className="mt-2 h-3 w-32 animate-pulse rounded bg-surface-muted" />
+    </section>
   );
 }

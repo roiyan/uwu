@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
@@ -10,19 +11,34 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
+  // Minimal auth guard — this has to await because we can't stream a redirect.
+  // Everything else (event/couple/theme lookup for the sidebar) runs inside a
+  // Suspense boundary below so `children` renders in parallel with it.
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login?next=/dashboard");
 
-  const current = await getCurrentEventForUser(user.id);
+  return (
+    <div className="flex min-h-screen">
+      <Suspense fallback={<SidebarSkeleton />}>
+        <SidebarWithData userId={user.id} />
+      </Suspense>
+      <div className="flex flex-1 flex-col pb-20 lg:pb-0">{children}</div>
+      <BottomTab />
+    </div>
+  );
+}
+
+async function SidebarWithData({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
   if (!current) redirect("/onboarding/mempelai");
 
   const bundle = await getEventBundle(current.event.id);
   if (!bundle?.couple) redirect("/onboarding/mempelai");
-  if (bundle && bundle.schedules.length === 0) redirect("/onboarding/jadwal");
-  if (bundle && !bundle.event.themeId) redirect("/onboarding/tema");
+  if (bundle.schedules.length === 0) redirect("/onboarding/jadwal");
+  if (!bundle.event.themeId) redirect("/onboarding/tema");
 
   const couple = bundle.couple;
   const coupleLabel =
@@ -31,14 +47,27 @@ export default async function DashboardLayout({
       : bundle.event.title;
 
   return (
-    <div className="flex min-h-screen">
-      <Sidebar
-        coupleLabel={coupleLabel}
-        themeLabel={bundle.theme?.name ?? null}
-        previewHref="/preview"
-      />
-      <div className="flex flex-1 flex-col pb-20 lg:pb-0">{children}</div>
-      <BottomTab />
-    </div>
+    <Sidebar
+      coupleLabel={coupleLabel}
+      themeLabel={bundle.theme?.name ?? null}
+      previewHref="/preview"
+    />
+  );
+}
+
+function SidebarSkeleton() {
+  return (
+    <aside className="hidden w-[260px] flex-col border-r border-[color:var(--border-ghost)] bg-surface-card px-5 py-6 lg:flex">
+      <div className="h-9 w-20 animate-pulse rounded bg-surface-muted" />
+      <div className="mt-2 h-3 w-40 animate-pulse rounded bg-surface-muted" />
+      <div className="mt-8 flex-1 space-y-2">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-9 w-full animate-pulse rounded-lg bg-surface-muted/60"
+          />
+        ))}
+      </div>
+    </aside>
   );
 }
