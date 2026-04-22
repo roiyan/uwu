@@ -1,19 +1,68 @@
-import { EmptyState } from "@/components/shared/EmptyState";
+import { redirect } from "next/navigation";
+import { requireAuthedUser } from "@/lib/auth-guard";
+import { getCurrentEventForUser } from "@/lib/db/queries/events";
+import {
+  countLiveGuests,
+  getEventPackageLimit,
+  listGuestGroups,
+  listGuestsForEvent,
+  type GuestStatus,
+} from "@/lib/db/queries/guests";
+import { GuestsClient } from "./client";
 
-export default function GuestsPage() {
+type SearchParams = {
+  q?: string;
+  group?: string;
+  status?: string;
+};
+
+const VALID_STATUSES: GuestStatus[] = [
+  "baru",
+  "diundang",
+  "dibuka",
+  "hadir",
+  "tidak_hadir",
+];
+
+export default async function GuestsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const user = await requireAuthedUser();
+  const current = await getCurrentEventForUser(user.id);
+  if (!current) redirect("/onboarding");
+
+  const params = await searchParams;
+  const search = params.q?.trim() ?? "";
+  const groupId = params.group && params.group !== "all" ? params.group : null;
+  const status =
+    params.status && VALID_STATUSES.includes(params.status as GuestStatus)
+      ? (params.status as GuestStatus)
+      : null;
+
+  const [guests, groups, limit, totalLive] = await Promise.all([
+    listGuestsForEvent(current.event.id, {
+      search: search || undefined,
+      groupId,
+      status,
+    }),
+    listGuestGroups(current.event.id),
+    getEventPackageLimit(current.event.id),
+    countLiveGuests(current.event.id),
+  ]);
+
   return (
     <main className="flex-1 px-6 py-8 lg:px-10">
-      <header className="mb-8">
-        <h1 className="font-display text-3xl text-navy">Tamu</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Kelola daftar tamu undangan Anda.
-        </p>
-      </header>
-      <EmptyState
-        icon="👥"
-        title="Belum ada tamu"
-        description="Tambah tamu satu per satu atau import dari file .xlsx. Fitur tabel tamu dan import dijadwalkan pada Sprint 2."
-        note="Tersedia segera di Sprint 2."
+      <GuestsClient
+        eventId={current.event.id}
+        eventSlug={current.event.slug}
+        guests={guests}
+        groups={groups}
+        limit={limit.limit}
+        packageName={limit.packageName}
+        totalLive={totalLive}
+        filter={{ search, groupId, status }}
       />
     </main>
   );

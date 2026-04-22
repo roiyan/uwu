@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getPublishedEventBySlug } from "@/lib/db/queries/events";
 import { InvitationClient } from "./client";
 
+// Static shell revalidates every 5 min; guest personalisation is fetched per
+// request client-side via ?to=<token>.
 export const revalidate = 300;
 export const dynamic = "force-static";
 export const dynamicParams = true;
@@ -43,9 +45,17 @@ export default async function InvitationPage({
 
   const palette = extractPalette(bundle.theme?.config ?? null);
 
+  // NB: we deliberately do not read searchParams here so the page stays
+  // static. Guest personalization is resolved on the client via a lightweight
+  // server action that looks up by token.
   return (
     <InvitationClient
-      event={{ title: bundle.event.title, slug: bundle.event.slug }}
+      event={{
+        id: bundle.event.id,
+        title: bundle.event.title,
+        slug: bundle.event.slug,
+        musicUrl: bundle.event.musicUrl,
+      }}
       palette={palette}
       couple={
         bundle.couple
@@ -79,3 +89,4 @@ export default async function InvitationPage({
     />
   );
 }
+

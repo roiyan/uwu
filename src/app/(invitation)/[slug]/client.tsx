@@ -1,8 +1,14 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
 import { motion } from "framer-motion";
+import {
+  markOpenedAction,
+  resolveGuestByTokenAction,
+  type ResolvedGuest,
+} from "@/lib/actions/rsvp";
+import { RsvpForm } from "./rsvp-form";
 
 type Palette = { primary: string; secondary: string; accent: string };
 
@@ -44,29 +50,77 @@ function formatDate(iso: string) {
   });
 }
 
-export function InvitationClient({
+export function InvitationClient(props: {
+  event: { id: string; title: string; slug: string; musicUrl: string | null };
+  palette: Palette;
+  couple: Couple | null;
+  schedules: Schedule[];
+}) {
+  return (
+    <Suspense fallback={<Skeleton palette={props.palette} />}>
+      <InvitationInner {...props} />
+    </Suspense>
+  );
+}
+
+function Skeleton({ palette }: { palette: Palette }) {
+  return (
+    <div className="flex min-h-screen items-center justify-center" style={{ background: palette.secondary }}>
+      <div className="text-center">
+        <div className="mx-auto h-10 w-10 animate-pulse rounded-full" style={{ background: palette.primary, opacity: 0.4 }} />
+        <p className="mt-3 text-xs text-ink-muted">Memuat undangan...</p>
+      </div>
+    </div>
+  );
+}
+
+function InvitationInner({
   event,
   palette,
   couple,
   schedules,
 }: {
-  event: { title: string; slug: string };
+  event: { id: string; title: string; slug: string; musicUrl: string | null };
   palette: Palette;
   couple: Couple | null;
   schedules: Schedule[];
 }) {
   const searchParams = useSearchParams();
-  const guestToken = searchParams.get("to");
-  const guestName = useMemo(() => {
-    if (!guestToken) return "Bpk/Ibu/Saudara/i";
-    return "Bpk/Ibu/Saudara/i";
-  }, [guestToken]);
+  const token = searchParams.get("to");
+
+  const [guest, setGuest] = useState<ResolvedGuest | null>(null);
+  const [guestResolved, setGuestResolved] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function run() {
+      if (!token) {
+        setGuestResolved(true);
+        return;
+      }
+      const [resolved] = await Promise.all([
+        resolveGuestByTokenAction(event.id, token),
+        markOpenedAction(token).catch(() => undefined),
+      ]);
+      if (!cancelled) {
+        setGuest(resolved);
+        setGuestResolved(true);
+      }
+    }
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [event.id, token]);
+
+  const guestName =
+    guest?.name ??
+    (token && !guestResolved ? "…" : "Bpk/Ibu/Saudara/i");
+  const isExistingRsvp =
+    guest?.rsvpStatus === "hadir" || guest?.rsvpStatus === "tidak_hadir";
 
   return (
-    <div
-      className="min-h-screen font-body"
-      style={{ background: palette.secondary, color: "#1A1A2E" }}
-    >
+    <div className="min-h-screen font-body" style={{ background: palette.secondary, color: "#1A1A2E" }}>
       <section
         className="flex min-h-[90vh] flex-col items-center justify-center px-6 py-16 text-center"
         style={{
@@ -135,8 +189,24 @@ export function InvitationClient({
       {couple && (
         <section className="px-6 py-14">
           <div className="mx-auto grid max-w-3xl gap-10 md:grid-cols-2">
-            <CouplePortrait palette={palette} side="Mempelai Wanita" person={couple.brideName} nickname={couple.brideNickname} father={couple.brideFatherName} mother={couple.brideMotherName} photo={couple.bridePhotoUrl} />
-            <CouplePortrait palette={palette} side="Mempelai Pria" person={couple.groomName} nickname={couple.groomNickname} father={couple.groomFatherName} mother={couple.groomMotherName} photo={couple.groomPhotoUrl} />
+            <CouplePortrait
+              palette={palette}
+              side="Mempelai Wanita"
+              person={couple.brideName}
+              nickname={couple.brideNickname}
+              father={couple.brideFatherName}
+              mother={couple.brideMotherName}
+              photo={couple.bridePhotoUrl}
+            />
+            <CouplePortrait
+              palette={palette}
+              side="Mempelai Pria"
+              person={couple.groomName}
+              nickname={couple.groomNickname}
+              father={couple.groomFatherName}
+              mother={couple.groomMotherName}
+              photo={couple.groomPhotoUrl}
+            />
           </div>
         </section>
       )}
@@ -183,12 +253,8 @@ export function InvitationClient({
                   {s.startTime ?? "—"} – {s.endTime ?? "—"} {s.timezone}
                 </p>
               )}
-              {s.venueName && (
-                <p className="mt-3 font-medium">{s.venueName}</p>
-              )}
-              {s.venueAddress && (
-                <p className="text-sm opacity-70">{s.venueAddress}</p>
-              )}
+              {s.venueName && <p className="mt-3 font-medium">{s.venueName}</p>}
+              {s.venueAddress && <p className="text-sm opacity-70">{s.venueAddress}</p>}
               {s.venueMapUrl && (
                 <a
                   href={s.venueMapUrl}
@@ -202,6 +268,49 @@ export function InvitationClient({
               )}
             </motion.div>
           ))}
+        </div>
+      </section>
+
+      <section id="rsvp" className="px-6 py-14">
+        <div className="mx-auto max-w-xl rounded-2xl bg-white/80 p-8 backdrop-blur">
+          <h2 className="text-center font-display text-3xl" style={{ color: palette.primary }}>
+            Konfirmasi Kehadiran
+          </h2>
+          {token ? (
+            <>
+              {guestResolved && !guest && (
+                <p className="mx-auto mt-4 max-w-md rounded-md bg-rose-50 px-4 py-3 text-center text-sm text-rose-dark">
+                  Tautan undangan tidak dikenali. Mohon gunakan tautan yang dikirim ke Anda.
+                </p>
+              )}
+              {guest && (
+                <>
+                  {isExistingRsvp && (
+                    <p className="mt-3 text-center text-xs text-ink-muted">
+                      Anda sudah mengkonfirmasi. Anda dapat memperbarui di bawah.
+                    </p>
+                  )}
+                  <RsvpForm
+                    token={token}
+                    palette={palette}
+                    initial={{
+                      status:
+                        guest.rsvpStatus === "hadir" || guest.rsvpStatus === "tidak_hadir"
+                          ? guest.rsvpStatus
+                          : "hadir",
+                      attendees: guest.rsvpAttendees ?? 1,
+                      message: guest.rsvpMessage ?? "",
+                    }}
+                    editing={isExistingRsvp}
+                  />
+                </>
+              )}
+            </>
+          ) : (
+            <p className="mt-4 text-center text-sm text-ink-muted">
+              Mohon gunakan tautan undangan pribadi Anda untuk dapat melakukan konfirmasi kehadiran.
+            </p>
+          )}
         </div>
       </section>
 
