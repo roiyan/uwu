@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { updateSchedulesAction } from "@/lib/actions/event";
 import { VenueMapField } from "@/components/shared/VenueMapField";
+import { SaveButton } from "@/components/shared/SaveButton";
 import type { ScheduleRow } from "@/app/onboarding/jadwal/form";
 
 const inputClass =
@@ -30,7 +31,7 @@ export function SchedulesForm({
 }) {
   const [rows, setRows] = useState<ScheduleRow[]>(initial);
   const bound = updateSchedulesAction.bind(null, eventId);
-  const [state, formAction, pending] = useActionState(bound, null);
+  const [state, formAction] = useActionState(bound, null);
 
   function update(idx: number, patch: Partial<ScheduleRow>) {
     setRows((r) => r.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -145,13 +146,7 @@ export function SchedulesForm({
       )}
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
-        >
-          {pending ? "Menyimpan..." : "Simpan Jadwal"}
-        </button>
+        <SaveButton idleLabel="Simpan Jadwal" />
       </div>
     </form>
   );
