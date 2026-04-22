@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { packages } from "@/lib/db/schema";
 import { requireAuthedUser } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
+import { listOrdersForUser } from "@/lib/actions/checkout";
 
 const PACKAGE_ORDER: Record<string, number> = {
   starter: 0,
@@ -28,11 +30,29 @@ export default async function PackagesPage() {
   const bundle = await getEventBundle(current.event.id);
   if (!bundle) redirect("/onboarding");
 
-  const rows = await db.select().from(packages).orderBy(asc(packages.priceIdr));
+  const [rows, orders] = await Promise.all([
+    db.select().from(packages).orderBy(asc(packages.priceIdr)),
+    listOrdersForUser(),
+  ]);
   const sorted = rows.sort(
     (a, b) => (PACKAGE_ORDER[a.tier] ?? 99) - (PACKAGE_ORDER[b.tier] ?? 99),
   );
   const currentPackageId = bundle.event.packageId;
+
+  const ORDER_STATUS_LABEL: Record<string, string> = {
+    pending: "Menunggu Pembayaran",
+    paid: "Berhasil",
+    expired: "Kedaluwarsa",
+    canceled: "Dibatalkan",
+    failed: "Gagal",
+  };
+  const ORDER_STATUS_STYLE: Record<string, string> = {
+    pending: "bg-gold-50 text-gold-dark",
+    paid: "bg-[#E8F3EE] text-[#3B7A57]",
+    expired: "bg-surface-muted text-ink-muted",
+    canceled: "bg-surface-muted text-ink-muted",
+    failed: "bg-rose-50 text-rose-dark",
+  };
 
   return (
     <main className="flex-1 px-6 py-8 lg:px-10">
@@ -83,22 +103,87 @@ export default async function PackagesPage() {
                   </li>
                 ))}
               </ul>
-              <button
-                type="button"
-                disabled
-                className="mt-5 rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm font-medium text-ink-muted"
-                title="Pembayaran aktif di Sprint 3"
-              >
-                {isCurrent ? "Paket Aktif" : "Upgrade segera"}
-              </button>
+              {isCurrent ? (
+                <button
+                  type="button"
+                  disabled
+                  className="mt-5 rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm font-medium text-ink-muted"
+                >
+                  Paket Aktif
+                </button>
+              ) : pkg.priceIdr === 0 ? (
+                <button
+                  type="button"
+                  disabled
+                  className="mt-5 rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm font-medium text-ink-hint"
+                >
+                  Paket Gratis
+                </button>
+              ) : (
+                <Link
+                  href={`/dashboard/checkout?tier=${pkg.tier}`}
+                  className="mt-5 rounded-full bg-coral px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+                >
+                  Upgrade ke {pkg.name}
+                </Link>
+              )}
             </article>
           );
         })}
       </div>
 
-      <p className="mt-6 text-xs text-ink-hint">
-        Upgrade paket via Midtrans akan aktif pada Sprint 3.
-      </p>
+      <section className="mt-10">
+        <h2 className="font-display text-xl text-ink">Riwayat Pembayaran</h2>
+        {orders.length === 0 ? (
+          <p className="mt-2 text-sm text-ink-muted">Belum ada pembayaran.</p>
+        ) : (
+          <div className="mt-4 overflow-hidden rounded-2xl bg-surface-card shadow-ghost-sm">
+            <table className="w-full text-sm">
+              <thead className="text-left text-xs uppercase tracking-wide text-ink-hint">
+                <tr className="border-b border-[color:var(--border-ghost)]">
+                  <th className="px-4 py-3">Order ID</th>
+                  <th className="px-4 py-3">Paket</th>
+                  <th className="px-4 py-3">Jumlah</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">Tanggal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map(({ order, pkg }) => (
+                  <tr
+                    key={order.id}
+                    className="border-b border-[color:var(--border-ghost)] last:border-0"
+                  >
+                    <td className="px-4 py-3 font-mono text-[11px] text-ink">
+                      {order.orderRef}
+                    </td>
+                    <td className="px-4 py-3 text-ink">{pkg?.name ?? "—"}</td>
+                    <td className="px-4 py-3 text-ink">
+                      {formatIdr(order.amountIdr)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                          ORDER_STATUS_STYLE[order.status] ?? ""
+                        }`}
+                      >
+                        {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-ink-muted">
+                      {new Date(order.createdAt).toLocaleString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </main>
   );
 }

@@ -45,6 +45,35 @@ export const packageTierEnum = pgEnum("package_tier", [
   "ultimate",
 ]);
 
+export const messageChannelEnum = pgEnum("message_channel", [
+  "whatsapp",
+  "email",
+]);
+
+export const messageStatusEnum = pgEnum("message_status", [
+  "draft",
+  "queued",
+  "sending",
+  "completed",
+  "failed",
+]);
+
+export const deliveryStatusEnum = pgEnum("delivery_status", [
+  "pending",
+  "sent",
+  "delivered",
+  "read",
+  "failed",
+]);
+
+export const orderStatusEnum = pgEnum("order_status", [
+  "pending",
+  "paid",
+  "expired",
+  "canceled",
+  "failed",
+]);
+
 // ---------- profiles (extends auth.users) ----------
 
 export const profiles = pgTable("profiles", {
@@ -240,6 +269,85 @@ export const guests = pgTable("guests", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
+// ---------- messages (broadcast campaigns) ----------
+
+export type MessageAudience =
+  | { type: "all" }
+  | { type: "group"; groupIds: string[] }
+  | { type: "status"; statuses: string[] };
+
+export const messages = pgTable("messages", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  channel: messageChannelEnum("channel").notNull(),
+  templateSlug: text("template_slug").notNull(),
+  subject: text("subject"), // email only
+  body: text("body").notNull(), // template with {name}, {slug}, {date}, {venue}
+  audience: jsonb("audience").notNull().$type<MessageAudience>(),
+  status: messageStatusEnum("status").notNull().default("draft"),
+  totalRecipients: integer("total_recipients").notNull().default(0),
+  sentCount: integer("sent_count").notNull().default(0),
+  failedCount: integer("failed_count").notNull().default(0),
+  createdByUserId: uuid("created_by_user_id").references(() => profiles.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+});
+
+// ---------- message_deliveries (per-recipient ledger) ----------
+
+export const messageDeliveries = pgTable("message_deliveries", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  messageId: uuid("message_id")
+    .notNull()
+    .references(() => messages.id, { onDelete: "cascade" }),
+  guestId: uuid("guest_id").references(() => guests.id, {
+    onDelete: "set null",
+  }),
+  recipientName: text("recipient_name").notNull(),
+  recipientPhone: text("recipient_phone"),
+  recipientEmail: text("recipient_email"),
+  personalisedBody: text("personalised_body").notNull(),
+  status: deliveryStatusEnum("status").notNull().default("pending"),
+  providerMessageId: text("provider_message_id"),
+  errorMessage: text("error_message"),
+  attemptCount: integer("attempt_count").notNull().default(0),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+  deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+  readAt: timestamp("read_at", { withTimezone: true }),
+  failedAt: timestamp("failed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ---------- orders (Midtrans payment) ----------
+
+export const orders = pgTable("orders", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id").references(() => events.id, { onDelete: "set null" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  packageId: uuid("package_id")
+    .notNull()
+    .references(() => packages.id, { onDelete: "restrict" }),
+  orderRef: text("order_ref").notNull().unique(),
+  amountIdr: integer("amount_idr").notNull(),
+  status: orderStatusEnum("status").notNull().default("pending"),
+  midtransSnapToken: text("midtrans_snap_token"),
+  midtransTransactionId: text("midtrans_transaction_id"),
+  midtransPaymentType: text("midtrans_payment_type"),
+  midtransRawSettlement: jsonb("midtrans_raw_settlement"),
+  paidAt: timestamp("paid_at", { withTimezone: true }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // ---------- Type exports ----------
 
 export type Profile = typeof profiles.$inferSelect;
@@ -250,3 +358,6 @@ export type Couple = typeof couples.$inferSelect;
 export type EventSchedule = typeof eventSchedules.$inferSelect;
 export type Guest = typeof guests.$inferSelect;
 export type GuestGroup = typeof guestGroups.$inferSelect;
+export type Message = typeof messages.$inferSelect;
+export type MessageDelivery = typeof messageDeliveries.$inferSelect;
+export type Order = typeof orders.$inferSelect;
