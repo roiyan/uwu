@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { requestPhotoUploadAction, type UploadSlot } from "@/lib/actions/upload";
 
 const MAX_MB = 5;
@@ -49,6 +48,9 @@ export function PhotoUpload({
         return;
       }
       const { bucket, path, token, publicUrl } = prep.data!;
+      // Dynamic import keeps @supabase/supabase-js out of the editor's
+      // initial bundle — only pulled in when the user actually uploads.
+      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const { error: upErr } = await supabase.storage
         .from(bucket)

@@ -36,6 +36,13 @@
       "when": 1776845200000,
       "tag": "0004_rls_sprint3",
       "breakpoints": false
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1776850000000,
+      "tag": "0005_perf_indexes",
+      "breakpoints": false
     }
   ]
 }
