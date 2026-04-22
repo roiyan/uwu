@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { saveMempelaiAction } from "@/lib/actions/onboarding";
-import { SaveButton } from "@/components/shared/SaveButton";
+import { useToast } from "@/components/shared/Toast";
 
 type Defaults = {
   brideName: string;
@@ -15,10 +16,27 @@ const inputClass =
   "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
 
 export function MempelaiForm({ defaults }: { defaults: Defaults }) {
-  const [state, formAction] = useActionState(saveMempelaiAction, null);
+  const router = useRouter();
+  const toast = useToast();
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function handleSubmit(form: FormData) {
+    setError(null);
+    toast.success("Tersimpan");
+    startTransition(async () => {
+      const res = await saveMempelaiAction(null, form);
+      if (res.ok) {
+        router.push(res.data!.next);
+      } else {
+        setError(res.error);
+        toast.error(res.error);
+      }
+    });
+  }
 
   return (
-    <form action={formAction} className="mt-8 space-y-6">
+    <form action={handleSubmit} className="mt-8 space-y-6">
       <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
         <h2 className="font-display text-lg text-ink">Mempelai Wanita</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -69,14 +87,26 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
         </div>
       </div>
 
-      {state && !state.ok && (
+      {error && (
         <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
-          {state.error}
+          {error}
         </p>
       )}
 
       <div className="flex justify-end">
-        <SaveButton idleLabel="Lanjut" />
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex items-center gap-2 rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+        >
+          {pending && (
+            <span
+              aria-hidden
+              className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+            />
+          )}
+          <span>{pending ? "Menyimpan..." : "Lanjut"}</span>
+        </button>
       </div>
     </form>
   );

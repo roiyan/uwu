@@ -29,7 +29,7 @@ export default async function WebsiteEditorPage() {
             🎨 Ganti Tema
           </Link>
           <Link
-            href={`/${bundle.event.slug}`}
+            href="/preview"
             target="_blank"
             rel="noreferrer"
             className="rounded-full bg-navy px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-dark"
