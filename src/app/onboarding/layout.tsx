@@ -1,20 +1,18 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUserFast } from "@/lib/auth-guard";
 import { signOutAction } from "@/lib/actions/auth";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 
-export default async function OnboardingLayout({
+// Synchronous shell — children paint immediately. Auth check moved into a
+// Suspense child so we don't pay the getUser round-trip on every step
+// transition.
+export default function OnboardingLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login?next=/onboarding");
-
   return (
     <div className="theme-dark relative flex min-h-screen flex-col overflow-hidden">
       <div className="hero-mesh" aria-hidden />
@@ -30,8 +28,17 @@ export default async function OnboardingLayout({
         </form>
       </header>
       <main className="relative mx-auto w-full max-w-3xl flex-1 px-6 py-10 lg:py-14">
+        <Suspense fallback={null}>
+          <AuthGate />
+        </Suspense>
         {children}
       </main>
     </div>
   );
+}
+
+async function AuthGate() {
+  const user = await getSessionUserFast();
+  if (!user) redirect("/login?next=/onboarding");
+  return null;
 }

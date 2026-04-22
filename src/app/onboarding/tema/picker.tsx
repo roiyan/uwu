@@ -43,13 +43,21 @@ export function TemaPicker({
   const router = useRouter();
   const toast = useToast();
 
-  // Fire-and-forget — selesai page tolerates unset themeId and shows a
-  // skeleton until it resolves. If save fails, bounce back.
-  function handleSubmit(form: FormData) {
+  // onSubmit + preventDefault (not <form action=>) so React 19's form-action
+  // transition machinery doesn't interfere with router.push. Navigate
+  // immediately; save fires in background. Selesai tolerates unset themeId.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (pending || !picked) return;
+
+    const form = new FormData(e.currentTarget);
+    form.set("themeId", picked);
+
     setError(null);
     setPending(true);
     toast.success("Tersimpan");
     router.push("/onboarding/selesai");
+
     saveTemaAction(null, form)
       .then((res) => {
         if (!res.ok) {
@@ -66,7 +74,7 @@ export function TemaPicker({
   }
 
   return (
-    <form action={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <input type="hidden" name="themeId" value={picked ?? ""} />
       <div className="grid gap-4 md:grid-cols-3">
         {themes.map((t) => {

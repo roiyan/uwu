@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveMempelaiAction } from "@/lib/actions/onboarding";
 import { useToast } from "@/components/shared/Toast";
@@ -18,28 +18,41 @@ const inputClass =
 export function MempelaiForm({ defaults }: { defaults: Defaults }) {
   const router = useRouter();
   const toast = useToast();
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Awaits the save — first-time mempelai CREATES the event, and the
-  // next page needs that event to exist. Fast session auth keeps this
-  // ~300-500ms on a warm Lambda.
-  function handleSubmit(form: FormData) {
+  // Awaits the save — first-time mempelai CREATES the event, and jadwal's
+  // loader redirects back if no event exists. Fast session auth keeps this
+  // ~300-500ms. We use onSubmit + e.preventDefault instead of
+  // <form action={fn}> — React 19's form-action machinery was serializing
+  // our client handler through its transition system and breaking nav.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (pending) return;
+
+    const form = new FormData(e.currentTarget);
     setError(null);
+    setPending(true);
     toast.success("Tersimpan");
-    startTransition(async () => {
-      const res = await saveMempelaiAction(null, form);
-      if (res.ok) {
-        router.push(res.data!.next);
-      } else {
-        setError(res.error);
-        toast.error(res.error);
-      }
-    });
+
+    saveMempelaiAction(null, form)
+      .then((res) => {
+        if (res.ok) {
+          router.push(res.data!.next);
+        } else {
+          setError(res.error);
+          toast.error(res.error);
+          setPending(false);
+        }
+      })
+      .catch(() => {
+        toast.error("Koneksi gagal. Silakan coba lagi.");
+        setPending(false);
+      });
   }
 
   return (
-    <form action={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <section className="rounded-2xl border border-white/10 bg-[color:var(--color-dark-surface)] p-6 shadow-2xl">
         <h2 className="font-display text-lg text-white/90">Mempelai Wanita</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
