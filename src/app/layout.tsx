@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Plus_Jakarta_Sans, Cormorant_Garamond } from "next/font/google";
+import { ToastProvider } from "@/components/shared/Toast";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -36,7 +37,7 @@ export default function RootLayout({
       className={`${playfair.variable} ${jakarta.variable} ${cormorant.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-surface-base text-ink font-body">
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );

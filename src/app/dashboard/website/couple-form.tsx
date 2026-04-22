@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import { updateCoupleAction } from "@/lib/actions/event";
 import { PhotoUpload } from "@/components/shared/PhotoUpload";
-import { SaveButton } from "@/components/shared/SaveButton";
+import { useToast } from "@/components/shared/Toast";
 
 type Defaults = {
   brideName: string;
@@ -33,15 +33,25 @@ export function CoupleForm({
   eventId: string;
   defaults: Defaults;
 }) {
-  const boundAction = updateCoupleAction.bind(null, eventId);
-  const [state, formAction] = useActionState(boundAction, null);
+  const toast = useToast();
+  const [pending, startTransition] = useTransition();
 
   const [bridePhotoUrl, setBridePhotoUrl] = useState(defaults.bridePhotoUrl);
   const [groomPhotoUrl, setGroomPhotoUrl] = useState(defaults.groomPhotoUrl);
   const [coverPhotoUrl, setCoverPhotoUrl] = useState(defaults.coverPhotoUrl);
 
+  function handleSubmit(form: FormData) {
+    // Optimistic: flash the success toast immediately so users feel the
+    // save was instant. If the server rejects, swap to an error toast.
+    toast.success("Tersimpan");
+    startTransition(async () => {
+      const res = await updateCoupleAction(eventId, null, form);
+      if (!res.ok) toast.error(res.error);
+    });
+  }
+
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={handleSubmit} className="space-y-6">
       <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
         <h2 className="font-display text-xl text-ink">Mempelai Wanita</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -164,19 +174,20 @@ export function CoupleForm({
         </div>
       </section>
 
-      {state && !state.ok && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
-          {state.error}
-        </p>
-      )}
-      {state && state.ok && (
-        <p className="rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
-          Perubahan tersimpan.
-        </p>
-      )}
-
       <div className="flex justify-end">
-        <SaveButton idleLabel="Simpan Perubahan" />
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex items-center gap-2 rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+        >
+          {pending && (
+            <span
+              aria-hidden
+              className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+            />
+          )}
+          <span>{pending ? "Menyimpan..." : "Simpan Perubahan"}</span>
+        </button>
       </div>
     </form>
   );

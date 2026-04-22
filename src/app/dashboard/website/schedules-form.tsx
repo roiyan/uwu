@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState, useTransition } from "react";
 import { updateSchedulesAction } from "@/lib/actions/event";
 import { VenueMapField } from "@/components/shared/VenueMapField";
-import { SaveButton } from "@/components/shared/SaveButton";
+import { useToast } from "@/components/shared/Toast";
 import type { ScheduleRow } from "@/app/onboarding/jadwal/form";
 
 const inputClass =
@@ -30,8 +30,16 @@ export function SchedulesForm({
   initial: ScheduleRow[];
 }) {
   const [rows, setRows] = useState<ScheduleRow[]>(initial);
-  const bound = updateSchedulesAction.bind(null, eventId);
-  const [state, formAction] = useActionState(bound, null);
+  const toast = useToast();
+  const [pending, startTransition] = useTransition();
+
+  function handleSubmit(form: FormData) {
+    toast.success("Jadwal tersimpan");
+    startTransition(async () => {
+      const res = await updateSchedulesAction(eventId, null, form);
+      if (!res.ok) toast.error(res.error);
+    });
+  }
 
   function update(idx: number, patch: Partial<ScheduleRow>) {
     setRows((r) => r.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -42,7 +50,7 @@ export function SchedulesForm({
   }
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={handleSubmit} className="space-y-6">
       <h2 className="font-display text-xl text-ink">Jadwal &amp; Lokasi</h2>
       <input type="hidden" name="schedules" value={JSON.stringify(rows)} />
 
@@ -134,19 +142,20 @@ export function SchedulesForm({
         </button>
       )}
 
-      {state && !state.ok && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
-          {state.error}
-        </p>
-      )}
-      {state && state.ok && (
-        <p className="rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
-          Jadwal tersimpan.
-        </p>
-      )}
-
       <div className="flex justify-end">
-        <SaveButton idleLabel="Simpan Jadwal" />
+        <button
+          type="submit"
+          disabled={pending}
+          className="inline-flex items-center gap-2 rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+        >
+          {pending && (
+            <span
+              aria-hidden
+              className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+            />
+          )}
+          <span>{pending ? "Menyimpan..." : "Simpan Jadwal"}</span>
+        </button>
       </div>
     </form>
   );
