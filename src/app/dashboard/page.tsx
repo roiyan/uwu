@@ -97,15 +97,15 @@ async function Header({ userId }: { userId: string }) {
           href="/preview"
           target="_blank"
           rel="noreferrer"
-          className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
+          className="rounded-full border border-navy/30 px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-navy/5"
         >
           👁 Pratinjau
         </Link>
         <Link
           href="/dashboard/website"
-          className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+          className="rounded-full bg-gradient-brand px-5 py-2 text-sm font-medium text-white shadow-[0_6px_20px_-6px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02]"
         >
-          Edit Undangan
+          Edit Undangan →
         </Link>
       </div>
     </header>

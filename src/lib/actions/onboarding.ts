@@ -10,7 +10,7 @@ import {
   packages,
   themes,
 } from "@/lib/db/schema";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast as requireAuthedUser } from "@/lib/auth-guard";
 import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import { buildCoupleSlug } from "@/lib/utils/slug";
 import {

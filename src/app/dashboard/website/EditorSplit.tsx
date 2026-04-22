@@ -189,14 +189,14 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/dashboard/website/theme"
-            className="rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
+            className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--color-gold)] px-4 py-2 text-sm font-medium text-[color:var(--color-gold-dark)] transition-colors hover:bg-[color:var(--color-gold-50)]"
           >
-            🎨 Tema
+            <span aria-hidden>✨</span> Tema
           </Link>
           <button
             type="button"
             onClick={() => setMobilePreviewOpen(true)}
-            className="rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted lg:hidden"
+            className="rounded-full border border-navy/30 px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-navy/5 lg:hidden"
           >
             👁 Pratinjau
           </button>
@@ -204,7 +204,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             type="button"
             onClick={handleSave}
             disabled={pending}
-            className="inline-flex items-center gap-2 rounded-full bg-navy px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-2 text-sm font-medium text-white shadow-[0_6px_20px_-6px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
           >
             {pending && (
               <span
@@ -500,7 +500,7 @@ function SectionCard({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="rounded-2xl bg-surface-card shadow-ghost-sm">
+    <section className="rounded-2xl bg-surface-card ring-1 ring-black/5 shadow-ghost-sm">
       <header className="flex items-center gap-2 px-5 py-4">
         <button
           type="button"
@@ -509,7 +509,7 @@ function SectionCard({
           aria-expanded={open}
         >
           <span
-            className="inline-block h-4 w-4 text-ink-muted transition-transform"
+            className="inline-block h-5 w-5 text-ink-muted transition-transform duration-200"
             style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
             aria-hidden
           >
@@ -520,11 +520,11 @@ function SectionCard({
             <span className="block text-xs text-ink-muted">{description}</span>
           </span>
         </button>
-        {onToggle && (
-          <SectionToggle enabled={enabled} onToggle={onToggle} />
-        )}
+        {onToggle && <SectionToggle enabled={enabled} onToggle={onToggle} />}
       </header>
-      {open && <div className="border-t border-[color:var(--border-ghost)] p-5">{children}</div>}
+      {open && (
+        <div className="border-t border-black/5 px-5 py-5">{children}</div>
+      )}
     </section>
   );
 }
