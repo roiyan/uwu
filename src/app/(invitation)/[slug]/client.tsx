@@ -9,6 +9,10 @@ import {
   type ResolvedGuest,
 } from "@/lib/actions/rsvp";
 import { buildIcsFile, googleCalendarUrl, mapsUrl } from "@/lib/utils/ics";
+import {
+  formatDate,
+  formatTimeRange,
+} from "@/components/invitation/formatting";
 import { RsvpForm } from "./rsvp-form";
 
 type Palette = { primary: string; secondary: string; accent: string };
@@ -40,41 +44,9 @@ type Schedule = {
   venueMapUrl: string | null;
 };
 
-function formatDate(iso: string) {
-  const [y, m, d] = iso.split("-").map((x) => parseInt(x, 10));
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-// C-02: format "08:00:00" + "Asia/Jakarta" into the friendlier "08.00 WIB".
-// Pg returns HH:MM:SS from the `time` column; we only want HH.MM + zone
-// abbreviation. Asia/Jakarta=WIB, /Makassar=WITA, /Jayapura=WIT.
-const TZ_ABBR: Record<string, string> = {
-  "Asia/Jakarta": "WIB",
-  "Asia/Makassar": "WITA",
-  "Asia/Jayapura": "WIT",
-};
-function formatTime(raw: string | null, timezone: string): string {
-  if (!raw) return "";
-  const [h, m] = raw.split(":");
-  const zone = TZ_ABBR[timezone] ?? timezone;
-  return `${h.padStart(2, "0")}.${(m ?? "00").padStart(2, "0")} ${zone}`;
-}
-function formatTimeRange(
-  start: string | null,
-  end: string | null,
-  timezone: string,
-): string | null {
-  if (!start && !end) return null;
-  const s = start ? formatTime(start, timezone) : "—";
-  const e = end ? formatTime(end, timezone).replace(/ \S+$/, "") : null;
-  return e ? `${s.replace(/ \S+$/, "")} – ${e} ${TZ_ABBR[timezone] ?? timezone}` : s;
-}
+// formatDate / formatTime / formatTimeRange come from
+// @/components/invitation/formatting — single source of truth so the live
+// editor preview and the public invitation stay in lockstep.
 
 export function InvitationClient(props: {
   event: { id: string; title: string; slug: string; musicUrl: string | null };

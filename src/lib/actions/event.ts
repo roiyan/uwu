@@ -255,6 +255,120 @@ export async function updateEventSettingsAction(
   return result;
 }
 
+// Combined save for the split-view website editor. One round-trip from the
+// client, one transaction on the DB. The Couple + Schedules payloads are
+// validated independently so a partial failure returns the specific error.
+export async function saveWebsiteDraftAction(
+  eventId: string,
+  _: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const coupleParsed = coupleDetailSchema.safeParse({
+    brideName: formData.get("brideName"),
+    brideNickname: formData.get("brideNickname") ?? "",
+    brideFatherName: formData.get("brideFatherName") ?? "",
+    brideMotherName: formData.get("brideMotherName") ?? "",
+    brideInstagram: formData.get("brideInstagram") ?? "",
+    bridePhotoUrl: formData.get("bridePhotoUrl") ?? "",
+    groomName: formData.get("groomName"),
+    groomNickname: formData.get("groomNickname") ?? "",
+    groomFatherName: formData.get("groomFatherName") ?? "",
+    groomMotherName: formData.get("groomMotherName") ?? "",
+    groomInstagram: formData.get("groomInstagram") ?? "",
+    groomPhotoUrl: formData.get("groomPhotoUrl") ?? "",
+    coverPhotoUrl: formData.get("coverPhotoUrl") ?? "",
+    story: formData.get("story") ?? "",
+    quote: formData.get("quote") ?? "",
+  });
+  if (!coupleParsed.success) {
+    return {
+      ok: false,
+      error: coupleParsed.error.issues[0]?.message ?? "Data mempelai tidak valid",
+    };
+  }
+
+  const raw = (formData.get("schedules") as string | null) ?? "[]";
+  let scheduleRaw: unknown;
+  try {
+    scheduleRaw = JSON.parse(raw);
+  } catch {
+    return { ok: false, error: "Data jadwal tidak valid." };
+  }
+  const scheduleParsed = schedulesSchema.safeParse(scheduleRaw);
+  if (!scheduleParsed.success) {
+    return {
+      ok: false,
+      error: scheduleParsed.error.issues[0]?.message ?? "Jadwal tidak valid",
+    };
+  }
+
+  const d = coupleParsed.data;
+  const schedules = scheduleParsed.data;
+
+  const result = await withAuth(eventId, "editor", async () => {
+    const now = new Date();
+    await db.transaction(async (tx) => {
+      await Promise.all([
+        tx
+          .update(couples)
+          .set({
+            brideName: d.brideName,
+            brideNickname: d.brideNickname || null,
+            brideFatherName: d.brideFatherName || null,
+            brideMotherName: d.brideMotherName || null,
+            brideInstagram: d.brideInstagram || null,
+            bridePhotoUrl: d.bridePhotoUrl || null,
+            groomName: d.groomName,
+            groomNickname: d.groomNickname || null,
+            groomFatherName: d.groomFatherName || null,
+            groomMotherName: d.groomMotherName || null,
+            groomInstagram: d.groomInstagram || null,
+            groomPhotoUrl: d.groomPhotoUrl || null,
+            coverPhotoUrl: d.coverPhotoUrl || null,
+            story: d.story || null,
+            quote: d.quote || null,
+            updatedAt: now,
+          })
+          .where(eq(couples.eventId, eventId)),
+        tx
+          .update(events)
+          .set({
+            title: `${d.brideName.split(" ")[0]} & ${d.groomName.split(" ")[0]}`,
+            updatedAt: now,
+          })
+          .where(eq(events.id, eventId)),
+      ]);
+
+      await tx
+        .delete(eventSchedules)
+        .where(eq(eventSchedules.eventId, eventId));
+      if (schedules.length > 0) {
+        await tx.insert(eventSchedules).values(
+          schedules.map((s, idx) => ({
+            eventId,
+            label: s.label,
+            eventDate: s.eventDate,
+            startTime: s.startTime || null,
+            endTime: s.endTime || null,
+            timezone: s.timezone || "Asia/Jakarta",
+            venueName: s.venueName || null,
+            venueAddress: s.venueAddress || null,
+            venueMapUrl: s.venueMapUrl || null,
+            sortOrder: idx,
+          })),
+        );
+      }
+    });
+  });
+
+  if (result.ok) {
+    revalidatePath("/dashboard/website");
+    revalidatePath("/preview");
+    revalidatePath("/dashboard", "layout");
+  }
+  return result;
+}
+
 export async function publishEventAction(
   eventId: string,
 ): Promise<ActionResult> {
