@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { saveJadwalAction } from "@/lib/actions/onboarding";
+import { VenueMapField } from "@/components/shared/VenueMapField";
 
 export type ScheduleRow = {
   label: string;
@@ -118,16 +119,12 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
                 className={inputClass}
               />
             </label>
-            <label className="block md:col-span-2">
-              <span className="text-sm font-medium text-ink">Link Google Maps</span>
-              <input
-                type="url"
-                value={row.venueMapUrl}
-                onChange={(e) => update(idx, { venueMapUrl: e.target.value })}
-                placeholder="https://maps.google.com/..."
-                className={inputClass}
-              />
-            </label>
+            <VenueMapField
+              value={row.venueMapUrl}
+              onChange={(v) => update(idx, { venueMapUrl: v })}
+              venueName={row.venueName}
+              venueAddress={row.venueAddress}
+            />
           </div>
         </div>
       ))}
