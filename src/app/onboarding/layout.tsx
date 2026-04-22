@@ -16,19 +16,20 @@ export default async function OnboardingLayout({
   if (!user) redirect("/login?next=/onboarding");
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface-base">
-      <header className="flex items-center justify-between border-b border-[color:var(--border-ghost)] bg-surface-card px-6 py-4 lg:px-10">
+    <div className="theme-dark relative flex min-h-screen flex-col overflow-hidden">
+      <div className="hero-mesh" aria-hidden />
+      <header className="relative flex items-center justify-between border-b border-[color:var(--dark-border)] bg-[#0A0A0F]/70 px-6 py-4 backdrop-blur lg:px-10">
         <BrandLogo href="/dashboard" size="md" />
         <form action={signOutAction}>
           <button
             type="submit"
-            className="text-sm text-ink-muted transition-colors hover:text-navy"
+            className="text-sm text-[color:var(--color-dark-text-secondary)] transition-colors hover:text-white"
           >
             Keluar
           </button>
         </form>
       </header>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10 lg:py-14">
+      <main className="relative mx-auto w-full max-w-3xl flex-1 px-6 py-10 lg:py-14">
         {children}
       </main>
     </div>

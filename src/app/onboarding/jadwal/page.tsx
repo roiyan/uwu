@@ -37,8 +37,10 @@ export default function JadwalStep() {
     <div>
       <Stepper current="jadwal" reached={["mempelai", "jadwal"]} />
       <section className="mt-10">
-        <h1 className="font-display text-3xl text-ink">Jadwal acara</h1>
-        <p className="mt-2 text-sm text-ink-muted">
+        <h1 className="font-display text-3xl text-white">
+          Jadwal <span className="italic text-gradient">acara</span>
+        </h1>
+        <p className="mt-2 text-sm text-white/60">
           Tambah hari dan lokasi setiap acara. Minimal satu acara harus diisi.
         </p>
       </section>
