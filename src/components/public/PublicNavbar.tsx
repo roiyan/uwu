@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -32,9 +33,7 @@ export function PublicNavbar() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="font-logo text-2xl text-gradient">
-          uwu
-        </Link>
+        <BrandLogo href="/" size="md" />
 
         <nav className="hidden items-center gap-8 lg:flex">
           {LINKS.map((link) => {

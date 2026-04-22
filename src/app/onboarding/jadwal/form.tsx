@@ -174,7 +174,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
         >
           {pending && (
             <span

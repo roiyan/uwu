@@ -1,13 +1,12 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 export function PublicFooter() {
   return (
     <footer className="border-t border-[color:var(--dark-border)] bg-[#0A0A0F] text-[color:var(--color-dark-text-secondary)]">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-4">
         <div>
-          <Link href="/" className="font-logo text-2xl text-gradient">
-            uwu
-          </Link>
+          <BrandLogo href="/" size="md" />
           <p className="mt-3 text-sm">A Love Story, Beautifully Told.</p>
         </div>
         <FooterCol

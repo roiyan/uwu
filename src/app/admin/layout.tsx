@@ -1,10 +1,10 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { profiles } from "@/lib/db/schema";
 import { createClient } from "@/lib/supabase/server";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 export default async function AdminLayout({
   children,
@@ -31,12 +31,7 @@ export default async function AdminLayout({
     <div className="flex min-h-screen flex-col">
       <header className="border-b border-[color:var(--border-ghost)] bg-surface-card px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <Link
-            href="/admin"
-            className="font-logo text-2xl bg-gradient-to-r from-brand-blue via-brand-lavender to-brand-pink bg-clip-text text-transparent"
-          >
-            uwu
-          </Link>
+          <BrandLogo href="/admin" size="md" />
           <span className="rounded-full bg-navy-50 px-3 py-1 text-xs font-medium text-navy">
             Admin
           </span>

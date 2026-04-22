@@ -14,7 +14,10 @@ export function Stepper({ current, reached }: { current: StepId; reached: StepId
   const currentIdx = STEPS.findIndex((s) => s.id === current);
 
   return (
-    <ol className="flex items-center justify-between gap-2" aria-label="Progres pembuatan undangan">
+    <ol
+      className="flex items-center justify-between gap-2"
+      aria-label="Progres pembuatan undangan"
+    >
       {STEPS.map((step, idx) => {
         const isActive = step.id === current;
         const isReached = reachedSet.has(step.id);
@@ -24,9 +27,9 @@ export function Stepper({ current, reached }: { current: StepId; reached: StepId
         const dotBase =
           "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-colors";
         const dotClass = isActive
-          ? "bg-navy text-ink-inverse"
+          ? "bg-navy text-ink-inverse shadow-[0_0_0_4px_rgba(30,58,95,0.12)]"
           : canNav
-            ? "bg-gold-50 text-gold-dark"
+            ? "bg-navy text-ink-inverse"
             : "bg-surface-muted text-ink-hint";
 
         const labelClass = isActive
@@ -42,6 +45,10 @@ export function Stepper({ current, reached }: { current: StepId; reached: StepId
           </div>
         );
 
+        const connectorClass = canNav
+          ? "bg-navy/40"
+          : "bg-[color:var(--border-ghost)]";
+
         return (
           <li key={step.id} className="flex flex-1 items-center gap-3">
             {canNav && !isActive ? (
@@ -50,7 +57,7 @@ export function Stepper({ current, reached }: { current: StepId; reached: StepId
               content
             )}
             {idx < STEPS.length - 1 && (
-              <span className="h-px flex-1 bg-[color:var(--border-ghost)]" />
+              <span className={`h-px flex-1 ${connectorClass}`} />
             )}
           </li>
         );
