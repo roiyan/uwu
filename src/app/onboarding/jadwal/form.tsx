@@ -49,13 +49,23 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
     setRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
   }
 
-  // Fire-and-forget — tema page no longer redirects back on missing schedules,
-  // so navigating before the INSERT commits is safe. If save fails, bounce back.
-  function handleSubmit(form: FormData) {
+  // onSubmit + preventDefault (not <form action=>) so React 19's form-action
+  // transition machinery doesn't interfere with the manual router.push.
+  // Navigate immediately; save fires in background. Tema page tolerates
+  // not-yet-committed schedules.
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (pending) return;
+
+    const form = new FormData(e.currentTarget);
+    // Rows live in React state, not the form's named fields — inject.
+    form.set("schedules", JSON.stringify(rows));
+
     setError(null);
     setPending(true);
     toast.success("Tersimpan");
     router.push("/onboarding/tema");
+
     saveJadwalAction(null, form)
       .then((res) => {
         if (!res.ok) {
@@ -72,7 +82,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
   }
 
   return (
-    <form action={handleSubmit} className="mt-8 space-y-6">
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
       <input type="hidden" name="schedules" value={JSON.stringify(rows)} />
 
       {rows.map((row, idx) => (
