@@ -52,35 +52,38 @@ export async function updateCoupleAction(
   const d = parsed.data;
 
   const result = await withAuth(eventId, "editor", async () => {
-    await db
-      .update(couples)
-      .set({
-        brideName: d.brideName,
-        brideNickname: d.brideNickname || null,
-        brideFatherName: d.brideFatherName || null,
-        brideMotherName: d.brideMotherName || null,
-        brideInstagram: d.brideInstagram || null,
-        bridePhotoUrl: d.bridePhotoUrl || null,
-        groomName: d.groomName,
-        groomNickname: d.groomNickname || null,
-        groomFatherName: d.groomFatherName || null,
-        groomMotherName: d.groomMotherName || null,
-        groomInstagram: d.groomInstagram || null,
-        groomPhotoUrl: d.groomPhotoUrl || null,
-        coverPhotoUrl: d.coverPhotoUrl || null,
-        story: d.story || null,
-        quote: d.quote || null,
-        updatedAt: new Date(),
-      })
-      .where(eq(couples.eventId, eventId));
-
-    await db
-      .update(events)
-      .set({
-        title: `${d.brideName.split(" ")[0]} & ${d.groomName.split(" ")[0]}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(events.id, eventId));
+    // Run both UPDATEs in parallel — they hit different tables with no deps.
+    const now = new Date();
+    await Promise.all([
+      db
+        .update(couples)
+        .set({
+          brideName: d.brideName,
+          brideNickname: d.brideNickname || null,
+          brideFatherName: d.brideFatherName || null,
+          brideMotherName: d.brideMotherName || null,
+          brideInstagram: d.brideInstagram || null,
+          bridePhotoUrl: d.bridePhotoUrl || null,
+          groomName: d.groomName,
+          groomNickname: d.groomNickname || null,
+          groomFatherName: d.groomFatherName || null,
+          groomMotherName: d.groomMotherName || null,
+          groomInstagram: d.groomInstagram || null,
+          groomPhotoUrl: d.groomPhotoUrl || null,
+          coverPhotoUrl: d.coverPhotoUrl || null,
+          story: d.story || null,
+          quote: d.quote || null,
+          updatedAt: now,
+        })
+        .where(eq(couples.eventId, eventId)),
+      db
+        .update(events)
+        .set({
+          title: `${d.brideName.split(" ")[0]} & ${d.groomName.split(" ")[0]}`,
+          updatedAt: now,
+        })
+        .where(eq(events.id, eventId)),
+    ]);
   });
 
   if (result.ok) {
@@ -108,21 +111,26 @@ export async function updateSchedulesAction(
   }
 
   const result = await withAuth(eventId, "editor", async () => {
-    await db.delete(eventSchedules).where(eq(eventSchedules.eventId, eventId));
-    await db.insert(eventSchedules).values(
-      parsed.data.map((s, idx) => ({
-        eventId,
-        label: s.label,
-        eventDate: s.eventDate,
-        startTime: s.startTime || null,
-        endTime: s.endTime || null,
-        timezone: s.timezone || "Asia/Jakarta",
-        venueName: s.venueName || null,
-        venueAddress: s.venueAddress || null,
-        venueMapUrl: s.venueMapUrl || null,
-        sortOrder: idx,
-      })),
-    );
+    // Batch delete+insert inside a single transaction = 1 round-trip.
+    await db.transaction(async (tx) => {
+      await tx.delete(eventSchedules).where(eq(eventSchedules.eventId, eventId));
+      if (parsed.data.length > 0) {
+        await tx.insert(eventSchedules).values(
+          parsed.data.map((s, idx) => ({
+            eventId,
+            label: s.label,
+            eventDate: s.eventDate,
+            startTime: s.startTime || null,
+            endTime: s.endTime || null,
+            timezone: s.timezone || "Asia/Jakarta",
+            venueName: s.venueName || null,
+            venueAddress: s.venueAddress || null,
+            venueMapUrl: s.venueMapUrl || null,
+            sortOrder: idx,
+          })),
+        );
+      }
+    });
   });
 
   if (result.ok) revalidatePath("/dashboard/website");
@@ -144,18 +152,20 @@ export async function selectThemeAction(
       .limit(1);
     if (!theme) throw new Error("Tema tidak tersedia");
 
-    await db
-      .update(events)
-      .set({ themeId: theme.id, updatedAt: new Date() })
-      .where(eq(events.id, eventId));
-
-    await db
-      .insert(eventThemeConfigs)
-      .values({ eventId, themeId: theme.id, config: {} })
-      .onConflictDoUpdate({
-        target: [eventThemeConfigs.eventId, eventThemeConfigs.themeId],
-        set: { updatedAt: new Date() },
-      });
+    const now = new Date();
+    await Promise.all([
+      db
+        .update(events)
+        .set({ themeId: theme.id, updatedAt: now })
+        .where(eq(events.id, eventId)),
+      db
+        .insert(eventThemeConfigs)
+        .values({ eventId, themeId: theme.id, config: {} })
+        .onConflictDoUpdate({
+          target: [eventThemeConfigs.eventId, eventThemeConfigs.themeId],
+          set: { updatedAt: now },
+        }),
+    ]);
   });
 
   if (result.ok) {

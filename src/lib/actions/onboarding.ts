@@ -131,21 +131,25 @@ export async function saveJadwalAction(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Jadwal tidak valid" };
   }
 
-  await db.delete(eventSchedules).where(eq(eventSchedules.eventId, eventId));
-  await db.insert(eventSchedules).values(
-    parsed.data.map((s, idx) => ({
-      eventId,
-      label: s.label,
-      eventDate: s.eventDate,
-      startTime: s.startTime || null,
-      endTime: s.endTime || null,
-      timezone: s.timezone || "Asia/Jakarta",
-      venueName: s.venueName || null,
-      venueAddress: s.venueAddress || null,
-      venueMapUrl: s.venueMapUrl || null,
-      sortOrder: idx,
-    })),
-  );
+  await db.transaction(async (tx) => {
+    await tx.delete(eventSchedules).where(eq(eventSchedules.eventId, eventId));
+    if (parsed.data.length > 0) {
+      await tx.insert(eventSchedules).values(
+        parsed.data.map((s, idx) => ({
+          eventId,
+          label: s.label,
+          eventDate: s.eventDate,
+          startTime: s.startTime || null,
+          endTime: s.endTime || null,
+          timezone: s.timezone || "Asia/Jakarta",
+          venueName: s.venueName || null,
+          venueAddress: s.venueAddress || null,
+          venueMapUrl: s.venueMapUrl || null,
+          sortOrder: idx,
+        })),
+      );
+    }
+  });
 
   revalidatePath("/onboarding", "layout");
   revalidatePath("/dashboard", "layout");
@@ -177,18 +181,20 @@ export async function saveTemaAction(
     return { ok: false, error: "Tema tidak tersedia." };
   }
 
-  await db
-    .update(events)
-    .set({ themeId: theme.id, updatedAt: new Date() })
-    .where(eq(events.id, eventId));
-
-  await db
-    .insert(eventThemeConfigs)
-    .values({ eventId, themeId: theme.id, config: {} })
-    .onConflictDoUpdate({
-      target: [eventThemeConfigs.eventId, eventThemeConfigs.themeId],
-      set: { updatedAt: new Date() },
-    });
+  const now = new Date();
+  await Promise.all([
+    db
+      .update(events)
+      .set({ themeId: theme.id, updatedAt: now })
+      .where(eq(events.id, eventId)),
+    db
+      .insert(eventThemeConfigs)
+      .values({ eventId, themeId: theme.id, config: {} })
+      .onConflictDoUpdate({
+        target: [eventThemeConfigs.eventId, eventThemeConfigs.themeId],
+        set: { updatedAt: now },
+      }),
+  ]);
 
   revalidatePath("/onboarding", "layout");
   revalidatePath("/dashboard", "layout");

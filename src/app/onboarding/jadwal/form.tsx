@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import Link from "next/link";
 import { saveJadwalAction } from "@/lib/actions/onboarding";
 import { VenueMapField } from "@/components/shared/VenueMapField";
+import { SaveButton } from "@/components/shared/SaveButton";
 
 export type ScheduleRow = {
   label: string;
@@ -34,7 +35,7 @@ function blankRow(): ScheduleRow {
 
 export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
   const [rows, setRows] = useState<ScheduleRow[]>(initial);
-  const [state, formAction, pending] = useActionState(saveJadwalAction, null);
+  const [state, formAction] = useActionState(saveJadwalAction, null);
 
   function update(idx: number, patch: Partial<ScheduleRow>) {
     setRows((r) => r.map((row, i) => (i === idx ? { ...row, ...patch } : row)));
@@ -152,13 +153,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
         >
           Kembali
         </Link>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
-        >
-          {pending ? "Menyimpan..." : "Lanjut"}
-        </button>
+        <SaveButton idleLabel="Lanjut" />
       </div>
     </form>
   );

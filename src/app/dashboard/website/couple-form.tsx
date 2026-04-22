@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { updateCoupleAction } from "@/lib/actions/event";
 import { PhotoUpload } from "@/components/shared/PhotoUpload";
+import { SaveButton } from "@/components/shared/SaveButton";
 
 type Defaults = {
   brideName: string;
@@ -33,7 +34,7 @@ export function CoupleForm({
   defaults: Defaults;
 }) {
   const boundAction = updateCoupleAction.bind(null, eventId);
-  const [state, formAction, pending] = useActionState(boundAction, null);
+  const [state, formAction] = useActionState(boundAction, null);
 
   const [bridePhotoUrl, setBridePhotoUrl] = useState(defaults.bridePhotoUrl);
   const [groomPhotoUrl, setGroomPhotoUrl] = useState(defaults.groomPhotoUrl);
@@ -175,13 +176,7 @@ export function CoupleForm({
       )}
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
-        >
-          {pending ? "Menyimpan..." : "Simpan Perubahan"}
-        </button>
+        <SaveButton idleLabel="Simpan Perubahan" />
       </div>
     </form>
   );

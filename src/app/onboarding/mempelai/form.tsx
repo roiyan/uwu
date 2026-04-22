@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { saveMempelaiAction } from "@/lib/actions/onboarding";
+import { SaveButton } from "@/components/shared/SaveButton";
 
 type Defaults = {
   brideName: string;
@@ -14,7 +15,7 @@ const inputClass =
   "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
 
 export function MempelaiForm({ defaults }: { defaults: Defaults }) {
-  const [state, formAction, pending] = useActionState(saveMempelaiAction, null);
+  const [state, formAction] = useActionState(saveMempelaiAction, null);
 
   return (
     <form action={formAction} className="mt-8 space-y-6">
@@ -75,13 +76,7 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
       )}
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
-        >
-          {pending ? "Menyimpan..." : "Lanjut"}
-        </button>
+        <SaveButton idleLabel="Lanjut" />
       </div>
     </form>
   );
