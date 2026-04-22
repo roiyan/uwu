@@ -8,9 +8,10 @@ import { signOutAction } from "@/lib/actions/auth";
 type SidebarProps = {
   coupleLabel?: string | null;
   themeLabel?: string | null;
+  previewHref?: string;
 };
 
-export function Sidebar({ coupleLabel, themeLabel }: SidebarProps) {
+export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -73,8 +74,13 @@ export function Sidebar({ coupleLabel, themeLabel }: SidebarProps) {
 
       <div className="mt-6 space-y-2 border-t border-[color:var(--border-ghost)] pt-4">
         <Link
-          href="/preview"
-          className="block w-full rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-center text-sm font-medium text-navy hover:bg-surface-muted"
+          href={previewHref ?? "#"}
+          target={previewHref ? "_blank" : undefined}
+          rel={previewHref ? "noreferrer" : undefined}
+          aria-disabled={!previewHref}
+          className={`block w-full rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-center text-sm font-medium ${
+            previewHref ? "text-navy hover:bg-surface-muted" : "text-ink-hint"
+          }`}
         >
           👁 Pratinjau Situs
         </Link>

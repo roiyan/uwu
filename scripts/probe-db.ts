@@ -31,8 +31,9 @@ async function main() {
       from pg_policies where schemaname = 'public'
     `;
     console.log("total RLS policies:", policy_count);
-  } catch (e: any) {
-    console.log("ERROR:", e.code, e.message);
+  } catch (e) {
+    const err = e as { code?: string; message?: string };
+    console.log("ERROR:", err.code, err.message);
   }
   await sql.end({ timeout: 5 });
 }

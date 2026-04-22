@@ -1,0 +1,77 @@
+import { z } from "zod";
+
+export const mempelaiSchema = z.object({
+  brideName: z.string().min(2, "Nama mempelai wanita minimal 2 karakter").max(80),
+  brideNickname: z.string().max(40).optional().or(z.literal("")),
+  groomName: z.string().min(2, "Nama mempelai pria minimal 2 karakter").max(80),
+  groomNickname: z.string().max(40).optional().or(z.literal("")),
+});
+
+export const scheduleInputSchema = z.object({
+  label: z.string().min(2, "Label acara wajib diisi").max(60),
+  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal tidak valid"),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Jam tidak valid").optional().or(z.literal("")),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Jam tidak valid").optional().or(z.literal("")),
+  timezone: z.string().default("Asia/Jakarta"),
+  venueName: z.string().max(120).optional().or(z.literal("")),
+  venueAddress: z.string().max(400).optional().or(z.literal("")),
+  venueMapUrl: z.string().url("URL peta tidak valid").optional().or(z.literal("")),
+});
+
+export const schedulesSchema = z
+  .array(scheduleInputSchema)
+  .min(1, "Minimal satu acara")
+  .max(6, "Maksimal 6 acara");
+
+export const coupleDetailSchema = mempelaiSchema.extend({
+  brideFatherName: z.string().max(120).optional().or(z.literal("")),
+  brideMotherName: z.string().max(120).optional().or(z.literal("")),
+  brideInstagram: z.string().max(60).optional().or(z.literal("")),
+  bridePhotoUrl: z.string().url("URL foto tidak valid").optional().or(z.literal("")),
+  groomFatherName: z.string().max(120).optional().or(z.literal("")),
+  groomMotherName: z.string().max(120).optional().or(z.literal("")),
+  groomInstagram: z.string().max(60).optional().or(z.literal("")),
+  groomPhotoUrl: z.string().url("URL foto tidak valid").optional().or(z.literal("")),
+  coverPhotoUrl: z.string().url("URL foto tidak valid").optional().or(z.literal("")),
+  story: z.string().max(2000).optional().or(z.literal("")),
+  quote: z.string().max(400).optional().or(z.literal("")),
+});
+
+export const eventSettingsSchema = z.object({
+  title: z.string().min(2).max(120),
+  slug: z
+    .string()
+    .min(4, "Slug minimal 4 karakter")
+    .max(60, "Slug maksimal 60 karakter")
+    .regex(/^[a-z0-9-]+$/, "Hanya huruf kecil, angka, dan tanda minus"),
+  culturalPreference: z.enum(["islami", "umum", "custom"]),
+  musicUrl: z.string().url("URL musik tidak valid").optional().or(z.literal("")),
+});
+
+export const profileSettingsSchema = z.object({
+  fullName: z.string().min(2).max(80),
+  phone: z.string().max(24).optional().or(z.literal("")),
+});
+
+export const themeSelectSchema = z.object({
+  themeId: z.string().uuid("Tema tidak valid"),
+});
+
+export const themeConfigSchema = z.object({
+  themeId: z.string().uuid(),
+  palette: z
+    .object({
+      primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      secondary: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      accent: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    })
+    .partial()
+    .optional(),
+});
+
+export type MempelaiInput = z.infer<typeof mempelaiSchema>;
+export type ScheduleInput = z.infer<typeof scheduleInputSchema>;
+export type CoupleDetailInput = z.infer<typeof coupleDetailSchema>;
+export type EventSettingsInput = z.infer<typeof eventSettingsSchema>;
+export type ProfileSettingsInput = z.infer<typeof profileSettingsSchema>;
+export type ThemeConfigInput = z.infer<typeof themeConfigSchema>;
