@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { BottomTab } from "@/components/dashboard/BottomTab";
@@ -11,17 +11,15 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
-  // Minimal auth guard — this has to await because we can't stream a redirect.
-  // Everything else (event/couple/theme lookup for the sidebar) runs inside a
-  // Suspense boundary below so `children` renders in parallel with it.
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Middleware already validated the JWT on this request, so we can read the
+  // signed cookie locally (~5ms) instead of round-tripping to Supabase Auth
+  // (~200-400ms). That unlocks the child's loading.tsx to render nearly
+  // instantly on every navigation.
+  const user = await getSessionUserFast();
   if (!user) redirect("/login?next=/dashboard");
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-surface-base">
       <Suspense fallback={<SidebarSkeleton />}>
         <SidebarWithData userId={user.id} />
       </Suspense>

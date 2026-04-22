@@ -43,16 +43,17 @@ export function TemaPicker({
   const toast = useToast();
   const [pending, startTransition] = useTransition();
 
+  // Fire-and-forget — tema step only UPDATEs events.themeId and upserts
+  // event_theme_configs; navigating before it commits is safe.
   function handleSubmit(form: FormData) {
     setError(null);
     toast.success("Tersimpan");
+    router.push("/onboarding/selesai");
     startTransition(async () => {
       const res = await saveTemaAction(null, form);
-      if (res.ok) {
-        router.push(res.data!.next);
-      } else {
-        setError(res.error);
+      if (!res.ok) {
         toast.error(res.error);
+        router.push("/onboarding/tema");
       }
     });
   }

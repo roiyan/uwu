@@ -49,16 +49,20 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
     setRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
   }
 
+  // Fire-and-forget: by the time the user reaches this step the event
+  // already exists, so navigating before the UPDATE commits is safe —
+  // the next page only re-queries the event row which is unchanged on
+  // its key columns. If the save eventually fails, surface an error
+  // toast and send the user back to fix it.
   function handleSubmit(form: FormData) {
     setError(null);
     toast.success("Tersimpan");
+    router.push("/onboarding/tema");
     startTransition(async () => {
       const res = await saveJadwalAction(null, form);
-      if (res.ok) {
-        router.push(res.data!.next);
-      } else {
-        setError(res.error);
+      if (!res.ok) {
         toast.error(res.error);
+        router.push("/onboarding/jadwal");
       }
     });
   }

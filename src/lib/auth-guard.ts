@@ -26,6 +26,23 @@ export async function requireAuthedUser() {
   return user;
 }
 
+// Fast session path for Server Actions — reads the signed cookie locally
+// (middleware already refreshed the JWT on this request), skipping the
+// ~200-400ms network call to Supabase Auth. Returns null for anonymous.
+export async function getSessionUserFast() {
+  const supabase = await createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  return session?.user ?? null;
+}
+
+export async function requireSessionUserFast() {
+  const user = await getSessionUserFast();
+  if (!user) throw new Error("Tidak ter-autentikasi");
+  return user;
+}
+
 // Emit a timing log whenever a Server Action takes longer than `slowMs`
 // (and always in dev). Use inside actions that don't go through withAuth.
 export async function timed<T>(
@@ -46,17 +63,6 @@ export async function timed<T>(
     console.error(`[action ${label}] err ${took}ms`, err);
     throw err;
   }
-}
-
-// Action-level auth: middleware already refreshed the session on every
-// request (src/middleware.ts -> updateSession). For Server Actions we trust
-// the cookie to save a ~200-400ms round-trip to Supabase Auth.
-async function getSessionUserFast() {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  return session?.user ?? null;
 }
 
 // One round-trip to resolve ownership + membership for a given event.

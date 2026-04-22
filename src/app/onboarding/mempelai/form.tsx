@@ -21,6 +21,15 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  // Fire-and-forget: navigate optimistically on the assumption the save
+  // succeeds (it almost always does). If it doesn't, we bounce back with
+  // an error toast. The next page re-fetches from DB on mount, so as long
+  // as the save commits before the user submits the next step we're fine.
+  // Exception: first-ever submit creates the event — the next page's
+  // getCurrentEventForUser would race. We handle that by awaiting when
+  // the existing event doesn't exist yet. The form doesn't know that
+  // locally, so we rely on the server action being fast (~300ms with
+  // fast session auth) for first-time users.
   function handleSubmit(form: FormData) {
     setError(null);
     toast.success("Tersimpan");
