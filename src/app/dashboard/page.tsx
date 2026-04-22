@@ -1,14 +1,28 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { and, eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { guests } from "@/lib/db/schema";
 import { requireAuthedUser } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
+import {
+  countGuestsByStatus,
+  countLiveGuests,
+  sumAttendees,
+} from "@/lib/db/queries/guests";
 import {
   ProgressSetupCard,
   type SetupStep,
 } from "@/components/dashboard/ProgressSetupCard";
+
+function StatRow({ label, value, dot }: { label: string; value: number; dot: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="flex items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: dot }} />
+        {label}
+      </span>
+      <span className="font-medium text-ink">{value}</span>
+    </div>
+  );
+}
 
 function formatDate(iso: string) {
   const [y, m, d] = iso.split("-").map((x) => parseInt(x, 10));
@@ -27,11 +41,11 @@ export default async function DashboardBerandaPage() {
   const bundle = await getEventBundle(current.event.id);
   if (!bundle) redirect("/onboarding");
 
-  const guestCountRows = await db
-    .select({ id: guests.id })
-    .from(guests)
-    .where(and(eq(guests.eventId, bundle.event.id)));
-  const guestCount = guestCountRows.length;
+  const [guestCount, statusCounts, confirmedAttendees] = await Promise.all([
+    countLiveGuests(bundle.event.id),
+    countGuestsByStatus(bundle.event.id),
+    sumAttendees(bundle.event.id),
+  ]);
   const firstSchedule = bundle.schedules[0];
 
   const hasCoupleStory = Boolean(bundle.couple?.story || bundle.couple?.quote);
@@ -143,6 +157,29 @@ export default async function DashboardBerandaPage() {
               Kelola tamu →
             </Link>
           </section>
+
+          <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
+            <p className="text-xs uppercase tracking-wide text-ink-hint">RSVP</p>
+            <p className="mt-2 font-display text-3xl text-ink">
+              {statusCounts.hadir}
+              <span className="text-base text-ink-muted"> hadir</span>
+            </p>
+            <p className="text-xs text-ink-muted">
+              {confirmedAttendees} orang dikonfirmasi
+            </p>
+            <dl className="mt-3 space-y-1 text-xs text-ink-muted">
+              <StatRow label="Dibuka" value={statusCounts.dibuka} dot="var(--color-rsvp-dibuka)" />
+              <StatRow label="Tidak Hadir" value={statusCounts.tidak_hadir} dot="var(--color-rsvp-tidak-hadir)" />
+              <StatRow label="Belum direspons" value={statusCounts.baru + statusCounts.diundang} dot="var(--color-rsvp-baru)" />
+            </dl>
+            <Link
+              href="/dashboard/analytics"
+              className="mt-4 inline-block text-xs font-medium text-navy hover:underline"
+            >
+              Lihat analytics →
+            </Link>
+          </section>
+
           <section className="rounded-2xl bg-surface-card p-5 shadow-ghost-sm">
             <p className="text-xs uppercase tracking-wide text-ink-hint">Status</p>
             <p className="mt-2 font-display text-lg text-ink">
