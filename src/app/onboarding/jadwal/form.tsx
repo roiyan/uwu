@@ -49,20 +49,21 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
     setRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
   }
 
-  // Fire-and-forget: by the time the user reaches this step the event
-  // already exists, so navigating before the UPDATE commits is safe —
-  // the next page only re-queries the event row which is unchanged on
-  // its key columns. If the save eventually fails, surface an error
-  // toast and send the user back to fix it.
+  // We have to await the save before navigating — /onboarding/tema
+  // checks `bundle.schedules.length > 0` and redirects back here if
+  // the INSERT hasn't committed yet. A previous fire-and-forget
+  // attempt caused a jadwal → tema → auto-back-to-jadwal loop. The
+  // fast session auth path in the action keeps this reasonably snappy.
   function handleSubmit(form: FormData) {
     setError(null);
     toast.success("Tersimpan");
-    router.push("/onboarding/tema");
     startTransition(async () => {
       const res = await saveJadwalAction(null, form);
-      if (!res.ok) {
+      if (res.ok) {
+        router.push(res.data!.next);
+      } else {
+        setError(res.error);
         toast.error(res.error);
-        router.push("/onboarding/jadwal");
       }
     });
   }
@@ -178,7 +179,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-8 py-3 text-sm font-medium text-white shadow-[0_6px_20px_-6px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
         >
           {pending && (
             <span

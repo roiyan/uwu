@@ -17,7 +17,9 @@ export default function TemaStep() {
         reached={["mempelai", "jadwal", "tema"]}
       />
       <section className="mt-10">
-        <h1 className="font-display text-3xl text-ink">Pilih tema undangan</h1>
+        <h1 className="font-display text-3xl text-ink">
+          Pilih <span className="italic text-gradient">tema</span> undangan
+        </h1>
         <p className="mt-2 text-sm text-ink-muted">
           Anda bisa mengubah tema setelah ini. Tema akan mewarnai halaman undangan tamu.
         </p>

@@ -25,22 +25,32 @@ export function Stepper({ current, reached }: { current: StepId; reached: StepId
         const canNav = isReached || isPast || isActive;
 
         const dotBase =
-          "flex h-8 w-8 items-center justify-center rounded-full text-xs font-medium transition-colors";
+          "flex h-9 w-9 items-center justify-center rounded-full text-xs font-medium transition-colors";
+        const activeStyle: React.CSSProperties | undefined = isActive
+          ? {
+              background: "var(--brand-gradient)",
+              color: "#fff",
+              boxShadow:
+                "0 0 0 4px rgba(184,160,208,0.18), 0 8px 20px -6px rgba(184,160,208,0.45)",
+            }
+          : undefined;
         const dotClass = isActive
-          ? "bg-navy text-ink-inverse shadow-[0_0_0_4px_rgba(30,58,95,0.12)]"
+          ? ""
           : canNav
             ? "bg-navy text-ink-inverse"
             : "bg-surface-muted text-ink-hint";
 
         const labelClass = isActive
-          ? "text-navy font-medium"
+          ? "font-medium text-navy"
           : canNav
             ? "text-ink"
             : "text-ink-hint";
 
         const content = (
           <div className="flex items-center gap-3">
-            <span className={`${dotBase} ${dotClass}`}>{idx + 1}</span>
+            <span className={`${dotBase} ${dotClass}`} style={activeStyle}>
+              {idx + 1}
+            </span>
             <span className={`text-sm ${labelClass}`}>{step.label}</span>
           </div>
         );

@@ -43,17 +43,18 @@ export function TemaPicker({
   const toast = useToast();
   const [pending, startTransition] = useTransition();
 
-  // Fire-and-forget — tema step only UPDATEs events.themeId and upserts
-  // event_theme_configs; navigating before it commits is safe.
+  // Must await the save — /onboarding/selesai checks
+  // `bundle.event.themeId` and bounces back if it hasn't persisted.
   function handleSubmit(form: FormData) {
     setError(null);
     toast.success("Tersimpan");
-    router.push("/onboarding/selesai");
     startTransition(async () => {
       const res = await saveTemaAction(null, form);
-      if (!res.ok) {
+      if (res.ok) {
+        router.push(res.data!.next);
+      } else {
+        setError(res.error);
         toast.error(res.error);
-        router.push("/onboarding/tema");
       }
     });
   }
@@ -118,7 +119,7 @@ export function TemaPicker({
         <button
           type="submit"
           disabled={pending || !picked}
-          className="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-8 py-3 text-sm font-medium text-white shadow-[0_6px_20px_-6px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
         >
           {pending && (
             <span

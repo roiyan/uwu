@@ -21,15 +21,9 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  // Fire-and-forget: navigate optimistically on the assumption the save
-  // succeeds (it almost always does). If it doesn't, we bounce back with
-  // an error toast. The next page re-fetches from DB on mount, so as long
-  // as the save commits before the user submits the next step we're fine.
-  // Exception: first-ever submit creates the event — the next page's
-  // getCurrentEventForUser would race. We handle that by awaiting when
-  // the existing event doesn't exist yet. The form doesn't know that
-  // locally, so we rely on the server action being fast (~300ms with
-  // fast session auth) for first-time users.
+  // Await the save — the first-ever submit creates the event and
+  // subsequent pages (jadwal loader) redirect back if no event exists.
+  // Fast session auth keeps this ~300-500ms on a warm Lambda.
   function handleSubmit(form: FormData) {
     setError(null);
     toast.success("Tersimpan");
@@ -106,7 +100,7 @@ export function MempelaiForm({ defaults }: { defaults: Defaults }) {
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-8 py-3 text-sm font-medium text-white shadow-[0_6px_20px_-6px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
         >
           {pending && (
             <span
