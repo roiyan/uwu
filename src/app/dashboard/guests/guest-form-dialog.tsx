@@ -59,6 +59,15 @@ export function GuestFormDialog({
         action={formAction}
         className="relative w-full max-w-lg rounded-2xl bg-surface-card p-6 shadow-ghost-lg"
       >
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={pending}
+          aria-label="Tutup"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-ink-hint transition-colors hover:bg-surface-muted hover:text-ink disabled:opacity-40"
+        >
+          ✕
+        </button>
         <h2 className="font-display text-xl text-ink">
           {isEdit ? "Edit Tamu" : "Tambah Tamu"}
         </h2>

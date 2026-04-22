@@ -2,20 +2,14 @@ import Link from "next/link";
 
 export function PublicFooter() {
   return (
-    <footer className="border-t border-[color:var(--border-ghost)] bg-surface-card">
+    <footer className="border-t border-[color:var(--dark-border)] bg-[#0A0A0F] text-[color:var(--color-dark-text-secondary)]">
       <div className="mx-auto grid max-w-6xl gap-10 px-6 py-12 md:grid-cols-4">
         <div>
-          <Link
-            href="/"
-            className="font-logo text-2xl bg-gradient-to-r from-brand-blue via-brand-lavender to-brand-pink bg-clip-text text-transparent"
-          >
+          <Link href="/" className="font-logo text-2xl text-gradient">
             uwu
           </Link>
-          <p className="mt-3 text-sm text-ink-muted">
-            A Love Story, Beautifully Told.
-          </p>
+          <p className="mt-3 text-sm">A Love Story, Beautifully Told.</p>
         </div>
-
         <FooterCol
           title="Produk"
           links={[
@@ -25,28 +19,43 @@ export function PublicFooter() {
           ]}
         />
         <FooterCol
-          title="Akun"
+          title="Perusahaan"
           links={[
-            { label: "Masuk", href: "/login" },
-            { label: "Daftar Gratis", href: "/register" },
+            { label: "Tentang", href: "#", disabled: true },
+            { label: "Bantuan", href: "#", disabled: true },
           ]}
         />
         <FooterCol
-          title="Bantuan"
+          title="Legal"
           links={[
-            { label: "FAQ", href: "#", disabled: true },
-            { label: "Kontak", href: "#", disabled: true },
+            { label: "Ketentuan Layanan", href: "/terms" },
+            { label: "Privasi", href: "/terms" },
           ]}
         />
       </div>
 
-      <div className="border-t border-[color:var(--border-ghost)] px-6 py-6">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 text-xs text-ink-hint">
-          <p>© 2026 uwu Wedding Platform</p>
-          <div className="flex gap-2 text-gold">
-            <span className="h-px w-10 bg-current" />
-            <span>♡</span>
-            <span className="h-px w-10 bg-current" />
+      <div className="border-t border-[color:var(--dark-border)] px-6 py-6">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 text-xs">
+          <p>© 2026 uwu Wedding Platform · A Love Story, Beautifully Told.</p>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-white"
+              aria-label="Instagram"
+            >
+              Instagram ↗
+            </a>
+            <a
+              href="https://youtube.com"
+              target="_blank"
+              rel="noreferrer"
+              className="transition-colors hover:text-white"
+              aria-label="YouTube"
+            >
+              YouTube ↗
+            </a>
           </div>
         </div>
       </div>
@@ -63,18 +72,18 @@ function FooterCol({
 }) {
   return (
     <div>
-      <p className="text-xs font-medium uppercase tracking-wide text-ink-hint">
+      <p className="text-xs font-medium uppercase tracking-wide text-[color:var(--color-dark-text-muted)]">
         {title}
       </p>
       <ul className="mt-3 space-y-2 text-sm">
         {links.map((l) =>
           l.disabled ? (
-            <li key={l.label} className="text-ink-hint">
+            <li key={l.label} className="text-[color:var(--color-dark-text-muted)]">
               {l.label}
             </li>
           ) : (
             <li key={l.label}>
-              <Link href={l.href} className="text-ink-muted hover:text-navy">
+              <Link href={l.href} className="transition-colors hover:text-white">
                 {l.label}
               </Link>
             </li>

@@ -15,19 +15,25 @@ export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) 
   const pathname = usePathname();
 
   return (
-    <aside className="hidden w-[260px] flex-col border-r border-[color:var(--border-ghost)] bg-surface-card px-5 py-6 lg:flex">
+    <aside
+      className="hidden w-[260px] flex-col px-5 py-6 lg:flex"
+      style={{
+        background: "linear-gradient(180deg, #1E3A5F 0%, #142840 100%)",
+        color: "#F5F5F7",
+      }}
+    >
       <Link
         href="/dashboard"
-        className="font-logo text-3xl bg-gradient-to-r from-brand-blue via-brand-lavender to-brand-pink bg-clip-text text-transparent"
+        className="font-logo text-3xl text-gradient"
       >
         uwu
       </Link>
 
-      <div className="mt-1 text-xs text-ink-muted">
+      <div className="mt-1 text-xs text-white/60">
         {coupleLabel ?? "Belum ada acara"}
         {themeLabel && (
           <>
-            {" "}• <span className="text-ink">{themeLabel}</span>
+            {" "}• <span className="text-white/85">{themeLabel}</span>
           </>
         )}
       </div>
@@ -41,10 +47,10 @@ export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) 
           const base =
             "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors";
           const stateClass = item.disabled
-            ? "cursor-not-allowed text-ink-hint"
+            ? "cursor-not-allowed text-white/35"
             : active
-              ? "bg-navy-50 text-navy font-medium"
-              : "text-ink hover:bg-surface-muted";
+              ? "bg-white/15 text-white font-medium"
+              : "text-white/80 hover:bg-white/10 hover:text-white";
 
           const inner = (
             <>
@@ -53,7 +59,7 @@ export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) 
                 <span>{item.label}</span>
               </span>
               {item.badge && (
-                <span className="rounded-full bg-gold-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-gold-dark">
+                <span className="rounded-full bg-[color:var(--color-gold)]/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[color:var(--color-gold-light)]">
                   {item.badge}
                 </span>
               )}
@@ -72,14 +78,16 @@ export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) 
         })}
       </nav>
 
-      <div className="mt-6 space-y-2 border-t border-[color:var(--border-ghost)] pt-4">
+      <div className="mt-6 space-y-2 border-t border-white/15 pt-4">
         <Link
           href={previewHref ?? "#"}
           target={previewHref ? "_blank" : undefined}
           rel={previewHref ? "noreferrer" : undefined}
           aria-disabled={!previewHref}
-          className={`block w-full rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-center text-sm font-medium ${
-            previewHref ? "text-navy hover:bg-surface-muted" : "text-ink-hint"
+          className={`block w-full rounded-full border px-4 py-2 text-center text-sm font-medium transition-colors ${
+            previewHref
+              ? "border-white/30 text-white hover:bg-white/10"
+              : "cursor-not-allowed border-white/10 text-white/40"
           }`}
         >
           👁 Pratinjau Situs
@@ -87,7 +95,7 @@ export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) 
         <form action={signOutAction}>
           <button
             type="submit"
-            className="w-full rounded-full px-4 py-2 text-center text-sm text-ink-muted hover:text-navy"
+            className="w-full rounded-full px-4 py-2 text-center text-sm text-white/60 transition-colors hover:text-white"
           >
             Logout
           </button>

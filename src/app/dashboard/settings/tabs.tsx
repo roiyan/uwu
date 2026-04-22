@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useActionState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { updateProfileAction } from "@/lib/actions/profile";
 import {
@@ -8,6 +8,7 @@ import {
   unpublishEventAction,
   updateEventSettingsAction,
 } from "@/lib/actions/event";
+import { useToast } from "@/components/shared/Toast";
 
 type Tab = "akun" | "acara" | "budaya";
 
@@ -71,6 +72,11 @@ function AkunTab({
   profile: { email: string; fullName: string; phone: string };
 }) {
   const [state, formAction, pending] = useActionState(updateProfileAction, null);
+  const toast = useToast();
+  useEffect(() => {
+    if (state?.ok) toast.success("Profil diperbarui");
+    else if (state && !state.ok) toast.error(state.error);
+  }, [state, toast]);
 
   return (
     <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm space-y-4">
@@ -141,6 +147,11 @@ function AcaraTab({
   const bound = updateEventSettingsAction.bind(null, eventId);
   const [state, formAction, pending] = useActionState(bound, null);
   const [publishPending, startPublishTransition] = useTransition();
+  const toast = useToast();
+  useEffect(() => {
+    if (state?.ok) toast.success("Detail acara tersimpan");
+    else if (state && !state.ok) toast.error(state.error);
+  }, [state, toast]);
 
   return (
     <div className="space-y-6">
@@ -270,7 +281,14 @@ function BudayaTab({
 }) {
   const bound = updateEventSettingsAction.bind(null, eventId);
   const [state, formAction, pending] = useActionState(bound, null);
+  const toast = useToast();
+  useEffect(() => {
+    if (state?.ok) toast.success("Preferensi budaya tersimpan");
+    else if (state && !state.ok) toast.error(state.error);
+  }, [state, toast]);
 
+  // M-04 — landing page promises three tones; expose the "santai" flavor
+  // via the existing `custom` enum with a friendlier label.
   const options: { id: "umum" | "islami" | "custom"; label: string; description: string }[] = [
     {
       id: "umum",
@@ -285,8 +303,9 @@ function BudayaTab({
     },
     {
       id: "custom",
-      label: "Kustom",
-      description: "Saya akan menentukan sendiri tone dan isi undangan.",
+      label: "Santai & Hangat",
+      description:
+        "Nada personal dan akrab — cocok untuk undangan ke teman dekat dan keluarga.",
     },
   ];
 
