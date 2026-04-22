@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { and, asc, desc, eq, isNull, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -9,7 +10,12 @@ import {
   themes,
 } from "@/lib/db/schema";
 
-export async function getCurrentEventForUser(userId: string) {
+// React cache() dedupes calls with the same args within a single server render.
+// The dashboard layout + its child page both call these — without dedup we'd
+// issue the same query twice per navigation.
+export const getCurrentEventForUser = cache(async function getCurrentEventForUser(
+  userId: string,
+) {
   const [row] = await db
     .select({ event: events, theme: themes })
     .from(events)
@@ -27,9 +33,9 @@ export async function getCurrentEventForUser(userId: string) {
     .orderBy(desc(events.createdAt))
     .limit(1);
   return row ?? null;
-}
+});
 
-export async function getEventBundle(eventId: string) {
+export const getEventBundle = cache(async function getEventBundle(eventId: string) {
   const [eventRow] = await db
     .select({ event: events, theme: themes })
     .from(events)
@@ -38,42 +44,46 @@ export async function getEventBundle(eventId: string) {
     .limit(1);
   if (!eventRow) return null;
 
-  const [couple] = await db
-    .select()
-    .from(couples)
-    .where(eq(couples.eventId, eventId))
-    .limit(1);
-
-  const schedules = await db
-    .select()
-    .from(eventSchedules)
-    .where(eq(eventSchedules.eventId, eventId))
-    .orderBy(asc(eventSchedules.sortOrder), asc(eventSchedules.eventDate));
-
-  const themeConfig = eventRow.event.themeId
-    ? await db
-        .select()
-        .from(eventThemeConfigs)
-        .where(
-          and(
-            eq(eventThemeConfigs.eventId, eventId),
-            eq(eventThemeConfigs.themeId, eventRow.event.themeId),
-          ),
-        )
-        .limit(1)
-        .then((rows) => rows[0] ?? null)
-    : null;
+  // Fan out the three dependent reads in parallel — each table is independent.
+  const [coupleRow, schedules, themeConfig] = await Promise.all([
+    db
+      .select()
+      .from(couples)
+      .where(eq(couples.eventId, eventId))
+      .limit(1)
+      .then((r) => r[0] ?? null),
+    db
+      .select()
+      .from(eventSchedules)
+      .where(eq(eventSchedules.eventId, eventId))
+      .orderBy(asc(eventSchedules.sortOrder), asc(eventSchedules.eventDate)),
+    eventRow.event.themeId
+      ? db
+          .select()
+          .from(eventThemeConfigs)
+          .where(
+            and(
+              eq(eventThemeConfigs.eventId, eventId),
+              eq(eventThemeConfigs.themeId, eventRow.event.themeId),
+            ),
+          )
+          .limit(1)
+          .then((r) => r[0] ?? null)
+      : Promise.resolve(null),
+  ]);
 
   return {
     event: eventRow.event,
     theme: eventRow.theme,
-    couple: couple ?? null,
+    couple: coupleRow,
     schedules,
     themeConfig,
   };
-}
+});
 
-export async function getPublishedEventBySlug(slug: string) {
+export const getPublishedEventBySlug = cache(async function getPublishedEventBySlug(
+  slug: string,
+) {
   const [row] = await db
     .select({ event: events, theme: themes })
     .from(events)
@@ -88,29 +98,32 @@ export async function getPublishedEventBySlug(slug: string) {
     .limit(1);
   if (!row) return null;
 
-  const [couple] = await db
-    .select()
-    .from(couples)
-    .where(eq(couples.eventId, row.event.id))
-    .limit(1);
-  const schedules = await db
-    .select()
-    .from(eventSchedules)
-    .where(eq(eventSchedules.eventId, row.event.id))
-    .orderBy(asc(eventSchedules.sortOrder), asc(eventSchedules.eventDate));
+  const [couple, schedules] = await Promise.all([
+    db
+      .select()
+      .from(couples)
+      .where(eq(couples.eventId, row.event.id))
+      .limit(1)
+      .then((r) => r[0] ?? null),
+    db
+      .select()
+      .from(eventSchedules)
+      .where(eq(eventSchedules.eventId, row.event.id))
+      .orderBy(asc(eventSchedules.sortOrder), asc(eventSchedules.eventDate)),
+  ]);
 
   return {
     event: row.event,
     theme: row.theme,
-    couple: couple ?? null,
+    couple,
     schedules,
   };
-}
+});
 
-export async function listThemes() {
+export const listThemes = cache(async function listThemes() {
   return db
     .select()
     .from(themes)
     .where(eq(themes.isActive, true))
     .orderBy(asc(themes.tier), asc(themes.name));
-}
+});

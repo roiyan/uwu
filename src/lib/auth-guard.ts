@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { createClient } from "@/lib/supabase/server";
@@ -10,18 +11,41 @@ export type MemberRole = "viewer" | "editor" | "admin";
 export type EffectiveRole = MemberRole | "owner";
 
 // Page-level auth: revalidates the JWT with Supabase Auth (slow but fresh).
-export async function getAuthedUser() {
+// cache() dedupes across layout + page within a single render.
+export const getAuthedUser = cache(async function getAuthedUser() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return user;
-}
+});
 
 export async function requireAuthedUser() {
   const user = await getAuthedUser();
   if (!user) throw new Error("Tidak ter-autentikasi");
   return user;
+}
+
+// Emit a timing log whenever a Server Action takes longer than `slowMs`
+// (and always in dev). Use inside actions that don't go through withAuth.
+export async function timed<T>(
+  label: string,
+  fn: () => Promise<T>,
+  slowMs = 500,
+): Promise<T> {
+  const t = Date.now();
+  try {
+    const result = await fn();
+    const took = Date.now() - t;
+    if (process.env.NODE_ENV !== "production" || took > slowMs) {
+      console.log(`[action ${label}] ok ${took}ms`);
+    }
+    return result;
+  } catch (err) {
+    const took = Date.now() - t;
+    console.error(`[action ${label}] err ${took}ms`, err);
+    throw err;
+  }
 }
 
 // Action-level auth: middleware already refreshed the session on every
