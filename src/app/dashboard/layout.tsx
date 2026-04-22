@@ -57,14 +57,19 @@ async function SidebarWithData({ userId }: { userId: string }) {
 
 function SidebarSkeleton() {
   return (
-    <aside className="hidden w-[260px] flex-col border-r border-[color:var(--border-ghost)] bg-surface-card px-5 py-6 lg:flex">
-      <div className="h-9 w-20 animate-pulse rounded bg-surface-muted" />
-      <div className="mt-2 h-3 w-40 animate-pulse rounded bg-surface-muted" />
+    <aside
+      className="hidden w-[260px] flex-col px-5 py-6 lg:flex"
+      style={{
+        background: "linear-gradient(180deg, #1E3A5F 0%, #142840 100%)",
+      }}
+    >
+      <div className="h-9 w-20 animate-pulse rounded bg-white/10" />
+      <div className="mt-2 h-3 w-40 animate-pulse rounded bg-white/10" />
       <div className="mt-8 flex-1 space-y-2">
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="h-9 w-full animate-pulse rounded-lg bg-surface-muted/60"
+            className="h-9 w-full animate-pulse rounded-lg bg-white/5"
           />
         ))}
       </div>

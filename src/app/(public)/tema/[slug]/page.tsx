@@ -4,6 +4,9 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { themes } from "@/lib/db/schema";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
+import { ThemePreviewCard } from "@/components/public/ThemePreviewCard";
+import { getAuthedUser } from "@/lib/auth-guard";
+import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 
 export const revalidate = 3600;
 
@@ -64,15 +67,50 @@ export default async function TemaDetail({
     .limit(1);
   if (!t || !t.isActive) notFound();
 
+  // M-06 fix: if the viewer is logged in and has an event set up, show a
+  // preview card personalised with their own couple. Anonymous viewers see
+  // the generic demo names.
+  let brideLabel = "Anisa";
+  let groomLabel = "Rizky";
+  let dateLabel = "Sabtu, 15 November 2026";
+  try {
+    const user = await getAuthedUser();
+    if (user) {
+      const current = await getCurrentEventForUser(user.id);
+      if (current) {
+        const bundle = await getEventBundle(current.event.id);
+        if (bundle?.couple) {
+          brideLabel =
+            bundle.couple.brideNickname ?? bundle.couple.brideName.split(" ")[0];
+          groomLabel =
+            bundle.couple.groomNickname ?? bundle.couple.groomName.split(" ")[0];
+        }
+        if (bundle?.schedules[0]) {
+          const d = bundle.schedules[0].eventDate;
+          const [y, m, dy] = d.split("-").map((x) => parseInt(x, 10));
+          dateLabel = new Date(Date.UTC(y, m - 1, dy)).toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+            timeZone: "UTC",
+          });
+        }
+      }
+    }
+  } catch {
+    // Anonymous viewer path — keep the demo couple.
+  }
+
   const palette = extractPalette(t.config);
   const sections = extractSections(t.config);
 
   return (
-    <main className="px-6 pb-20 pt-10">
+    <main className="px-6 pb-24 pt-10">
       <div className="mx-auto max-w-5xl">
         <Link
           href="/tema"
-          className="text-sm text-ink-muted hover:text-navy"
+          className="text-sm text-[color:var(--color-dark-text-secondary)] hover:text-white"
         >
           ← Semua tema
         </Link>
@@ -86,27 +124,31 @@ export default async function TemaDetail({
               >
                 {TIER_LABEL[t.tier] ?? t.tier}
               </span>
-              <h1 className="mt-4 font-display text-4xl text-navy md:text-5xl">
+              <h1 className="mt-4 font-display text-4xl text-white md:text-5xl">
                 {t.name}
               </h1>
-              <p className="mt-3 text-ink-muted">{t.description}</p>
+              <p className="mt-3 text-[color:var(--color-dark-text-secondary)]">
+                {t.description}
+              </p>
 
               <section className="mt-8">
-                <h2 className="text-xs uppercase tracking-wide text-ink-hint">
+                <h2 className="text-xs uppercase tracking-wide text-[color:var(--color-dark-text-muted)]">
                   Palet Warna
                 </h2>
                 <div className="mt-3 flex flex-wrap gap-3">
                   {Object.entries(palette).map(([k, v]) => (
                     <div key={k} className="flex items-center gap-2">
                       <span
-                        className="h-8 w-8 rounded-full border border-white/60 shadow-ghost-sm"
+                        className="h-8 w-8 rounded-full border border-[color:var(--dark-border-hover)]"
                         style={{ background: v }}
                       />
                       <span className="text-xs">
-                        <span className="block font-medium capitalize text-ink">
+                        <span className="block font-medium capitalize text-white">
                           {k}
                         </span>
-                        <span className="block font-mono text-ink-hint">{v}</span>
+                        <span className="block font-mono text-[color:var(--color-dark-text-muted)]">
+                          {v}
+                        </span>
                       </span>
                     </div>
                   ))}
@@ -114,16 +156,16 @@ export default async function TemaDetail({
               </section>
 
               <section className="mt-8">
-                <h2 className="text-xs uppercase tracking-wide text-ink-hint">
+                <h2 className="text-xs uppercase tracking-wide text-[color:var(--color-dark-text-muted)]">
                   Bagian yang Tersedia
                 </h2>
                 <ul className="mt-3 grid grid-cols-2 gap-2 text-sm">
                   {sections.map((s) => (
                     <li
                       key={s}
-                      className="flex items-center gap-2 rounded-lg bg-surface-muted/60 px-3 py-2"
+                      className="flex items-center gap-2 rounded-lg border border-[color:var(--dark-border)] bg-[color:var(--color-dark-surface)] px-3 py-2 text-[color:var(--color-dark-text)]"
                     >
-                      <span className="text-gold-dark">♡</span>
+                      <span className="text-[color:var(--color-gold)]">♡</span>
                       <span>{SECTION_LABEL[s] ?? s}</span>
                     </li>
                   ))}
@@ -133,13 +175,13 @@ export default async function TemaDetail({
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <Link
                   href="/register"
-                  className="rounded-full bg-coral px-8 py-3 text-center text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+                  className="rounded-full bg-gradient-brand px-8 py-3 text-center text-sm font-medium text-white transition-transform hover:scale-105"
                 >
                   Gunakan Tema Ini
                 </Link>
                 <Link
                   href="/tema"
-                  className="rounded-full border border-[color:var(--border-medium)] px-6 py-3 text-center text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
+                  className="rounded-full border border-[color:var(--dark-border-hover)] px-6 py-3 text-center text-sm font-medium text-[color:var(--color-dark-text)] transition-colors hover:bg-[color:var(--color-dark-surface)]"
                 >
                   Lihat Tema Lain
                 </Link>
@@ -148,40 +190,12 @@ export default async function TemaDetail({
           </ScrollReveal>
 
           <ScrollReveal delay={0.1}>
-            <div
-              className="flex h-full min-h-[480px] flex-col items-center justify-center rounded-3xl p-10 text-center shadow-ghost-md"
-              style={{ background: palette.secondary }}
-            >
-              <p
-                className="text-xs uppercase tracking-[0.3em]"
-                style={{ color: palette.primary }}
-              >
-                The Wedding Of
-              </p>
-              <h3
-                className="mt-4 font-display text-4xl italic"
-                style={{ color: palette.primary }}
-              >
-                Anisa &amp; Rizky
-              </h3>
-              <p className="mt-4 text-sm" style={{ color: "#1A1A2E" }}>
-                Sabtu, 15 November 2026
-              </p>
-              <div
-                className="mt-8 flex items-center gap-3"
-                style={{ color: palette.accent }}
-              >
-                <span className="h-px w-14 bg-current" />
-                <span>♡</span>
-                <span className="h-px w-14 bg-current" />
-              </div>
-              <div
-                className="mt-8 flex h-20 w-20 items-center justify-center rounded-full text-3xl text-white shadow-ghost-md"
-                style={{ background: palette.primary }}
-              >
-                ♡
-              </div>
-            </div>
+            <ThemePreviewCard
+              palette={palette}
+              bride={brideLabel}
+              groom={groomLabel}
+              date={dateLabel}
+            />
           </ScrollReveal>
         </div>
       </div>

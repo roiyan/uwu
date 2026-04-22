@@ -120,7 +120,16 @@ export function CheckoutClient({
       </button>
 
       <p className="mt-3 text-center text-[11px] text-ink-hint">
-        Dengan melanjutkan Anda menyetujui ketentuan layanan uwu.
+        Dengan melanjutkan Anda menyetujui{" "}
+        <a
+          href="/terms"
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-dotted underline-offset-2 hover:text-navy"
+        >
+          ketentuan layanan
+        </a>{" "}
+        uwu.
       </p>
     </div>
   );

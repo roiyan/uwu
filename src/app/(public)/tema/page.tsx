@@ -29,19 +29,19 @@ export default async function TemaCatalog() {
   const themes = await listThemes();
 
   return (
-    <main className="px-6 pb-20 pt-14">
+    <main className="px-6 pb-24 pt-14">
       <div className="mx-auto max-w-6xl">
         <ScrollReveal>
           <div className="text-center">
-            <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">
+            <p className="text-xs uppercase tracking-[0.25em] text-[color:var(--color-brand-blue)]">
               Tema
             </p>
-            <h1 className="mt-3 font-display text-4xl text-navy md:text-5xl">
-              Temukan tema yang <span className="italic">mencerminkan Anda</span>
+            <h1 className="mt-3 font-display text-4xl text-white md:text-5xl">
+              Temukan tema yang <span className="italic text-gradient">mencerminkan Anda</span>
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-ink-muted md:text-base">
-              Setiap tema dirancang bersama desainer profesional. Semua
-              responsif, teroptimasi untuk 4G, dan dapat disesuaikan warnanya.
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-[color:var(--color-dark-text-secondary)] md:text-base">
+              Setiap tema dirancang bersama desainer profesional. Responsif,
+              teroptimasi untuk 4G, dan dapat disesuaikan warnanya.
             </p>
           </div>
         </ScrollReveal>
@@ -53,7 +53,7 @@ export default async function TemaCatalog() {
               <Link
                 key={t.id}
                 href={`/tema/${t.slug}`}
-                className="group flex flex-col overflow-hidden rounded-2xl bg-surface-card shadow-ghost-sm transition-transform hover:-translate-y-0.5 hover:shadow-ghost-md"
+                className="group flex flex-col overflow-hidden rounded-2xl border border-[color:var(--dark-border)] bg-[color:var(--color-dark-surface)] transition-all hover:-translate-y-1 hover:border-[color:var(--color-gold)]"
               >
                 <div
                   className="flex h-48 items-center justify-center"
@@ -68,7 +68,7 @@ export default async function TemaCatalog() {
                 </div>
                 <div className="flex-1 space-y-2 p-5">
                   <div className="flex items-center justify-between">
-                    <h2 className="font-display text-xl text-ink">{t.name}</h2>
+                    <h2 className="font-display text-xl text-white">{t.name}</h2>
                     <span
                       className="rounded-full px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
                       style={{ background: palette.accent, color: "#1A1A2E" }}
@@ -76,12 +76,14 @@ export default async function TemaCatalog() {
                       {TIER_LABEL[t.tier] ?? t.tier}
                     </span>
                   </div>
-                  <p className="text-sm text-ink-muted">{t.description}</p>
+                  <p className="text-sm text-[color:var(--color-dark-text-secondary)]">
+                    {t.description}
+                  </p>
                   <div className="flex gap-1.5 pt-2">
                     {Object.values(palette).map((c) => (
                       <span
                         key={c}
-                        className="h-4 w-4 rounded-full border border-white/50"
+                        className="h-4 w-4 rounded-full border border-[color:var(--dark-border-hover)]"
                         style={{ background: c }}
                       />
                     ))}
@@ -92,19 +94,19 @@ export default async function TemaCatalog() {
           })}
         </div>
 
-        <div className="mt-14 rounded-2xl bg-surface-card p-8 text-center shadow-ghost-sm">
-          <p className="text-xs uppercase tracking-[0.25em] text-gold-dark">
+        <div className="mt-14 rounded-2xl border border-[color:var(--dark-border)] bg-[color:var(--color-dark-surface)] p-8 text-center">
+          <p className="text-xs uppercase tracking-[0.25em] text-[color:var(--color-gold)]">
             Butuh yang lebih unik?
           </p>
-          <h2 className="mt-3 font-display text-2xl text-ink">
+          <h2 className="mt-3 font-display text-2xl text-white">
             Paket Ultimate menyediakan tema eksklusif
           </h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-ink-muted">
+          <p className="mx-auto mt-2 max-w-lg text-sm text-[color:var(--color-dark-text-secondary)]">
             Dedicated designer akan membuat tema khusus untuk acara Anda.
           </p>
           <Link
             href="/harga"
-            className="mt-5 inline-block rounded-full bg-navy px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-navy-dark"
+            className="mt-5 inline-block rounded-full bg-gradient-brand px-6 py-2.5 text-sm font-medium text-white transition-transform hover:scale-105"
           >
             Lihat Paket Ultimate
           </Link>

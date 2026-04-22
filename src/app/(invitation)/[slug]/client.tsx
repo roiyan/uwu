@@ -51,6 +51,31 @@ function formatDate(iso: string) {
   });
 }
 
+// C-02: format "08:00:00" + "Asia/Jakarta" into the friendlier "08.00 WIB".
+// Pg returns HH:MM:SS from the `time` column; we only want HH.MM + zone
+// abbreviation. Asia/Jakarta=WIB, /Makassar=WITA, /Jayapura=WIT.
+const TZ_ABBR: Record<string, string> = {
+  "Asia/Jakarta": "WIB",
+  "Asia/Makassar": "WITA",
+  "Asia/Jayapura": "WIT",
+};
+function formatTime(raw: string | null, timezone: string): string {
+  if (!raw) return "";
+  const [h, m] = raw.split(":");
+  const zone = TZ_ABBR[timezone] ?? timezone;
+  return `${h.padStart(2, "0")}.${(m ?? "00").padStart(2, "0")} ${zone}`;
+}
+function formatTimeRange(
+  start: string | null,
+  end: string | null,
+  timezone: string,
+): string | null {
+  if (!start && !end) return null;
+  const s = start ? formatTime(start, timezone) : "—";
+  const e = end ? formatTime(end, timezone).replace(/ \S+$/, "") : null;
+  return e ? `${s.replace(/ \S+$/, "")} – ${e} ${TZ_ABBR[timezone] ?? timezone}` : s;
+}
+
 export function InvitationClient(props: {
   event: { id: string; title: string; slug: string; musicUrl: string | null };
   palette: Palette;
@@ -262,12 +287,16 @@ function HeroSection({
   guestName: string;
   firstSchedule: Schedule | undefined;
 }) {
+  // C-03: when the couple has uploaded a cover photo, overlay a dark
+  // top-down gradient so the serif title + guest name stay readable even
+  // over bright/busy images. Text contrast stays ≥ 4.5:1 (WCAG AA).
+  const hasCover = Boolean(couple?.coverPhotoUrl);
   return (
     <section
-      className="flex min-h-[90vh] flex-col items-center justify-center px-6 py-16 text-center"
+      className="relative flex min-h-[90vh] flex-col items-center justify-center overflow-hidden px-6 py-16 text-center"
       style={{
-        backgroundImage: couple?.coverPhotoUrl
-          ? `linear-gradient(180deg, rgba(250,246,241,0.3) 0%, ${palette.secondary} 100%), url(${couple.coverPhotoUrl})`
+        backgroundImage: hasCover
+          ? `linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 40%, ${palette.secondary} 100%), url(${couple!.coverPhotoUrl})`
           : undefined,
         backgroundSize: "cover",
         backgroundPosition: "center",
@@ -452,9 +481,9 @@ function SchedulesSection({
               <p className="mt-2 font-display text-xl">
                 {formatDate(s.eventDate)}
               </p>
-              {(s.startTime || s.endTime) && (
+              {formatTimeRange(s.startTime, s.endTime, s.timezone) && (
                 <p className="mt-1 text-sm">
-                  {s.startTime ?? "—"} – {s.endTime ?? "—"} {s.timezone}
+                  {formatTimeRange(s.startTime, s.endTime, s.timezone)}
                 </p>
               )}
               {s.venueName && <p className="mt-3 font-medium">{s.venueName}</p>}
