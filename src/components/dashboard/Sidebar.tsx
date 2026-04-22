@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { dashboardNav } from "@/lib/nav/dashboard-items";
 import { signOutAction } from "@/lib/actions/auth";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 type SidebarProps = {
   coupleLabel?: string | null;
@@ -22,12 +23,7 @@ export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) 
         color: "#F5F5F7",
       }}
     >
-      <Link
-        href="/dashboard"
-        className="font-logo text-3xl text-gradient"
-      >
-        uwu
-      </Link>
+      <BrandLogo href="/dashboard" size="lg" />
 
       <div className="mt-1 text-xs text-white/60">
         {coupleLabel ?? "Belum ada acara"}
@@ -49,7 +45,7 @@ export function Sidebar({ coupleLabel, themeLabel, previewHref }: SidebarProps) 
           const stateClass = item.disabled
             ? "cursor-not-allowed text-white/35"
             : active
-              ? "bg-white/15 text-white font-medium"
+              ? "bg-[color:var(--color-brand-blue)]/25 text-white font-medium shadow-[inset_3px_0_0_0_var(--color-brand-blue)]"
               : "text-white/80 hover:bg-white/10 hover:text-white";
 
           const inner = (

@@ -1,14 +1,14 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/shared/BrandLogo";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <main className="theme-dark relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-12">
       <div className="hero-mesh" aria-hidden />
 
-      <Link href="/" className="relative mb-8 font-logo text-4xl text-gradient">
-        uwu
-      </Link>
+      <div className="relative mb-8">
+        <BrandLogo href="/" size="xl" />
+      </div>
 
       <div
         className="relative w-full max-w-md rounded-2xl p-[1px]"
