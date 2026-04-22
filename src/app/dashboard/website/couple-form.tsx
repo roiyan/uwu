@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { updateCoupleAction } from "@/lib/actions/event";
+import { PhotoUpload } from "@/components/shared/PhotoUpload";
 
 type Defaults = {
   brideName: string;
@@ -34,43 +35,111 @@ export function CoupleForm({
   const boundAction = updateCoupleAction.bind(null, eventId);
   const [state, formAction, pending] = useActionState(boundAction, null);
 
+  const [bridePhotoUrl, setBridePhotoUrl] = useState(defaults.bridePhotoUrl);
+  const [groomPhotoUrl, setGroomPhotoUrl] = useState(defaults.groomPhotoUrl);
+  const [coverPhotoUrl, setCoverPhotoUrl] = useState(defaults.coverPhotoUrl);
+
   return (
     <form action={formAction} className="space-y-6">
       <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
         <h2 className="font-display text-xl text-ink">Mempelai Wanita</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Nama lengkap" name="brideName" required defaultValue={defaults.brideName} />
-          <Field label="Panggilan" name="brideNickname" defaultValue={defaults.brideNickname} />
-          <Field label="Nama ayah" name="brideFatherName" defaultValue={defaults.brideFatherName} />
-          <Field label="Nama ibu" name="brideMotherName" defaultValue={defaults.brideMotherName} />
-          <Field label="Instagram" name="brideInstagram" defaultValue={defaults.brideInstagram} placeholder="@username" />
-          <Field label="URL foto" name="bridePhotoUrl" type="url" defaultValue={defaults.bridePhotoUrl} placeholder="https://..." />
+          <Field
+            label="Nama lengkap"
+            name="brideName"
+            required
+            defaultValue={defaults.brideName}
+          />
+          <Field
+            label="Panggilan"
+            name="brideNickname"
+            defaultValue={defaults.brideNickname}
+          />
+          <Field
+            label="Nama ayah"
+            name="brideFatherName"
+            defaultValue={defaults.brideFatherName}
+          />
+          <Field
+            label="Nama ibu"
+            name="brideMotherName"
+            defaultValue={defaults.brideMotherName}
+          />
+          <Field
+            label="Instagram"
+            name="brideInstagram"
+            defaultValue={defaults.brideInstagram}
+            placeholder="@username"
+          />
+        </div>
+        <div className="mt-4">
+          <PhotoUpload
+            eventId={eventId}
+            slot="bride-photo"
+            label="Foto mempelai wanita"
+            value={bridePhotoUrl}
+            onChange={setBridePhotoUrl}
+          />
+          <input type="hidden" name="bridePhotoUrl" value={bridePhotoUrl} />
         </div>
       </section>
 
       <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
         <h2 className="font-display text-xl text-ink">Mempelai Pria</h2>
         <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <Field label="Nama lengkap" name="groomName" required defaultValue={defaults.groomName} />
-          <Field label="Panggilan" name="groomNickname" defaultValue={defaults.groomNickname} />
-          <Field label="Nama ayah" name="groomFatherName" defaultValue={defaults.groomFatherName} />
-          <Field label="Nama ibu" name="groomMotherName" defaultValue={defaults.groomMotherName} />
-          <Field label="Instagram" name="groomInstagram" defaultValue={defaults.groomInstagram} placeholder="@username" />
-          <Field label="URL foto" name="groomPhotoUrl" type="url" defaultValue={defaults.groomPhotoUrl} placeholder="https://..." />
+          <Field
+            label="Nama lengkap"
+            name="groomName"
+            required
+            defaultValue={defaults.groomName}
+          />
+          <Field
+            label="Panggilan"
+            name="groomNickname"
+            defaultValue={defaults.groomNickname}
+          />
+          <Field
+            label="Nama ayah"
+            name="groomFatherName"
+            defaultValue={defaults.groomFatherName}
+          />
+          <Field
+            label="Nama ibu"
+            name="groomMotherName"
+            defaultValue={defaults.groomMotherName}
+          />
+          <Field
+            label="Instagram"
+            name="groomInstagram"
+            defaultValue={defaults.groomInstagram}
+            placeholder="@username"
+          />
+        </div>
+        <div className="mt-4">
+          <PhotoUpload
+            eventId={eventId}
+            slot="groom-photo"
+            label="Foto mempelai pria"
+            value={groomPhotoUrl}
+            onChange={setGroomPhotoUrl}
+          />
+          <input type="hidden" name="groomPhotoUrl" value={groomPhotoUrl} />
         </div>
       </section>
 
       <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
         <h2 className="font-display text-xl text-ink">Cerita &amp; Dekorasi</h2>
-        <div className="mt-4 space-y-4">
-          <Field
-            label="URL foto sampul"
-            name="coverPhotoUrl"
-            type="url"
-            defaultValue={defaults.coverPhotoUrl}
-            placeholder="https://..."
-            hint="Foto utama yang tampil di hero undangan."
+        <div className="mt-4 space-y-5">
+          <PhotoUpload
+            eventId={eventId}
+            slot="cover-photo"
+            label="Foto sampul (hero undangan)"
+            value={coverPhotoUrl}
+            onChange={setCoverPhotoUrl}
+            aspect="wide"
           />
+          <input type="hidden" name="coverPhotoUrl" value={coverPhotoUrl} />
+
           <label className="block">
             <span className="text-sm font-medium text-ink">Kutipan atau ayat</span>
             <textarea
