@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>uwu Wedding - Tamu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@300;400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-tint": "#914a3b",
+                        "inverse-primary": "#ffb4a4",
+                        "surface-container": "#f4ece7",
+                        "on-primary-fixed": "#3b0902",
+                        "tertiary-container": "#b69ece",
+                        "background": "#fff8f4",
+                        "on-surface-variant": "#54433f",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#4a5c7e",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#061b3a",
+                        "on-surface": "#1e1b18",
+                        "on-tertiary-container": "#47345d",
+                        "on-primary-fixed-variant": "#743326",
+                        "secondary": "#4d5e81",
+                        "surface-variant": "#e9e1dc",
+                        "surface": "#fff8f4",
+                        "surface-container-highest": "#e9e1dc",
+                        "secondary-fixed": "#d7e2ff",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#d9c1bc",
+                        "error-container": "#ffdad6",
+                        "outline": "#86736e",
+                        "inverse-on-surface": "#f7efea",
+                        "tertiary-fixed": "#efdbff",
+                        "surface-container-low": "#faf2ed",
+                        "inverse-surface": "#33302d",
+                        "surface-container-high": "#efe7e2",
+                        "primary": "#914a3b",
+                        "on-tertiary-fixed": "#251239",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#354768",
+                        "secondary-fixed-dim": "#b5c7ef",
+                        "on-tertiary-fixed-variant": "#523e68",
+                        "tertiary": "#6a5681",
+                        "primary-container": "#e8917e",
+                        "on-background": "#1e1b18",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#e0d9d4",
+                        "secondary-container": "#c2d5fd",
+                        "primary-fixed": "#ffdad3",
+                        "tertiary-fixed-dim": "#d6bdee",
+                        "surface-bright": "#fff8f4",
+                        "on-primary-container": "#672a1d"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    spacing: {},
+                    fontFamily: {
+                        "headline": ["Noto Serif", "serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
+                        "label": ["Plus Jakarta Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-20rem)] h-16 bg-transparent backdrop-blur-xl flex items-center justify-end px-12 z-40">
+<div class="flex items-center space-x-6">
+<button class="text-[#914a3b] hover:opacity-80 transition-opacity p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="text-[#914a3b] hover:opacity-80 transition-opacity p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="h-screen w-80 fixed left-0 top-0 flex flex-col bg-[#f5f0ed] z-50">
+<div class="flex flex-col h-full py-8 space-y-2">
+<!-- Brand -->
+<div class="px-8 pb-8">
+<h1 class="font-['Noto_Serif'] text-4xl font-light text-[#914a3b] lowercase">uwu</h1>
+<p class="text-sm text-on-surface-variant font-body mt-2">Anisa &amp; Rizky • Sakura Dreams</p>
+</div>
+<!-- Main Navigation -->
+<div class="flex-1 overflow-y-auto pt-4">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">home</span>
+                            Beranda
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">edit_note</span>
+                            Website Editor
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#914a3b] font-bold bg-[#ffffff]/50 rounded-l-full py-3 pl-8 ml-4 transition-all duration-300 scale-95 shadow-sm shadow-[#1e1b18]/5" href="#">
+<span class="material-symbols-outlined mr-4 text-primary" style="font-variation-settings: 'FILL' 1;">groups</span>
+                            Tamu
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">send</span>
+                            Kirim Undangan
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">analytics</span>
+                            Analytics
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">how_to_reg</span>
+                            Check-in
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">card_giftcard</span>
+                            Amplop &amp; Hadiah
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">settings</span>
+                            Pengaturan
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">inventory_2</span>
+                            Paket
+                        </a>
+</li>
+</ul>
+</div>
+<!-- Footer Navigation -->
+<div class="pt-4 border-t border-outline-variant/20">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">visibility</span>
+                            Pratinjau Situs
+                        </a>
+</li>
+<li>
+<a class="flex items-center text-[#1e1b18]/60 font-medium py-3 pl-12 hover:text-[#914a3b] hover:bg-[#ffffff]/30 transition-colors" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">logout</span>
+                            Logout
+                        </a>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="ml-80 pt-16 min-h-screen flex flex-col items-center justify-center p-8 bg-[#fff8f4]">
+<!-- Empty State Container -->
+<div class="max-w-2xl w-full text-center flex flex-col items-center justify-center space-y-12">
+<!-- Illustration Area -->
+<div class="relative w-64 h-64 mb-4 flex items-center justify-center">
+<!-- Decorative blurred background blob -->
+<div class="absolute inset-0 bg-tertiary-container/30 blur-3xl rounded-full transform -translate-y-4"></div>
+<!-- Main Illustration Icon (Placeholder for the soft line art) -->
+<div class="relative z-10 w-48 h-48 bg-surface-container-lowest rounded-full shadow-[0_20px_40px_-15px_rgba(30,27,24,0.05)] border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-6xl text-tertiary" style="font-variation-settings: 'wght' 200, 'FILL' 0;">list_alt_add</span>
+<!-- Decorative floating elements to mimic the "soft line art" request feel -->
+<span class="material-symbols-outlined absolute top-8 right-8 text-2xl text-primary-container" style="font-variation-settings: 'wght' 300, 'FILL' 0;">favorite</span>
+<span class="material-symbols-outlined absolute bottom-12 left-6 text-xl text-secondary" style="font-variation-settings: 'wght' 300, 'FILL' 0;">star</span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="space-y-4 max-w-lg">
+<h2 class="font-headline text-4xl font-medium tracking-tight text-on-surface">Belum Ada Tamu</h2>
+<p class="font-body text-lg text-on-surface-variant font-light">
+                    Mulai tambahkan daftar tamu pernikahan Anda.
+                </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+<!-- Primary CTA -->
+<button class="w-full sm:w-auto px-8 py-4 rounded-full bg-gradient-to-tr from-primary to-primary-container text-on-primary font-body font-medium shadow-[0_8px_24px_-8px_rgba(145,74,59,0.4)] hover:shadow-[0_12px_28px_-8px_rgba(145,74,59,0.5)] transition-all duration-300 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'wght' 500;">add</span>
+                    Tambah Tamu Pertama
+                </button>
+<!-- Secondary CTA -->
+<button class="w-full sm:w-auto px-8 py-4 rounded-full border border-outline-variant text-secondary font-body font-medium hover:bg-surface-container-high transition-colors duration-300 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'wght' 500;">upload</span>
+                    Impor dari CSV
+                </button>
+</div>
+</div>
+</main>
+</body></html>

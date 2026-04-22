@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UWU Theme Catalog Desktop</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8f9ff",
+                        "secondary-fixed": "#ffdcc6",
+                        "outline": "#777587",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "error-container": "#ffdad6",
+                        "primary": "#3525cd",
+                        "on-tertiary-fixed-variant": "#8c1520",
+                        "surface-variant": "#d3e4fe",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#693c19",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#464555",
+                        "on-tertiary-fixed": "#410006",
+                        "on-secondary-container": "#794925",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-secondary-fixed": "#301400",
+                        "tertiary-fixed": "#ffdad8",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#febb8e",
+                        "tertiary": "#8f1721",
+                        "surface-tint": "#4d44e3",
+                        "tertiary-container": "#b03136",
+                        "surface-container": "#e5eeff",
+                        "on-surface": "#0b1c30",
+                        "on-background": "#0b1c30",
+                        "surface-container-high": "#dce9ff",
+                        "inverse-surface": "#213145",
+                        "tertiary-fixed-dim": "#ffb3b0",
+                        "outline-variant": "#c7c4d8",
+                        "on-tertiary-container": "#ffd0ce",
+                        "inverse-primary": "#c3c0ff",
+                        "secondary-fixed-dim": "#fbb88b",
+                        "on-primary-fixed": "#0f0069",
+                        "primary-fixed": "#e2dfff",
+                        "primary-container": "#4f46e5",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "secondary": "#85532e",
+                        "on-tertiary": "#ffffff",
+                        "background": "#f8f9ff",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-primary-container": "#dad7ff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-low": "#eff4ff",
+                        "inverse-on-surface": "#eaf1ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"],
+                        "accent": ["Playfair Display"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.surface'); color: theme('colors.on-surface'); font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-accent { font-family: 'Playfair Display', serif; }
+        
+        /* Glassmorphism */
+        .glass { background: rgba(248, 249, 255, 0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .glass-card { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        
+        /* Gradients */
+        .primary-gradient { background: linear-gradient(135deg, theme('colors.primary'), theme('colors.primary-container')); }
+        .text-gradient { background: linear-gradient(135deg, theme('colors.primary'), theme('colors.primary-container')); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Ambient Shadows */
+        .ambient-shadow { box-shadow: 0 24px 48px -12px rgba(11, 28, 48, 0.06); }
+        .ambient-shadow-lg { box-shadow: 0 32px 64px -16px rgba(11, 28, 48, 0.08); }
+        .glow-primary { box-shadow: 0 8px 24px -8px rgba(53, 37, 205, 0.3); }
+        
+        /* No-Line Rule & Layering */
+        .no-border { border: none; }
+        .ghost-border { border: 1px solid theme('colors.outline-variant'); border-opacity: 0.2; }
+        .ghost-border-focus:focus-within { border-color: theme('colors.primary'); border-width: 2px; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: theme('colors.outline-variant'); border-radius: theme('borderRadius.full'); opacity: 0.5; }
+        ::-webkit-scrollbar-thumb:hover { background: theme('colors.outline'); }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col pt-24">
+<!-- TopAppBar Component -->
+<header class="fixed top-0 w-full z-50 bg-[#F8FAFF]/80 backdrop-blur-xl dark:bg-[#0B1C30]/80 shadow-[0_24px_48px_-12px_rgba(11,28,48,0.06)] transition-all duration-300">
+<div class="flex justify-between items-center px-6 py-4 max-w-[1440px] mx-auto">
+<!-- Leading Icon & Brand -->
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-indigo-50/50 dark:hover:bg-indigo-950/50 transition-colors text-slate-500 dark:text-slate-400 group">
+<span class="material-symbols-outlined group-hover:scale-95 duration-200 ease-out" data-icon="menu">menu</span>
+</button>
+<div class="text-2xl font-black italic tracking-tighter text-indigo-900 dark:text-white font-['Plus_Jakarta_Sans']">
+                    UWU
+                </div>
+</div>
+<!-- Trailing Avatar -->
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full overflow-hidden hover:scale-95 duration-200 ease-out shadow-sm border-2 border-transparent hover:border-indigo-100 transition-all">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="close up portrait of a young woman with natural makeup, soft lighting, professional headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtOuDlQit1z_E24bgNVxMNF7TxtUX0Xlhz2jXd-HaHp_l-1uOAYrD1pqjE7oNRwx70gY_NHXg69k4NyuJleM3la9xjbWFWa7eq30mBUPQBgOUs6LhrJHlXxemLepmax9mLxfXLGeZb6kL2GJPJh-_Bp7WlTHp1mKTXvk_oeYvfEEB_DRQean_L-BILN0CqqC5o1z2wvjqAM-x9NH0aiab9J-o9fHcIu6TP_jmJgF3VpAzDNTI1kDy0zjn5wpZXH_FC27hnjsJ4sA"/>
+</button>
+</div>
+</div>
+</header>
+<div class="flex-1 flex max-w-[1440px] mx-auto w-full">
+<!-- NavigationDrawer Component -->
+<aside class="hidden md:flex flex-col w-80 h-[calc(100vh-6rem)] sticky top-24 shrink-0 px-6 pb-8 bg-[#EFF4FF] dark:bg-[#0B1C30] rounded-r-3xl shadow-2xl shadow-indigo-900/5 tonal depth shift from surface to surface-container-low overflow-y-auto">
+<!-- Header: Profile -->
+<div class="flex items-center gap-4 mb-8 pt-6 left_align">
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0">
+<img alt="Curator" class="w-full h-full object-cover" data-alt="professional portrait of an elegant woman, soft studio lighting, editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdXu1Pu9hxympzMZIzQ-Gp5AncwyJuPwfN7Bu3CWwCZsxy8_ILyb3S09J1JePsTfEIGyeEbo0ubae3Xc1at5CJIQ6UEDhsUgwj4EiJm--UfHkcUeIqlwIM0taRgRX2oXVt4INT7ruQ7iBIMUenxpo34mNYCM4EpG6Y0cWxupl9R493elVsVA2lQv0YMlBle6PiZONq-sKnGgCLRoJqJ1lYwKpTaGw0SeZbqope42r0iiJWMdq9CuUF0qNZV82COxrzJC8-ZH6s8Q"/>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg text-indigo-900 dark:text-indigo-50">Lazuardi Rose</h3>
+<p class="text-sm font-body text-slate-500 dark:text-slate-400">Theme Catalog</p>
+<span class="text-xs font-semibold text-secondary px-2 py-0.5 bg-secondary-fixed rounded-full mt-1 inline-block">Premium Access</span>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2 font-['Plus_Jakarta_Sans'] font-medium">
+<!-- Catalog (Active) -->
+<a class="flex items-center gap-4 px-4 py-3 bg-white dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl shadow-sm hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="grid_view" data-weight="fill" style="font-variation-settings: 'FILL' 1;">grid_view</span>
+<span>Catalog</span>
+</a>
+<!-- Luxury Themes -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-indigo-900/20 transition-all rounded-xl hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="diamond">diamond</span>
+<span>Luxury Themes</span>
+</a>
+<!-- Editorial Series -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-indigo-900/20 transition-all rounded-xl hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="auto_stories">auto_stories</span>
+<span>Editorial Series</span>
+</a>
+<!-- Minimalist -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-indigo-900/20 transition-all rounded-xl hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="filter_hdr">filter_hdr</span>
+<span>Minimalist</span>
+</a>
+<!-- Cultural Heritage -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-indigo-900/20 transition-all rounded-xl hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="temple_hindu">temple_hindu</span>
+<span>Cultural Heritage</span>
+</a>
+<!-- Custom Studio -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-indigo-900/20 transition-all rounded-xl hover:translate-x-1 duration-200 group" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="palette">palette</span>
+<span>Custom Studio</span>
+</a>
+<!-- Saved -->
+<a class="flex items-center gap-4 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-indigo-900/20 transition-all rounded-xl hover:translate-x-1 duration-200 group mt-4" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="favorite">favorite</span>
+<span>Saved</span>
+</a>
+</nav>
+<!-- Filter Section Placeholder (Integrated into Sidebar as requested) -->
+<div class="mt-8 pt-8 border-t border-indigo-900/5">
+<h4 class="font-headline font-bold text-sm text-indigo-900 mb-4 uppercase tracking-wider">Filters</h4>
+<!-- Price Range -->
+<div class="mb-6">
+<label class="font-body text-xs text-slate-500 mb-2 block">Price Range</label>
+<input class="w-full accent-primary" max="100" min="0" type="range"/>
+<div class="flex justify-between text-xs text-slate-400 mt-1">
+<span>Free</span>
+<span>Premium</span>
+</div>
+</div>
+<!-- Style Tags -->
+<div>
+<label class="font-body text-xs text-slate-500 mb-3 block">Style Tags</label>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface text-xs rounded-full font-medium cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">Floral</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface text-xs rounded-full font-medium cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">Modern</span>
+<span class="px-3 py-1 bg-primary-fixed text-on-primary-fixed text-xs rounded-full font-medium cursor-pointer shadow-sm glow-primary">Rustic</span>
+<span class="px-3 py-1 bg-surface-container-highest text-on-surface text-xs rounded-full font-medium cursor-pointer hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors">Classic</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 px-8 py-6 max-w-7xl mx-auto w-full">
+<!-- Hero Section (Asymmetrical Editorial) -->
+<div class="mb-16 relative">
+<div class="flex flex-col md:flex-row justify-between items-end gap-8 relative z-10">
+<div class="max-w-2xl relative">
+<!-- Playfair Accent overlapping -->
+<span class="font-accent italic text-3xl md:text-5xl text-secondary opacity-80 absolute -top-10 -right-20 hidden md:block select-none pointer-events-none tracking-tight">The Modern Heirloom</span>
+<h1 class="font-headline text-5xl md:text-7xl font-bold text-on-surface tracking-tight leading-[1.1] text-gradient">
+                            Tema Cantik,<br/> Siap Pakai
+                        </h1>
+<p class="font-body text-lg text-on-surface-variant mt-6 max-w-lg leading-relaxed">
+                            Curated digital wedding invitations designed with an editorial eye. Find the perfect aesthetic for your special day.
+                        </p>
+</div>
+<!-- Search and Sort Actions -->
+<div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto mt-8 md:mt-0 items-end">
+<div class="relative w-full sm:w-64">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-lowest text-on-surface font-body text-sm rounded-xl py-3 pl-12 pr-4 ghost-border ghost-border-focus focus:outline-none transition-all placeholder:text-outline ambient-shadow" placeholder="Search themes..." type="text"/>
+</div>
+<div class="relative min-w-[160px]">
+<select class="w-full appearance-none bg-surface-container-lowest text-on-surface font-body text-sm rounded-xl py-3 pl-4 pr-10 ghost-border ghost-border-focus focus:outline-none transition-all ambient-shadow cursor-pointer">
+<option>Featured</option>
+<option>Newest</option>
+<option>Popular</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Themes Grid (Bento/Asymmetric Feel) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 gap-y-16">
+<!-- Card 1 -->
+<div class="group relative flex flex-col gap-4">
+<!-- Image Area -->
+<div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-container-low ambient-shadow transition-transform duration-500 group-hover:-translate-y-2 group-hover:ambient-shadow-lg">
+<!-- Desktop Mockup Background -->
+<div class="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-opacity duration-500" data-alt="elegant wedding table setting with white floral arrangements and soft natural light, editorial style photography" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCMLqaiqJk_OCRze-beB_ajaGWlv5ar-qjvfWOcueLOyZFpoRcvKgoKgbg2eqPK6sZkFVpIEqPjniDrGjxwGpGHiQlp3wY1KQT7iNukGtbOUPhOEYgB7QQSAupRPbT62hDg8IecnRCX5aueymJxT3552FKvg0PtXXlbxzW85zmqqyksSWrLX6ZULgV68VmdfWSMh8uF0mBJKCZOIAE4N_cNgyJLOyA9UZGzwPiojJZQyEULf6nPgi5Y-Cbdj4wrAI6MXz5SAzQEFQ');"></div>
+<!-- Mobile Mockup Overlap -->
+<div class="absolute bottom-[-10%] right-[-10%] w-[70%] h-[80%] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white/20 glass group-hover:-rotate-2 transition-transform duration-500">
+<img alt="Theme Mobile Preview" class="w-full h-full object-cover" data-alt="close up of delicate wedding rings on a soft velvet cushion, moody romantic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-zgAIghARIG4AYhz805VStKxGYwQ28OTNpReh62kLoVWyS00twm5ZkgKfFtpjUJuvO_6BfFw_YBHqRPhjqBRk1m0AT39K_Hmunj4XNiurFLSiIX6zYYBiv8jOdmEy7eKTzHj5tiALVPUTFexlD1WUQNG9UbX3do_sB-r0GcXzove5Atl82feNiLjfKZA9IXairXazvVN_JO9ZqTMqa0fIwd2dwRNtz_BFzHXOsoNJVZOwsx_8tpfl3lB0MdhsA--enRLE0sCmXA"/>
+</div>
+<!-- Badge -->
+<div class="absolute top-4 left-4 z-20">
+<span class="px-3 py-1.5 bg-white/90 backdrop-blur-md text-primary font-headline text-xs font-bold rounded-full shadow-sm tracking-wide">PREMIUM</span>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex flex-col gap-2 px-2">
+<div class="flex justify-between items-start">
+<h3 class="font-headline text-xl font-bold text-on-surface">Ethereal Bloom</h3>
+<button class="text-outline hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[22px]" data-icon="favorite_border">favorite_border</span></button>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-6 h-6 rounded-full overflow-hidden">
+<img alt="Creator" class="w-full h-full object-cover" data-alt="small portrait icon of a female designer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxvBhND1gUtr8QoTl76UthYi8Nt2RGkzkLmi8FPlnZsFDwswMOZw1_rU7DbQB47DaEFUOUPF1t8Ay5_7eoUvlgmWr8hYNO81BSFrPr_3O8xy-mlipEGJV0U9hEfWwB1o65QZAXO0Hwpm_Yhl8nBeloXjvwFQsxnaQU5XaR3Cu-alZatm-I6Ytd2TCAHoyXI1uGoSmhgeWsWpetTW5SU_dcXrldpisnO1LHYaTJtmv85_CzwmGbpPTQTUgaOkq9qpDLjldVja_iIg"/>
+</div>
+<span class="font-body text-sm text-on-surface-variant">by Lazuardi Studio</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative flex flex-col gap-4 xl:translate-y-8">
+<!-- Image Area -->
+<div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-container-low ambient-shadow transition-transform duration-500 group-hover:-translate-y-2 group-hover:ambient-shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-opacity duration-500" data-alt="minimalist architectural wedding venue with warm afternoon sunlight and deep shadows" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAog4YOCT8cp91Bhv8aJhAHY3I_O-ggJglV0oGGD20j8QoUfoYDjTs9Ai1pWxoL6aNgcV4bDydSHoUNJbeX6s0no1Q5mF7ltbxulrlm-ZmC-xNaFgoQfQ7U4cXlI352MDOUocjsHOmjetWayFGcFpXdeWm7sqQcsZd5zixPdXmi2cPvD7eIuTubjYmyBwWtAc8hF-elmfnePASlmKp1ITUK-3IpsiYs-nNhabzOy1HVS8UJGF5d2xEE_44msuRFwlxJRqcXfpgk9A');"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[70%] h-[80%] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white/20 glass group-hover:-rotate-2 transition-transform duration-500">
+<img alt="Theme Mobile Preview" class="w-full h-full object-cover" data-alt="abstract minimalist graphic design with terracotta and beige tones, modern aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5ilf7K5rF_KWHFvnD2hFYXLZX4uOicWXmeQf73HN8V38uUKweEaOQ8DjXlGNy5zO-mPCiZGxjb2yxotKDxyakYYpiB-KXhuDqylwW6qane2BbxIdBgwkH8WnXfRKwm0gIri8QUadcKpNA9vzOZX--QvpYJrxd8oQIS5DygT6oaIsSm7p5SQduZRvQlWtHwmOnV16Foqw24mKT2UcohhEtFW37BrkhshbvV0btXwVuL-at7uGZCfGggVlpH0Kl7Oj0SU2eiee_3A"/>
+</div>
+<div class="absolute top-4 left-4 z-20">
+<span class="px-3 py-1.5 bg-white/90 backdrop-blur-md text-secondary font-headline text-xs font-bold rounded-full shadow-sm tracking-wide">PRO</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 px-2">
+<div class="flex justify-between items-start">
+<h3 class="font-headline text-xl font-bold text-on-surface">Terra Minimal</h3>
+<button class="text-outline hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[22px]" data-icon="favorite_border">favorite_border</span></button>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-6 h-6 rounded-full overflow-hidden bg-primary-fixed flex items-center justify-center text-xs font-bold text-on-primary-fixed">
+                                K
+                            </div>
+<span class="font-body text-sm text-on-surface-variant">by Kriya Designs</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative flex flex-col gap-4">
+<div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-container-low ambient-shadow transition-transform duration-500 group-hover:-translate-y-2 group-hover:ambient-shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-opacity duration-500" data-alt="traditional indonesian batik patterns in deep indigo and gold, rich cultural heritage" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDkF2XUgHhvzw5Z7f-GzB-v_H5igLGRKCd1l0762I4wsDvt6x6rFIOjQ1pXVTUWT3RSbPVRB5oAux3Np9y_9MN6SO_aE2LhAhHpRbdJz18t_xXx4RH3vJh4OaUEe4aIA4tHh8G8lbEoXuqQpwQPWHBBTDmmJJ5yFPcp4HScDIiTac1kxoMfRPZif_QdB4fVWrkuWG3w-wFVE22NMYDl4N9dPVrh66EwRNb9-L3izc61xLC-WSFnLZzUNn8CVcKWf9QgBbdnmmT3_g');"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[70%] h-[80%] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white/20 glass group-hover:rotate-2 transition-transform duration-500">
+<img alt="Theme Mobile Preview" class="w-full h-full object-cover" data-alt="elegant traditional gold jewelry on a dark background, showcasing heritage" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALY90dIsChug9PAiU7ZpfKKQDbHHBAK793FV8_lZxCL1C_o7d648aWgKvJIXjF2IXaq_saTE6Gzu35az-fSd7QW7ZPB6k5mEMlE0UoMs7sr7_iTwbRJQ1P8Zzbpl19bcQsFwYrLB8jCZ1UyBASqO7SAbqhrfL-UOJPWmkjBgQgOYRbjqRzGWhwfrBy9JLEMaQMbd8BUJlm2PMLRpAYPjSKX6U2k8Vbarug5KpFIBSRQcMOFnHJhsWIPmBsiYUL9RfPWW4alt7CXg"/>
+</div>
+<div class="absolute top-4 right-4 z-20">
+<span class="px-3 py-1.5 bg-surface-container-highest/90 backdrop-blur-md text-on-surface font-headline text-xs font-bold rounded-full shadow-sm tracking-wide">FREE</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 px-2">
+<div class="flex justify-between items-start">
+<h3 class="font-headline text-xl font-bold text-on-surface">Nusantara Gold</h3>
+<button class="text-tertiary transition-colors"><span class="material-symbols-outlined text-[22px]" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span></button>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-6 h-6 rounded-full overflow-hidden">
+<img alt="Creator" class="w-full h-full object-cover" data-alt="small portrait icon of a male designer" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3XY-IuccF1t2zMejN0s3aUrjPWT2WCV_b6G8v0WUPgzknKgIA52v2qs-J5ZMgNZ5ZO8b6S2CpD80Niq3tGTB5O3bIen3Opc3SZg4ZTBlrYtj2qtro8N4SlKgNdh6dzhnLnpGzrA7AY-AFRoiG_orpE8wu50SsMoDlx1Nwlr34tw8Vuu0HCal9V8RgTsU8VkEhdCu3NUcqKiVPYXAKxo7tnuWQKqmWm-RN8hH_ZYbszvKmmg-CHelvT-A_uuo4lY_zyzOo2ocqpA"/>
+</div>
+<span class="font-body text-sm text-on-surface-variant">by Warisan Co.</span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative flex flex-col gap-4 xl:translate-y-8">
+<div class="relative w-full aspect-[4/5] rounded-3xl overflow-hidden bg-surface-container-low ambient-shadow transition-transform duration-500 group-hover:-translate-y-2 group-hover:ambient-shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center opacity-40 group-hover:opacity-60 transition-opacity duration-500" data-alt="moody romantic dining setup with dark linens and glowing candlelight, high contrast" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCzQBeDXMrCOXELRHYdnmC6B6KOHhxkoV5KpPmoiQ4DBtUV2w4lRUdSLa1lias81a5b-QtYXFpTF6mQyLnE-iZpIsd_NzB1X2eZIX-aTrVNcP9cGgNmca9Bx_BBuAUlLloykAx28IPi2zpuUHro2lLvEvyVkse8uo43WdXNL5dzU1VynOzOojLU-_xTGluCt2h-RiiWJEKMfiocug_aPZWVyyuiAB95su9IdCdak6jWNQyWEdiuab4wwl2bNmk7slRaPSZRGayedA');"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[70%] h-[80%] rounded-[2rem] overflow-hidden shadow-2xl border-4 border-white/20 glass group-hover:-rotate-2 transition-transform duration-500">
+<img alt="Theme Mobile Preview" class="w-full h-full object-cover" data-alt="dark dramatic floral arrangement with deep red roses and dark foliage" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS2aq0JaReb2wHhQ5JbEMplMK64OoB5s8YPkHq_0nm0GiqUMaRM8hFVM3qZZjUYqmiuC-TMNjK_JLpbWcKwlFO2oA5aNTQtK_zei0JxSKQKrqqS9vNvkbsj6TE7GflO8hlPOSvDzjyB1OSDQyOdCEMDws2oKDjdPfcuRo3mA-m78dr65EG_cxnSGgz4mrPnsbO4ELH0NiQhwjggEsXYuMnzn0Ig72KyIwbKyFpWl0QNag6v67VFcnRpANamVk_7nylm4wG3znn0w"/>
+</div>
+<div class="absolute top-4 left-4 z-20">
+<span class="px-3 py-1.5 bg-white/90 backdrop-blur-md text-primary font-headline text-xs font-bold rounded-full shadow-sm tracking-wide">PREMIUM</span>
+</div>
+</div>
+<div class="flex flex-col gap-2 px-2">
+<div class="flex justify-between items-start">
+<h3 class="font-headline text-xl font-bold text-on-surface">Midnight Romance</h3>
+<button class="text-outline hover:text-tertiary transition-colors"><span class="material-symbols-outlined text-[22px]" data-icon="favorite_border">favorite_border</span></button>
+</div>
+<div class="flex items-center gap-2 mt-1">
+<div class="w-6 h-6 rounded-full overflow-hidden">
+<img alt="Creator" class="w-full h-full object-cover" data-alt="small portrait icon of a female designer smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmz8YvJSwFe_YBysxoBIaYLBacBqxFJwM9txDdi8LDFl1qMOdFESFVbV9kL2oINeH4VVGOWd_Nm2gTzj9M42BcRaiMlf2wxUyM2uJ7afTe44V2QIU_k7fmHRPViOs53XnInyQH5zuLN71P8lFrcIFa719ojfUhP6_HJITWezRz43hCzJfVtmO1cBb6RaDxtoUhshXJKRoIF1tCJGBvp9NPZ2ZeFXqBDKLiF91Hb7sbMd2uHgDvTYWanP0H7FmgD2HbADCJhTEuCA"/>
+</div>
+<span class="font-body text-sm text-on-surface-variant">by Lazuardi Studio</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Load More Button -->
+<div class="mt-24 mb-16 flex justify-center">
+<button class="px-8 py-4 bg-surface-container-highest text-primary font-headline font-bold rounded-full hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors ambient-shadow">
+                    Load More Themes
+                </button>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mobile Website Editor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary": "#8B9DC3",
+                        "background": "#F5EDE8",
+                        "primary": "#E8917E",
+                        "outline": "#86736e",
+                        "on-surface-variant": "#54433f",
+                        "on-background": "#1e1b18",
+                        "surface-variant": "#e9e1dc",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#efe7e2",
+                        "surface-container-low": "#faf2ed",
+                        "surface-container": "#f4ece7",
+                        "surface": "#F5EDE8",
+                        "on-surface": "#1e1b18",
+                        "surface-bright": "#F5EDE8",
+                        "outline-variant": "#d9c1bc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif", "serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
+                        "label": ["Plus Jakarta Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Noto Serif', serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col pt-[72px] pb-[100px] md:pb-0 md:pl-[300px]">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-[#F5EDE8]/80 dark:bg-[#1E1B18]/80 backdrop-blur-lg shadow-none flex justify-between items-center px-6 py-4 md:hidden">
+<button class="text-[#E8917E] hover:opacity-70 transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<div class="text-3xl font-['Noto_Serif'] font-bold italic tracking-tight bg-gradient-to-r from-[#E8917E] to-[#8B9DC3] text-transparent bg-clip-text">uwu</div>
+<button class="text-[#E8917E] hover:opacity-70 transition-all duration-300 active:scale-95">
+<span class="material-symbols-outlined text-2xl">visibility</span>
+</button>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-b from-[#F5EDE8] to-transparent translate-y-full"></div>
+</header>
+<!-- NavigationDrawer (Web) -->
+<nav class="hidden md:flex flex-col p-8 gap-6 fixed top-0 left-0 h-full max-w-[300px] bg-[#F5EDE8] z-40 rounded-r-3xl shadow-2xl divide-y divide-[#C4956A]/10">
+<div class="flex items-center gap-4 pb-6">
+<div class="w-12 h-12 rounded-full overflow-hidden shrink-0 border border-outline-variant/50">
+<img alt="Sarah and James Profile" class="w-full h-full object-cover" data-alt="close up of a romantic couple holding hands with wedding rings on, soft lighting, warm tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfWvQ7oC8_wN3Vj3gfTSzkqVT0VHCAqRxyXleJV9-CV3fpTKDBLkTXr65KYpc_zNj2Uq686ZM4Rpnn-oZPp00ej3YPdltnMGBBw10NqXghIacHjysUNhopXvPBiDDs3alrIRNeznwibU4TpRg4_TzJGFevPLh1BJFD8rC45FDFzmIy9LQVaKvOBOPkPQD06H-Rz0AGIGXESqW4m9wugfOTMLWK2vXBTeDrdFEb-rpn1utqj4hBLynSO2YPMnFCvNyqfayVSRQUr9g"/>
+</div>
+<div>
+<h2 class="font-headline font-bold text-primary text-lg">Sarah &amp; James</h2>
+<p class="font-body text-sm text-on-surface-variant">The Heirloom Wedding</p>
+<p class="font-body text-xs text-outline">Oct 24, 2024</p>
+</div>
+</div>
+<div class="pt-6 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#1E1B18]/70 hover:bg-[#E8917E]/5 ease-out duration-300 font-['Plus_Jakarta_Sans'] text-sm" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>Beranda Undangan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#1E1B18]/70 hover:bg-[#E8917E]/5 ease-out duration-300 font-['Plus_Jakarta_Sans'] text-sm" href="#">
+<span class="material-symbols-outlined">group</span>
+<span>Daftar Tamu</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-[#E8917E] bg-[#E8917E]/10 font-bold border-r-4 border-[#E8917E] ease-out duration-300 font-['Plus_Jakarta_Sans'] text-sm" href="#">
+<span class="material-symbols-outlined">auto_stories</span>
+<span>Halaman</span>
+</a>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-2xl mx-auto px-6 py-8 flex flex-col gap-8">
+<!-- Breadcrumb & Header -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-sm text-outline font-label">
+<span class="material-symbols-outlined text-sm">home</span>
+<span>/</span>
+<span class="text-primary font-medium">Website Editor</span>
+</div>
+<h1 class="font-headline text-3xl md:text-4xl text-primary font-medium tracking-tight">Kelola Bagian</h1>
+<p class="text-on-surface-variant font-body">Atur urutan dan visibilitas konten undangan Anda.</p>
+</div>
+<!-- Sections List -->
+<div class="flex flex-col gap-4">
+<!-- Section Item 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-5 flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">image</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-on-surface">Sampul Utama</h3>
+<p class="text-sm text-outline font-body">Hero Image &amp; Nama</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<!-- Section Item 2 -->
+<div class="bg-surface-container-lowest rounded-lg p-5 flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">format_quote</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-on-surface">Kutipan</h3>
+<p class="text-sm text-outline font-body">Kutipan &amp; Doa</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<!-- Section Item 3 (Active Concept - Highlighted) -->
+<div class="bg-[#8B9DC3]/10 rounded-lg p-5 flex items-center justify-between group shadow-md border-l-4 border-primary relative overflow-hidden">
+<div class="flex items-center gap-4 relative z-10">
+<div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-primary">Profil Mempelai</h3>
+<p class="text-sm text-[#8B9DC3] font-body">Foto &amp; Info Keluarga</p>
+</div>
+</div>
+<div class="flex items-center gap-2 relative z-10">
+<button class="text-primary hover:text-[#8B9DC3] transition-colors p-2 bg-surface-bright rounded-full shadow-sm">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+</div>
+<!-- Section Item 4 -->
+<div class="bg-surface-container-lowest rounded-lg p-5 flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">calendar_today</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-on-surface">Jadwal Acara</h3>
+<p class="text-sm text-outline font-body">Akad &amp; Resepsi</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<!-- Section Item 5 (Hidden Concept) -->
+<div class="bg-surface-container-low rounded-lg p-5 flex items-center justify-between group opacity-75">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-outline">
+<span class="material-symbols-outlined">visibility_off</span>
+</div>
+<div>
+<h3 class="font-headline font-medium text-outline">Galeri Foto</h3>
+<p class="text-sm text-outline/80 font-body">Disembunyikan</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="text-xs font-label font-medium text-primary hover:text-[#8B9DC3] uppercase tracking-wider">Tampilkan</button>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+</div>
+<!-- Section Item 6 -->
+<div class="bg-surface-container-lowest rounded-lg p-5 flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-on-surface">Lokasi</h3>
+<p class="text-sm text-outline font-body">Google Maps Embed</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<!-- Section Item 7 -->
+<div class="bg-surface-container-lowest rounded-lg p-5 flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">mail</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-on-surface">RSVP</h3>
+<p class="text-sm text-outline font-body">Form Konfirmasi</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<!-- Section Item 8 -->
+<div class="bg-surface-container-lowest rounded-lg p-5 flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">redeem</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-on-surface">Amplop Digital</h3>
+<p class="text-sm text-outline font-body">QRIS Payment</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<!-- Section Item 9 -->
+<div class="bg-surface-container-lowest rounded-lg p-5 flex items-center justify-between group shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">chat</span>
+</div>
+<div>
+<h3 class="font-headline font-semibold text-on-surface">Ucapan</h3>
+<p class="text-sm text-outline font-body">Guestbook</p>
+</div>
+</div>
+<button class="text-outline hover:text-primary transition-colors">
+<span class="material-symbols-outlined">drag_indicator</span>
+</button>
+</div>
+<!-- Add Button -->
+<button class="mt-4 flex items-center justify-center gap-2 py-4 rounded-full border border-outline-variant/50 text-primary hover:bg-primary/5 transition-colors font-label font-semibold tracking-wide w-full">
+<span class="material-symbols-outlined text-sm">add</span>
+<span>Tambah Bagian</span>
+</button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full rounded-t-[40px] z-50 border-t border-[#C4956A]/10 bg-[#F5EDE8]/90 dark:bg-[#1E1B18]/95 backdrop-blur-2xl shadow-[0_-10px_40px_rgba(232,145,126,0.08)]">
+<div class="flex justify-around items-center px-4 pb-8 pt-4 w-full">
+<a class="flex flex-col items-center justify-center text-[#E8917E] px-4 py-2 hover:text-[#E8917E] transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">dashboard</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] uppercase tracking-widest font-bold">Susunan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#8B9DC3] dark:text-[#F5EDE8]/40 px-4 py-2 hover:text-[#E8917E] transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">palette</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] uppercase tracking-widest font-bold">Tema</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#8B9DC3] dark:text-[#F5EDE8]/40 px-4 py-2 hover:text-[#E8917E] transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">preview</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] uppercase tracking-widest font-bold">Pratinjau</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#8B9DC3] dark:text-[#F5EDE8]/40 px-4 py-2 hover:text-[#E8917E] transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">settings</span>
+<span class="font-['Plus_Jakarta_Sans'] text-[10px] uppercase tracking-widest font-bold">Pengaturan</span>
+</a>
+</div>
+</nav>
+</body></html>

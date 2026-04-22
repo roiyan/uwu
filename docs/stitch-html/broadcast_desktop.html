@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kirim Undangan - uwu</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;0,900;1,400;1,700;1,900&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#354768",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f4ece7",
+                        "on-secondary-fixed": "#061b3a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#251239",
+                        "on-surface": "#1e1b18",
+                        "on-primary-container": "#672a1d",
+                        "surface-tint": "#914a3b",
+                        "surface-container-low": "#faf2ed",
+                        "on-tertiary-container": "#47345d",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb4a4",
+                        "inverse-on-surface": "#f7efea",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#6a5681",
+                        "surface-variant": "#e9e1dc",
+                        "on-error": "#ffffff",
+                        "outline": "#86736e",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#3b0902",
+                        "surface-container-highest": "#e9e1dc",
+                        "on-secondary-container": "#4a5c7e",
+                        "surface-container-high": "#efe7e2",
+                        "surface": "#fff8f4",
+                        "secondary": "#4d5e81",
+                        "background": "#fff8f4",
+                        "surface-dim": "#e0d9d4",
+                        "surface-bright": "#fff8f4",
+                        "tertiary-container": "#b69ece",
+                        "tertiary-fixed": "#efdbff",
+                        "secondary-fixed-dim": "#b5c7ef",
+                        "secondary-fixed": "#d7e2ff",
+                        "secondary-container": "#c2d5fd",
+                        "outline-variant": "#d9c1bc",
+                        "on-primary-fixed-variant": "#743326",
+                        "tertiary-fixed-dim": "#d6bdee",
+                        "primary-fixed": "#ffdad3",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "primary-container": "#e8917e",
+                        "on-background": "#1e1b18",
+                        "inverse-surface": "#33302d",
+                        "on-surface-variant": "#54433f",
+                        "primary": "#914a3b",
+                        "on-tertiary-fixed-variant": "#523e68",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": [
+                            "Noto Serif"
+                        ],
+                        "body": [
+                            "Plus Jakarta Sans"
+                        ],
+                        "label": [
+                            "Plus Jakarta Sans"
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #F5EDE8; }
+        .glass-panel {
+            background: rgba(255, 248, 244, 0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        .coral-gradient {
+            background: linear-gradient(135deg, #914a3b 0%, #e8917e 100%);
+        }
+        /* Custom scrollbar for text area to match theme */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: #f4ece7; 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: #d9c1bc; 
+            border-radius: 4px;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: #86736e; 
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface antialiased bg-background">
+<!-- Global Layout Shell -->
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar Component (Execution based on JSON & Conflict Resolution) -->
+<aside class="h-screen w-72 fixed left-0 top-0 z-40 bg-[#fff8f4] dark:bg-[#1E1B18] text-[#914a3b] dark:text-[#E8917E] bg-[#fff1eb] dark:bg-[#2b2522] no-borders flat no shadows flex flex-col h-full py-10 px-4 space-y-1 overflow-y-auto">
+<!-- Brand Area -->
+<div class="px-6 mb-8 flex flex-col items-start">
+<h1 class="text-4xl font-black font-serif italic text-[#914a3b] dark:text-[#E8917E] tracking-tighter mb-1">uwu</h1>
+<p class="font-body text-sm text-stone-500 dark:text-stone-400">Wedding Platform</p>
+<!-- Client/Project Context Override based on Prompt -->
+<div class="mt-6 flex items-center space-x-3 w-full bg-surface-container-low p-3 rounded-xl border border-outline-variant/20">
+<img alt="Wedding Organizer Profile" class="w-10 h-10 rounded-full object-cover" data-alt="close up of a romantic wedding couple holding hands with soft focus cherry blossoms in background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbcaGOxvSP4ty49ViwrtgUyXYvMGdPP8nIVvqwFwaq3b9RvM2fY0upyDEwnIriqqRUZkvNSNH9XqwXKbbAgX_sw5q_QXPt1WTGiSbJ_mCjK3VO8IAihPV32lcOd7qsmaBRSFEBtIGdYzyhyqxNv8o-V0HhUoyVpshdTtPvCATdmEWJ4YsflMM0RYcdGicTrAqjaeHUgjsRAqRD0TXE1oxgAJS67-xqtVBACeYvW13Djk62xp33qLPgSxHzSOZzJ_NeEb2VU1jJpN8"/>
+<div class="flex flex-col">
+<span class="font-headline font-semibold text-sm text-on-surface leading-tight">Anisa &amp; Rizky</span>
+<span class="font-body text-xs text-on-surface-variant">Sakura Dreams</span>
+</div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex-1 space-y-1 mt-4">
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-body">Beranda</span>
+</a>
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">web</span>
+<span class="font-body">Website Editor</span>
+</a>
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-body">Tamu</span>
+</a>
+<!-- Active Item -->
+<a class="flex items-center text-[#914a3b] dark:text-[#E8917E] font-bold bg-[#fff1eb] dark:bg-[#2b2522] rounded-full px-6 py-3 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 1;">send</span>
+<span class="font-body">Kirim Undangan</span>
+</a>
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">analytics</span>
+<span class="font-body">Analytics</span>
+</a>
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">how_to_reg</span>
+<span class="font-body">Check-in</span>
+</a>
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">card_giftcard</span>
+<span class="font-body">Amplop &amp; Hadiah</span>
+</a>
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-body">Pengaturan</span>
+</a>
+<a class="flex items-center text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out" href="#">
+<span class="material-symbols-outlined mr-4" style="font-variation-settings: 'FILL' 0;">inventory_2</span>
+<span class="font-body">Paket</span>
+</a>
+</nav>
+<!-- Bottom CTA -->
+<div class="mt-auto px-4 pt-6 pb-2">
+<button class="w-full coral-gradient text-on-primary font-body font-semibold py-3 px-4 rounded-full shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center">
+<span class="material-symbols-outlined mr-2 text-sm">stars</span>
+                    Upgrade Paket
+                </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-72 flex flex-col h-screen overflow-hidden bg-background">
+<!-- TopAppBar Placeholder (Hidden on this specific prompt as it requests a specific header, but keeping structural space) -->
+<header class="w-full pt-12 pb-6 px-12 flex flex-col shrink-0">
+<h2 class="font-headline text-4xl text-on-surface tracking-tight mb-2">Kirim Undangan</h2>
+<p class="font-body text-on-surface-variant text-lg">Kirim undangan via WhatsApp, Email, atau cetak</p>
+<!-- Tabs -->
+<div class="flex space-x-8 mt-8 border-b border-outline-variant/30">
+<button class="pb-3 px-1 font-body font-semibold text-primary border-b-2 border-primary-container tracking-wide">WhatsApp</button>
+<button class="pb-3 px-1 font-body text-on-surface-variant hover:text-on-surface transition-colors tracking-wide">Email</button>
+<button class="pb-3 px-1 font-body text-on-surface-variant hover:text-on-surface transition-colors tracking-wide">Cetak</button>
+</div>
+</header>
+<!-- Scrollable Content Canvas -->
+<div class="flex-1 overflow-y-auto px-12 pb-24 scroll-smooth">
+<div class="max-w-7xl mx-auto space-y-8">
+<!-- Editor & Preview Bento Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Message Content Editor (Left) -->
+<div class="lg:col-span-7 flex flex-col space-y-6">
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-[0_8px_30px_rgb(30,27,24,0.04)] border border-outline-variant/20 flex flex-col h-full">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline text-xl text-on-surface">Pesan WhatsApp</h3>
+<button class="text-sm font-body text-secondary hover:text-primary transition-colors flex items-center">
+<span class="material-symbols-outlined text-sm mr-1">restart_alt</span> Reset ke Default
+                                    </button>
+</div>
+<!-- Toolbar -->
+<div class="flex flex-wrap items-center gap-2 mb-4 p-2 bg-surface-container-low rounded-lg border border-outline-variant/30">
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">format_bold</span></button>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">format_italic</span></button>
+<div class="w-px h-5 bg-outline-variant/50 mx-1"></div>
+<button class="w-8 h-8 flex items-center justify-center rounded-md hover:bg-surface-variant text-on-surface-variant transition-colors"><span class="material-symbols-outlined text-[20px]">link</span></button>
+<div class="w-px h-5 bg-outline-variant/50 mx-1"></div>
+<div class="flex items-center text-sm font-body text-on-surface-variant px-2">
+<span class="material-symbols-outlined text-[18px] mr-1">data_object</span> Variabel:
+                                    </div>
+<!-- Variable Chips -->
+<button class="px-3 py-1 bg-surface rounded-full border border-outline-variant/50 text-xs font-body text-primary hover:bg-primary-container/10 transition-colors">+ {{ nama }}</button>
+<button class="px-3 py-1 bg-surface rounded-full border border-outline-variant/50 text-xs font-body text-primary hover:bg-primary-container/10 transition-colors">+ {{ link }}</button>
+<button class="px-3 py-1 bg-surface rounded-full border border-outline-variant/50 text-xs font-body text-primary hover:bg-primary-container/10 transition-colors">+ {{ tanggal }}</button>
+<button class="px-3 py-1 bg-surface rounded-full border border-outline-variant/50 text-xs font-body text-primary hover:bg-primary-container/10 transition-colors">+ {{ venue }}</button>
+</div>
+<!-- Text Area -->
+<textarea class="w-full flex-1 min-h-[300px] bg-transparent border-0 focus:ring-0 resize-none font-body text-on-surface leading-relaxed p-2" placeholder="Ketik pesan Anda di sini...">Assalamu'alaikum Warahmatullahi Wabarakatuh, 
+
+Yth. {{ nama }},
+
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami.
+
+Detail acara dapat dilihat melalui tautan undangan berikut:
+{{ link }}
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir di acara pernikahan kami yang akan diselenggarakan pada:
+Tanggal: {{ tanggal }}
+Tempat: {{ venue }}
+
+Atas kehadiran dan doa restunya, kami ucapkan terima kasih.
+
+Wassalamu'alaikum Warahmatullahi Wabarakatuh.
+
+Hormat kami,
+Anisa &amp; Rizky</textarea>
+</div>
+</div>
+<!-- WhatsApp Preview Mockup (Right) -->
+<div class="lg:col-span-5 bg-surface-container-low rounded-lg p-6 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
+<h3 class="font-headline text-lg text-on-surface-variant w-full text-center mb-6">Pratinjau</h3>
+<!-- Phone Mockup Container -->
+<div class="w-[300px] bg-[#EFEAE2] rounded-[2.5rem] shadow-xl border-8 border-surface-container-lowest p-4 relative flex flex-col min-h-[500px]">
+<!-- Notch -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-surface-container-lowest rounded-b-xl"></div>
+<!-- Chat Area -->
+<div class="mt-8 flex-1 flex flex-col">
+<!-- Contact Info -->
+<div class="flex items-center space-x-3 bg-white/50 rounded-xl p-2 mb-4 backdrop-blur-sm">
+<div class="w-8 h-8 bg-surface-container-highest rounded-full flex items-center justify-center text-primary font-serif font-bold text-xs">U</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-[#111B21]">uwu Wedding</span>
+</div>
+</div>
+<!-- Date Header -->
+<div class="text-center mb-4">
+<span class="bg-[#D9F4FD]/50 text-[#54656F] text-[10px] py-1 px-3 rounded-lg font-body">Hari ini</span>
+</div>
+<!-- Chat Bubble -->
+<div class="bg-[#D9FDD3] rounded-lg rounded-tl-none p-3 shadow-sm max-w-[90%] self-start relative">
+<p class="text-[13px] text-[#111B21] font-body leading-relaxed whitespace-pre-wrap">Assalamu'alaikum Warahmatullahi Wabarakatuh, 
+
+Yth. *Budi Santoso*,
+
+Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberikan doa restu pada acara pernikahan kami.
+
+Detail acara dapat dilihat melalui tautan undangan berikut:
+https://uwu.com/anisa-rizky/budi
+
+Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir di acara pernikahan kami yang akan diselenggarakan pada:
+Tanggal: 24 November 2024
+Tempat: Grand Ballroom Hotel Indonesia
+
+Atas kehadiran dan doa restunya, kami ucapkan terima kasih.</p>
+<div class="text-right mt-1">
+<span class="text-[10px] text-[#667781]">10:42 AM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Stats & Actions Layout -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Stats Card 1: Kuota -->
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-[0_8px_30px_rgb(30,27,24,0.04)] border border-outline-variant/20 flex flex-col justify-between">
+<div>
+<h4 class="font-headline text-lg text-on-surface mb-1">Total WhatsApp</h4>
+<p class="font-body text-sm text-on-surface-variant mb-6">Kuota pengiriman pesan Anda bulan ini</p>
+<div class="flex justify-between items-end mb-2">
+<span class="font-headline text-4xl text-on-surface">42<span class="text-xl text-outline font-body">/200</span></span>
+<span class="font-body text-sm text-secondary font-medium">21% Terpakai</span>
+</div>
+<!-- Progress Bar -->
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 21%"></div>
+</div>
+</div>
+<a class="mt-6 font-body text-sm text-primary font-semibold hover:text-primary-container transition-colors inline-flex items-center" href="#">
+                                Tambah Kuota <span class="material-symbols-outlined text-[18px] ml-1">arrow_forward</span>
+</a>
+</div>
+<!-- Stats Card 2: Status Donut Chart -->
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-[0_8px_30px_rgb(30,27,24,0.04)] border border-outline-variant/20 flex items-center">
+<div class="flex-1">
+<h4 class="font-headline text-lg text-on-surface mb-4">Status Pengiriman</h4>
+<ul class="space-y-3 font-body text-sm">
+<li class="flex items-center justify-between">
+<div class="flex items-center"><span class="w-3 h-3 rounded-full bg-[#914a3b] mr-3"></span>Terkirim</div>
+<span class="font-semibold text-on-surface">12</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center"><span class="w-3 h-3 rounded-full bg-[#4d5e81] mr-3"></span>Dibaca</div>
+<span class="font-semibold text-on-surface">8</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center"><span class="w-3 h-3 rounded-full bg-[#e8917e] mr-3"></span>Dikirim</div>
+<span class="font-semibold text-on-surface">8</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center"><span class="w-3 h-3 rounded-full bg-[#ba1a1a] mr-3"></span>Gagal</div>
+<span class="font-semibold text-on-surface">4</span>
+</li>
+<li class="flex items-center justify-between">
+<div class="flex items-center"><span class="w-3 h-3 rounded-full bg-[#d9c1bc] mr-3"></span>Pending</div>
+<span class="font-semibold text-on-surface">10</span>
+</li>
+</ul>
+</div>
+<!-- CSS Only Donut Chart Representation -->
+<div class="w-32 h-32 ml-8 relative flex items-center justify-center rounded-full" style="background: conic-gradient(#914a3b 0% 28%, #4d5e81 28% 47%, #e8917e 47% 66%, #ba1a1a 66% 76%, #d9c1bc 76% 100%);">
+<div class="w-24 h-24 bg-surface-container-lowest rounded-full absolute flex items-center justify-center">
+<span class="font-headline text-xl text-on-surface">42</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="flex flex-wrap gap-4 pt-4 border-t border-outline-variant/30">
+<button class="coral-gradient text-on-primary font-body font-medium py-3 px-6 rounded-full shadow-sm hover:opacity-90 transition-opacity flex items-center">
+<span class="material-symbols-outlined mr-2 text-[20px]">send</span>
+                            Kirim ke Semua Belum Diundang
+                        </button>
+<button class="bg-[#8B9DC3] text-white font-body font-medium py-3 px-6 rounded-full shadow-sm hover:opacity-90 transition-opacity flex items-center">
+<span class="material-symbols-outlined mr-2 text-[20px]">groups</span>
+                            Kirim ke Grup
+                        </button>
+<button class="bg-transparent border border-[#C4956A] text-on-surface font-body font-medium py-3 px-6 rounded-full hover:bg-surface-variant transition-colors flex items-center">
+<span class="material-symbols-outlined mr-2 text-[20px]">schedule</span>
+                            Jadwal
+                        </button>
+</div>
+<!-- Recent Broadcasts Table -->
+<div class="bg-[#fcf8f6] rounded-lg p-8 shadow-sm mt-12 border border-outline-variant/10">
+<h4 class="font-headline text-xl text-on-surface mb-6">Pengiriman Terbaru</h4>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/20">
+<th class="py-4 px-4 font-body font-medium text-on-surface-variant text-sm">Nama</th>
+<th class="py-4 px-4 font-body font-medium text-on-surface-variant text-sm">Kontak</th>
+<th class="py-4 px-4 font-body font-medium text-on-surface-variant text-sm">Status</th>
+<th class="py-4 px-4 font-body font-medium text-on-surface-variant text-sm text-right">Waktu</th>
+</tr>
+</thead>
+<tbody class="font-body text-sm">
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest transition-colors">
+<td class="py-4 px-4 text-on-surface font-medium">Budi Santoso</td>
+<td class="py-4 px-4 text-on-surface-variant">+62 812-3456-7890</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#e6f4ea] text-[#1e8e3e] border border-[#1e8e3e]/20">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] mr-1.5"></span> Dibaca
+                                            </span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant text-right">10:42 AM</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-lowest transition-colors">
+<td class="py-4 px-4 text-on-surface font-medium">Siti Aminah</td>
+<td class="py-4 px-4 text-on-surface-variant">+62 813-4567-8901</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-variant text-on-surface border border-outline-variant/50">
+<span class="w-1.5 h-1.5 rounded-full bg-[#914a3b] mr-1.5"></span> Terkirim
+                                            </span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant text-right">10:40 AM</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-4 px-4 text-on-surface font-medium">Keluarga Gunawan</td>
+<td class="py-4 px-4 text-on-surface-variant">+62 856-7890-1234</td>
+<td class="py-4 px-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#fce8e6] text-[#ba1a1a] border border-[#ba1a1a]/20">
+<span class="w-1.5 h-1.5 rounded-full bg-[#ba1a1a] mr-1.5"></span> Gagal
+                                            </span>
+</td>
+<td class="py-4 px-4 text-on-surface-variant text-right">09:15 AM</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

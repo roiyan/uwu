@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>uwu - Kirim Undangan</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#354768",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#f4ece7",
+                        "on-secondary-fixed": "#061b3a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#251239",
+                        "on-surface": "#1e1b18",
+                        "on-primary-container": "#672a1d",
+                        "surface-tint": "#914a3b",
+                        "surface-container-low": "#faf2ed",
+                        "on-tertiary-container": "#47345d",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb4a4",
+                        "inverse-on-surface": "#f7efea",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#6a5681",
+                        "surface-variant": "#e9e1dc",
+                        "on-error": "#ffffff",
+                        "outline": "#86736e",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#3b0902",
+                        "surface-container-highest": "#e9e1dc",
+                        "on-secondary-container": "#4a5c7e",
+                        "surface-container-high": "#efe7e2",
+                        "surface": "#fff8f4",
+                        "secondary": "#4d5e81",
+                        "background": "#fff8f4",
+                        "surface-dim": "#e0d9d4",
+                        "surface-bright": "#fff8f4",
+                        "tertiary-container": "#b69ece",
+                        "tertiary-fixed": "#efdbff",
+                        "secondary-fixed-dim": "#b5c7ef",
+                        "secondary-fixed": "#d7e2ff",
+                        "secondary-container": "#c2d5fd",
+                        "outline-variant": "#d9c1bc",
+                        "on-primary-fixed-variant": "#743326",
+                        "tertiary-fixed-dim": "#d6bdee",
+                        "primary-fixed": "#ffdad3",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "primary-container": "#e8917e",
+                        "on-background": "#1e1b18",
+                        "inverse-surface": "#33302d",
+                        "on-surface-variant": "#54433f",
+                        "primary": "#914a3b",
+                        "on-tertiary-fixed-variant": "#523e68",
+                        "on-error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Noto Serif", "serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
+                        "label": ["Plus Jakarta Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Noto Serif', serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24 md:pb-0 md:pl-72">
+<!-- Mobile Header (Hidden on Web) -->
+<header class="md:hidden sticky top-0 z-30 bg-surface/80 backdrop-blur-lg pt-4 pb-3 px-6 flex justify-between items-center">
+<button class="text-on-surface focus:outline-none">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<span class="font-headline italic text-primary text-3xl font-black tracking-tighter">uwu</span>
+<button class="text-on-surface focus:outline-none">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+</button>
+</header>
+<!-- Desktop SideNavBar -->
+<nav class="hidden md:flex bg-[#fff8f4] dark:bg-[#1E1B18] h-screen w-72 fixed left-0 top-0 z-40 bg-[#fff1eb] dark:bg-[#2b2522] no-borders flat no shadows flex-col py-10 px-4 space-y-1 overflow-y-auto">
+<div class="px-6 mb-8">
+<div class="text-4xl font-black font-serif italic text-[#914a3b] dark:text-[#E8917E] tracking-tighter">uwu</div>
+<div class="text-xs text-on-surface-variant mt-1 font-label">Wedding Platform</div>
+</div>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span>Beranda</span>
+</a>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="web">web</span>
+<span>Website Editor</span>
+</a>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span>Tamu</span>
+</a>
+<a class="flex items-center gap-4 text-[#914a3b] dark:text-[#E8917E] font-bold bg-[#fff1eb] dark:bg-[#2b2522] rounded-full px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="send" data-weight="fill" style="font-variation-settings: 'FILL' 1;">send</span>
+<span>Kirim Undangan</span>
+</a>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
+<span>Check-in</span>
+</a>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="card_giftcard">card_giftcard</span>
+<span>Amplop &amp; Hadiah</span>
+</a>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Pengaturan</span>
+</a>
+<a class="flex items-center gap-4 text-stone-500 dark:text-stone-400 font-medium px-6 py-3 hover:bg-[#fff1eb]/50 dark:hover:bg-[#2b2522]/50 transition-all duration-300 scale-98 transition-transform ease-out font-label" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span>Paket</span>
+</a>
+<div class="mt-auto px-4 pb-4">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-3 px-6 rounded-full font-label font-semibold text-sm shadow-sm hover:opacity-90 transition-opacity">
+                Upgrade Paket
+            </button>
+</div>
+</nav>
+<!-- Desktop TopAppBar -->
+<header class="hidden md:flex bg-[#fff8f4]/80 dark:bg-[#1E1B18]/80 backdrop-blur-lg fixed top-0 right-0 left-72 h-20 z-30 no-border-bottom tonal-shift-only flat no shadows items-center justify-between px-12 w-full ml-72">
+<div class="flex items-center gap-2 text-sm font-label text-on-surface-variant">
+<span class="material-symbols-outlined text-base">home</span>
+<span>/</span>
+<span class="text-primary font-medium">Kirim Undangan</span>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">history</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-surface-container-high overflow-hidden border border-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+</div>
+</header>
+<main class="pt-4 md:pt-28 px-6 pb-8 max-w-7xl mx-auto">
+<!-- Mobile Breadcrumb -->
+<div class="md:hidden flex items-center gap-2 text-sm font-label text-on-surface-variant mb-6">
+<span class="material-symbols-outlined text-base">home</span>
+<span>/</span>
+<span class="text-primary font-medium">Kirim Undangan</span>
+</div>
+<div class="flex flex-col gap-8">
+<!-- Tabs -->
+<div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+<button class="px-6 py-2.5 rounded-full bg-surface-container-high text-primary font-label font-semibold text-sm whitespace-nowrap border border-primary/10 shadow-[0_2px_12px_-4px_rgba(145,74,59,0.15)] flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+                    WhatsApp
+                </button>
+<button class="px-6 py-2.5 rounded-full bg-transparent text-on-surface-variant hover:bg-surface-container-low transition-colors font-label font-medium text-sm whitespace-nowrap flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+                    Email
+                </button>
+<button class="px-6 py-2.5 rounded-full bg-transparent text-on-surface-variant hover:bg-surface-container-low transition-colors font-label font-medium text-sm whitespace-nowrap flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">print</span>
+                    Cetak
+                </button>
+</div>
+<!-- Stats Stack -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Total Card -->
+<div class="bg-surface-container-lowest rounded-lg p-6 border border-outline-variant/20 shadow-[0_4px_24px_-8px_rgba(30,27,24,0.04)] relative overflow-hidden flex flex-col justify-between">
+<div class="absolute -right-6 -top-6 w-32 h-32 bg-primary/5 rounded-full blur-2xl"></div>
+<div>
+<h3 class="text-sm font-label text-on-surface-variant font-medium">Total Undangan WhatsApp</h3>
+<div class="mt-2 text-5xl font-headline text-on-surface tracking-tight">142</div>
+</div>
+<div class="mt-6 flex items-center gap-2 text-sm font-label text-primary">
+<span class="material-symbols-outlined text-[18px]">group</span>
+<span>85% dari total tamu</span>
+</div>
+</div>
+<!-- Chart Card -->
+<div class="bg-surface-container-lowest rounded-lg p-6 border border-outline-variant/20 shadow-[0_4px_24px_-8px_rgba(30,27,24,0.04)] flex items-center gap-6">
+<div class="w-24 h-24 rounded-full border-8 border-surface-container-high relative flex items-center justify-center shrink-0">
+<svg class="absolute inset-0 w-full h-full -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="46" stroke="#E8917E" stroke-dasharray="200 289" stroke-linecap="round" stroke-width="8"></circle>
+</svg>
+<span class="font-headline text-xl text-on-surface">65%</span>
+</div>
+<div class="flex-1">
+<h3 class="text-sm font-label text-on-surface-variant font-medium mb-4">Status Pengiriman</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between text-sm font-label">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+<span class="text-on-surface">Terkirim</span>
+</div>
+<span class="font-semibold text-on-surface">92</span>
+</div>
+<div class="flex items-center justify-between text-sm font-label">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-surface-container-high"></div>
+<span class="text-on-surface-variant">Menunggu</span>
+</div>
+<span class="font-medium text-on-surface-variant">50</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Message Preview -->
+<div class="bg-surface-container-lowest rounded-lg p-6 border border-outline-variant/20 shadow-[0_4px_24px_-8px_rgba(30,27,24,0.04)]">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline text-2xl text-on-surface tracking-tight">Pesan Pengantar</h2>
+<button class="text-primary font-label text-sm font-medium hover:underline flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                        Edit
+                    </button>
+</div>
+<div class="bg-surface-container-low rounded-lg p-6 border border-outline-variant/30 text-sm font-body text-on-surface leading-relaxed space-y-4">
+<p>Yth. Bpk/Ibu/Saudara/i <strong class="text-primary">[Nama Tamu]</strong>,</p>
+<p>Tanpa mengurangi rasa hormat, perkenankan kami mengundang Anda untuk hadir dan memberikan doa restu pada acara pernikahan kami:</p>
+<p class="italic font-headline text-center text-lg my-4 text-on-surface-variant">Sarah &amp; Michael</p>
+<p>Berikut tautan undangan untuk detail acara:<br/>
+<a class="text-secondary font-medium hover:underline break-all" href="#">https://uwu.com/sarah-michael</a></p>
+<p>Kehadiran Anda adalah hadiah terindah bagi kami. Terima kasih.</p>
+</div>
+</div>
+<!-- Actions Stack -->
+<div class="flex flex-col gap-4 mt-4">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-4 px-6 rounded-full font-label font-semibold text-base shadow-[0_8px_20px_-6px_rgba(145,74,59,0.3)] hover:opacity-95 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">send</span>
+                    Kirim ke Semua Belum Diundang
+                </button>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<button class="w-full bg-secondary text-on-secondary py-4 px-6 rounded-full font-label font-semibold text-sm shadow-[0_4px_16px_-4px_rgba(77,94,129,0.2)] hover:bg-secondary/90 transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+                        Kirim ke Grup
+                    </button>
+<button class="w-full bg-transparent border border-outline-variant text-on-surface py-4 px-6 rounded-full font-label font-semibold text-sm hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+                        Jadwal Pengiriman
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- Mobile BottomNavBar (Visible only on Mobile) -->
+<nav class="md:hidden fixed bottom-0 w-full bg-surface-container-lowest/90 backdrop-blur-xl border-t border-outline-variant/10 px-6 py-3 flex justify-between items-center z-40 pb-safe">
+<a class="flex flex-col items-center gap-1 text-on-surface-variant opacity-70" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-label font-medium">Beranda</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant opacity-70" href="#">
+<span class="material-symbols-outlined text-[24px]">web</span>
+<span class="text-[10px] font-label font-medium">Editor</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant opacity-70" href="#">
+<span class="material-symbols-outlined text-[24px]">group</span>
+<span class="text-[10px] font-label font-medium">Tamu</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<div class="bg-primary-container/20 p-1.5 rounded-full mb-0.5">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</div>
+<span class="text-[10px] font-label font-bold text-primary">Kirim</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant opacity-70" href="#">
+<span class="material-symbols-outlined text-[24px]">more_horiz</span>
+<span class="text-[10px] font-label font-medium">Lainnya</span>
+</a>
+</nav>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</body></html>

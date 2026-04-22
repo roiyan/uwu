@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Analytics Dashboard - uwu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:wght@400..700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "blush-cream": "#F5EDE8",
+                        "coral": "#E8917E",
+                        "slate-blue": "#8B9DC3",
+                        "dark-slate": "#2C3E50",
+                        "surface-tint": "#E8917E",
+                        "on-tertiary-container": "#2C3E50",
+                        "secondary-fixed-dim": "#b5c7ef",
+                        "on-secondary-fixed-variant": "#354768",
+                        "inverse-on-surface": "#F5EDE8",
+                        "tertiary-fixed-dim": "#d6bdee",
+                        "surface-variant": "#e9e1dc",
+                        "primary": "#E8917E",
+                        "tertiary-container": "#b69ece",
+                        "surface-bright": "#fff8f4",
+                        "on-primary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#8B9DC3",
+                        "primary-container": "#e8917e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#4a5c7e",
+                        "error-container": "#ffdad6",
+                        "surface": "#F5EDE8",
+                        "on-surface": "#2C3E50",
+                        "outline": "#86736e",
+                        "surface-dim": "#e0d9d4",
+                        "on-surface-variant": "#54433f",
+                        "surface-container-low": "#faf2ed",
+                        "surface-container-highest": "#e9e1dc",
+                        "on-secondary-fixed": "#061b3a",
+                        "secondary-container": "#c2d5fd",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#f4ece7",
+                        "secondary-fixed": "#d7e2ff",
+                        "on-primary-fixed": "#3b0902",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2C3E50",
+                        "on-primary-fixed-variant": "#743326",
+                        "tertiary-fixed": "#efdbff",
+                        "primary-fixed": "#ffdad3",
+                        "on-primary-container": "#672a1d",
+                        "outline-variant": "#d9c1bc",
+                        "on-tertiary-fixed-variant": "#523e68",
+                        "surface-container-high": "#efe7e2",
+                        "inverse-primary": "#ffb4a4",
+                        "background": "#F5EDE8",
+                        "on-background": "#2C3E50",
+                        "secondary": "#8B9DC3",
+                        "on-tertiary-fixed": "#251239",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-headline { font-family: 'Noto Serif', serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col w-full max-w-[390px] mx-auto relative overflow-x-hidden">
+<!-- Top Navigation (Mobile) -->
+<header class="sticky top-0 z-50 bg-background/80 backdrop-blur-xl w-full px-6 py-4 flex justify-between items-center">
+<button aria-label="Menu" class="text-on-surface p-2 -ml-2">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<div class="flex-1 flex justify-center">
+<div class="text-3xl font-bold italic font-headline bg-gradient-to-tr from-coral to-slate-blue bg-clip-text text-transparent lowercase">uwu</div>
+</div>
+<button aria-label="Notifications" class="text-on-surface p-2 -mr-2 relative">
+<span class="material-symbols-outlined text-2xl">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-coral rounded-full"></span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 px-6 pb-28 pt-2 flex flex-col gap-8">
+<!-- Header Section -->
+<section class="flex flex-col gap-4">
+<!-- Breadcrumb -->
+<div class="flex items-center gap-2 text-sm text-on-surface-variant font-medium">
+<span class="material-symbols-outlined text-lg">home</span>
+<span>/</span>
+<span class="text-coral font-bold">Analytics</span>
+</div>
+<div class="flex flex-col gap-1">
+<h1 class="font-headline text-4xl font-semibold tracking-tight text-on-surface">Analytics</h1>
+<p class="text-on-surface-variant text-base">Pantau performa undangan Anda</p>
+</div>
+<!-- Date Filter Pill -->
+<button class="self-start flex items-center gap-2 bg-surface-container-highest px-4 py-2 rounded-full text-sm font-medium text-on-surface hover:bg-surface-dim transition-colors mt-2">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+                30 Hari Terakhir
+                <span class="material-symbols-outlined text-[20px]">arrow_drop_down</span>
+</button>
+</section>
+<!-- KPI Grid -->
+<section class="grid grid-cols-2 gap-4">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg flex flex-col gap-3 relative overflow-hidden group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-coral mb-1">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1">Kunjungan</p>
+<div class="flex items-end gap-2">
+<p class="text-2xl font-headline font-bold text-on-surface">450</p>
+<span class="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded flex items-center mb-1">↑14.2%</span>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-coral to-slate-blue transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg flex flex-col gap-3 relative overflow-hidden group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-coral mb-1">
+<span class="material-symbols-outlined">mark_email_read</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1">Rata-rata Buka</p>
+<div class="flex items-end gap-2">
+<p class="text-2xl font-headline font-bold text-on-surface">71%</p>
+<span class="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded flex items-center mb-1">↑2.4%</span>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-coral to-slate-blue transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg flex flex-col gap-3 relative overflow-hidden group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-coral mb-1">
+<span class="material-symbols-outlined">timer</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1">Waktu Konversi</p>
+<div class="flex items-end gap-2">
+<p class="text-2xl font-headline font-bold text-on-surface">2m 45s</p>
+<span class="text-[10px] font-medium text-red-600 bg-red-50 px-1.5 py-0.5 rounded flex items-center mb-1">↓12s</span>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-coral to-slate-blue transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+</div>
+<!-- Card 4 -->
+<div class="bg-surface-container-lowest p-5 rounded-lg flex flex-col gap-3 relative overflow-hidden group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-coral mb-1">
+<span class="material-symbols-outlined">how_to_reg</span>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant font-semibold uppercase tracking-wider mb-1">Total RSVP</p>
+<div class="flex items-end gap-2">
+<p class="text-2xl font-headline font-bold text-on-surface">120</p>
+<span class="text-[10px] font-medium text-green-600 bg-green-50 px-1.5 py-0.5 rounded flex items-center mb-1">↑5.8%</span>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-coral to-slate-blue transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300"></div>
+</div>
+</section>
+<!-- RSVP Funnel -->
+<section class="bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-6 relative">
+<div class="flex justify-between items-end">
+<h2 class="font-headline text-xl font-semibold text-on-surface">RSVP Funnel</h2>
+<span class="text-xs font-medium text-coral bg-surface-container px-2 py-1 rounded-full">Konversi 26%</span>
+</div>
+<div class="flex flex-col gap-3 w-full items-center">
+<!-- Step 1 -->
+<div class="w-full flex items-center gap-4">
+<div class="w-28 text-right text-sm font-medium text-on-surface-variant">Total Pengunjung</div>
+<div class="flex-1 bg-surface-container rounded-full h-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-slate-blue w-full rounded-full"></div>
+<div class="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-white">450</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="w-[90%] flex items-center gap-4">
+<div class="w-28 text-right text-sm font-medium text-on-surface-variant">Membuka Undangan</div>
+<div class="flex-1 bg-surface-container rounded-full h-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-[#A2B1D6] w-full rounded-full"></div>
+<div class="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-white">320</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="w-[75%] flex items-center gap-4">
+<div class="w-24 text-right text-sm font-medium text-on-surface-variant">Klik RSVP</div>
+<div class="flex-1 bg-surface-container rounded-full h-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-[#E5B5B5] w-full rounded-full"></div>
+<div class="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-white">180</div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="w-[50%] flex items-center gap-4">
+<div class="w-20 text-right text-sm font-medium text-on-surface-variant">Konfirmasi Hadir</div>
+<div class="flex-1 bg-surface-container rounded-full h-8 relative overflow-hidden">
+<div class="absolute top-0 left-0 h-full bg-coral w-full rounded-full"></div>
+<div class="absolute inset-y-0 right-4 flex items-center text-xs font-bold text-white">120</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Line Chart: Interaksi Harian -->
+<section class="bg-surface-container-lowest rounded-lg p-6 flex flex-col gap-6">
+<h2 class="font-headline text-xl font-semibold text-on-surface">Interaksi Harian</h2>
+<!-- Pseudo Chart Visual -->
+<div class="h-40 w-full relative flex items-end justify-between pt-4">
+<!-- Y-axis labels -->
+<div class="absolute left-0 top-0 h-full flex flex-col justify-between text-[10px] text-on-surface-variant pb-6 z-10">
+<span>100</span>
+<span>50</span>
+<span>0</span>
+</div>
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between pb-6 pl-6">
+<div class="w-full border-b border-surface-container-highest border-dashed"></div>
+<div class="w-full border-b border-surface-container-highest border-dashed"></div>
+<div class="w-full border-b border-surface-container-highest border-solid"></div>
+</div>
+<!-- Data Points (Bars simulating a line chart base for layout) -->
+<div class="relative w-full h-full flex items-end justify-between pl-8 pb-6">
+<div class="w-2 bg-slate-blue rounded-t-sm h-[30%]"></div>
+<div class="w-2 bg-slate-blue rounded-t-sm h-[45%]"></div>
+<div class="w-2 bg-slate-blue rounded-t-sm h-[20%]"></div>
+<div class="w-2 bg-slate-blue rounded-t-sm h-[60%]"></div>
+<div class="w-2 bg-coral rounded-t-sm h-[85%] relative">
+<!-- Tooltip on peak -->
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-dark-slate text-white text-[10px] py-1 px-2 rounded font-medium whitespace-nowrap">85 Kunjungan</div>
+</div>
+<div class="w-2 bg-slate-blue rounded-t-sm h-[50%]"></div>
+<div class="w-2 bg-slate-blue rounded-t-sm h-[40%]"></div>
+</div>
+<!-- X-axis labels -->
+<div class="absolute bottom-0 left-0 w-full flex justify-between pl-8 text-[10px] text-on-surface-variant">
+<span>Sen</span>
+<span>Sel</span>
+<span>Rab</span>
+<span>Kam</span>
+<span>Jum</span>
+<span>Sab</span>
+<span>Min</span>
+</div>
+</div>
+</section>
+<!-- NEW Mini Cards Section -->
+<section class="flex flex-col gap-3">
+<div class="bg-surface-container-lowest p-4 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-slate-blue">
+<span class="material-symbols-outlined text-lg">devices</span>
+</div>
+<p class="text-sm font-medium text-on-surface">Perangkat</p>
+</div>
+<p class="text-xs text-on-surface-variant font-medium">Mobile 78% | Desktop 18% | Tablet 4%</p>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-slate-blue">
+<span class="material-symbols-outlined text-lg">schedule</span>
+</div>
+<p class="text-sm font-medium text-on-surface">Jam Sibuk</p>
+</div>
+<p class="text-xs text-on-surface-variant font-medium">Jumat 18:00-21:00</p>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-slate-blue">
+<span class="material-symbols-outlined text-lg">groups</span>
+</div>
+<p class="text-sm font-medium text-on-surface">Respons per Grup</p>
+</div>
+<p class="text-xs text-on-surface-variant font-medium">Keluarga 92% | Teman 74%</p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (Mobile) -->
+<nav class="fixed bottom-0 left-0 w-full bg-background/90 backdrop-blur-xl pb-safe pt-2 px-4 shadow-[0_-4px_24px_rgba(44,62,80,0.04)] z-50">
+<div class="flex justify-between items-center max-w-sm mx-auto">
+<a class="flex flex-col items-center gap-1 p-2 text-on-surface-variant hover:text-coral transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">home</span>
+<span class="text-[10px] font-medium">Beranda</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-on-surface-variant hover:text-coral transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">web</span>
+<span class="text-[10px] font-medium">Editor</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-on-surface-variant hover:text-coral transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">group</span>
+<span class="text-[10px] font-medium">Tamu</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-on-surface-variant hover:text-coral transition-colors" href="#">
+<span class="material-symbols-outlined text-2xl">send</span>
+<span class="text-[10px] font-medium">Kirim</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-coral font-bold transition-colors relative" href="#">
+<div class="absolute -top-1 left-1/2 -translate-x-1/2 w-8 h-1 bg-coral rounded-b-full"></div>
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">more_horiz</span>
+<span class="text-[10px] font-medium">Lainnya</span>
+</a>
+</div>
+</nav>
+</body></html>

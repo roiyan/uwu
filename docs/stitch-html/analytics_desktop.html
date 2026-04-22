@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>uwu Dashboard - Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:wght@400..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#914a3b",
+                      "on-tertiary-container": "#47345d",
+                      "secondary-fixed-dim": "#b5c7ef",
+                      "on-secondary-fixed-variant": "#354768",
+                      "inverse-on-surface": "#f7efea",
+                      "tertiary-fixed-dim": "#d6bdee",
+                      "surface-variant": "#e9e1dc",
+                      "primary": "#914a3b",
+                      "tertiary-container": "#b69ece",
+                      "surface-bright": "#fff8f4",
+                      "on-primary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "primary-fixed-dim": "#ffb4a4",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#6a5681",
+                      "primary-container": "#e8917e",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-container": "#4a5c7e",
+                      "error-container": "#ffdad6",
+                      "surface": "#fff8f4",
+                      "on-surface": "#1e1b18",
+                      "outline": "#86736e",
+                      "surface-dim": "#e0d9d4",
+                      "on-surface-variant": "#54433f",
+                      "surface-container-low": "#faf2ed",
+                      "surface-container-highest": "#e9e1dc",
+                      "on-secondary-fixed": "#061b3a",
+                      "secondary-container": "#c2d5fd",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#f4ece7",
+                      "secondary-fixed": "#d7e2ff",
+                      "on-primary-fixed": "#3b0902",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#33302d",
+                      "on-primary-fixed-variant": "#743326",
+                      "tertiary-fixed": "#efdbff",
+                      "primary-fixed": "#ffdad3",
+                      "on-primary-container": "#672a1d",
+                      "outline-variant": "#d9c1bc",
+                      "on-tertiary-fixed-variant": "#523e68",
+                      "surface-container-high": "#efe7e2",
+                      "inverse-primary": "#ffb4a4",
+                      "background": "#fff8f4",
+                      "on-background": "#1e1b18",
+                      "secondary": "#4d5e81",
+                      "on-tertiary-fixed": "#251239",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Noto Serif"
+                      ],
+                      "body": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label": [
+                              "Plus Jakarta Sans"
+                      ]
+              }
+            },
+          },
+        }
+      </script>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="bg-orange-50 dark:bg-stone-950 font-['Plus_Jakarta_Sans'] text-sm tracking-wide uppercase fixed left-0 top-0 h-screen w-72 border-r border-orange-100 dark:border-stone-900 space-y-4 py-8 px-6 flex flex-col gap-8 hidden md:flex z-50">
+<!-- Header / Logo Area -->
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<!-- The Brand -->
+<span class="font-['Noto_Serif'] text-xl text-rose-400 lowercase font-bold italic">uwu</span>
+</div>
+<div class="flex flex-col gap-1 px-4 py-3 bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-low flex items-center justify-center overflow-hidden border border-outline-variant/30">
+<img alt="Wedding Profile" class="w-full h-full object-cover" data-alt="close up of a beautiful elegant wedding bouquet with soft pink roses and white peonies, soft warm lighting, romantic aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYmONO9XB1dym8cMepAMQ568s7HX72wDsylgNLv1_H_X4YzEx52BJpVs-tNo4gb4xAi1rUxOAI7n10RIp2G1XtKT8mNRFLJEEvFmgespMtev9T_UmljuUQO5u_UW_l0ucbETdN-_6n30cWto1kxTIVgPLTgWIH7i4pt3zf9EbjPQZq40nEm77xuDD3bJ2almXcw78ZRT4wkKQ2xm3h0aQiecZob3ngjlli8-bw32U9KFD1R1PuSheaTBOM1HnaRFOvvONFKGVMJA8"/>
+</div>
+<div class="flex flex-col">
+<span class="font-headline font-bold text-on-surface normal-case leading-tight">uwu Dashboard</span>
+<span class="text-xs text-on-surface-variant font-medium normal-case">Premium Analytics</span>
+</div>
+</div>
+<div class="mt-2 text-xs text-secondary font-medium normal-case px-1">
+                     Anisa &amp; Rizky | Sakura Dreams
+                 </div>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-2 flex-grow overflow-y-auto pr-2">
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-medium">Beranda</span>
+</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">web</span>
+<span class="font-medium">Website Editor</span>
+</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">group</span>
+<span class="font-medium">Tamu</span>
+</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">send_money</span>
+<span class="font-medium">Kirim Undangan</span>
+</a>
+<a class="text-rose-500 dark:text-rose-300 font-bold border-r-4 border-rose-400 pr-4 bg-orange-100/30 flex items-center gap-4 px-4 py-3 rounded-l-full" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">how_to_reg</span>
+<span class="font-medium">Check-in</span>
+</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">featured_seasonal_and_gifts</span>
+<span class="font-medium">Amplop &amp; Hadiah</span>
+</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+<span class="font-medium">Pengaturan</span>
+</a>
+<a class="text-stone-400 dark:text-stone-500 hover:text-rose-300 hover:bg-orange-100/50 dark:hover:bg-stone-900/50 rounded-full transition-all ease-in-out duration-200 flex items-center gap-4 px-4 py-3" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">redeem</span>
+<span class="font-medium">Paket</span>
+</a>
+</nav>
+<!-- CTA -->
+<div class="mt-auto pt-4">
+<button class="w-full bg-gradient-to-tr from-primary to-primary-container text-on-primary font-bold py-3 px-6 rounded-full shadow-[0_4px_14px_0_rgba(232,145,126,0.39)] hover:shadow-[0_6px_20px_rgba(232,145,126,0.23)] hover:-translate-y-0.5 transition-all duration-200">
+                Upgrade Paket
+            </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-72 h-screen overflow-y-auto bg-surface px-8 md:px-12 py-10">
+<!-- Header -->
+<header class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+<div>
+<h1 class="font-headline text-4xl md:text-5xl font-bold text-on-surface tracking-tight mb-2">Analytics</h1>
+<p class="text-on-surface-variant font-medium">Pantau performa undangan dan RSVP Anda.</p>
+</div>
+<!-- Date Filter -->
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-full border border-outline-variant bg-surface-container-lowest text-on-surface font-medium hover:bg-surface-container-low transition-colors self-start md:self-auto">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0;">calendar_month</span>
+<span>30 Hari Terakhir</span>
+<span class="material-symbols-outlined text-on-surface-variant" style="font-variation-settings: 'FILL' 0;">arrow_drop_down</span>
+</button>
+</header>
+<div class="flex flex-col gap-8 pb-20">
+<!-- Row 1: Funnel & KPIs -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+<!-- Funnel (Wide Card) -->
+<div class="lg:col-span-7 bg-surface-container-lowest rounded-lg p-8 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.03)] border border-outline-variant/20 flex flex-col">
+<h2 class="font-headline text-xl font-bold text-on-surface mb-6">Alur Konversi RSVP</h2>
+<div class="flex-1 flex flex-col justify-center gap-6">
+<!-- Step 1 -->
+<div class="flex items-center gap-4">
+<div class="w-32 text-sm font-semibold text-on-surface-variant">Total Pengunjung</div>
+<div class="flex-1 h-8 bg-surface-container rounded-r-full overflow-hidden flex items-center">
+<div class="h-full bg-secondary text-on-secondary text-xs font-bold flex items-center px-4" style="width: 100%;">450</div>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-center gap-4">
+<div class="w-32 text-sm font-semibold text-on-surface-variant">Membuka Undangan</div>
+<div class="flex-1 h-8 bg-surface-container rounded-r-full overflow-hidden flex items-center">
+<div class="h-full bg-tertiary-container text-on-tertiary-container text-xs font-bold flex items-center px-4" style="width: 71%;">320</div>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex items-center gap-4">
+<div class="w-32 text-sm font-semibold text-on-surface-variant">Klik RSVP</div>
+<div class="flex-1 h-8 bg-surface-container rounded-r-full overflow-hidden flex items-center">
+<div class="h-full bg-primary-fixed-dim text-on-primary-fixed text-xs font-bold flex items-center px-4" style="width: 40%;">180</div>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="flex items-center gap-4">
+<div class="w-32 text-sm font-semibold text-on-surface-variant">Konfirmasi Hadir</div>
+<div class="flex-1 h-8 bg-surface-container rounded-r-full overflow-hidden flex items-center">
+<div class="h-full bg-primary-container text-on-primary-container text-xs font-bold flex items-center px-4" style="width: 26%;">120</div>
+</div>
+</div>
+</div>
+</div>
+<!-- KPI Grid -->
+<div class="lg:col-span-5 grid grid-cols-2 gap-4">
+<!-- KPI 1 -->
+<div class="bg-surface-container-low rounded-lg p-6 flex flex-col justify-between">
+<div class="flex items-start justify-between mb-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">visibility</span>
+</div>
+<span class="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> 14.2%
+                            </span>
+</div>
+<div>
+<div class="text-sm font-medium text-on-surface-variant mb-1">Total Kunjungan</div>
+<div class="font-headline text-3xl font-bold text-on-surface">450</div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-low rounded-lg p-6 flex flex-col justify-between">
+<div class="flex items-start justify-between mb-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-tertiary-container" style="font-variation-settings: 'FILL' 1;">drafts</span>
+</div>
+<span class="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> 2.4%
+                            </span>
+</div>
+<div>
+<div class="text-sm font-medium text-on-surface-variant mb-1">Rata-rata Buka</div>
+<div class="font-headline text-3xl font-bold text-on-surface">71%</div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-low rounded-lg p-6 flex flex-col justify-between">
+<div class="flex items-start justify-between mb-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary-fixed-dim" style="font-variation-settings: 'FILL' 1;">timer</span>
+</div>
+<span class="text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">arrow_downward</span> 12s
+                            </span>
+</div>
+<div>
+<div class="text-sm font-medium text-on-surface-variant mb-1">Waktu Konversi</div>
+<div class="font-headline text-2xl font-bold text-on-surface tracking-tight">2m 45s</div>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-low rounded-lg p-6 flex flex-col justify-between">
+<div class="flex items-start justify-between mb-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-lowest flex items-center justify-center border border-outline-variant/30">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="text-xs font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> 5.8%
+                            </span>
+</div>
+<div>
+<div class="text-sm font-medium text-on-surface-variant mb-1">Total RSVP</div>
+<div class="font-headline text-3xl font-bold text-on-surface">120</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Row 2: Line Chart Area -->
+<div class="bg-surface-container-lowest rounded-lg p-8 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.03)] border border-outline-variant/20">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+<h2 class="font-headline text-xl font-bold text-on-surface">Interaksi Harian</h2>
+<!-- Toggle Buttons -->
+<div class="flex bg-surface-container-high rounded-full p-1 border border-outline-variant/30">
+<button class="px-6 py-2 rounded-full bg-surface-container-lowest shadow-sm text-sm font-bold text-on-surface">Kunjungan</button>
+<button class="px-6 py-2 rounded-full text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">RSVP</button>
+</div>
+</div>
+<!-- Mock Line Chart Area -->
+<div class="h-64 w-full relative flex items-end">
+<!-- Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between">
+<div class="border-b border-outline-variant/20 h-0"></div>
+<div class="border-b border-outline-variant/20 h-0"></div>
+<div class="border-b border-outline-variant/20 h-0"></div>
+<div class="border-b border-outline-variant/20 h-0"></div>
+<div class="border-b border-outline-variant/20 h-0"></div>
+</div>
+<!-- Decorative Line Path (Purely visual representation using a styled div curve) -->
+<div class="absolute inset-0 pt-4 overflow-hidden">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 1000 200">
+<defs>
+<lineargradient id="lineGrad" x1="0%" x2="100%" y1="0%" y2="0%">
+<stop offset="0%" stop-color="#4d5e81"></stop> <!-- secondary -->
+<stop offset="50%" stop-color="#b69ece"></stop> <!-- tertiary-container -->
+<stop offset="100%" stop-color="#ffb4a4"></stop> <!-- primary-fixed-dim -->
+</lineargradient>
+<lineargradient id="fillGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#ffb4a4" stop-opacity="0.2"></stop>
+<stop offset="100%" stop-color="#fff8f4" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0,180 C100,160 200,80 300,100 C400,120 500,40 600,60 C700,80 800,20 900,40 L1000,30 L1000,200 L0,200 Z" fill="url(#fillGrad)"></path>
+<path d="M0,180 C100,160 200,80 300,100 C400,120 500,40 600,60 C700,80 800,20 900,40 L1000,30" fill="none" stroke="url(#lineGrad)" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+</div>
+<!-- X-Axis Labels -->
+<div class="absolute -bottom-6 w-full flex justify-between text-xs text-on-surface-variant font-medium px-4">
+<span>1 Nov</span>
+<span>8 Nov</span>
+<span>15 Nov</span>
+<span>22 Nov</span>
+<span>29 Nov</span>
+</div>
+</div>
+</div>
+<!-- Row 3: 3 Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Card 1: Perangkat -->
+<div class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.03)] border border-outline-variant/20 flex flex-col">
+<h3 class="font-headline text-lg font-bold text-on-surface mb-6">Perangkat</h3>
+<div class="flex-1 flex flex-col items-center justify-center">
+<!-- Mock Donut Chart -->
+<div class="relative w-40 h-40 rounded-full bg-surface-container flex items-center justify-center mb-6 overflow-hidden">
+<!-- Using a conic gradient to simulate donut chart slices -->
+<div class="absolute inset-0" style="background: conic-gradient(#4d5e81 0% 60%, #b69ece 60% 85%, #ffb4a4 85% 100%);"></div>
+<!-- Inner circle for donut hole -->
+<div class="absolute w-24 h-24 bg-surface-container-lowest rounded-full flex flex-col items-center justify-center">
+<span class="font-headline font-bold text-xl text-on-surface">100%</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="w-full flex flex-col gap-3">
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="font-medium text-on-surface-variant">Mobile</span>
+</div>
+<span class="font-bold text-on-surface">60%</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-tertiary-container"></div>
+<span class="font-medium text-on-surface-variant">Desktop</span>
+</div>
+<span class="font-bold text-on-surface">25%</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 rounded-full bg-primary-fixed-dim"></div>
+<span class="font-medium text-on-surface-variant">Tablet</span>
+</div>
+<span class="font-bold text-on-surface">15%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2: Jam Sibuk (Heatmap representation) -->
+<div class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.03)] border border-outline-variant/20 flex flex-col">
+<h3 class="font-headline text-lg font-bold text-on-surface mb-6">Jam Sibuk</h3>
+<div class="flex-1 flex flex-col justify-center">
+<div class="grid grid-cols-6 gap-2 mb-2 text-xs text-center text-on-surface-variant font-medium">
+<div>0-4</div>
+<div>4-8</div>
+<div>8-12</div>
+<div>12-16</div>
+<div>16-20</div>
+<div>20-24</div>
+</div>
+<!-- Heatmap rows -->
+<div class="flex flex-col gap-2">
+<div class="grid grid-cols-6 gap-2">
+<div class="h-8 bg-primary-container/10 rounded-sm"></div>
+<div class="h-8 bg-primary-container/20 rounded-sm"></div>
+<div class="h-8 bg-primary-container/40 rounded-sm"></div>
+<div class="h-8 bg-primary-container/80 rounded-sm"></div>
+<div class="h-8 bg-primary-container/100 rounded-sm shadow-sm"></div>
+<div class="h-8 bg-primary-container/60 rounded-sm"></div>
+</div>
+<div class="grid grid-cols-6 gap-2">
+<div class="h-8 bg-primary-container/5 rounded-sm"></div>
+<div class="h-8 bg-primary-container/10 rounded-sm"></div>
+<div class="h-8 bg-primary-container/50 rounded-sm"></div>
+<div class="h-8 bg-primary-container/90 rounded-sm shadow-sm"></div>
+<div class="h-8 bg-primary-container/70 rounded-sm"></div>
+<div class="h-8 bg-primary-container/30 rounded-sm"></div>
+</div>
+<div class="grid grid-cols-6 gap-2">
+<div class="h-8 bg-primary-container/20 rounded-sm"></div>
+<div class="h-8 bg-primary-container/30 rounded-sm"></div>
+<div class="h-8 bg-primary-container/60 rounded-sm"></div>
+<div class="h-8 bg-primary-container/100 rounded-sm shadow-sm"></div>
+<div class="h-8 bg-primary-container/50 rounded-sm"></div>
+<div class="h-8 bg-primary-container/20 rounded-sm"></div>
+</div>
+</div>
+<div class="mt-6 text-center text-sm font-medium text-on-surface-variant">
+                            Aktivitas tertinggi terjadi pada <span class="text-primary font-bold">16:00 - 20:00</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Respons per Grup -->
+<div class="bg-surface-container-lowest rounded-lg p-6 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.03)] border border-outline-variant/20 flex flex-col">
+<h3 class="font-headline text-lg font-bold text-on-surface mb-6">Respons per Grup</h3>
+<div class="flex-1 flex flex-col justify-center gap-6">
+<!-- Bar 1 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm font-medium">
+<span class="text-on-surface-variant">Keluarga</span>
+<span class="text-on-surface font-bold">85%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+<!-- Bar 2 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm font-medium">
+<span class="text-on-surface-variant">Teman</span>
+<span class="text-on-surface font-bold">62%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 62%;"></div>
+</div>
+</div>
+<!-- Bar 3 -->
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-center text-sm font-medium">
+<span class="text-on-surface-variant">Rekan Kerja</span>
+<span class="text-on-surface font-bold">40%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant rounded-full" style="width: 40%;"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

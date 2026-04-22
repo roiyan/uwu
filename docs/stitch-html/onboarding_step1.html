@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>uwu - Onboarding Step 1</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400..900;1,400..900&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#e9e1dc",
+                      "primary-fixed": "#ffdad3",
+                      "outline": "#86736e",
+                      "surface-bright": "#fff8f4",
+                      "secondary-fixed": "#d7e2ff",
+                      "surface": "#fff8f4",
+                      "tertiary-container": "#b69ece",
+                      "surface-container": "#f4ece7",
+                      "primary-container": "#e8917e",
+                      "on-surface": "#1e1b18",
+                      "inverse-surface": "#33302d",
+                      "primary": "#914a3b",
+                      "on-error-container": "#93000a",
+                      "tertiary": "#6a5681",
+                      "outline-variant": "#d9c1bc",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#e0d9d4",
+                      "on-secondary-fixed-variant": "#354768",
+                      "on-primary-fixed-variant": "#743326",
+                      "surface-container-high": "#efe7e2",
+                      "on-primary-container": "#672a1d",
+                      "on-error": "#ffffff",
+                      "surface-container-low": "#faf2ed",
+                      "secondary-fixed-dim": "#b5c7ef",
+                      "secondary-container": "#c2d5fd",
+                      "surface-container-highest": "#e9e1dc",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed": "#efdbff",
+                      "error-container": "#ffdad6",
+                      "on-primary-fixed": "#3b0902",
+                      "on-tertiary-fixed": "#251239",
+                      "on-background": "#1e1b18",
+                      "on-secondary-container": "#4a5c7e",
+                      "on-surface-variant": "#54433f",
+                      "on-secondary-fixed": "#061b3a",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#f7efea",
+                      "on-tertiary-fixed-variant": "#523e68",
+                      "secondary": "#4d5e81",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#ffb4a4",
+                      "tertiary-fixed-dim": "#d6bdee",
+                      "primary-fixed-dim": "#ffb4a4",
+                      "surface-tint": "#914a3b",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#47345d",
+                      "background": "#fff8f4"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Noto Serif"
+                      ],
+                      "body": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label": [
+                              "Plus Jakarta Sans"
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top AppBar Structure (Suppressed from Shell, custom for Onboarding) -->
+<header class="w-full py-6 flex flex-col items-center justify-center z-50">
+<h1 class="text-3xl font-headline italic text-primary font-bold tracking-tight mb-4">uwu</h1>
+<!-- Progress Indicator -->
+<div class="flex items-center space-x-2 mb-2">
+<div class="w-3 h-3 rounded-full bg-gradient-to-r from-secondary to-primary-container"></div>
+<div class="w-8 h-px bg-outline-variant/50"></div>
+<div class="w-3 h-3 rounded-full bg-surface-variant border border-outline-variant/30"></div>
+<div class="w-8 h-px bg-outline-variant/50"></div>
+<div class="w-3 h-3 rounded-full bg-surface-variant border border-outline-variant/30"></div>
+<div class="w-8 h-px bg-outline-variant/50"></div>
+<div class="w-3 h-3 rounded-full bg-surface-variant border border-outline-variant/30"></div>
+</div>
+<span class="text-xs font-label text-outline uppercase tracking-widest mt-2">Langkah 1 dari 4</span>
+</header>
+<main class="flex-1 w-full px-4 sm:px-6 pb-24 max-w-4xl mx-auto flex flex-col items-center">
+<div class="text-center mb-10 mt-4">
+<h2 class="text-3xl md:text-4xl font-headline text-on-surface tracking-tight mb-2">Selamat! Mari mulai membuat undangan <span class="text-primary-container">🎉</span></h2>
+<p class="text-on-surface-variant font-body">Siapa yang Menikah?</p>
+</div>
+<!-- Form Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)] w-full max-w-3xl p-6 sm:p-10 border border-outline-variant/20 relative overflow-hidden">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12 relative z-10">
+<!-- Mempelai Pria Section -->
+<div class="flex flex-col space-y-6">
+<div class="flex flex-col items-center mb-4">
+<div class="w-32 h-32 rounded-full bg-surface-container-low border border-outline-variant/30 flex items-center justify-center mb-4 overflow-hidden group cursor-pointer relative">
+<div class="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors z-10"></div>
+<span class="material-symbols-outlined text-4xl text-outline group-hover:text-primary transition-colors z-0">add_a_photo</span>
+</div>
+<h3 class="font-headline text-xl text-primary mb-1">Mempelai Pria</h3>
+</div>
+<div class="space-y-5">
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="pria_nama_lengkap" placeholder="Nama Lengkap" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="pria_nama_lengkap">Nama Lengkap</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="pria_nama_panggilan" placeholder="Nama Panggilan" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="pria_nama_panggilan">Nama Panggilan</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="pria_nama_ayah" placeholder="Nama Ayah" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="pria_nama_ayah">Nama Ayah</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="pria_nama_ibu" placeholder="Nama Ibu" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="pria_nama_ibu">Nama Ibu</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="pria_anak_ke" placeholder="Anak ke-" type="number"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="pria_anak_ke">Anak ke-</label>
+</div>
+</div>
+</div>
+<!-- Mempelai Wanita Section -->
+<div class="flex flex-col space-y-6">
+<div class="flex flex-col items-center mb-4">
+<div class="w-32 h-32 rounded-full bg-surface-container-low border border-outline-variant/30 flex items-center justify-center mb-4 overflow-hidden group cursor-pointer relative">
+<div class="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors z-10"></div>
+<span class="material-symbols-outlined text-4xl text-outline group-hover:text-primary transition-colors z-0">add_a_photo</span>
+</div>
+<h3 class="font-headline text-xl text-primary mb-1">Mempelai Wanita</h3>
+</div>
+<div class="space-y-5">
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="wanita_nama_lengkap" placeholder="Nama Lengkap" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="wanita_nama_lengkap">Nama Lengkap</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="wanita_nama_panggilan" placeholder="Nama Panggilan" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="wanita_nama_panggilan">Nama Panggilan</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="wanita_nama_ayah" placeholder="Nama Ayah" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="wanita_nama_ayah">Nama Ayah</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="wanita_nama_ibu" placeholder="Nama Ibu" type="text"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="wanita_nama_ibu">Nama Ibu</label>
+</div>
+<div class="relative group">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant/50 text-on-surface focus:ring-0 focus:border-primary px-0 py-2 transition-colors peer placeholder-transparent" id="wanita_anak_ke" placeholder="Anak ke-" type="number"/>
+<label class="absolute left-0 top-2 text-sm text-outline-variant transition-all peer-focus:-top-4 peer-focus:text-xs peer-focus:text-primary peer-valid:-top-4 peer-valid:text-xs peer-valid:text-outline" for="wanita_anak_ke">Anak ke-</label>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-12 flex justify-center">
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-full px-8 py-3 font-label font-semibold tracking-wide flex items-center space-x-2 hover:opacity-90 transition-opacity shadow-lg shadow-primary-container/20">
+<span>Lanjutkan</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>

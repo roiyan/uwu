@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Website Editor - Theme Tab</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#eff4ff",
+                        "surface": "#f8f9ff",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary-fixed": "#e2dfff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#693c19",
+                        "inverse-surface": "#213145",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#4d44e3",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "surface-dim": "#cbdbf5",
+                        "secondary": "#85532e",
+                        "primary": "#3525cd",
+                        "on-secondary": "#ffffff",
+                        "outline": "#777587",
+                        "tertiary-fixed-dim": "#ffb3b0",
+                        "surface-variant": "#d3e4fe",
+                        "secondary-fixed-dim": "#fbb88b",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#dad7ff",
+                        "on-surface-variant": "#464555",
+                        "on-surface": "#0b1c30",
+                        "on-primary-fixed": "#0f0069",
+                        "on-tertiary-fixed-variant": "#8c1520",
+                        "background": "#f8f9ff",
+                        "tertiary-fixed": "#ffdad8",
+                        "on-tertiary-fixed": "#410006",
+                        "on-background": "#0b1c30",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-fixed": "#ffdcc6",
+                        "secondary-container": "#febb8e",
+                        "inverse-on-surface": "#eaf1ff",
+                        "primary-container": "#4f46e5",
+                        "inverse-primary": "#c3c0ff",
+                        "tertiary-container": "#b03136",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary-container": "#ffd0ce",
+                        "on-secondary-fixed": "#301400",
+                        "on-primary-fixed-variant": "#3323cc",
+                        "on-secondary-container": "#794925",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary": "#8f1721",
+                        "surface-container": "#e5eeff",
+                        "outline-variant": "#c7c4d8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[style*="'FILL' 1"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen flex selection:bg-primary/20">
+<!-- SideNavBar (Shared Component) -->
+<nav aria-label="Main Navigation" class="bg-slate-50 dark:bg-indigo-950 font-['Plus_Jakarta_Sans'] text-sm tracking-tight fixed left-0 top-0 h-full flex flex-col p-6 w-72 border-r-0 shadow-none z-50 hidden md:flex">
+<div class="mb-12 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container shrink-0 overflow-hidden shadow-sm shadow-indigo-900/5">
+<img alt="Wedding platform brand logo" class="w-full h-full object-cover" data-alt="minimalist white wedding ring icon on deep indigo background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6mGfVjVbZF4MHP87GIeKcOUIAcYgjnb8-PyVfzuNCeK2JgbwevxDUk3HVEJYzMOWdJZ1iJ0aYD5Es_vcLFClwIuThnpGvjjmrsPPaOthyXII7BgUKYnMAHU0tNogHqivRyHB10h8u_BH4DYzVPrcUk6vb5Hw45lyY4_c34IZF-d2m3_EUGpYOLE-3n-Wz4by8AhSXQ2Ad5eyf6DLxIcEEOCeAnB2BCE6Wg5IOrNNvCMEuWevumxFZBKA3hv8whR5tasEu9inxeQ"/>
+</div>
+<div>
+<h1 class="text-xl font-bold italic font-['Playfair_Display'] text-indigo-900 dark:text-indigo-50 leading-tight">The Heirloom</h1>
+<p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold mt-0.5">Modern Editorial Concierge</p>
+</div>
+</div>
+<ul class="flex flex-col gap-2 flex-grow">
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/80 dark:hover:bg-indigo-900/30 transition-colors duration-300 scale-95 duration-200 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-medium">Beranda</span>
+</a>
+</li>
+<li>
+<!-- ACTIVE STATE APPLIED HERE -->
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg bg-indigo-100/50 text-indigo-700 font-bold dark:bg-indigo-900/40 dark:text-indigo-200 scale-95 duration-200 active:opacity-80 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note" style="font-variation-settings: 'FILL' 1;">edit_note</span>
+<span>Website Editor</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/80 dark:hover:bg-indigo-900/30 transition-colors duration-300 scale-95 duration-200 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-medium">Tamu</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/80 dark:hover:bg-indigo-900/30 transition-colors duration-300 scale-95 duration-200 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+<span class="font-medium">Kirim Undangan</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/80 dark:hover:bg-indigo-900/30 transition-colors duration-300 scale-95 duration-200 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="bar_chart">bar_chart</span>
+<span class="font-medium">Analytics</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/80 dark:hover:bg-indigo-900/30 transition-colors duration-300 scale-95 duration-200 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
+<span class="font-medium">Check-in</span>
+</a>
+</li>
+</ul>
+<div class="mt-auto pt-6 border-t border-slate-200 dark:border-indigo-900/30">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50/80 dark:hover:bg-indigo-900/30 transition-colors duration-300 scale-95 duration-200 active:opacity-80" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-medium">Settings</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col md:ml-72 min-h-screen bg-surface relative">
+<!-- TopAppBar (Shared Component) -->
+<header aria-label="Editor Header" class="bg-white/80 backdrop-blur-xl dark:bg-indigo-950/80 sticky top-0 w-full z-40 flex justify-between items-center px-8 py-4 shadow-sm shadow-indigo-900/5 transition-opacity">
+<div class="flex items-center gap-4">
+<button aria-label="Go back" class="text-slate-500 hover:opacity-70 transition-opacity Active: scale-98 transition-transform p-2 rounded-full hover:bg-slate-100/50">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<div>
+<h2 class="font-['Plus_Jakarta_Sans'] font-medium text-lg text-indigo-600 dark:text-indigo-400">Editor</h2>
+</div>
+</div>
+<!-- Editor Tabs (Desktop Only - conceptually replacing the bottom nav here for the editor context, or rather just acting as sub-nav) -->
+<div class="hidden md:flex bg-surface-container-low rounded-full p-1 shadow-sm shadow-indigo-900/5">
+<button class="px-6 py-2 rounded-full text-sm font-medium text-slate-500 hover:bg-surface-container-highest transition-colors">Susunan</button>
+<button class="px-6 py-2 rounded-full text-sm font-bold bg-white text-indigo-700 shadow-sm transition-colors">Tema</button>
+<button class="px-6 py-2 rounded-full text-sm font-medium text-slate-500 hover:bg-surface-container-highest transition-colors">Media</button>
+<button class="px-6 py-2 rounded-full text-sm font-medium text-slate-500 hover:bg-surface-container-highest transition-colors">Pengaturan</button>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2 rounded-lg font-medium text-sm text-on-secondary-container bg-secondary-container hover:opacity-90 transition-opacity Active: scale-98">
+                    Preview
+                </button>
+<button class="px-5 py-2 rounded-lg font-medium text-sm text-white bg-gradient-to-r from-primary to-primary-container hover:opacity-90 transition-opacity shadow-[0_8px_24px_-8px_rgba(53,37,205,0.4)] Active: scale-98">
+                    Save
+                </button>
+</div>
+</header>
+<!-- Editor Split Layout -->
+<div class="flex flex-col lg:flex-row flex-grow h-[calc(100vh-73px)] overflow-hidden">
+<!-- Left Side (40%): Theme Control Panel -->
+<aside class="w-full lg:w-[40%] bg-surface-container-lowest border-r border-slate-100 overflow-y-auto custom-scrollbar shadow-[4px_0_24px_-12px_rgba(11,28,48,0.05)] z-10">
+<div class="p-8 space-y-12">
+<!-- Section 1: Active Theme -->
+<section class="space-y-4">
+<h3 class="font-headline text-lg font-semibold text-on-surface tracking-tight">Active Theme</h3>
+<div class="relative bg-surface-container-low rounded-2xl p-6 overflow-hidden group">
+<!-- Decorative background -->
+<div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1518895949257-7621c3c786d7?q=80&amp;w=600&amp;auto=format&amp;fit=crop')] bg-cover bg-center mix-blend-overlay pointer-events-none" data-alt="soft pink cherry blossoms blooming against a pale sky"></div>
+<div class="relative z-10 flex justify-between items-center">
+<div>
+<p class="font-['Playfair_Display'] italic text-2xl text-primary font-semibold">Sakura Dreams</p>
+<p class="text-sm text-on-surface-variant mt-1 font-medium">Floral &amp; Romantic</p>
+</div>
+<button class="bg-white/90 backdrop-blur-sm text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-white transition-colors shadow-sm shadow-indigo-900/5">
+                                    Ganti Tema
+                                </button>
+</div>
+</div>
+</section>
+<!-- Section 2: Palet Warna -->
+<section class="space-y-4">
+<div class="flex justify-between items-baseline">
+<h3 class="font-headline text-lg font-semibold text-on-surface tracking-tight">Palet Warna</h3>
+<button class="text-sm text-primary font-medium hover:opacity-70">Custom</button>
+</div>
+<div class="grid grid-cols-4 gap-3">
+<!-- Preset 1 (Active) -->
+<button class="col-span-2 bg-surface-container-low p-3 rounded-xl ring-2 ring-primary ring-offset-2 ring-offset-surface-container-lowest flex gap-1 items-center justify-center transition-all">
+<div class="w-6 h-6 rounded-full bg-[#fdf2f8] border border-black/5"></div>
+<div class="w-6 h-6 rounded-full bg-[#fbcfe8] border border-black/5 -ml-2"></div>
+<div class="w-6 h-6 rounded-full bg-[#db2777] border border-black/5 -ml-2"></div>
+</button>
+<!-- Preset 2 -->
+<button class="col-span-2 bg-surface-container-low hover:bg-surface-container p-3 rounded-xl flex gap-1 items-center justify-center transition-all border border-transparent hover:border-outline-variant/30">
+<div class="w-6 h-6 rounded-full bg-[#f0f9ff] border border-black/5"></div>
+<div class="w-6 h-6 rounded-full bg-[#bae6fd] border border-black/5 -ml-2"></div>
+<div class="w-6 h-6 rounded-full bg-[#0284c7] border border-black/5 -ml-2"></div>
+</button>
+<!-- Preset 3 -->
+<button class="col-span-2 bg-surface-container-low hover:bg-surface-container p-3 rounded-xl flex gap-1 items-center justify-center transition-all border border-transparent hover:border-outline-variant/30">
+<div class="w-6 h-6 rounded-full bg-[#fefce8] border border-black/5"></div>
+<div class="w-6 h-6 rounded-full bg-[#fef08a] border border-black/5 -ml-2"></div>
+<div class="w-6 h-6 rounded-full bg-[#ca8a04] border border-black/5 -ml-2"></div>
+</button>
+<!-- Preset 4 -->
+<button class="col-span-2 bg-surface-container-low hover:bg-surface-container p-3 rounded-xl flex gap-1 items-center justify-center transition-all border border-transparent hover:border-outline-variant/30">
+<div class="w-6 h-6 rounded-full bg-[#f4f4f5] border border-black/5"></div>
+<div class="w-6 h-6 rounded-full bg-[#a1a1aa] border border-black/5 -ml-2"></div>
+<div class="w-6 h-6 rounded-full bg-[#3f3f46] border border-black/5 -ml-2"></div>
+</button>
+</div>
+</section>
+<!-- Section 3: Typography -->
+<section class="space-y-4">
+<h3 class="font-headline text-lg font-semibold text-on-surface tracking-tight">Typography</h3>
+<div class="space-y-4">
+<!-- Dropdown 1: Headings -->
+<div>
+<label class="block text-sm font-medium text-on-surface-variant mb-1.5 font-label">Headings (Accent)</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 text-on-surface appearance-none focus:ring-2 focus:ring-primary focus:outline-none transition-shadow cursor-pointer font-['Playfair_Display'] italic">
+<option value="playfair">Playfair Display</option>
+<option value="cormorant">Cormorant Garamond</option>
+<option value="cinzel">Cinzel</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+<span class="material-symbols-outlined text-[20px]" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Dropdown 2: Body -->
+<div>
+<label class="block text-sm font-medium text-on-surface-variant mb-1.5 font-label">Body Text</label>
+<div class="relative">
+<select class="w-full bg-surface-container-low border-none rounded-lg py-3 px-4 text-on-surface appearance-none focus:ring-2 focus:ring-primary focus:outline-none transition-shadow cursor-pointer font-body">
+<option value="inter">Inter</option>
+<option value="lato">Lato</option>
+<option value="poppins">Poppins</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
+<span class="material-symbols-outlined text-[20px]" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Background Controls -->
+<section class="space-y-4">
+<h3 class="font-headline text-lg font-semibold text-on-surface tracking-tight">Background Settings</h3>
+<div class="p-5 bg-surface-container-low rounded-2xl flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary overflow-hidden">
+<span class="material-symbols-outlined" data-icon="image">image</span>
+</div>
+<div>
+<p class="font-medium text-on-surface text-sm">Background Image</p>
+<p class="text-xs text-on-surface-variant mt-0.5">sakura_bg_01.jpg</p>
+</div>
+</div>
+<button aria-label="Edit background" class="text-primary hover:bg-surface-container-highest p-2 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit">edit</span>
+</button>
+</div>
+<div class="flex items-center justify-between px-2">
+<label class="text-sm font-medium text-on-surface-variant">Overlay Opacity</label>
+<span class="text-sm text-primary font-bold">40%</span>
+</div>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-primary" max="100" min="0" type="range" value="40"/>
+</section>
+</div>
+</aside>
+<!-- Right Side (60%): Live Preview Panel -->
+<section class="hidden lg:flex w-[60%] bg-surface-container relative flex-col items-center">
+<!-- Device Toggle -->
+<div class="absolute top-6 z-20 bg-surface-container-lowest/80 backdrop-blur-md rounded-full p-1 shadow-[0_8px_24px_-8px_rgba(11,28,48,0.1)] flex items-center gap-1 border border-white/50">
+<button aria-label="Desktop preview" class="p-2 rounded-full bg-surface text-primary shadow-sm flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="desktop_windows">desktop_windows</span>
+</button>
+<button aria-label="Tablet preview" class="p-2 rounded-full text-slate-400 hover:text-primary hover:bg-surface-container-low flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="tablet_mac">tablet_mac</span>
+</button>
+<button aria-label="Mobile preview" class="p-2 rounded-full text-slate-400 hover:text-primary hover:bg-surface-container-low flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="smartphone">smartphone</span>
+</button>
+</div>
+<!-- Live Preview Frame (Desktop context simulated) -->
+<div class="w-full h-full p-8 pt-24 overflow-hidden flex justify-center items-start">
+<div class="w-full max-w-4xl h-[800px] bg-white rounded-t-2xl shadow-[0_24px_48px_-12px_rgba(53,37,205,0.15)] overflow-hidden relative border border-outline-variant/20 flex flex-col">
+<!-- Preview Content (Sakura Theme) -->
+<div class="relative h-96 shrink-0 flex items-center justify-center text-center px-8">
+<!-- Background Image -->
+<img alt="Hero background" class="absolute inset-0 w-full h-full object-cover" data-alt="soft pink cherry blossoms blooming against a pale sky with gentle sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBH8xT-H0GCqDGuO530youpzLsADnjR68xRnljVCKbUbhagEEVfgjNLHua7UaRgfOvXMl-p7wmtJ6e3i1FnSjTqzXzttjcDcifDUtUl3G839ruGS8XY3Q9zme9aiuEOiTO-oswJ679wjIm-OPVZmQiUbLHZSp6jP5L8RG2a3f5Ubh5yKLhyQ9MJlpz7mLErJV6u-_FFRHv6XDQaIKYYMYpy1amfsmEdY39ADWz1KOIBl45tuWJ11UyyOVkI6awrWEQOCH9YvRvvWQ"/>
+<!-- Overlay -->
+<div class="absolute inset-0 bg-[#fff5f7]/60 backdrop-blur-[2px]"></div>
+<!-- Hero Text -->
+<div class="relative z-10 max-w-lg mx-auto space-y-6">
+<p class="text-[#9d174d] tracking-[0.2em] uppercase text-xs font-bold font-body">The Wedding Of</p>
+<h1 class="font-['Playfair_Display'] italic text-6xl text-[#831843] leading-tight font-medium">Budi &amp; Ayu</h1>
+<p class="font-headline text-lg text-[#9d174d]/80">24 . 08 . 2025</p>
+</div>
+</div>
+<!-- Content Area -->
+<div class="flex-grow bg-[#fffbfa] p-12 relative overflow-y-auto custom-scrollbar">
+<!-- Decorative Element -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[#db2777] text-[32px]" data-icon="favorite">favorite</span>
+</div>
+<div class="max-w-2xl mx-auto mt-8 text-center space-y-12">
+<p class="font-body text-[#4c0519]/70 leading-relaxed text-lg">
+                                    "And among His signs is this, that He created for you mates from among yourselves, that ye may dwell in tranquility with them, and He has put love and mercy between your (hearts)."
+                                 </p>
+<div class="grid grid-cols-2 gap-12 mt-16">
+<!-- Groom -->
+<div class="space-y-4">
+<div class="w-32 h-40 mx-auto rounded-t-full bg-surface-container-low overflow-hidden">
+<img alt="Groom" class="w-full h-full object-cover sepia-[.2]" data-alt="handsome indonesian man in traditional formal wedding attire looking slightly off camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaZIO3RI7M6-WtLQtndbD_xwUgC5ST3q8RgJ5k-oJAXZ-GD8qWCpCZB_cT5vqPfUcBEBw06BOnaV1NlVGf-WbYBy2NLiwjD6SCGF6K_kalCfa2YBHQf4F26nuwVeVHhbp0pqfbUw-7DQfD5unxt2BqVpXe00k9K15y2B54xNb7ypswlIQMvxXjm578Pbc0-36LYky5kDZKVEPPErLGzplVzfRii8AcEKZMySqcsUwGYjFeCHO7M27okMBrx73zgo5c2D1huZ_V9Q"/>
+</div>
+<h3 class="font-['Playfair_Display'] italic text-2xl text-[#831843]">Budi Santoso</h3>
+</div>
+<!-- Bride -->
+<div class="space-y-4">
+<div class="w-32 h-40 mx-auto rounded-t-full bg-surface-container-low overflow-hidden">
+<img alt="Bride" class="w-full h-full object-cover sepia-[.2]" data-alt="beautiful indonesian woman smiling softly in elegant traditional wedding kebaya" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVqS7hSZb0SgDpTuyOoCVT-yiZD24__ImwZ37tYc0tlM_6yAWo7GfaWewrKGlqUfmYXQr2UBX2InmDTXivOwq0KNREnTmMa3DX2Lo-nBLXPz5Bo7VL7ScLEGDs6Br8LGEJ7Fs5GteFIXl_yWQ2KANQne52uhMseBOIkkcqe6lw0zTBhKyaT7wHoJetyvYDpWm09chC5CCZQ6uRXRwk4ay8uvdHW8r-xYks9-fpc71sqWj5gelXMDEhv0HOSfVdm6UJz1wF-42Qxg"/>
+</div>
+<h3 class="font-['Playfair_Display'] italic text-2xl text-[#831843]">Ayu Lestari</h3>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Shared Component) - Mobile Only -->
+<nav aria-label="Mobile Navigation" class="bg-white dark:bg-indigo-950 font-['Plus_Jakarta_Sans'] text-[10px] font-bold uppercase tracking-widest fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-3 pb-8 md:hidden shadow-[0_-10px_40px_rgba(53,37,205,0.08)] rounded-t-3xl">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-indigo-300/50 active:bg-indigo-50 haptic-feedback scale-90 duration-150 p-2 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="format_list_bulleted">format_list_bulleted</span>
+<span>Susunan</span>
+</a>
+<!-- ACTIVE STATE -->
+<a class="flex flex-col items-center justify-center bg-indigo-50 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-200 rounded-2xl px-6 py-2 haptic-feedback scale-90 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="palette" style="font-variation-settings: 'FILL' 1;">palette</span>
+<span>Tema</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-indigo-300/50 active:bg-indigo-50 haptic-feedback scale-90 duration-150 p-2 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="image">image</span>
+<span>Media</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-indigo-300/50 active:bg-indigo-50 haptic-feedback scale-90 duration-150 p-2 rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+<span>Pengaturan</span>
+</a>
+</nav>
+<style>
+        /* Custom Scrollbar for editor panels */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #334155;
+        }
+    </style>
+</body></html>

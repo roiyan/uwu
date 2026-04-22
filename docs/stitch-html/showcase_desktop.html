@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Showcase - UWU</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#100069",
+                      "background": "#f9f9ff",
+                      "on-surface-variant": "#464554",
+                      "secondary-container": "#fe7e4f",
+                      "tertiary": "#612833",
+                      "on-secondary-fixed": "#380c00",
+                      "surface-container-high": "#dee8ff",
+                      "surface-dim": "#cfdaf2",
+                      "on-secondary": "#ffffff",
+                      "outline": "#777586",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed-variant": "#822800",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed": "#ffd9dd",
+                      "primary-fixed-dim": "#c3c0ff",
+                      "surface-bright": "#f9f9ff",
+                      "surface-container": "#e7eeff",
+                      "on-primary-fixed-variant": "#372abf",
+                      "inverse-primary": "#c3c0ff",
+                      "outline-variant": "#c7c4d7",
+                      "on-surface": "#111c2d",
+                      "on-tertiary-container": "#ffafba",
+                      "surface-tint": "#5148d7",
+                      "secondary-fixed": "#ffdbcf",
+                      "primary": "#2a14b4",
+                      "surface-container-low": "#f0f3ff",
+                      "on-error-container": "#93000a",
+                      "inverse-surface": "#263143",
+                      "tertiary-container": "#7d3e49",
+                      "surface-container-highest": "#d8e3fb",
+                      "on-background": "#111c2d",
+                      "surface-variant": "#d8e3fb",
+                      "on-tertiary-fixed-variant": "#70343e",
+                      "secondary-fixed-dim": "#ffb59c",
+                      "tertiary-fixed-dim": "#ffb2bc",
+                      "on-primary-container": "#c1beff",
+                      "surface": "#f9f9ff",
+                      "on-secondary-container": "#6b1f00",
+                      "primary-fixed": "#e3dfff",
+                      "on-tertiary-fixed": "#3a0915",
+                      "secondary": "#a43c12",
+                      "primary-container": "#4338ca",
+                      "inverse-on-surface": "#ecf1ff",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label": [
+                              "Be Vietnam Pro"
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .masonry-grid {
+            column-count: 1;
+            column-gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .masonry-grid { column-count: 2; }
+        }
+        @media (min-width: 1024px) {
+            .masonry-grid { column-count: 3; }
+        }
+        .masonry-item {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+        }
+      </style>
+</head>
+<body class="bg-surface text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b-0 shadow-sm shadow-indigo-900/5">
+<div class="flex justify-between items-center h-16 px-6 md:px-12 w-full max-w-7xl mx-auto">
+<!-- Brand -->
+<a class="text-2xl font-black tracking-tighter text-indigo-800 dark:text-indigo-300 font-headline" href="#">
+                UWU
+            </a>
+<!-- Navigation Links (Web) -->
+<nav class="hidden md:flex items-center gap-8 font-['Plus_Jakarta_Sans'] font-medium tracking-tight">
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors" href="#">Templates</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors" href="#">Features</a>
+<a class="text-indigo-700 dark:text-indigo-400 border-b-2 border-indigo-600 pb-1 font-bold" href="#">Showcase</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-300 transition-colors" href="#">Pricing</a>
+</nav>
+<!-- Actions -->
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-6 py-2.5 font-label font-semibold text-sm transition-all duration-300 ease-out active:scale-95 hover:bg-secondary-fixed-dim shadow-[0_4px_20px_rgba(254,126,79,0.2)]">
+                    Create Invitation
+                </button>
+<button class="text-indigo-700 dark:text-indigo-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 rounded-lg p-2 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-20 md:pb-32 px-6 md:px-12 max-w-7xl mx-auto w-full">
+<!-- Hero Section -->
+<section class="text-center max-w-3xl mx-auto mb-16 md:mb-24 relative">
+<!-- Decorative Blob -->
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 w-64 h-64 bg-tertiary-fixed rounded-full blur-[80px] opacity-60 -z-10 pointer-events-none"></div>
+<h1 class="font-headline text-[3.5rem] leading-tight tracking-[-0.02em] font-extrabold text-on-surface mb-6">
+                Ribuan Kebahagiaan bersama <span class="text-primary-container">UWU</span>
+</h1>
+<p class="font-body text-lg text-on-surface-variant max-w-xl mx-auto">
+                Lihat karya nyata dari pasangan yang bahagia. Inspirasi desain undangan digital yang elegan dan personal untuk hari istimewa Anda.
+            </p>
+</section>
+<!-- Masonry Grid Layout -->
+<section class="masonry-grid">
+<!-- Card 1 (Tall) -->
+<article class="masonry-item relative group overflow-hidden rounded-[1.5rem] bg-surface-container-lowest shadow-[0_10px_40px_rgba(17,28,45,0.06)] hover:-translate-y-1 transition-transform duration-500">
+<div class="relative aspect-[3/4] w-full overflow-hidden">
+<img alt="Wedding Couple" class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-in-out" data-alt="Elegant bride and groom in traditional indonesian wedding attire standing in a beautifully lit indoor garden with soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7AbD3398A-jA8_gVv6_B4EfukAva4MLgpqT04G8Pu0pALu2V47L68JGbKbnCCVN_DRxlshJIPMM_KLGs7V30MiAJdTZLonwTEtiUREk07A_PTb6bc7njm-_WwgzQrQ712lxH4oU5jjdUgU5ZFZVWP6rD6xTk2oAyn5_XUKg9cguHOzGBJ_I89AcparoL-I1W_5NEw-wLhoVkveGq7j3hmdCUvgdadxbo0I15NlBSs4H_yQWuDjOqmubv6ZcZsbgu6XSWsKCzXIA"/>
+<!-- Overlay -->
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/20 to-transparent"></div>
+</div>
+<!-- Content overlay on image -->
+<div class="absolute bottom-0 left-0 w-full p-6 text-on-primary">
+<div class="flex items-center gap-2 mb-2">
+<span class="px-3 py-1 bg-surface/20 backdrop-blur-md rounded-full text-xs font-label tracking-wider uppercase border border-surface/10">Traditional</span>
+</div>
+<h2 class="font-headline text-2xl font-bold mb-1">Wedding Anisa &amp; Rizky</h2>
+<p class="font-body text-sm text-surface-container-low/90 mb-4">12 Agustus 2024</p>
+<div class="flex items-center gap-4 text-sm font-label">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>1.2k</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">visibility</span>
+<span>4.5k</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 2 (Square-ish) -->
+<article class="masonry-item relative group overflow-hidden rounded-[1.5rem] bg-surface-container-lowest shadow-[0_10px_40px_rgba(17,28,45,0.06)] hover:-translate-y-1 transition-transform duration-500">
+<div class="relative aspect-square w-full overflow-hidden">
+<img alt="Wedding Details" class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-in-out" data-alt="Close up shot of beautiful diamond wedding rings resting on a soft white peony flower with romantic warm bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDHtjbTjFcJynWPZiV8JE4HMiOmtf9IpNctLY1hFbnM7a4kWNB0YtInwH0DEhh0NTGxIW4d2yR4zZuWf6mJcAppKQQQJEW8h9aV_MQI8oMOLYYbyXJOR1D_iInFLJa1rXU11ercvNVnYeuFbq2__pXP0RmuP50tFGsJcmpMsK4oGu3lxWhKb4m442d98I2qE6ydmaMVE0hhsJEfm47-XzSCj7qb9utKO-GKxMWBjXRxaj2RwyUmhTW945ro3P8WPvXuoTH9jRYKug"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/10 to-transparent"></div>
+</div>
+<div class="absolute bottom-0 left-0 w-full p-6 text-on-primary">
+<div class="flex items-center gap-2 mb-2">
+<span class="px-3 py-1 bg-surface/20 backdrop-blur-md rounded-full text-xs font-label tracking-wider uppercase border border-surface/10">Minimalist</span>
+</div>
+<h2 class="font-headline text-xl font-bold mb-1">Sarah &amp; David</h2>
+<p class="font-body text-sm text-surface-container-low/90 mb-4">24 September 2024</p>
+<div class="flex items-center gap-4 text-sm font-label">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>856</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">visibility</span>
+<span>2.1k</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 3 (Wide/Medium) -->
+<article class="masonry-item relative group overflow-hidden rounded-[1.5rem] bg-surface-container-lowest shadow-[0_10px_40px_rgba(17,28,45,0.06)] hover:-translate-y-1 transition-transform duration-500">
+<div class="relative aspect-[4/3] w-full overflow-hidden">
+<img alt="Wedding Venue" class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-in-out" data-alt="Wide shot of a luxury outdoor wedding reception venue at sunset with string lights warm glowing ambiance and elegantly set tables" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCUakmMC8bk-E7GLSn4izvC2rBBHunJc80UQYMhF-UkGEZvpnZPxYXGAtwk6UF45dVhHrWpU6tT_37gYxQWnDRzieHbabFOFkxXdMe_L4WbTTpDxXyd0-1keg_fNq_h2kBD6i_9JyIM7uijtSAVIGPU8ZuzSUcno-gQMpug0qSsJe1VyyMOel-3IX-teOhfkZJ1PWrEGOIJTnsp_ByOe5lF91z9TdlX0AHUau064nytiqibvuxQb2QaiXJEZrE_y39TusRtuiLuKw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/20 to-transparent"></div>
+</div>
+<div class="absolute bottom-0 left-0 w-full p-6 text-on-primary">
+<div class="flex items-center gap-2 mb-2">
+<span class="px-3 py-1 bg-surface/20 backdrop-blur-md rounded-full text-xs font-label tracking-wider uppercase border border-surface/10">Rustic Elegance</span>
+</div>
+<h2 class="font-headline text-2xl font-bold mb-1">Maya &amp; Budi</h2>
+<p class="font-body text-sm text-surface-container-low/90 mb-4">05 Oktober 2024</p>
+<div class="flex items-center gap-4 text-sm font-label">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>2.4k</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">visibility</span>
+<span>8.9k</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 4 (Tall) -->
+<article class="masonry-item relative group overflow-hidden rounded-[1.5rem] bg-surface-container-lowest shadow-[0_10px_40px_rgba(17,28,45,0.06)] hover:-translate-y-1 transition-transform duration-500">
+<div class="relative aspect-[3/4] w-full overflow-hidden">
+<img alt="Couple walking" class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-in-out" data-alt="Romantic shot of a bride and groom walking hand in hand through a lush green forest path during golden hour soft focus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTVqSEf8AxSTCkmPvTccpdlNPbdEU68-xHt38QYSTt9iqmCVfeWc16TucbKbrTCqdtSrvfZqVzV004LtCYtEShPe-AsXsDdt7l59QcEbMqOacQFC5Qi4hT9UxyOgeDnKSTnnvrylj3Ad1kTYSzd4LQQeCugKCWQIt2UuajVBvUPUztNfanCS8w1TmZrdf3qDitTNoP9g7wpQ4FVGRiXWjlB4CSfFC90Qr1CliefymtAIeEatqWIqa9OqkB3MZ1OTizLJ_GQS5jsw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/20 to-transparent"></div>
+</div>
+<div class="absolute bottom-0 left-0 w-full p-6 text-on-primary">
+<div class="flex items-center gap-2 mb-2">
+<span class="px-3 py-1 bg-surface/20 backdrop-blur-md rounded-full text-xs font-label tracking-wider uppercase border border-surface/10">Botanical</span>
+</div>
+<h2 class="font-headline text-2xl font-bold mb-1">Dina &amp; Reza</h2>
+<p class="font-body text-sm text-surface-container-low/90 mb-4">18 November 2024</p>
+<div class="flex items-center gap-4 text-sm font-label">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>942</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">visibility</span>
+<span>3.2k</span>
+</div>
+</div>
+</div>
+</article>
+<!-- Card 5 (Square) -->
+<article class="masonry-item relative group overflow-hidden rounded-[1.5rem] bg-surface-container-lowest shadow-[0_10px_40px_rgba(17,28,45,0.06)] hover:-translate-y-1 transition-transform duration-500">
+<div class="relative aspect-square w-full overflow-hidden">
+<img alt="Wedding Cake" class="object-cover w-full h-full transform group-hover:scale-105 transition-transform duration-700 ease-in-out" data-alt="Elegant multi-tiered white wedding cake adorned with fresh pastel flowers standing on a wooden table outdoors soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIkQBEHRb9c1q_0cvn6X-194o87h4xjj2cm7KapWvC4nyQIIYwKTeeOAfoQcaoABQSi7JygY_EbKi4WEtZnI86vK80OMHy8yMWXfKXEFwHiHST7y8QzdOQApQMc1cSEFEV_gRWXUJSFOEkEUFRN4lxFhkfSH7oD_TFV0FmzBMhsmrCLfaW7djRfhZNtAarT4uxmtYhyjg642yKvEYxPRac_qe2UizdicO3IS7QHTEjAY11zzxMDhj5WF3PEz9ItWxYYHNAFOLPgw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-inverse-surface/10 to-transparent"></div>
+</div>
+<div class="absolute bottom-0 left-0 w-full p-6 text-on-primary">
+<div class="flex items-center gap-2 mb-2">
+<span class="px-3 py-1 bg-surface/20 backdrop-blur-md rounded-full text-xs font-label tracking-wider uppercase border border-surface/10">Classic</span>
+</div>
+<h2 class="font-headline text-xl font-bold mb-1">Alya &amp; Dimas</h2>
+<p class="font-body text-sm text-surface-container-low/90 mb-4">02 Desember 2024</p>
+<div class="flex items-center gap-4 text-sm font-label">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed-dim" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>1.5k</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 0;">visibility</span>
+<span>5.6k</span>
+</div>
+</div>
+</div>
+</article>
+</section>
+<!-- Load More Action -->
+<div class="mt-16 flex justify-center">
+<button class="bg-surface-container-highest text-primary font-label font-semibold py-3 px-8 rounded-full hover:bg-surface-dim transition-colors shadow-sm">
+                Lihat Lebih Banyak
+            </button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-20 bg-slate-50 dark:bg-slate-950 font-['Be_Vietnam_Pro'] text-sm">
+<div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 border-t border-slate-100 dark:border-slate-900 pt-12">
+<div>
+<span class="text-xl font-bold text-indigo-700 dark:text-indigo-400 mb-4 block font-headline">UWU</span>
+<p class="text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
+                    Platform undangan digital premium untuk merayakan momen berharga Anda dengan elegan dan modern.
+                </p>
+<p class="text-slate-500 dark:text-slate-400">
+                    © 2024 UWU Digital Atelier. Crafted for your forever.
+                </p>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div>
+<h3 class="font-semibold text-indigo-900 dark:text-indigo-100 mb-4">Company</h3>
+<ul class="space-y-3">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-coral-500 transition-colors" href="#">About Us</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-coral-500 transition-colors" href="#">Contact</a></li>
+</ul>
+</div>
+<div>
+<h3 class="font-semibold text-indigo-900 dark:text-indigo-100 mb-4">Legal</h3>
+<ul class="space-y-3">
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-coral-500 transition-colors" href="#">Privacy Policy</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-coral-500 transition-colors" href="#">Terms of Service</a></li>
+<li><a class="text-slate-500 dark:text-slate-400 hover:text-coral-500 transition-colors" href="#">Help Center</a></li>
+</ul>
+</div>
+</div>
+</div>
+</footer>
+<!-- BottomNavBar (Mobile Only) - Suppressed on Desktop (md:hidden) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-2 pb-safe bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg rounded-t-3xl border-t-0 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] font-['Plus_Jakarta_Sans'] text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 tap-highlight-transparent transition-transform duration-200 active:bg-slate-100 dark:active:bg-slate-800 rounded-2xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+            Home
+        </a>
+<a class="flex flex-col items-center justify-center bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 rounded-2xl px-5 py-2 tap-highlight-transparent transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+            Gallery
+        </a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 tap-highlight-transparent transition-transform duration-200 active:bg-slate-100 dark:active:bg-slate-800 rounded-2xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">article</span>
+            Invites
+        </a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-5 py-2 tap-highlight-transparent transition-transform duration-200 active:bg-slate-100 dark:active:bg-slate-800 rounded-2xl" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+            Profile
+        </a>
+</nav>
+</body></html>

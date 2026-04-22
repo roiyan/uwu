@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ethereal Atelier - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Be Vietnam Pro', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .headline {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#c3c0ff",
+                      "surface-container-low": "#f0f3ff",
+                      "error-container": "#ffdad6",
+                      "on-primary-container": "#c1beff",
+                      "inverse-surface": "#263143",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-primary": "#c3c0ff",
+                      "tertiary-fixed-dim": "#ffb2bc",
+                      "secondary-fixed": "#ffdbcf",
+                      "tertiary": "#612833",
+                      "surface-variant": "#d8e3fb",
+                      "on-tertiary-fixed-variant": "#70343e",
+                      "on-primary-fixed-variant": "#372abf",
+                      "surface-container-highest": "#d8e3fb",
+                      "on-tertiary-container": "#ffafba",
+                      "surface-dim": "#cfdaf2",
+                      "on-secondary-fixed": "#380c00",
+                      "on-surface": "#111c2d",
+                      "primary-container": "#4338ca",
+                      "on-secondary-fixed-variant": "#822800",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#dee8ff",
+                      "primary": "#2a14b4",
+                      "surface-container": "#e7eeff",
+                      "tertiary-fixed": "#ffd9dd",
+                      "background": "#f9f9ff",
+                      "on-tertiary-fixed": "#3a0915",
+                      "on-secondary-container": "#6b1f00",
+                      "primary-fixed": "#e3dfff",
+                      "outline-variant": "#c7c4d7",
+                      "inverse-on-surface": "#ecf1ff",
+                      "on-primary-fixed": "#100069",
+                      "on-error": "#ffffff",
+                      "surface-bright": "#f9f9ff",
+                      "on-background": "#111c2d",
+                      "on-error-container": "#93000a",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#7d3e49",
+                      "surface-tint": "#5148d7",
+                      "on-tertiary": "#ffffff",
+                      "surface": "#f9f9ff",
+                      "on-surface-variant": "#464554",
+                      "secondary-fixed-dim": "#ffb59c",
+                      "secondary-container": "#fe7e4f",
+                      "on-primary": "#ffffff",
+                      "secondary": "#a43c12",
+                      "outline": "#777586"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "1.5rem",
+                      "full": "9999px"
+              },
+              "fontFamily": {
+                      "headline": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body": [
+                              "Be Vietnam Pro"
+                      ],
+                      "label": [
+                              "Be Vietnam Pro"
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex items-center justify-center relative overflow-hidden">
+<!-- Decorative Elements -->
+<div class="absolute inset-0 z-0 opacity-40 pointer-events-none">
+<div class="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] bg-primary-fixed-dim rounded-full mix-blend-multiply filter blur-[100px] opacity-70 animate-pulse"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-tertiary-fixed-dim rounded-full mix-blend-multiply filter blur-[120px] opacity-60"></div>
+</div>
+<!-- Floating Graphic Shape (Ethereal Atelier requirement) -->
+<div class="absolute right-[10%] top-[20%] w-32 h-32 bg-tertiary-fixed rounded-[40%_60%_70%_30%_/_40%_50%_60%_50%] opacity-80 blur-md z-0 hidden lg:block"></div>
+<div class="absolute left-[15%] bottom-[25%] w-24 h-24 bg-primary-fixed-dim rounded-[50%_50%_30%_70%_/_60%_40%_60%_40%] opacity-60 blur-md z-0 hidden lg:block"></div>
+<div class="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col lg:flex-row items-center justify-center gap-16">
+<!-- Left Side: Decorative Illustration -->
+<div class="hidden lg:flex flex-1 flex-col items-start justify-center max-w-lg relative">
+<!-- Asymmetrical layering behind the main image -->
+<div class="absolute -left-8 -top-8 w-64 h-64 bg-surface-container-high rounded-full blur-3xl opacity-50 z-0"></div>
+<div class="relative z-10 p-4 bg-surface-container-lowest rounded-xl shadow-[0_20px_40px_rgba(17,28,45,0.06)] transform -rotate-2">
+<img alt="Elegant wedding details" class="w-full h-auto object-cover rounded-lg" data-alt="soft focus close-up of elegant wedding rings on textured vellum paper surrounded by delicate white floral arrangements in warm natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDk_ycq6QVxOylozGQuF9mu6driomgcDMowY9aGaa0HS7_QxPSwmjD4wW1m37XofqG301DO9CdK10M02GzDkxh7FFP8CFVOrUPvurVz_1fVkMioUpF5DCPdvO3btUI1zbw1aN2-6fAfjmsVu-iPDB-VyyCYf25ULptdSgB-m8mQHumAjpL-uYmllg6io3BJd3L3hKKtd_CAUw0HI_u0mqRmY7nxGiy8-Qp3KRs80fhWTCB6rWubT5kPSAGWDam4TQ04T0JGSA-t1A"/>
+</div>
+<div class="mt-12 ml-8 relative z-10">
+<h1 class="headline text-[3.5rem] leading-tight font-extrabold tracking-[-0.02em] text-on-surface mb-4">
+                    The<br/>Ethereal<br/>Atelier
+                </h1>
+<p class="text-on-surface-variant text-lg max-w-md font-body leading-relaxed">
+                    A Sanctuary for Indonesian Couples to craft their perfect day with effortless grace.
+                </p>
+</div>
+</div>
+<!-- Right Side: Login Card -->
+<div class="w-full max-w-[440px] flex-shrink-0">
+<div class="bg-surface-container-lowest/80 backdrop-blur-xl rounded-xl p-8 sm:p-10 shadow-[0_30px_60px_rgba(17,28,45,0.08)] relative z-10 border border-outline-variant/20">
+<!-- Logo / Header -->
+<div class="text-center mb-10">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface-container-low mb-6 shadow-[0_10px_20px_rgba(17,28,45,0.04)]">
+<span class="material-symbols-outlined text-4xl text-primary" data-icon="favorite" data-weight="fill" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</div>
+<h2 class="headline text-2xl font-bold tracking-tight text-on-surface mb-2">Selamat Datang Kembali</h2>
+<p class="text-on-surface-variant text-sm font-body">Masuk ke akun Anda untuk melanjutkan</p>
+</div>
+<!-- Google Login Button -->
+<button class="w-full flex items-center justify-center gap-3 bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors py-3.5 px-4 rounded-full font-medium text-sm border border-outline-variant/20 mb-8 shadow-[0_4px_10px_rgba(17,28,45,0.03)]">
+<svg class="w-5 h-5" fill="none" viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
+<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
+</svg>
+                    Masuk dengan Google
+                </button>
+<!-- Divider -->
+<div class="relative flex items-center mb-8">
+<div class="flex-grow border-t border-outline-variant/30"></div>
+<span class="flex-shrink-0 mx-4 text-on-surface-variant text-xs font-medium uppercase tracking-wider">Atau dengan email</span>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+</div>
+<!-- Login Form -->
+<form class="space-y-6">
+<div class="space-y-1.5">
+<label class="block text-sm font-medium text-on-surface-variant font-label" for="email">Email</label>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:ring-0 focus:border-transparent transition-all" id="email" name="email" placeholder="nama@email.com" required="" type="email"/>
+<!-- Custom Focus Indicator (Ethereal Atelier rule) -->
+<div class="absolute bottom-0 left-0 right-0 h-[2px] bg-surface-tint opacity-0 transition-opacity duration-300 pointer-events-none peer-focus:opacity-100"></div>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center justify-between">
+<label class="block text-sm font-medium text-on-surface-variant font-label" for="password">Password</label>
+<a class="text-xs font-medium text-primary hover:text-primary-container transition-colors" href="#">Lupa Password?</a>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container-lowest border border-outline-variant/20 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:ring-0 focus:border-transparent transition-all peer" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<!-- Custom Focus Indicator -->
+<div class="absolute bottom-0 left-0 right-0 h-[2px] bg-surface-tint opacity-0 transition-opacity duration-300 pointer-events-none peer-focus:opacity-100"></div>
+</div>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed-dim transition-colors py-3.5 px-4 rounded-full font-semibold text-[15px] mt-8 shadow-[0_10px_25px_rgba(254,126,79,0.2)]" type="submit">
+                        Masuk
+                    </button>
+</form>
+<div class="mt-8 text-center text-sm text-on-surface-variant">
+                    Belum punya akun? <a class="font-semibold text-primary hover:text-primary-container transition-colors" href="#">Daftar sekarang</a>
+</div>
+</div>
+</div>
+</div>
+</body></html>

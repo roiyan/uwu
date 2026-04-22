@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>RSVP Success - The Modern Heirloom</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;500;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-fixed": "#3b0902",
+                      "outline-variant": "#d9c1bc",
+                      "on-tertiary-container": "#47345d",
+                      "surface": "#fff8f4",
+                      "tertiary-fixed-dim": "#d6bdee",
+                      "surface-dim": "#e0d9d4",
+                      "on-secondary-container": "#4a5c7e",
+                      "inverse-on-surface": "#f7efea",
+                      "inverse-primary": "#ffb4a4",
+                      "surface-container-highest": "#e9e1dc",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-tint": "#914a3b",
+                      "background": "#fff8f4",
+                      "secondary-fixed": "#d7e2ff",
+                      "outline": "#86736e",
+                      "tertiary": "#6a5681",
+                      "primary-fixed": "#ffdad3",
+                      "on-tertiary-fixed-variant": "#523e68",
+                      "on-secondary-fixed-variant": "#354768",
+                      "surface-container-low": "#faf2ed",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed-variant": "#743326",
+                      "on-tertiary": "#ffffff",
+                      "surface-variant": "#e9e1dc",
+                      "secondary": "#4d5e81",
+                      "on-primary-container": "#672a1d",
+                      "on-error-container": "#93000a",
+                      "primary-fixed-dim": "#ffb4a4",
+                      "on-surface-variant": "#54433f",
+                      "on-background": "#1e1b18",
+                      "on-primary": "#ffffff",
+                      "tertiary-container": "#b69ece",
+                      "on-surface": "#1e1b18",
+                      "error": "#ba1a1a",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#b5c7ef",
+                      "surface-bright": "#fff8f4",
+                      "surface-container": "#f4ece7",
+                      "primary": "#914a3b",
+                      "secondary-container": "#c2d5fd",
+                      "inverse-surface": "#33302d",
+                      "tertiary-fixed": "#efdbff",
+                      "surface-container-high": "#efe7e2",
+                      "primary-container": "#e8917e",
+                      "on-secondary-fixed": "#061b3a",
+                      "on-tertiary-fixed": "#251239",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "1rem",
+                      "lg": "2rem",
+                      "xl": "3rem",
+                      "full": "9999px"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Noto Serif"
+                      ],
+                      "body": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label": [
+                              "Plus Jakarta Sans"
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body antialiased min-h-screen flex flex-col relative overflow-hidden">
+<!-- Sakura Dreams Background Elements -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden z-0">
+<div class="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary-fixed/30 to-transparent"></div>
+<div class="absolute top-[-10%] right-[-10%] w-[120vw] max-w-[800px] aspect-square rounded-full bg-primary-fixed-dim/20 blur-[100px]"></div>
+<div class="absolute bottom-[-20%] left-[-20%] w-[100vw] max-w-[600px] aspect-square rounded-full bg-tertiary-fixed/30 blur-[120px]"></div>
+</div>
+<!-- Main Content Canvas (No Nav Bar needed as this is a transactional success state) -->
+<main class="flex-grow flex items-center justify-center p-6 z-10 relative">
+<!-- Success Card -->
+<div class="bg-surface-container-lowest w-full max-w-md rounded-xl p-8 sm:p-12 flex flex-col items-center text-center shadow-[0_20px_50px_rgba(30,27,24,0.04)] border border-outline-variant/20">
+<!-- Elegant Checkmark -->
+<div class="mb-8 relative flex items-center justify-center w-24 h-24 rounded-full bg-surface-container-low border border-outline-variant/30">
+<div class="absolute inset-0 rounded-full border border-[#C4956A] opacity-50 scale-110"></div>
+<span class="material-symbols-outlined text-[3rem] text-primary" data-icon="check_circle" data-weight="fill" style="font-variation-settings: 'FILL' 1;">
+                    check_circle
+                </span>
+</div>
+<!-- Typography Header -->
+<h1 class="font-headline text-display-md text-on-surface mb-3 tracking-[-0.02em]">Terima Kasih, [Nama]!</h1>
+<!-- Body Copy -->
+<p class="font-body text-on-surface-variant text-base mb-8 leading-relaxed max-w-xs">
+                Konfirmasi Anda telah kami terima. Kami sangat menantikan kehadiran Anda.
+            </p>
+<!-- Event Details Pill -->
+<div class="w-full bg-surface-container-low rounded-lg p-5 flex flex-col items-center justify-center gap-2 mb-10 border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary mb-1" data-icon="calendar_today">
+                    calendar_today
+                </span>
+<p class="font-body text-sm font-medium text-on-surface">15 Agustus 2026</p>
+<div class="h-px w-12 bg-outline-variant/50 my-1"></div>
+<p class="font-body text-sm text-on-surface-variant">The Ritz-Carlton, Jakarta</p>
+</div>
+<!-- Actions -->
+<div class="w-full flex flex-col gap-4">
+<!-- Primary Action (Calendar) - Secondary styling requested (Coral outline) -->
+<button class="w-full rounded-full border border-primary-container text-primary font-body font-medium text-sm py-4 px-6 flex items-center justify-center gap-2 transition-colors hover:bg-primary-container/10">
+<span class="material-symbols-outlined text-[1.25rem]" data-icon="event_note">
+                        event_note
+                    </span>
+                    Tambah ke Kalender
+                </button>
+<!-- Secondary Action (Back to invite) - Link styling -->
+<button class="w-full font-body font-medium text-sm text-secondary py-4 px-6 underline-offset-4 hover:underline transition-all">
+                    Kembali ke Undangan
+                </button>
+</div>
+</div>
+</main>
+</body></html>

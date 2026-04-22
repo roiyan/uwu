@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UWU Portfolio - Showcase</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be+Vietnam+Pro:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#100069",
+                        "background": "#f9f9ff",
+                        "on-surface-variant": "#464554",
+                        "secondary-container": "#fe7e4f",
+                        "tertiary": "#612833",
+                        "on-secondary-fixed": "#380c00",
+                        "surface-container-high": "#dee8ff",
+                        "surface-dim": "#cfdaf2",
+                        "on-secondary": "#ffffff",
+                        "outline": "#777586",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#822800",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffd9dd",
+                        "primary-fixed-dim": "#c3c0ff",
+                        "surface-bright": "#f9f9ff",
+                        "surface-container": "#e7eeff",
+                        "on-primary-fixed-variant": "#372abf",
+                        "inverse-primary": "#c3c0ff",
+                        "outline-variant": "#c7c4d7",
+                        "on-surface": "#111c2d",
+                        "on-tertiary-container": "#ffafba",
+                        "surface-tint": "#5148d7",
+                        "secondary-fixed": "#ffdbcf",
+                        "primary": "#2a14b4",
+                        "surface-container-low": "#f0f3ff",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#263143",
+                        "tertiary-container": "#7d3e49",
+                        "surface-container-highest": "#d8e3fb",
+                        "on-background": "#111c2d",
+                        "surface-variant": "#d8e3fb",
+                        "on-tertiary-fixed-variant": "#70343e",
+                        "secondary-fixed-dim": "#ffb59c",
+                        "tertiary-fixed-dim": "#ffb2bc",
+                        "on-primary-container": "#c1beff",
+                        "surface": "#f9f9ff",
+                        "on-secondary-container": "#6b1f00",
+                        "primary-fixed": "#e3dfff",
+                        "on-tertiary-fixed": "#3a0915",
+                        "secondary": "#a43c12",
+                        "primary-container": "#4338ca",
+                        "inverse-on-surface": "#ecf1ff",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Be Vietnam Pro", "sans-serif"],
+                        "label": ["Be Vietnam Pro", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Be Vietnam Pro', sans-serif; background-color: #f9f9ff; color: #111c2d; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen pb-24 max-w-[390px] mx-auto overflow-x-hidden relative">
+<!-- TopNavBar (Mobile Shell View - Hidden Nav Links) -->
+<nav class="fixed top-0 w-full z-50 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(42,20,180,0.03)] border-none max-w-[390px]">
+<div class="flex justify-between items-center h-16 px-6 md:px-12 w-full max-w-7xl mx-auto">
+<span class="text-2xl font-black tracking-tighter text-primary">UWU</span>
+<div class="hidden md:flex gap-6">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label" href="#">Templates</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label" href="#">Features</a>
+<a class="text-primary border-b-2 border-primary pb-1 font-bold font-label" href="#">Showcase</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label" href="#">Pricing</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:block bg-secondary-container text-on-secondary-container px-6 py-2 rounded-full font-label font-semibold hover:bg-secondary-fixed-dim transition-colors">Create Invitation</button>
+<button class="text-primary p-2 hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<!-- Main Canvas -->
+<main class="pt-24 px-4 relative z-10">
+<!-- Floating Ethereal Shapes (Background) -->
+<div class="absolute top-0 right-0 -z-10 w-64 h-64 bg-tertiary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
+<div class="absolute top-40 left-[-40px] -z-10 w-48 h-48 bg-primary-fixed-dim rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+<!-- Hero Section -->
+<section class="mb-10 text-center relative z-10">
+<h1 class="font-headline text-[2.5rem] leading-tight font-bold tracking-tight text-on-surface mb-3">
+                Ribuan Kebahagiaan bersama <span class="text-primary-container">UWU</span>
+</h1>
+<p class="font-body text-base text-on-surface-variant max-w-[300px] mx-auto leading-relaxed">
+                Lihat karya nyata dari pasangan yang bahagia.
+            </p>
+</section>
+<!-- Portfolio Grid (2 Columns Mobile) -->
+<section class="grid grid-cols-2 gap-3 mb-8">
+<!-- Card 1 -->
+<div class="group relative rounded-xl overflow-hidden aspect-[3/4] bg-surface-container-highest isolate shadow-[0_10px_40px_-10px_rgba(42,20,180,0.08)]">
+<img alt="Wedding Anisa &amp; Rizky" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="elegant soft floral wedding arrangement with white roses and blush pink peonies in soft natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAEpFDn3VrYbj-l8uh-ci6KCHY0IBqGdOP3gEEc3GGJNy-vzZ9KsN_7GdiTs7-SkYCtMxo5b83gHPQnKtMsz0d2OapIr0VujB0vsLwcLnLkkUTosjR-vxrSrBR9-81HyousyHSl9q4nYhA2YhwcUEz0pCVvD7_2vaLkFVcavhnTXJQQXnEZGXOsEMSFxQP8jQb3LFAGtfDmQRCb2dXraoUo1wlS-uysIx5zDpqypojcUaWbVscozx9eKY4-wUh1gqIKJi64Gk1Eg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full">
+<h3 class="font-headline font-semibold text-white text-sm leading-tight mb-1">Wedding Anisa &amp; Rizky</h3>
+<p class="font-label text-white/80 text-[10px] mb-2">15 Agustus 2026</p>
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label text-[10px] font-medium">1.2k</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative rounded-xl overflow-hidden aspect-[3/4] bg-surface-container-highest isolate shadow-[0_10px_40px_-10px_rgba(42,20,180,0.08)] mt-4">
+<img alt="Wedding Budi &amp; Siti" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="romantic outdoor wedding setup with wooden arch draped in flowing white fabric and greenery at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt8xdU20wN4IDnvj66B6ng0ew6OZ8WgYBs4tjgKo50c3VHqKsm-rkXkx8BhCVQsBMlgfP6iUeiiQwfDVbbHGOPsMQ8HZpv4DQIz9JIxBEnQRZj-weqx3AzWMlh6NrSBRE0dOTYsOYVGEmc5DotES9EidDlSUpP87-yyHHsEgxAkQXWmWuPFOQzswhxg0xMiyxDFbYMcgelUshhtsvm5FMmuRJrYYwrpMc2evQLwaMw8oTdXGQLsGDgsSOfgxSQtYDeDN-FWY__qw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full">
+<h3 class="font-headline font-semibold text-white text-sm leading-tight mb-1">Wedding Budi &amp; Siti</h3>
+<p class="font-label text-white/80 text-[10px] mb-2">02 September 2026</p>
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label text-[10px] font-medium">850</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative rounded-xl overflow-hidden aspect-[3/4] bg-surface-container-highest isolate shadow-[0_10px_40px_-10px_rgba(42,20,180,0.08)]">
+<img alt="Wedding Citra &amp; Deni" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="close up of delicate gold wedding rings resting on soft white lace with blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIe8Qfm1oKMfTpNx-blFWs2tGWg5fvNWQMIyZdk3DGCStfvIIZzHNCyepsBAlvVIi7PtMEqJzJtBRKi-CXG4077R2BApTfZ8MgmPaCYqV0O-xvYwN4qdfdIdwk6FUrNOgXJmC2TDvfNY3mNfJDIxSWBp9ZQWMaVtBWQRYSev-5XtZCu0JSlG4ZD0U-MAuxW_98ypBqXWmcY5BN-g4tG8XgZGr74BVpTHPzNuCv_s571JbH3_ezI5n6fedRIFe7pJjmn9yy8PsZ_g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full">
+<h3 class="font-headline font-semibold text-white text-sm leading-tight mb-1">Wedding Citra &amp; Deni</h3>
+<p class="font-label text-white/80 text-[10px] mb-2">20 Oktober 2026</p>
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label text-[10px] font-medium">2.4k</span>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="group relative rounded-xl overflow-hidden aspect-[3/4] bg-surface-container-highest isolate shadow-[0_10px_40px_-10px_rgba(42,20,180,0.08)] mt-4">
+<img alt="Wedding Eka &amp; Fajar" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="elegant table setting with crystal glasses gold cutlery and tall white candles against dark moody background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1t7a_MBDDXYprLFZwMJgphcBucStF8qcJS8a0zccvvS0RtV6qFzZFAOC9gORyAFqSqW5A8E65J_3CSyAEyNF-giIN_oKA7qn5uP-ZS3DHK-pjF9Yye5JdBY67TJ3PD3UI3ustsAUGhEao3SAKdOu6aeRXwpX_rfUHmxM1-QJ-F_wbneZWptlsRBr0ZwXHFfVu6Xd3Pgfh2PFaXCYOIDemNrH8Iv1S-gXR3LEfKEp_OUrj8g9c9CupydkYGVjlAzJxpFuPwVvPLw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full">
+<h3 class="font-headline font-semibold text-white text-sm leading-tight mb-1">Wedding Eka &amp; Fajar</h3>
+<p class="font-label text-white/80 text-[10px] mb-2">11 November 2026</p>
+<div class="flex items-center gap-1 text-white/90">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label text-[10px] font-medium">920</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Infinite Scroll Skeletons -->
+<section class="grid grid-cols-2 gap-3 mb-8 opacity-60">
+<!-- Skeleton 1 -->
+<div class="rounded-xl overflow-hidden aspect-[3/4] bg-surface-container-high relative">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-surface-container-lowest/30 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full space-y-2">
+<div class="h-3 bg-surface-dim rounded w-3/4"></div>
+<div class="h-2 bg-surface-dim rounded w-1/2"></div>
+<div class="h-2 bg-surface-dim rounded w-1/4 mt-3"></div>
+</div>
+</div>
+<!-- Skeleton 2 -->
+<div class="rounded-xl overflow-hidden aspect-[3/4] bg-surface-container-high relative mt-4">
+<div class="absolute inset-0 bg-gradient-to-r from-transparent via-surface-container-lowest/30 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite] delay-150"></div>
+<div class="absolute bottom-0 left-0 p-3 w-full space-y-2">
+<div class="h-3 bg-surface-dim rounded w-2/3"></div>
+<div class="h-2 bg-surface-dim rounded w-1/2"></div>
+<div class="h-2 bg-surface-dim rounded w-1/3 mt-3"></div>
+</div>
+</div>
+</section>
+<style>
+            @keyframes shimmer {
+                100% { transform: translateX(100%); }
+            }
+        </style>
+</main>
+<!-- BottomNavBar (Mobile Only Shell) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pt-2 pb-safe bg-surface-container-lowest/90 backdrop-blur-lg rounded-t-[1.5rem] shadow-[0_-4px_20px_rgba(42,20,180,0.05)] border-none max-w-[390px] mx-auto right-0">
+<!-- Home (Inactive) -->
+<a class="flex flex-col items-center justify-center text-outline px-5 py-2 tap-highlight-transparent transition-transform duration-200 active:scale-95 active:bg-surface-container rounded-2xl" href="#">
+<span class="material-symbols-outlined mb-1 text-[22px]" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-semibold">Home</span>
+</a>
+<!-- Gallery / Showcase (Active) -->
+<a class="flex flex-col items-center justify-center bg-surface-container text-primary rounded-2xl px-5 py-2 tap-highlight-transparent transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined mb-1 text-[22px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-semibold">Gallery</span>
+</a>
+<!-- Invites (Inactive) -->
+<a class="flex flex-col items-center justify-center text-outline px-5 py-2 tap-highlight-transparent transition-transform duration-200 active:scale-95 active:bg-surface-container rounded-2xl" href="#">
+<span class="material-symbols-outlined mb-1 text-[22px]" style="font-variation-settings: 'FILL' 0;">mail</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-semibold">Invites</span>
+</a>
+<!-- Profile (Inactive) -->
+<a class="flex flex-col items-center justify-center text-outline px-5 py-2 tap-highlight-transparent transition-transform duration-200 active:scale-95 active:bg-surface-container rounded-2xl" href="#">
+<span class="material-symbols-outlined mb-1 text-[22px]" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-['Be_Vietnam_Pro'] text-[10px] font-semibold">Profile</span>
+</a>
+</nav>
+</body></html>

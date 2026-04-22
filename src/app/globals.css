@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #8B9DC3;
+  --color-brand-lavender: #B8A0D0;
+  --color-brand-pink: #E8A0A0;
+
+  --color-navy: #1E3A5F;
+  --color-navy-light: #2A4F7A;
+  --color-navy-dark: #142840;
+  --color-navy-50: #E8EEF5;
+  --color-navy-100: #C5D4E8;
+
+  --color-rose: #C06070;
+  --color-rose-light: #D4808E;
+  --color-rose-dark: #9A4858;
+  --color-rose-50: #F9EDEF;
+  --color-rose-100: #F0CDD4;
+
+  --color-coral: #E8917E;
+  --color-coral-light: #F0A898;
+  --color-coral-dark: #D47A66;
+  --color-coral-50: #FDF0ED;
+
+  --color-gold: #D4A574;
+  --color-gold-light: #E0BB92;
+  --color-gold-dark: #B8926A;
+  --color-gold-50: #FBF4EC;
+
+  --color-surface-base: #FAF6F1;
+  --color-surface-card: #FFFFFF;
+  --color-surface-elevated: #FFF8F2;
+  --color-surface-muted: #F2EDE7;
+
+  --color-ink: #1A1A2E;
+  --color-ink-muted: #5A5A72;
+  --color-ink-hint: #8A8A9A;
+  --color-ink-inverse: #FFFFFF;
+
+  --color-success: #3B7A57;
+  --color-warning: #C4841D;
+  --color-error: #C0392B;
+  --color-info: #1E3A5F;
+
+  --color-rsvp-baru: #8A8A9A;
+  --color-rsvp-diundang: #1E3A5F;
+  --color-rsvp-dibuka: #8B9DC3;
+  --color-rsvp-hadir: #3B7A57;
+  --color-rsvp-tidak-hadir: #C0392B;
+
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-accent: "Playfair Display", Georgia, serif;
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-logo: "Cormorant Garamond", "Playfair Display", serif;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  --shadow-ghost-sm: 0 1px 3px rgba(26, 26, 46, 0.04);
+  --shadow-ghost-md: 0 4px 12px rgba(26, 26, 46, 0.06);
+  --shadow-ghost-lg: 0 12px 40px rgba(26, 26, 46, 0.06);
+
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+:root {
+  --border-ghost: rgba(26, 26, 46, 0.08);
+  --border-subtle: rgba(26, 26, 46, 0.12);
+  --border-medium: rgba(26, 26, 46, 0.20);
+  --border-strong: rgba(26, 26, 46, 0.35);
+  --border-gold: rgba(212, 165, 116, 0.25);
+
+  --overlay-modal: rgba(26, 26, 46, 0.5);
+
+  --focus-ring-navy: 0 0 0 3px rgba(30, 58, 95, 0.15);
+  --focus-ring-coral: 0 0 0 3px rgba(232, 145, 126, 0.2);
+}
+
+html {
+  background: var(--color-surface-base);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--color-surface-base);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

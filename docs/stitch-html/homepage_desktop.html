@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>uwu - Platform Undangan Digital</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400..900;1,400..900&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e9e1dc",
+                    "surface": "#fff8f4",
+                    "secondary-fixed": "#d7e2ff",
+                    "primary-fixed-dim": "#ffb4a4",
+                    "primary-fixed": "#ffdad3",
+                    "tertiary-fixed-dim": "#d6bdee",
+                    "secondary-container": "#c2d5fd",
+                    "primary": "#914a3b",
+                    "on-background": "#1e1b18",
+                    "tertiary-container": "#b69ece",
+                    "on-tertiary-fixed": "#251239",
+                    "on-primary-fixed-variant": "#743326",
+                    "surface-dim": "#e0d9d4",
+                    "surface-bright": "#fff8f4",
+                    "surface-container": "#f4ece7",
+                    "error-container": "#ffdad6",
+                    "on-error": "#ffffff",
+                    "on-primary-container": "#672a1d",
+                    "primary-container": "#e8917e",
+                    "surface-container-low": "#faf2ed",
+                    "on-surface": "#1e1b18",
+                    "background": "#fff8f4",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary": "#6a5681",
+                    "surface-container-high": "#efe7e2",
+                    "on-secondary-container": "#4a5c7e",
+                    "inverse-primary": "#ffb4a4",
+                    "surface-variant": "#e9e1dc",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#3b0902",
+                    "surface-container-lowest": "#ffffff",
+                    "outline": "#86736e",
+                    "on-tertiary-container": "#47345d",
+                    "secondary-fixed-dim": "#b5c7ef",
+                    "tertiary-fixed": "#efdbff",
+                    "outline-variant": "#d9c1bc",
+                    "inverse-surface": "#33302d",
+                    "on-secondary-fixed": "#061b3a",
+                    "on-primary": "#ffffff",
+                    "on-secondary-fixed-variant": "#354768",
+                    "on-tertiary-fixed-variant": "#523e68",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f7efea",
+                    "secondary": "#4d5e81",
+                    "surface-tint": "#914a3b",
+                    "on-surface-variant": "#54433f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": [
+                            "Noto Serif", "serif"
+                    ],
+                    "body": [
+                            "Plus Jakarta Sans", "sans-serif"
+                    ],
+                    "label": [
+                            "Plus Jakarta Sans", "sans-serif"
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Noto Serif', serif; letter-spacing: -0.02em; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased overflow-x-hidden min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl docked full-width top-0 sticky z-50 no-border tonal-shift-surface-container-low flat no shadows">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-7xl mx-auto">
+<!-- Brand -->
+<a class="text-2xl font-['Noto_Serif'] font-black italic bg-gradient-to-r from-[#914a3b] to-[#E8917E] bg-clip-text text-transparent" href="#">
+                uwu
+            </a>
+<!-- Links (Web) -->
+<div class="hidden md:flex space-x-8 items-center font-['Plus_Jakarta_Sans'] text-sm tracking-wide font-medium">
+<a class="text-[#914a3b] dark:text-[#E8917E] font-bold border-b-2 border-[#E8917E] pb-1 hover:opacity-80 transition-opacity duration-300 scale-95 active:scale-100 transition-transform" href="#">Home</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#914a3b] hover:opacity-80 transition-opacity duration-300 scale-95 active:scale-100 transition-transform" href="#">Portofolio</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#914a3b] hover:opacity-80 transition-opacity duration-300 scale-95 active:scale-100 transition-transform" href="#">Harga</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#914a3b] hover:opacity-80 transition-opacity duration-300 scale-95 active:scale-100 transition-transform" href="#">Tema</a>
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#914a3b] hover:opacity-80 transition-opacity duration-300 scale-95 active:scale-100 transition-transform" href="#">Blog</a>
+</div>
+<!-- Actions -->
+<div class="flex items-center space-x-4">
+<a class="text-stone-600 dark:text-stone-400 hover:text-[#914a3b] font-['Plus_Jakarta_Sans'] text-sm tracking-wide font-medium hover:opacity-80 transition-opacity duration-300" href="#">Masuk</a>
+<a class="bg-gradient-to-r from-[#914a3b] to-[#E8917E] text-white px-6 py-2.5 rounded-full font-['Plus_Jakarta_Sans'] text-sm tracking-wide font-medium hover:opacity-90 transition-opacity duration-300 shadow-sm" href="#">Daftar Gratis</a>
+</div>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col items-center justify-center w-full max-w-7xl mx-auto px-6 pt-16 pb-24">
+<!-- Hero Section -->
+<section class="w-full flex flex-col md:flex-row items-center justify-between gap-16 mb-24">
+<!-- Left: Typography & Actions -->
+<div class="flex-1 flex flex-col items-start text-left z-10">
+<!-- Badge -->
+<div class="inline-flex items-center px-4 py-1.5 rounded-full border border-outline-variant/80 bg-surface-container-lowest/50 backdrop-blur-sm mb-8 text-xs font-semibold text-primary uppercase tracking-widest">
+<span class="material-symbols-outlined text-[14px] mr-2">stars</span>
+                    Smart AI-Powered Platform
+                </div>
+<!-- Headline -->
+<h1 class="text-5xl md:text-6xl lg:text-[4.5rem] leading-[1.1] text-on-surface mb-6 max-w-2xl font-body font-light tracking-tight">
+                    Platform Undangan Digital yang <span class="font-headline italic font-bold text-primary-container">Paham</span> Kamu
+                </h1>
+<!-- Subtitle -->
+<p class="text-lg md:text-xl text-on-surface-variant max-w-lg mb-10 leading-relaxed font-body">
+                    AI-powered, cantik di semua layar, siap dalam hitungan menit. Buat momen berharga Anda semakin tak terlupakan.
+                </p>
+<!-- CTAs -->
+<div class="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto">
+<a class="w-full sm:w-auto bg-gradient-to-r from-primary to-primary-container text-on-primary px-8 py-4 rounded-full font-bold tracking-wide hover:opacity-90 transition-all shadow-lg shadow-primary-container/20 flex items-center justify-center" href="#">
+                        Mulai Gratis <span class="material-symbols-outlined ml-2 text-xl">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto border border-outline-variant text-secondary px-8 py-4 rounded-full font-semibold hover:bg-surface-container-low transition-colors flex items-center justify-center" href="#">
+                        Lihat Tema
+                    </a>
+</div>
+</div>
+<!-- Right: Mockup & Blobs -->
+<div class="flex-1 relative w-full max-w-md md:max-w-none flex justify-center lg:justify-end">
+<!-- Decorative Blobs -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-secondary-fixed-dim/30 rounded-full blur-[80px] -z-10 mix-blend-multiply"></div>
+<div class="absolute top-1/4 right-0 w-[80%] h-[80%] bg-primary-fixed-dim/20 rounded-full blur-[60px] -z-10 mix-blend-multiply"></div>
+<!-- Phone Mockup Container -->
+<div class="relative w-[280px] h-[580px] bg-surface-container-lowest rounded-[3rem] p-3 shadow-2xl shadow-on-surface/5 border border-surface-container-highest flex flex-col items-center rotate-[-2deg] hover:rotate-0 transition-transform duration-700 ease-out">
+<!-- Screen -->
+<div class="w-full h-full bg-surface-container-low rounded-[2.25rem] overflow-hidden relative flex flex-col">
+<!-- Top Image -->
+<div class="w-full h-[45%] relative">
+<img alt="Javanese floral wedding decoration with warm lighting" class="w-full h-full object-cover" data-alt="Javanese floral wedding decoration with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy0034mL-1x0Vb32my35WTfoK5Geyvvpu78Ps1RPRpr2KsTtZWALVb2QBAZSeMtf7Z8EV-VWe7QdVKlQQOzXUaCw8Y_Uy6V307AESKXnTByDsvWUenxme5cgieIGOSGMQpOtHM-ZFaavSS5SApBQsQeJffOkA1Ta1pHPBIX9v1DP1qogO3XViXhiGFpEtmF30-LR_pqtI6XCl4p5IpTugao3cEdmoYMvWNnpUvEBcDAN0CDyRVlFDJ7UpLpl7zZD3ThsRqYC6ZmQ4"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent h-1/2 bottom-0 mt-auto"></div>
+</div>
+<!-- Content inside mockup -->
+<div class="flex-1 flex flex-col items-center pt-4 px-6 text-center z-10 bg-surface-container-lowest pb-6">
+<h3 class="font-headline text-3xl font-medium text-primary mb-1">Anisa &amp; Rizky</h3>
+<p class="text-xs text-on-surface-variant font-label tracking-widest uppercase mb-6">12 . 12 . 2026</p>
+<div class="w-full space-y-3 mt-auto">
+<div class="w-full h-12 rounded-full border border-outline-variant/50 flex items-center justify-center text-sm font-medium text-secondary">Buka Undangan</div>
+</div>
+</div>
+</div>
+<!-- Notch Mockup -->
+<div class="absolute top-3 left-1/2 -translate-x-1/2 w-32 h-6 bg-surface-container-lowest rounded-b-xl z-20"></div>
+</div>
+</div>
+</section>
+<!-- Feature Cards Row -->
+<section class="w-full grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest rounded-lg p-8 flex flex-col items-start gap-4 hover:shadow-lg shadow-on-surface/5 transition-shadow duration-300 border border-outline-variant/10">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-2">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">palette</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface font-body">50+ Tema Premium</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Pilihan desain eksklusif yang bisa disesuaikan dengan konsep pernikahan impian Anda.</p>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest rounded-lg p-8 flex flex-col items-start gap-4 hover:shadow-lg shadow-on-surface/5 transition-shadow duration-300 border border-outline-variant/10">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-2">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">smartphone</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface font-body">Responsif di Semua Layar</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Tampil sempurna di HP, tablet, maupun desktop tanpa mengorbankan estetika.</p>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest rounded-lg p-8 flex flex-col items-start gap-4 hover:shadow-lg shadow-on-surface/5 transition-shadow duration-300 border border-outline-variant/10">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-primary mb-2">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<h3 class="text-xl font-bold text-on-surface font-body">AI Copywriter Islami</h3>
+<p class="text-sm text-on-surface-variant leading-relaxed">Generator teks otomatis dengan pilihan gaya bahasa islami, modern, atau romantis.</p>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-[#fff8f4] dark:bg-stone-950 w-full rounded-t-[3rem] border-t border-[#C4956A]/20 flat fade-in-on-scroll">
+<div class="flex flex-col items-center text-center w-full pt-16 pb-8 px-8 space-y-8 max-w-7xl mx-auto">
+<div class="flex flex-col items-center">
+<h2 class="text-3xl font-['Noto_Serif'] font-black text-[#914a3b] mb-4">uwu</h2>
+<p class="font-['Plus_Jakarta_Sans'] text-sm text-stone-500 italic">A Love Story, Beautifully Told.</p>
+</div>
+<!-- Separator -->
+<div class="flex items-center w-full max-w-md justify-center opacity-50 py-4">
+<div class="h-[1px] flex-grow bg-[#C4956A]"></div>
+<span class="px-4 text-[#C4956A] text-lg">♡</span>
+<div class="h-[1px] flex-grow bg-[#C4956A]"></div>
+</div>
+<!-- Links -->
+<div class="flex flex-wrap justify-center gap-6 md:gap-10 font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-stone-500">
+<a class="hover:text-[#914a3b] hover:translate-y-[-2px] transition-transform duration-200" href="#">Tentang Kami</a>
+<a class="hover:text-[#914a3b] hover:translate-y-[-2px] transition-transform duration-200" href="#">Karir</a>
+<a class="hover:text-[#914a3b] hover:translate-y-[-2px] transition-transform duration-200" href="#">Privasi</a>
+<a class="hover:text-[#914a3b] hover:translate-y-[-2px] transition-transform duration-200" href="#">Syarat &amp; Ketentuan</a>
+<a class="hover:text-[#914a3b] hover:translate-y-[-2px] transition-transform duration-200" href="#">Bantuan</a>
+</div>
+<div class="text-[#914a3b] dark:text-[#E8917E] font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest mt-8">
+                © 2026 uwu Wedding Platform. Dibuat dengan cinta.
+            </div>
+</div>
+</footer>
+</body></html>

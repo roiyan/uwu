@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Daftar Tamu - UWU Wedding</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400..900;1,400..900&amp;family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-background": "#383835",
+                        "surface-dim": "#e5e2dc",
+                        "surface-bright": "#fffcf7",
+                        "tertiary-fixed-dim": "#85b7ee",
+                        "on-primary-fixed": "#000000",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#93c5fd",
+                        "surface": "#fffcf7",
+                        "inverse-on-surface": "#9e9d98",
+                        "secondary-fixed-dim": "#ffafaf",
+                        "on-surface-variant": "#656461",
+                        "on-secondary-fixed-variant": "#7e3d3e",
+                        "on-secondary-container": "#733436",
+                        "on-primary-container": "#290070",
+                        "error-container": "#f74b6d",
+                        "on-primary-fixed-variant": "#330b80",
+                        "secondary-dim": "#874446",
+                        "on-error-container": "#510017",
+                        "surface-container-highest": "#eae8e2",
+                        "primary-fixed": "#ab8ffe",
+                        "primary-container": "#ab8ffe",
+                        "inverse-primary": "#a589f8",
+                        "on-tertiary-fixed": "#002949",
+                        "primary-fixed-dim": "#9d81f0",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#5b2124",
+                        "secondary-container": "#ffc3c2",
+                        "tertiary-dim": "#235b8d",
+                        "inverse-surface": "#0e0e0c",
+                        "on-tertiary-fixed-variant": "#004878",
+                        "surface-container-high": "#f0eee8",
+                        "error-dim": "#a70138",
+                        "surface-variant": "#eae8e2",
+                        "primary": "#6d51bc",
+                        "surface-container": "#f6f3ee",
+                        "tertiary": "#32679a",
+                        "secondary": "#965051",
+                        "primary-dim": "#6144af",
+                        "on-tertiary-container": "#003f6a",
+                        "secondary-fixed": "#ffc3c2",
+                        "on-surface": "#383835",
+                        "error": "#c12048",
+                        "surface-tint": "#6d51bc",
+                        "outline-variant": "#bbb9b4",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#93c5fd",
+                        "surface-container-lowest": "#ffffff",
+                        "outline": "#82807c",
+                        "surface-container-low": "#fcf9f4",
+                        "background": "#fffcf7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Noto Serif", "serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
+                        "label": ["Plus Jakarta Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fffcf7; color: #383835; }
+        h1, h2, h3, h4, h5, h6, .font-headline { font-family: 'Noto Serif', serif; }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="bg-[#fffcf7] dark:bg-slate-950 h-screen w-72 fixed left-0 top-0 flex flex-col py-8 px-4 gap-y-2 border-r border-[#bbb9b4]/15 z-50">
+<div class="px-4 mb-8">
+<div class="flex items-center gap-4">
+<img alt="Anisa &amp; Rizky Profile Picture" class="w-12 h-12 rounded-full object-cover shadow-[0_4px_12px_rgba(109,81,188,0.2)]" data-alt="close up of happy wedding couple smiling softly in soft golden hour light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiQEyrubaiKPNMxriNhJElZYnnGMXZzpzwQntx9jQ_KmkSwDYx4DSUnjh8gVSmN95dANeKKlWqeqUiigBGRYnnnrofQhQ0eyHCnnKnco2iBOff56etCLVwGcNBco31HAzIyJRFsIyKAY1HdF6utmcjr9cY45bTHERBetk9RYwJhauuDX60yTdfz0EMQpgwwrWrKO84cjlYhjOadDEN9LarwN4tQ44ZkEXt1zpItsR1dhvqOVcrGNVdu_ur0wRGPwgsT9X3b3uzTtM"/>
+<div>
+<h2 class="text-xl font-serif text-[#965051] dark:text-[#d6a3ff] font-bold">Anisa &amp; Rizky</h2>
+<p class="text-xs text-[#656461] dark:text-slate-400 font-medium tracking-wide">Sakura Dreams</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">home</span>
+<span>Beranda</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">edit_note</span>
+<span>Website Editor</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-white/70 backdrop-blur-md text-[#6d51bc] font-bold rounded-r-full shadow-[blur:40px_y:10px_opacity:0.06_color:#656461] hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out" href="#">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span>Tamu</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">send</span>
+<span>Kirim Undangan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">how_to_reg</span>
+<span>Check-in</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">card_giftcard</span>
+<span>Amplop &amp; Hadiah</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span>Pengaturan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#656461] dark:text-slate-400 font-medium hover:bg-[#eae8e2] dark:hover:bg-slate-800 hover:text-[#6d51bc] transition-all duration-500 ease-in-out rounded-r-full" href="#">
+<span class="material-symbols-outlined text-xl">inventory_2</span>
+<span>Paket</span>
+</a>
+</nav>
+<div class="mt-auto px-4 py-2 border-t border-outline-variant/15">
+<p class="text-xs text-on-surface-variant/60 font-body">UWU Wedding v2.1</p>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-72 flex-1 w-full flex flex-col min-h-screen relative">
+<!-- TopAppBar -->
+<header class="bg-white/70 dark:bg-slate-900/70 backdrop-blur-lg fixed top-0 right-0 w-[calc(100%-18rem)] z-40 flex justify-between items-center px-10 py-4 h-20 border-b border-[#bbb9b4]/15 shadow-[0_10px_40px_rgba(101,100,97,0.06)] transition-all">
+<div class="flex items-center gap-4">
+<h1 class="text-2xl font-serif italic text-[#6d51bc] dark:text-[#ab8ffe] font-bold">UWU Wedding</h1>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search on Left -->
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="pl-9 pr-4 py-2 bg-surface-container-low border border-outline-variant/20 rounded-full text-sm font-body text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all w-64" placeholder="Cari..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-[#656461] dark:text-slate-400 hover:text-[#965051] dark:hover:text-[#d6a3ff] hover:bg-surface-container-highest transition-colors duration-300">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-[#656461] dark:text-slate-400 hover:text-[#965051] dark:hover:text-[#d6a3ff] hover:bg-surface-container-highest transition-colors duration-300">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="pt-28 px-10 pb-20 w-full max-w-7xl mx-auto space-y-10">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div>
+<h1 class="text-display-lg font-headline text-on-surface font-semibold tracking-tight text-4xl mb-2">Daftar Tamu</h1>
+<p class="text-body-lg font-body text-on-surface-variant leading-relaxed">Kelola undangan, RSVP, dan pengaturan tempat duduk</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-secondary text-secondary hover:bg-secondary/5 font-label text-sm uppercase tracking-wide transition-all duration-400 ease-in-out">
+<span class="material-symbols-outlined text-sm">download</span>
+                        Ekspor
+                    </button>
+<button class="flex items-center gap-2 px-6 py-2.5 rounded-full bg-gradient-to-r from-secondary to-secondary-dim text-on-secondary shadow-[0_10px_40px_rgba(101,100,97,0.06)] font-label text-sm uppercase tracking-wide transition-all duration-400 ease-in-out hover:opacity-90">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Tambah Tamu
+                    </button>
+</div>
+</div>
+<!-- Stats & Insights Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Total Tamu Card -->
+<div class="md:col-span-4 bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant/10 flex flex-col justify-between">
+<div>
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-semibold">Total Tamu</h3>
+<span class="material-symbols-outlined text-primary text-xl">groups</span>
+</div>
+<div class="flex items-baseline gap-2 mb-2">
+<span class="text-4xl font-headline text-on-surface">45</span>
+<span class="text-on-surface-variant text-sm">/ 300</span>
+</div>
+</div>
+<div class="mt-6">
+<div class="w-full bg-surface-container-highest rounded-full h-2 mb-2 overflow-hidden">
+<div class="bg-primary h-2 rounded-full" style="width: 15%"></div>
+</div>
+<p class="text-xs text-on-surface-variant text-right font-medium">15% kapasitas</p>
+</div>
+</div>
+<!-- RSVP Status Card -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-2xl p-6 shadow-[0_4px_24px_rgba(101,100,97,0.04)] border border-outline-variant/5">
+<div class="flex justify-between items-start mb-6">
+<h3 class="font-label text-xs uppercase tracking-widest text-on-surface-variant font-semibold">Status RSVP</h3>
+<a class="text-primary text-sm font-medium flex items-center gap-1 hover:text-primary-dim transition-colors" href="#">
+                            Lihat Insight <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="flex items-center gap-8">
+<!-- Mock Donut Chart -->
+<div class="relative w-28 h-28 flex-shrink-0">
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#eae8e2" stroke-width="4"></circle>
+<!-- Segments -->
+<circle class="text-outline-variant" cx="18" cy="18" fill="transparent" r="15.915" stroke="#bbb9b4" stroke-dasharray="55 45" stroke-dashoffset="0" stroke-width="4"></circle>
+<circle class="text-tertiary" cx="18" cy="18" fill="transparent" r="15.915" stroke="#32679a" stroke-dasharray="22 78" stroke-dashoffset="-55" stroke-width="4"></circle>
+<circle class="text-tertiary-container" cx="18" cy="18" fill="transparent" r="15.915" stroke="#93c5fd" stroke-dasharray="11 89" stroke-dashoffset="-77" stroke-width="4"></circle>
+<circle class="text-primary" cx="18" cy="18" fill="transparent" r="15.915" stroke="#6d51bc" stroke-dasharray="9 91" stroke-dashoffset="-88" stroke-width="4"></circle>
+<circle class="text-secondary" cx="18" cy="18" fill="transparent" r="15.915" stroke="#965051" stroke-dasharray="3 97" stroke-dashoffset="-97" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="text-xl font-headline font-semibold text-on-surface">45</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex-1 grid grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-2 text-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-outline-variant"></span>
+<span class="text-on-surface-variant w-16">Baru</span>
+<span class="font-semibold text-on-surface">25</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span>
+<span class="text-on-surface-variant w-16">Diundang</span>
+<span class="font-semibold text-on-surface">10</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-tertiary-container"></span>
+<span class="text-on-surface-variant w-16">Dibuka</span>
+<span class="font-semibold text-on-surface">5</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<span class="text-on-surface-variant w-16">Hadir</span>
+<span class="font-semibold text-on-surface">4</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="text-on-surface-variant w-16">Tidak Hadir</span>
+<span class="font-semibold text-on-surface">1</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Guest List Section -->
+<div class="space-y-6">
+<!-- Control Bar -->
+<div class="flex flex-col md:flex-row justify-between gap-4 items-center">
+<div class="relative w-full md:w-96">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-surface-container-lowest border border-outline-variant/20 rounded-full text-sm font-body text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all shadow-sm" placeholder="Cari nama, email, WhatsApp..." type="text"/>
+</div>
+<div class="flex gap-3 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+<select class="appearance-none bg-surface-container-lowest border border-outline-variant/20 text-on-surface text-sm rounded-full px-5 py-2.5 pr-10 focus:outline-none focus:border-primary/50 transition-all cursor-pointer shadow-sm min-w-[120px]">
+<option>Grup</option>
+<option>Keluarga</option>
+<option>Teman SMP</option>
+<option>Rekan Kerja</option>
+</select>
+<select class="appearance-none bg-surface-container-lowest border border-outline-variant/20 text-on-surface text-sm rounded-full px-5 py-2.5 pr-10 focus:outline-none focus:border-primary/50 transition-all cursor-pointer shadow-sm min-w-[140px]">
+<option>Status RSVP</option>
+<option>Hadir</option>
+<option>Baru</option>
+<option>Dibuka</option>
+</select>
+<button class="flex items-center gap-2 px-5 py-2.5 rounded-full border border-outline-variant/20 bg-surface-container-lowest text-on-surface hover:bg-surface-container-high transition-colors shadow-sm whitespace-nowrap text-sm font-medium">
+<span class="material-symbols-outlined text-secondary text-[18px]">star</span>
+                            VIP Only
+                        </button>
+</div>
+</div>
+<!-- Guest Table Canvas -->
+<div class="bg-[#FFFBF8] rounded-2xl border border-outline-variant/10 overflow-hidden shadow-[0_8px_30px_rgba(101,100,97,0.03)]">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant/10 bg-surface-container-low/50">
+<th class="py-4 px-6 w-12">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/50 bg-surface" type="checkbox"/>
+</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">NAMA</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">KONTAK</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">GRUP</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">STATUS RSVP</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">HADIR</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">CHECK-IN</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold">MEJA</th>
+<th class="py-4 px-6 font-label text-xs uppercase tracking-wider text-on-surface-variant font-semibold text-right">AKSI</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-6">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/50 bg-surface" type="checkbox"/>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">Andi Nugroho</span>
+<span class="text-xs text-on-surface-variant mt-0.5">Partner: Siska</span>
+</div>
+</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">+62 812-xxx</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">Keluarga</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                                            Hadir
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-on-surface text-center">2</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant text-center">—</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">T-01</td>
+<td class="py-4 px-6 text-right">
+<button class="text-outline-variant hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-6">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/50 bg-surface" type="checkbox"/>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">Budi Pratama</span>
+</div>
+</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">+62 856-xxx</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">Teman SMP</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-xs font-medium border border-outline-variant/20">
+<span class="material-symbols-outlined text-[14px]">mail</span>
+                                            Baru
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant text-center">—</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant text-center">—</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">—</td>
+<td class="py-4 px-6 text-right">
+<button class="text-outline-variant hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-6">
+<input class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary/50 bg-surface" type="checkbox"/>
+</td>
+<td class="py-4 px-6">
+<div class="flex flex-col">
+<span class="font-medium text-on-surface">Citra Wijaya</span>
+<span class="text-xs text-on-surface-variant mt-0.5">+1 Anak</span>
+</div>
+</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">+62 878-xxx</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">Rekan Kerja</td>
+<td class="py-4 px-6">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-container/30 text-tertiary text-xs font-medium">
+<span class="material-symbols-outlined text-[14px]">drafts</span>
+                                            Dibuka
+                                        </span>
+</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant text-center">—</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant text-center">—</td>
+<td class="py-4 px-6 text-sm text-on-surface-variant">R-04</td>
+<td class="py-4 px-6 text-right">
+<button class="text-outline-variant hover:text-primary transition-colors p-1">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 border-t border-outline-variant/10 bg-surface-container-low/30 flex justify-between items-center">
+<p class="text-sm text-on-surface-variant font-medium">Menampilkan 1-3 dari 45 tamu</p>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded flex items-center justify-center text-outline-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded flex items-center justify-center text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Bulk Action Bar (Mocked state: visible when items selected) -->
+<!-- Usually this would be hidden by default, shown for demonstration -->
+<div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 ml-36 z-50 flex items-center gap-4 bg-surface-container-lowest py-3 px-6 rounded-full shadow-[0_20px_60px_rgba(101,100,97,0.15)] border border-outline-variant/15">
+<span class="text-sm font-semibold text-primary px-2 border-r border-outline-variant/20">1 Tamu Dipilih</span>
+<button class="flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors px-2">
+<span class="material-symbols-outlined text-[18px]">notifications_active</span>
+            Kirim Pengingat
+        </button>
+<button class="flex items-center gap-1.5 text-sm font-medium text-on-surface-variant hover:text-primary transition-colors px-2 border-l border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+            Edit Grup
+        </button>
+<button class="flex items-center gap-1.5 text-sm font-medium text-error hover:text-error-dim transition-colors px-2 border-l border-outline-variant/20">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+            Delete
+        </button>
+<button class="ml-2 w-8 h-8 rounded-full flex items-center justify-center text-outline-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</body></html>

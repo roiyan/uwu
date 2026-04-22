@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Fitur - uwu Wedding Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#1e1b18",
+                        "on-tertiary-fixed": "#251239",
+                        "tertiary-container": "#b69ece",
+                        "on-primary-container": "#672a1d",
+                        "surface-container-low": "#faf2ed",
+                        "surface-dim": "#e0d9d4",
+                        "secondary": "#4d5e81",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#e8917e",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "surface-tint": "#914a3b",
+                        "tertiary-fixed-dim": "#d6bdee",
+                        "surface-bright": "#fff8f4",
+                        "on-primary-fixed-variant": "#743326",
+                        "surface": "#fff8f4",
+                        "on-secondary-fixed": "#061b3a",
+                        "outline": "#86736e",
+                        "tertiary": "#6a5681",
+                        "background": "#fff8f4",
+                        "inverse-on-surface": "#f7efea",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "inverse-surface": "#33302d",
+                        "on-tertiary-container": "#47345d",
+                        "on-surface-variant": "#54433f",
+                        "on-background": "#1e1b18",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#f4ece7",
+                        "primary": "#914a3b",
+                        "inverse-primary": "#ffb4a4",
+                        "on-primary-fixed": "#3b0902",
+                        "outline-variant": "#d9c1bc",
+                        "surface-container-high": "#efe7e2",
+                        "secondary-fixed-dim": "#b5c7ef",
+                        "on-secondary-fixed-variant": "#354768",
+                        "primary-fixed": "#ffdad3",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e9e1dc",
+                        "on-secondary-container": "#4a5c7e",
+                        "on-tertiary-fixed-variant": "#523e68",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed": "#d7e2ff",
+                        "tertiary-fixed": "#efdbff",
+                        "surface-variant": "#e9e1dc",
+                        "secondary-container": "#c2d5fd",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body antialiased selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="sticky top-0 w-full z-50 bg-[#fff8f4]/80 dark:bg-stone-950/80 backdrop-blur-xl bg-gradient-to-b from-[#fff8f4] to-transparent shadow-[0_4px_30px_rgba(30,27,24,0.03)] hidden md:block">
+<div class="flex justify-between items-center px-12 py-6 max-w-screen-2xl mx-auto">
+<div class="font-['Noto_Serif'] text-3xl font-normal lowercase text-[#914a3b] dark:text-[#E8917E] tracking-tight">
+                uwu
+            </div>
+<nav class="flex space-x-8 font-['Plus_Jakarta_Sans'] text-sm tracking-wide">
+<a class="text-[#1E1B18]/70 dark:text-stone-400 hover:text-[#E8917E] transition-colors duration-300 scale-100 active:scale-95 transition-transform" href="#">Home</a>
+<a class="text-[#1E1B18]/70 dark:text-stone-400 hover:text-[#E8917E] transition-colors duration-300 scale-100 active:scale-95 transition-transform" href="#">Portfolio</a>
+<a class="text-[#1E1B18]/70 dark:text-stone-400 hover:text-[#E8917E] transition-colors duration-300 scale-100 active:scale-95 transition-transform" href="#">Harga</a>
+<a class="text-[#914a3b] dark:text-[#E8917E] border-b border-[#C4956A] pb-1 scale-100 active:scale-95 transition-transform" href="#">Tema</a>
+<a class="text-[#1E1B18]/70 dark:text-stone-400 hover:text-[#E8917E] transition-colors duration-300 scale-100 active:scale-95 transition-transform" href="#">Blog</a>
+</nav>
+<div class="flex items-center space-x-4">
+<a class="font-['Plus_Jakarta_Sans'] text-sm tracking-wide text-secondary hover:text-primary transition-colors scale-100 active:scale-95 transition-transform" href="#">Masuk</a>
+<a class="rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary px-6 py-2.5 font-['Plus_Jakarta_Sans'] text-sm font-semibold tracking-wide hover:opacity-90 scale-100 active:scale-95 transition-all shadow-sm" href="#">Daftar Gratis</a>
+</div>
+</div>
+</header>
+<main class="flex-grow">
+<!-- Section 1: WEBSITE -->
+<section class="py-24 px-12 max-w-screen-2xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-6">
+<span class="text-xs font-bold tracking-widest text-primary uppercase">WEBSITE</span>
+<h2 class="font-headline text-5xl md:text-6xl text-on-surface leading-tight tracking-tight">
+                        Berbagai Tema <br/> <em class="text-primary italic font-light">Premium</em>
+</h2>
+<p class="text-lg text-on-surface-variant font-body leading-relaxed max-w-md">
+                        Pilih dari koleksi tema eksklusif kami. Sesuaikan warna, font, dan tata letak untuk menceritakan kisah Anda.
+                    </p>
+<div class="pt-4">
+<a class="inline-flex items-center space-x-2 text-secondary hover:text-primary transition-colors group" href="#">
+<span class="font-semibold text-sm tracking-wide">Lihat Koleksi Tema</span>
+<span class="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -inset-4 bg-surface-container-low rounded-[3rem] -z-10"></div>
+<div class="relative rounded-lg overflow-hidden shadow-[0_20px_60px_rgba(30,27,24,0.06)] bg-surface-container-lowest">
+<img alt="Mockup of a smartphone displaying an elegant floral wedding invitation with soft warm colors" class="w-full h-[500px] object-cover object-center" data-alt="Mockup of a smartphone displaying an elegant floral wedding invitation with soft warm colors, resting on a clean marble surface with natural light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAjGGhZIegdvR93oTTgQj1c5L3hJKHaYUcqi9hIyqwwMfkIP8demLtgwWTHiLBMXgYxhxpnBMDjqtn2YZZZL4HynMnLK3D8jUQShwSb5iSABlhvCa8VQn9nIOjMaRU_RrpCDEMubtMN-KkTs-VeAcSJVEMBFfK0tgYo7Xj-7wExgZeGyYpLFrZ_DV6X3Y3HQGDwqZaZ9kgPS0oDhP7lG54cYuvg_2Rv_-PFJW3iiMmH62tdq7q0G2cLI7FhXxTMef8NLK2KgPc5WG0"/>
+<div class="absolute top-6 right-6 bg-surface-bright/90 backdrop-blur-md px-4 py-2 rounded-full flex items-center space-x-2 shadow-sm border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">palette</span>
+<span class="text-xs font-semibold text-on-surface tracking-wide">Warna Kustom</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: KELOLA TAMU -->
+<section class="py-24 px-12 max-w-screen-2xl mx-auto bg-surface-container-low/50">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="relative order-2 lg:order-1">
+<div class="absolute -inset-4 bg-surface-container-highest/30 rounded-[3rem] -z-10"></div>
+<div class="relative rounded-lg overflow-hidden shadow-[0_20px_60px_rgba(30,27,24,0.06)] bg-surface-container-lowest">
+<img alt="Tablet showing a clean, modern digital dashboard for wedding guest management with list views and charts" class="w-full h-[500px] object-cover object-center" data-alt="Tablet showing a clean, modern digital dashboard for wedding guest management with list views and charts, placed on a light wooden table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmUyT2lcPHYsyKiBxKjscu9xlCcGHEP1b-WEFXNnsUaKKkcbKTaCu8vlJZoE_fp8LtDg0lmc_oqG3v_u3xLqz3E7Ua5xyyuVj1XFfmTs6cU0scuXVlBRCSgSLXT7e2x68P5a1OfQ7Mfg77uyzzpxIHMNfkRZzd0qeUAGKj-JX8X3bgdK9_VnBxeM1a1gkRxNo3QMxUETSVOZA57UmkSGrXtpqb39TTFmmU05WX9JG08W7hei48PjZ98eLJUrMmW0PnkrSr5erd64o"/>
+</div>
+</div>
+<div class="space-y-6 order-1 lg:order-2 lg:pl-12">
+<span class="text-xs font-bold tracking-widest text-primary uppercase">KELOLA TAMU</span>
+<h2 class="font-headline text-5xl md:text-6xl text-on-surface leading-tight tracking-tight">
+                        Smart Guest <br/> <em class="italic font-light text-on-surface">Management</em>
+</h2>
+<p class="text-lg text-on-surface-variant font-body leading-relaxed max-w-md">
+                        Kelola daftar undangan tanpa stres. Lacak kehadiran dan atur penempatan tempat duduk dengan antarmuka yang intuitif.
+                    </p>
+<ul class="space-y-4 pt-4">
+<li class="flex items-center space-x-3 text-on-surface">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+<span class="font-medium tracking-wide">RSVP Real-time Tracker</span>
+</li>
+<li class="flex items-center space-x-3 text-on-surface">
+<span class="material-symbols-outlined text-primary text-xl">check_circle</span>
+<span class="font-medium tracking-wide">Pengaturan Meja Digital</span>
+</li>
+</ul>
+</div>
+</div>
+</section>
+<!-- Section 3: AI ASISTEN -->
+<section class="py-24 px-12 max-w-screen-2xl mx-auto">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-6">
+<span class="text-xs font-bold tracking-widest text-primary uppercase flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">auto_awesome</span> AI ASISTEN
+                    </span>
+<h2 class="font-headline text-5xl md:text-6xl text-on-surface leading-tight tracking-tight">
+                        AI Asisten <br/> <em class="text-primary italic font-light">Tulis</em>
+</h2>
+<p class="text-lg text-on-surface-variant font-body leading-relaxed max-w-md">
+                        Generate sambutan, doa, dan kutipan dalam Bahasa Indonesia, Jawa, Sunda, dan Arab. Pilih nada penulisan sesuai gaya Anda.
+                    </p>
+<div class="pt-6 flex flex-wrap gap-3">
+<span class="px-4 py-2 rounded-full border border-outline-variant/50 text-sm font-medium text-secondary bg-surface-container-lowest">Formal &amp; Puitis</span>
+<span class="px-4 py-2 rounded-full border border-outline-variant/50 text-sm font-medium text-secondary bg-surface-container-lowest">Santai &amp; Hangat</span>
+<span class="px-4 py-2 rounded-full border border-outline-variant/50 text-sm font-medium text-secondary bg-surface-container-lowest">Islami</span>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -inset-4 bg-gradient-to-br from-tertiary-container/20 to-surface-container-low rounded-[3rem] -z-10"></div>
+<div class="relative rounded-lg overflow-hidden shadow-[0_20px_60px_rgba(30,27,24,0.06)] bg-surface-container-lowest border border-outline-variant/20 p-8">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-sm">edit_document</span>
+</div>
+<span class="font-semibold text-on-surface">Draft Sambutan</span>
+</div>
+<span class="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-tertiary-container/30 text-tertiary text-xs font-bold tracking-wide">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+<span>Powered by AI</span>
+</span>
+</div>
+<div class="space-y-4">
+<div class="h-4 bg-surface-container rounded w-3/4"></div>
+<div class="h-4 bg-surface-container rounded w-full"></div>
+<div class="h-4 bg-surface-container rounded w-5/6"></div>
+<div class="h-4 bg-surface-container rounded w-2/3"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust Strip -->
+<section class="bg-secondary py-12">
+<div class="max-w-screen-2xl mx-auto px-12 flex flex-col md:flex-row justify-center items-center md:space-x-24 space-y-8 md:space-y-0 text-on-secondary text-center">
+<div class="space-y-2">
+<span class="block font-headline text-3xl font-bold">50+</span>
+<span class="block text-sm font-medium tracking-wider uppercase opacity-80">Tema Premium</span>
+</div>
+<div class="hidden md:block w-px h-12 bg-on-secondary/20"></div>
+<div class="space-y-2">
+<span class="block font-headline text-3xl font-bold">3 Menit</span>
+<span class="block text-sm font-medium tracking-wider uppercase opacity-80">Setup</span>
+</div>
+<div class="hidden md:block w-px h-12 bg-on-secondary/20"></div>
+<div class="space-y-2">
+<span class="block font-headline text-3xl font-bold">99.9%</span>
+<span class="block text-sm font-medium tracking-wider uppercase opacity-80">Uptime</span>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full pt-20 pb-12 bg-[#fff8f4] dark:bg-stone-950 text-[#914a3b] dark:text-[#E8917E] flex flex-col items-center text-center space-y-8 border-t border-[#C4956A]/20 mx-12">
+<div class="font-['Noto_Serif'] text-4xl italic lowercase mb-4">
+            uwu
+        </div>
+<p class="font-body text-on-surface-variant/80 italic text-sm">
+            A Love Story, Beautifully Told.
+        </p>
+<div class="flex items-center space-x-4 w-64 justify-center py-4">
+<div class="h-px bg-[#C4956A]/40 flex-grow"></div>
+<span class="text-[#C4956A] text-xl leading-none">♡</span>
+<div class="h-px bg-[#C4956A]/40 flex-grow"></div>
+</div>
+<nav class="flex space-x-6 font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-[#1E1B18]/60 dark:text-stone-500">
+<a class="hover:text-[#E8917E] transition-all opacity-100 hover:opacity-80" href="#">Tentang Kami</a>
+<a class="hover:text-[#E8917E] transition-all opacity-100 hover:opacity-80" href="#">Privasi</a>
+<a class="hover:text-[#E8917E] transition-all opacity-100 hover:opacity-80" href="#">Syarat &amp; Ketentuan</a>
+<a class="hover:text-[#E8917E] transition-all opacity-100 hover:opacity-80" href="#">Bantuan</a>
+</nav>
+<p class="font-['Plus_Jakarta_Sans'] text-xs uppercase tracking-widest text-[#1E1B18]/60 dark:text-stone-500 pt-8">
+            © 2026 uwu. A Love Story, Beautifully Told.
+        </p>
+</footer>
+</body></html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Portofolio - uwu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:wght@400..700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffdad3",
+                        "on-surface-variant": "#54433f",
+                        "tertiary-fixed-dim": "#d6bdee",
+                        "secondary": "#4d5e81",
+                        "secondary-fixed": "#d7e2ff",
+                        "secondary-fixed-dim": "#b5c7ef",
+                        "tertiary-fixed": "#efdbff",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#ffb4a4",
+                        "surface-dim": "#e0d9d4",
+                        "tertiary-container": "#b69ece",
+                        "on-tertiary-fixed": "#251239",
+                        "on-tertiary-container": "#47345d",
+                        "on-error": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1e1b18",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#914a3b",
+                        "on-secondary-fixed-variant": "#354768",
+                        "on-secondary-container": "#4a5c7e",
+                        "secondary-container": "#c2d5fd",
+                        "on-secondary-fixed": "#061b3a",
+                        "on-background": "#1e1b18",
+                        "surface-container-high": "#efe7e2",
+                        "outline-variant": "#d9c1bc",
+                        "on-primary-container": "#672a1d",
+                        "outline": "#86736e",
+                        "background": "#fff8f4",
+                        "tertiary": "#6a5681",
+                        "surface-variant": "#e9e1dc",
+                        "inverse-surface": "#33302d",
+                        "surface-container-low": "#faf2ed",
+                        "on-primary-fixed": "#3b0902",
+                        "inverse-on-surface": "#f7efea",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#523e68",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#f4ece7",
+                        "surface-bright": "#fff8f4",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "on-primary-fixed-variant": "#743326",
+                        "surface-tint": "#914a3b",
+                        "surface": "#fff8f4",
+                        "primary-container": "#e8917e",
+                        "surface-container-highest": "#e9e1dc",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif", "serif"],
+                        "body": ["Plus Jakarta Sans", "sans-serif"],
+                        "label": ["Plus Jakarta Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body antialiased min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-[#fff8f4]/80 dark:bg-[#1E1B18]/80 backdrop-blur-md fixed top-0 w-full z-50">
+<div class="max-w-7xl mx-auto flex items-center justify-between px-12 py-6">
+<div class="flex items-center gap-12">
+<a class="text-3xl font-headline italic bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent" href="#">uwu</a>
+<nav class="hidden md:flex gap-8 items-center">
+<a class="font-label text-sm uppercase tracking-widest text-[#1E1B18]/70 dark:text-[#fff8f4]/70 font-medium hover:text-[#E8917E] transition-colors duration-300" href="#">Home</a>
+<a class="font-label text-sm uppercase tracking-widest text-[#914a3b] dark:text-[#E8917E] font-semibold border-b-2 border-[#C4956A] pb-1 hover:text-[#E8917E] transition-colors duration-300 scale-95 opacity-80" href="#">Portofolio</a>
+<a class="font-label text-sm uppercase tracking-widest text-[#1E1B18]/70 dark:text-[#fff8f4]/70 font-medium hover:text-[#E8917E] transition-colors duration-300" href="#">Harga</a>
+<a class="font-label text-sm uppercase tracking-widest text-[#1E1B18]/70 dark:text-[#fff8f4]/70 font-medium hover:text-[#E8917E] transition-colors duration-300" href="#">Tema</a>
+<a class="font-label text-sm uppercase tracking-widest text-[#1E1B18]/70 dark:text-[#fff8f4]/70 font-medium hover:text-[#E8917E] transition-colors duration-300" href="#">Blog</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<a class="font-label text-sm font-semibold text-secondary hover:underline underline-offset-4 decoration-primary/50 transition-all" href="#">Masuk</a>
+<a class="bg-gradient-to-tr from-primary to-primary-container text-on-primary px-6 py-3 rounded-full font-label text-sm font-semibold hover:opacity-90 transition-opacity shadow-[0_8px_30px_rgb(145,74,59,0.2)]" href="#">Daftar Gratis</a>
+</div>
+</div>
+</header>
+<main class="flex-grow pt-32 pb-24 px-6 md:px-12 max-w-7xl mx-auto w-full">
+<!-- Hero Section -->
+<section class="text-center mb-20">
+<p class="font-headline italic text-xl text-secondary mb-4 tracking-wide">Our Masterpieces</p>
+<h1 class="font-headline text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-on-surface tracking-tight leading-tight">
+                Ribuan Kebahagiaan bersama <span class="italic bg-gradient-to-r from-primary to-primary-container bg-clip-text text-transparent">uwu</span>
+</h1>
+<p class="font-body text-lg text-on-surface-variant max-w-2xl mx-auto leading-relaxed">
+                Lihat karya nyata dari pasangan yang bahagia.
+            </p>
+</section>
+<!-- Masonry Grid -->
+<section class="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
+<!-- Card 1 -->
+<div class="break-inside-avoid relative group rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/20 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)]">
+<img alt="Javanese traditional wedding ceremony with bride and groom in intricate gold and black attire against dark backdrop" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Close-up of Indonesian couple in traditional Javanese black and gold wedding attire, romantic warm lighting, elegant editorial style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB96oRNLwnX2phDAEg7sdEpqXXbR2CAZsLbl-b_vi_R_GXAn0XRg_0kX4bRUT3DRRGmKhua1CNI5B3joSCsy9lT3yfcP-gJ74vtsMamhsZlkDtixzbAsmnkPq49IUhgYWZfDq2AfzuQIDU7-VtelnUUBKf0IxSx_7nN2E-NxLEfJVMVmP6XG5Dco1f3qB3r0wq68Qj5R56-cXsLUx76wm5lsSRY0YyCYEfxgLHmQlX3dFdeGR2fGc0A_OeVdoYByKBst1KED81dMkQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<span class="inline-block bg-surface-container-lowest/20 backdrop-blur-md text-on-primary text-xs font-label uppercase tracking-widest px-3 py-1 rounded-full mb-3 self-start border border-on-primary/30">Traditional</span>
+<h3 class="font-headline italic text-2xl text-on-primary mb-1">Raka &amp; Ayu</h3>
+<div class="flex justify-between items-end text-on-primary/90 font-label text-sm">
+<span>15 Aug 2026</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>2.4k</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="break-inside-avoid relative group rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/20 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)]">
+<img alt="Rustic outdoor wedding setup with wooden chairs and floral arch" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Rustic outdoor wedding ceremony setting with wooden crossback chairs, lush floral arch of white roses and greenery, soft natural sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7j3y84PTEwQJWBG6Lt5iNWZn96Aqguvao6v2kx8cFVsu127vewzPmKL-PkkFJtJi0TpxVID_a8C9MmvewtPn78YwtH07tEQTUYydKghr7g4WqHajZy_lVOiFnvbN1VYjYpyCLKsq5U2aIro-Vkh-7U8kTaQdu9CsR8LIaZruII6NCjKqqLWRBx2KiyJkGKDZ-zyNgdscSC98zwPWicS2FH-q6L9bkigPDQQrIlfNHNyb5HTPPKLvb1kafevoc2-Ihq78ho5qYhgk"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<span class="inline-block bg-surface-container-lowest/20 backdrop-blur-md text-on-primary text-xs font-label uppercase tracking-widest px-3 py-1 rounded-full mb-3 self-start border border-on-primary/30">Rustic</span>
+<h3 class="font-headline italic text-2xl text-on-primary mb-1">Bima &amp; Citra</h3>
+<div class="flex justify-between items-end text-on-primary/90 font-label text-sm">
+<span>02 Sep 2026</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>1.8k</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="break-inside-avoid relative group rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/20 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)]">
+<img alt="Minimalist wedding portrait of couple holding hands" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Minimalist elegant wedding portrait, bride in sleek white dress, groom in modern suit, neutral studio background, high fashion editorial lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDn3bgU3cFm3VydfVj53qMAEFYT6yHNSdan-BX4tm907vQNF_uzi_oWYcfn90Yqgmf41KblMUZbhjeb1GniFyb-S-z-vAaEMPa-jf2DsGkjT58pybfLsJctIkHVo04hHnccwHszSVeIGTgYUiCe85Xo9XLWwWS3oyI6XPAoIhJLcpSyEFjDn_mEJb1srp_iK-tYGdVsvyA6FwJWKYEJIOpyl7qDGrI57le0ba1eLb8RD7pfTURBySnUWXavHOEdG6NNRL2n8jn5xig"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<span class="inline-block bg-surface-container-lowest/20 backdrop-blur-md text-on-primary text-xs font-label uppercase tracking-widest px-3 py-1 rounded-full mb-3 self-start border border-on-primary/30">Minimalist</span>
+<h3 class="font-headline italic text-2xl text-on-primary mb-1">Dimas &amp; Dinda</h3>
+<div class="flex justify-between items-end text-on-primary/90 font-label text-sm">
+<span>24 Oct 2026</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>3.1k</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="break-inside-avoid relative group rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/20 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)]">
+<img alt="Botanical themed wedding table setting with lush greenery" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Lush botanical wedding table setting, cascading green ferns, eucalyptus, white candles, crystal glassware on bare wooden table, moody romantic atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGz-3o3b8G_EJNRb9Rf5-YZ-GzL2JixWQ92xt-Ch_uBpOzI6frtqoVV7DP8Dm4Kz36rmyy3m_FNMmH3JpgbGyeTyk10ETX1xW075q2ICjOPjupHMQzAZvrLAD6ZqVbs1pXdhxtW53Os5bW2o9fN-zoVb1jos2jxr5IreaVybL4mcWGGIET1wP_1_28qjcGtDbT2U5bOHd_RoOd8HCxDNGGc5zc1Q8PJKIbsLCbnptavs0L91HChzlcRmnJa_3-kNcYXM9pjVq3JSU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<span class="inline-block bg-surface-container-lowest/20 backdrop-blur-md text-on-primary text-xs font-label uppercase tracking-widest px-3 py-1 rounded-full mb-3 self-start border border-on-primary/30">Botanical</span>
+<h3 class="font-headline italic text-2xl text-on-primary mb-1">Reza &amp; Maya</h3>
+<div class="flex justify-between items-end text-on-primary/90 font-label text-sm">
+<span>10 Nov 2026</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>1.5k</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="break-inside-avoid relative group rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/20 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)]">
+<img alt="Classic ballroom wedding dance" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Elegant classic ballroom wedding, couple's first dance under crystal chandelier, bride in voluminous white gown, warm ambient lighting, luxurious setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaoRBUeros-TRVFPlldb9vGIYSFXwu4HGkIrPTwCeo-Yt9pb0Mcf8TPSmY90Mmi8tgm0OrzkNehIBKC9kwGi_gu9r6sSpXAhcqvg_OU-v8nH7o-JmEpJS1By39ZbxIio6M_okmHG4awxuevj4-z7-t3VghEr-YrclGf1qDdeERkU6LlMaw327RCcuEtbRVZZ6Ha1cElS410CqKhG6Bmhd1BB5nQ_OR8zIfuy4M7YjDXwISTFD-7QwG57EjDs40I3nz8pSIOeqbbRY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<span class="inline-block bg-surface-container-lowest/20 backdrop-blur-md text-on-primary text-xs font-label uppercase tracking-widest px-3 py-1 rounded-full mb-3 self-start border border-on-primary/30">Classic</span>
+<h3 class="font-headline italic text-2xl text-on-primary mb-1">Aditya &amp; Sarah</h3>
+<div class="flex justify-between items-end text-on-primary/90 font-label text-sm">
+<span>05 Dec 2026</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>4.2k</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="break-inside-avoid relative group rounded-lg overflow-hidden bg-surface-container-lowest border border-outline-variant/20 shadow-[0_40px_60px_-15px_rgba(30,27,24,0.05)]">
+<img alt="Modern contemporary wedding details" class="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Modern contemporary wedding reception details, geometric gold accents, sleek black tableware, blush pink floral centerpieces, sophisticated and chic aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1xV1mx8cXDoSArGSunRf9kGZNj61ZaGT1H82E--9sfmLCg2XS3A3WfS1gLJHLJqXiIQMxELprab-DYVDPX7XkXUyjmGs91fwMGEhhr27bf8GSVxBtZnd9u0Ia4jV1tKGBeyIkQZHWc6aSBG_rPlTeBdeU9nSFtAPLUefxQoiLQfpxmU7y2N70j18T1IfWMR45UmoX7xtIbsrtF-N86JCF-TJgcx_UR_h6ieEwik1rc1sgzrnfcgRWyOrkGY96A7NKOwyn58SpFuA"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-surface/80 via-on-surface/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">
+<span class="inline-block bg-surface-container-lowest/20 backdrop-blur-md text-on-primary text-xs font-label uppercase tracking-widest px-3 py-1 rounded-full mb-3 self-start border border-on-primary/30">Modern</span>
+<h3 class="font-headline italic text-2xl text-on-primary mb-1">Kevin &amp; Nia</h3>
+<div class="flex justify-between items-end text-on-primary/90 font-label text-sm">
+<span>12 Jan 2027</span>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>2.9k</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Load More Action -->
+<div class="mt-20 text-center">
+<button class="inline-flex items-center justify-center px-8 py-3 rounded-full border border-outline-variant text-secondary font-label font-semibold text-sm hover:bg-surface-container-low transition-colors duration-300">
+                Muat Lebih Banyak
+            </button>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-[#fff8f4] dark:bg-[#1E1B18] w-full py-20 border-t-[0.5px] border-[#C4956A]/20">
+<div class="max-w-7xl mx-auto flex flex-col items-center text-center px-8">
+<div class="text-2xl font-headline text-[#914a3b] dark:text-[#E8917E] mb-4 italic">uwu</div>
+<p class="font-headline italic text-on-surface-variant text-lg mb-8">A Love Story, Beautifully Told.</p>
+<div class="flex items-center justify-center w-full max-w-md mb-8">
+<div class="h-px bg-outline-variant/40 flex-grow"></div>
+<span class="material-symbols-outlined text-[#C4956A] mx-4 text-sm" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<div class="h-px bg-outline-variant/40 flex-grow"></div>
+</div>
+<nav class="flex flex-wrap justify-center gap-6 md:gap-10 mb-8">
+<a class="font-label text-sm text-[#1E1B18]/60 dark:text-[#fff8f4]/60 hover:text-[#C4956A] transition-all duration-300" href="#">Tentang Kami</a>
+<a class="font-label text-sm text-[#1E1B18]/60 dark:text-[#fff8f4]/60 hover:text-[#C4956A] transition-all duration-300" href="#">Privasi</a>
+<a class="font-label text-sm text-[#1E1B18]/60 dark:text-[#fff8f4]/60 hover:text-[#C4956A] transition-all duration-300" href="#">Syarat &amp; Ketentuan</a>
+<a class="font-label text-sm text-[#1E1B18]/60 dark:text-[#fff8f4]/60 hover:text-[#C4956A] transition-all duration-300" href="#">Bantuan</a>
+</nav>
+<p class="font-body text-sm text-on-surface-variant/60">© 2026 uwu Modern Heirloom. All rights reserved.</p>
+</div>
+</footer>
+</body></html>

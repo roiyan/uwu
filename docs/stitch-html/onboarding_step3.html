@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pilih Tema Undangan - Langkah 3</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,400..700;1,400..700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-variant": "#e9e1dc",
+                    "primary-fixed": "#ffdad3",
+                    "outline": "#86736e",
+                    "surface-bright": "#fff8f4",
+                    "secondary-fixed": "#d7e2ff",
+                    "surface": "#fff8f4",
+                    "tertiary-container": "#b69ece",
+                    "surface-container": "#f4ece7",
+                    "primary-container": "#e8917e",
+                    "on-surface": "#1e1b18",
+                    "inverse-surface": "#33302d",
+                    "primary": "#914a3b",
+                    "on-error-container": "#93000a",
+                    "tertiary": "#6a5681",
+                    "outline-variant": "#d9c1bc",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#e0d9d4",
+                    "on-secondary-fixed-variant": "#354768",
+                    "on-primary-fixed-variant": "#743326",
+                    "surface-container-high": "#efe7e2",
+                    "on-primary-container": "#672a1d",
+                    "on-error": "#ffffff",
+                    "surface-container-low": "#faf2ed",
+                    "secondary-fixed-dim": "#b5c7ef",
+                    "secondary-container": "#c2d5fd",
+                    "surface-container-highest": "#e9e1dc",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#efdbff",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#3b0902",
+                    "on-tertiary-fixed": "#251239",
+                    "on-background": "#1e1b18",
+                    "on-secondary-container": "#4a5c7e",
+                    "on-surface-variant": "#54433f",
+                    "on-secondary-fixed": "#061b3a",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f7efea",
+                    "on-tertiary-fixed-variant": "#523e68",
+                    "secondary": "#4d5e81",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#ffb4a4",
+                    "tertiary-fixed-dim": "#d6bdee",
+                    "primary-fixed-dim": "#ffb4a4",
+                    "surface-tint": "#914a3b",
+                    "surface-container-lowest": "#ffffff",
+                    "on-tertiary-container": "#47345d",
+                    "background": "#fff8f4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Noto Serif"
+                    ],
+                    "body": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label": [
+                            "Plus Jakarta Sans"
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen flex items-center justify-center p-6 antialiased">
+<!-- Suppress TopAppBar and BottomNavBar as this is an Onboarding/Transactional flow -->
+<main class="w-full max-w-[700px] mx-auto bg-surface-container-lowest rounded-xl p-8 md:p-12 shadow-[0_40px_80px_rgba(30,27,24,0.04)] relative overflow-hidden">
+<!-- Subtle Background Accent -->
+<div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary-fixed rounded-full blur-[80px] opacity-40 pointer-events-none"></div>
+<!-- Progress Indicator -->
+<div class="flex items-center justify-center space-x-3 mb-10">
+<div class="flex items-center">
+<div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+<div class="w-8 h-[1px] bg-primary mx-2"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+<div class="w-8 h-[1px] bg-primary mx-2"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-primary"></div>
+<div class="w-8 h-[1px] bg-outline-variant mx-2"></div>
+<div class="w-2.5 h-2.5 rounded-full bg-surface-container-high border border-outline-variant"></div>
+</div>
+<span class="text-xs text-on-surface-variant font-medium tracking-widest uppercase ml-4">Langkah 3 dari 4</span>
+</div>
+<!-- Header -->
+<div class="text-center mb-12">
+<h1 class="font-headline text-4xl md:text-5xl text-primary font-medium tracking-tight mb-4">Pilih tampilan undangan Anda</h1>
+<p class="text-on-surface-variant text-base md:text-lg">Tema bisa diubah kapan saja</p>
+</div>
+<!-- Theme Selection Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+<!-- Theme Card 1: Sakura Dreams (Selected) -->
+<label class="relative group cursor-pointer block rounded-lg overflow-hidden border-2 border-secondary transition-all duration-300">
+<input checked="" class="sr-only" name="theme" type="radio" value="sakura"/>
+<div class="aspect-[3/4] bg-surface-container-low relative overflow-hidden">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="soft pink cherry blossoms blooming against a pale spring sky, romantic delicate floral aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAP9PKCadpYksoGxyewK1lCYunlB88aEDws0RsKL7Hwg64OM8gJbLb3CZxa6hKmMx3DQZch8QnSxX_7z1gk0v_zNxi4-lhiM-sEhEE9TAsFjwOYsppj5p8_uWYL5T1f_9w4PQ_Sr56vgUIG3UAaL0VrS-PaQNc3KjON738VataQYGiNJqP_cB4yYpHPOVsvAnfp18YXTYEMQb-Wbv7qa_NWwwXoBKXkjcadMYHdeSpdf3Wpct_jOR8g29wRFRxSAX8_F-iRNcP6V-E"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-5 text-center">
+<h3 class="font-headline text-xl text-on-background mb-1">Sakura Dreams</h3>
+</div>
+</div>
+<!-- Selection Badge -->
+<div class="absolute top-4 right-4 w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-on-secondary shadow-lg">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</label>
+<!-- Theme Card 2: Elegance Botanical -->
+<label class="relative group cursor-pointer block rounded-lg overflow-hidden border border-outline-variant/30 hover:border-outline-variant transition-all duration-300 shadow-[0_10px_30px_rgba(30,27,24,0.02)]">
+<input class="sr-only" name="theme" type="radio" value="botanical"/>
+<div class="aspect-[3/4] bg-surface-container-low relative overflow-hidden">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="lush dark green botanical monstera leaves overlapping, moody high contrast elegant tropical aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCK3ZFhWWpRnEgXVvHs6EzyhttMeU1XNlnnj0wmz_xJ1QE4v67pVedO4kn1e-FFKYE8Au1TCkm_c0iP_c5xzRGnkrk_K2q3OzW7WvmZ3FCBkhrWej9r_16kfaCcl8SYYT04wjehu-qG_lJRzIZAV-c_jPHEoG7UH8z-J6mykCCuU9-xjyMi8SJnh03BLuujRicx_sm425MfoWZeG1oKPmRMxnIvKalk5wZu0ni3o1YnRQRw4XpUSWhFga4Og9m_pbIiL9KNOKfmPNU"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-5 text-center">
+<h3 class="font-headline text-xl text-on-background mb-1 opacity-80 group-hover:opacity-100 transition-opacity">Elegance Botanical</h3>
+</div>
+</div>
+<div class="absolute inset-0 bg-surface/10 group-hover:bg-transparent transition-colors duration-300"></div>
+</label>
+<!-- Theme Card 3: Nusantara Gold -->
+<label class="relative group cursor-pointer block rounded-lg overflow-hidden border border-outline-variant/30 hover:border-outline-variant transition-all duration-300 shadow-[0_10px_30px_rgba(30,27,24,0.02)]">
+<input class="sr-only" name="theme" type="radio" value="nusantara"/>
+<div class="aspect-[3/4] bg-surface-container-low relative overflow-hidden">
+<img alt="" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="intricate traditional Indonesian batik pattern in warm brown and gold tones, rich cultural heritage texture" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIX4-_rjB-i6ZiqXlk8amaQlYYkHnXtaOnyuLwHluE_nbFkoxztiawl8UqkxNQmYob72yYuc4nXG689KYBv6-MkoFwnFF122EfAm7NqWcLyiR6tWPDpu2pN4-1taY4mPeV1p6-dvMucGHEZsJQz5ie3pgfJCvMKKkP42QId9etop-cBlvNJXj_6HhVn-1cFLgidj8JPViD4ZcB1U81eO1B4mVpIxhIk_6bKSUchDnGbKe6Y49PIp6nk_CnrJEiD33DQR75prKA4RI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-5 text-center">
+<h3 class="font-headline text-xl text-on-background mb-1 opacity-80 group-hover:opacity-100 transition-opacity">Nusantara Gold</h3>
+</div>
+</div>
+<div class="absolute inset-0 bg-surface/10 group-hover:bg-transparent transition-colors duration-300"></div>
+</label>
+</div>
+<!-- Navigation Buttons -->
+<div class="flex items-center justify-between mt-8 border-t border-outline-variant/20 pt-8">
+<button class="px-6 py-3.5 rounded-full border border-outline-variant text-secondary font-medium hover:bg-surface-container-low transition-colors duration-300 flex items-center space-x-2" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+<span>Kembali</span>
+</button>
+<button class="px-8 py-3.5 rounded-full bg-gradient-to-br from-primary to-primary-container text-on-primary font-medium hover:opacity-90 transition-opacity duration-300 flex items-center space-x-2 shadow-lg shadow-primary-container/20" type="button">
+<span>Lanjutkan</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>uwu Wedding - Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,300;0,400;0,600;0,700;1,400&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#914a3b",
+                        "inverse-primary": "#ffb4a4",
+                        "surface-container": "#f4ece7",
+                        "on-primary-fixed": "#3b0902",
+                        "tertiary-container": "#b69ece",
+                        "background": "#fff8f4",
+                        "on-surface-variant": "#54433f",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#4a5c7e",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed": "#061b3a",
+                        "on-surface": "#1e1b18",
+                        "on-tertiary-container": "#47345d",
+                        "on-primary-fixed-variant": "#743326",
+                        "secondary": "#4d5e81",
+                        "surface-variant": "#e9e1dc",
+                        "surface": "#fff8f4",
+                        "surface-container-highest": "#e9e1dc",
+                        "secondary-fixed": "#d7e2ff",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#d9c1bc",
+                        "error-container": "#ffdad6",
+                        "outline": "#86736e",
+                        "inverse-on-surface": "#f7efea",
+                        "tertiary-fixed": "#efdbff",
+                        "surface-container-low": "#faf2ed",
+                        "inverse-surface": "#33302d",
+                        "surface-container-high": "#efe7e2",
+                        "primary": "#914a3b",
+                        "on-tertiary-fixed": "#251239",
+                        "primary-fixed-dim": "#ffb4a4",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#354768",
+                        "secondary-fixed-dim": "#b5c7ef",
+                        "on-tertiary-fixed-variant": "#523e68",
+                        "tertiary": "#6a5681",
+                        "primary-container": "#e8917e",
+                        "on-background": "#1e1b18",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#e0d9d4",
+                        "secondary-container": "#c2d5fd",
+                        "primary-fixed": "#ffdad3",
+                        "tertiary-fixed-dim": "#d6bdee",
+                        "surface-bright": "#fff8f4",
+                        "on-primary-container": "#672a1d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {},
+                    "fontFamily": {
+                        "headline": [
+                            "Noto Serif"
+                        ],
+                        "body": [
+                            "Plus Jakarta Sans"
+                        ],
+                        "label": [
+                            "Plus Jakarta Sans"
+                        ]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-surface');
+            font-family: theme('fontFamily.body');
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<nav class="h-screen w-80 fixed left-0 top-0 flex flex-col bg-[#f5f0ed] dark:bg-[#1e1b18] flex flex-col h-full py-8 space-y-2 z-50">
+<!-- Brand -->
+<div class="px-12 mb-8">
+<h1 class="font-['Noto_Serif'] text-4xl font-light text-[#914a3b] dark:text-[#e8917e] lowercase">uwu</h1>
+</div>
+<!-- Header Profile -->
+<div class="px-12 mb-8 flex items-center space-x-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-container-high border-2 border-outline-variant/30 flex-shrink-0">
+<img alt="Anisa &amp; Rizky Profile Image" class="w-full h-full object-cover" data-alt="close up of happy couple at sunset" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAttwFiis6JU75Pvd7dmTjY9kjLATt3klaCaQmbVmMMZp_ILhk_0OIi5Eh9QE5W9U6zRQLq-0-IFSvcEW2y65nuFodfFohoNpvtPvQ863l41aHK0D3ZGRHoni0xg8DD1CcYSwfITPHf9ezfcKRF62s9wZPbluDCLSrC6AhXQj1iJ5CX4UbGqm_4g1DfezyiuQQN14Gg87FDTJoO4GL9Xt--TuZU_X6Tx74DrbtKgifUB2nl1dkkEkUMVVyzYegeTcoTxrx4MYS0R9g"/>
+</div>
+<div class="flex flex-col">
+<span class="font-['Plus_Jakarta_Sans'] text-sm font-semibold text-on-surface">Anisa &amp; Rizky • Sakura Dreams</span>
+</div>
+</div>
+<!-- Tabs -->
+<div class="flex-1 overflow-y-auto flex flex-col gap-1">
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Beranda</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">edit_note</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Website Editor</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Tamu</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">send</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Kirim Undangan</span>
+</a>
+<a class="text-[#914a3b] dark:text-[#e8917e] font-bold bg-[#ffffff]/50 dark:bg-[#ffffff]/5 rounded-l-full py-3 pl-8 ml-4 transition-all duration-300 flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Analytics</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">how_to_reg</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Check-in</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">card_giftcard</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Amplop &amp; Hadiah</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Pengaturan</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Paket</span>
+</a>
+</div>
+<!-- Footer -->
+<div class="mt-auto flex flex-col gap-1 pt-4 border-t border-outline-variant/10">
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">visibility</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Pratinjau Situs</span>
+</a>
+<a class="text-[#1e1b18]/60 dark:text-[#fff8f4]/60 font-medium py-3 pl-12 hover:text-[#914a3b] dark:hover:text-[#e8917e] flex items-center space-x-4 hover:bg-[#ffffff]/30 dark:hover:bg-[#ffffff]/5 transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-['Plus_Jakarta_Sans'] text-sm">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-80 flex flex-col relative">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-20rem)] h-16 bg-transparent backdrop-blur-xl flex items-center justify-end px-12 z-40">
+<div class="flex items-center space-x-6 text-[#914a3b]">
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:opacity-80 transition-opacity">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas (Empty State) -->
+<main class="flex-1 pt-24 pb-12 px-12 flex items-center justify-center bg-surface">
+<div class="max-w-2xl w-full flex flex-col items-center text-center p-12 bg-surface-container-lowest rounded-[3rem] shadow-[0_20px_60px_-15px_rgba(30,27,24,0.05)] border-[0.5px] border-outline-variant/20">
+<!-- Illustration Container -->
+<div class="relative w-64 h-48 mb-12 flex items-end justify-center">
+<!-- Glassy backdrop circle -->
+<div class="absolute inset-0 m-auto w-48 h-48 bg-surface-container-low rounded-full opacity-50 blur-xl"></div>
+<!-- Chart Axes -->
+<div class="absolute left-4 bottom-4 w-[90%] h-px bg-outline-variant/40"></div>
+<div class="absolute left-4 bottom-4 w-px h-[80%] bg-outline-variant/40"></div>
+<!-- SVG Dotted Lines -->
+<svg class="absolute inset-0 w-full h-full z-10 drop-shadow-sm" fill="none" viewbox="0 0 256 192" xmlns="http://www.w3.org/2000/svg">
+<!-- Lavender Line -->
+<path d="M 24 160 Q 60 140, 100 150 T 220 50" stroke="#6a5681" stroke-dasharray="6 6" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Slate Blue Line -->
+<path d="M 24 170 Q 80 160, 120 120 T 180 90 T 230 110" stroke="#4d5e81" stroke-dasharray="6 6" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Rose Pink Line (Primary) -->
+<path d="M 24 180 Q 50 175, 90 180 T 150 160 T 230 140" stroke="#ffdad3" stroke-dasharray="6 6" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Decorative Nodes on Primary Line -->
+<circle cx="24" cy="180" fill="#fff" r="3" stroke="#ffdad3" stroke-width="2"></circle>
+<circle cx="150" cy="160" fill="#fff" r="3" stroke="#ffdad3" stroke-width="2"></circle>
+<circle cx="230" cy="140" fill="#fff" r="3" stroke="#ffdad3" stroke-width="2"></circle>
+</svg>
+</div>
+<!-- Text Content -->
+<h2 class="font-headline text-5xl text-primary tracking-tight mb-4">Belum Ada Data</h2>
+<p class="font-body text-lg text-on-surface-variant mb-10 max-w-md leading-relaxed">
+                    Data akan muncul setelah tamu mulai mengunjungi undangan.
+                </p>
+<!-- Actions -->
+<button class="group relative overflow-hidden rounded-full px-8 py-4 bg-gradient-to-tr from-primary to-primary-container text-on-primary font-semibold text-lg flex items-center gap-3 shadow-[0_8px_20px_rgba(232,145,126,0.2)] hover:shadow-[0_12px_24px_rgba(232,145,126,0.3)] transition-all duration-300 hover:-translate-y-0.5">
+<span class="material-symbols-outlined text-xl transition-transform group-hover:rotate-12 group-hover:scale-110">send</span>
+                    Kirim Undangan Sekarang
+                </button>
+<!-- Tip -->
+<div class="mt-8 flex items-center justify-center gap-2 text-on-surface-variant/80 text-sm">
+<span class="material-symbols-outlined text-outline-variant text-base">lightbulb</span>
+<span>Bagikan link undangan untuk mulai mengumpulkan data.</span>
+</div>
+</div>
+</main>
+</div>
+</body></html>
