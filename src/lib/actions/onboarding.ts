@@ -22,19 +22,10 @@ import {
 } from "@/lib/schemas/event";
 import type { ActionResult } from "@/lib/auth-guard";
 
-async function ensureUniqueSlug(desired: string) {
-  let candidate = desired;
-  for (let i = 0; i < 5; i++) {
-    const [hit] = await db
-      .select({ id: events.id })
-      .from(events)
-      .where(eq(events.slug, candidate))
-      .limit(1);
-    if (!hit) return candidate;
-    candidate = `${desired}-${Math.random().toString(36).slice(2, 5)}`;
-  }
-  return `${desired}-${Date.now().toString(36)}`;
-}
+// buildCoupleSlug already appends a 6-char random base36 suffix, so a
+// clash on events.slug (UNIQUE) is vanishingly unlikely. Skipping the
+// pre-flight SELECT saves a round-trip on every first onboarding; if a
+// clash does happen the transaction surfaces 23505 and the user retries.
 
 async function defaultStarterPackageId() {
   const [p] = await db
@@ -49,6 +40,7 @@ export async function saveMempelaiAction(
   _: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  const t0 = performance.now();
   const user = await requireAuthedUser();
   const parsed = mempelaiSchema.safeParse({
     brideName: formData.get("brideName"),
@@ -65,44 +57,55 @@ export async function saveMempelaiAction(
   const title = `${brideName.split(" ")[0]} & ${groomName.split(" ")[0]}`;
 
   let eventId: string;
+  const now = new Date();
   if (existing) {
     eventId = existing.event.id;
-    await db
-      .update(events)
-      .set({ title, updatedAt: new Date() })
-      .where(eq(events.id, eventId));
-    await db
-      .update(couples)
-      .set({
+    // Independent table writes — fire in parallel.
+    await Promise.all([
+      db
+        .update(events)
+        .set({ title, updatedAt: now })
+        .where(eq(events.id, eventId)),
+      db
+        .update(couples)
+        .set({
+          brideName,
+          brideNickname: brideNickname || null,
+          groomName,
+          groomNickname: groomNickname || null,
+          updatedAt: now,
+        })
+        .where(eq(couples.eventId, eventId)),
+    ]);
+  } else {
+    // First-time path: slug is generated client-side; starter pkg lookup
+    // is the only dependency we need before the transaction.
+    const slug = buildCoupleSlug(brideName, groomName);
+    const starter = await defaultStarterPackageId();
+    // events.id is needed by couples FK, so must sequence these two — but
+    // wrap in a single transaction to avoid two auth round-trips.
+    eventId = await db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(events)
+        .values({
+          ownerId: user.id,
+          slug,
+          title,
+          packageId: starter ?? null,
+        })
+        .returning({ id: events.id });
+      await tx.insert(couples).values({
+        eventId: created.id,
         brideName,
         brideNickname: brideNickname || null,
         groomName,
         groomNickname: groomNickname || null,
-        updatedAt: new Date(),
-      })
-      .where(eq(couples.eventId, eventId));
-  } else {
-    const slug = await ensureUniqueSlug(buildCoupleSlug(brideName, groomName));
-    const starter = await defaultStarterPackageId();
-    const [created] = await db
-      .insert(events)
-      .values({
-        ownerId: user.id,
-        slug,
-        title,
-        packageId: starter ?? null,
-      })
-      .returning({ id: events.id });
-    eventId = created.id;
-    await db.insert(couples).values({
-      eventId,
-      brideName,
-      brideNickname: brideNickname || null,
-      groomName,
-      groomNickname: groomNickname || null,
+      });
+      return created.id;
     });
   }
 
+  console.log(`[ACTION] saveMempelai: ${Math.round(performance.now() - t0)}ms`);
   revalidatePath("/onboarding", "layout");
   revalidatePath("/dashboard", "layout");
   redirect("/onboarding/jadwal");
@@ -112,6 +115,7 @@ export async function saveJadwalAction(
   _: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  const t0 = performance.now();
   const user = await requireAuthedUser();
   const existing = await getCurrentEventForUser(user.id);
   if (!existing) {
@@ -151,6 +155,7 @@ export async function saveJadwalAction(
     }
   });
 
+  console.log(`[ACTION] saveJadwal: ${Math.round(performance.now() - t0)}ms`);
   revalidatePath("/onboarding", "layout");
   revalidatePath("/dashboard", "layout");
   redirect("/onboarding/tema");
@@ -160,6 +165,7 @@ export async function saveTemaAction(
   _: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  const t0 = performance.now();
   const user = await requireAuthedUser();
   const existing = await getCurrentEventForUser(user.id);
   if (!existing) {
@@ -196,6 +202,7 @@ export async function saveTemaAction(
       }),
   ]);
 
+  console.log(`[ACTION] saveTema: ${Math.round(performance.now() - t0)}ms`);
   revalidatePath("/onboarding", "layout");
   revalidatePath("/dashboard", "layout");
   redirect("/onboarding/selesai");
