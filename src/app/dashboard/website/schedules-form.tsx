@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { updateSchedulesAction } from "@/lib/actions/event";
+import { VenueMapField } from "@/components/shared/VenueMapField";
 import type { ScheduleRow } from "@/app/onboarding/jadwal/form";
 
 const inputClass =
@@ -112,16 +113,12 @@ export function SchedulesForm({
                 className={inputClass}
               />
             </label>
-            <label className="block md:col-span-2">
-              <span className="text-sm font-medium text-ink">Link Google Maps</span>
-              <input
-                type="url"
-                value={row.venueMapUrl}
-                onChange={(e) => update(idx, { venueMapUrl: e.target.value })}
-                placeholder="https://maps.google.com/..."
-                className={inputClass}
-              />
-            </label>
+            <VenueMapField
+              value={row.venueMapUrl}
+              onChange={(v) => update(idx, { venueMapUrl: v })}
+              venueName={row.venueName}
+              venueAddress={row.venueAddress}
+            />
           </div>
         </div>
       ))}
