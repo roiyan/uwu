@@ -5,6 +5,12 @@ export const mempelaiSchema = z.object({
   brideNickname: z.string().max(40).optional().or(z.literal("")),
   groomName: z.string().min(2, "Nama mempelai pria minimal 2 karakter").max(80),
   groomNickname: z.string().max(40).optional().or(z.literal("")),
+  ownerRole: z.enum(["bride", "groom", "both"]).default("bride"),
+  partnerEmail: z
+    .string()
+    .email("Email pasangan tidak valid")
+    .optional()
+    .or(z.literal("")),
 });
 
 export const scheduleInputSchema = z.object({

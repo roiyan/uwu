@@ -29,6 +29,16 @@ export const eventMemberRoleEnum = pgEnum("event_member_role", [
   "admin",
 ]);
 
+export const ownerRoleEnum = pgEnum("owner_role", ["bride", "groom", "both"]);
+
+export const inviteStatusEnum = pgEnum("invite_status", [
+  "pending",
+  "accepted",
+  "revoked",
+  "expired",
+  "expired_manual",
+]);
+
 export const guestRsvpStatusEnum = pgEnum("guest_rsvp_status", [
   "baru",
   "diundang",
@@ -124,6 +134,8 @@ export const events = pgTable("events", {
     .references(() => profiles.id, { onDelete: "cascade" }),
   slug: text("slug").notNull().unique(), // used for /[slug] invitation URL
   title: text("title").notNull(), // "Anisa & Rizky"
+  // Who is the account holder in the couple? 'both' = no partner invite flow.
+  ownerRole: ownerRoleEnum("owner_role").notNull().default("bride"),
   themeId: uuid("theme_id").references(() => themes.id, { onDelete: "set null" }),
   packageId: uuid("package_id").references(() => packages.id, { onDelete: "set null" }),
   culturalPreference: culturalPreferenceEnum("cultural_preference")
@@ -137,7 +149,15 @@ export const events = pgTable("events", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 });
 
-// ---------- event_members (for couple + collaborators) ----------
+// ---------- event_members (combined: invitations + accepted collaborators) ----------
+//
+// Originally a single-table list of accepted members. Extended in the
+// Collaboration Phase 1 migration to carry the pre-accept invite state too:
+// when a row has inviteStatus = 'pending', user_id is null (partner not
+// registered yet) and inviteToken is populated. On accept, userId +
+// acceptedEmail are filled, inviteToken is cleared, status → 'accepted'.
+// RLS helpers is_event_member / is_event_editor filter on
+// inviteStatus = 'accepted' so pending rows don't grant access.
 
 export const eventMembers = pgTable(
   "event_members",
@@ -146,17 +166,60 @@ export const eventMembers = pgTable(
     eventId: uuid("event_id")
       .notNull()
       .references(() => events.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: uuid("user_id").references(() => profiles.id, {
+      onDelete: "cascade",
+    }),
+    role: eventMemberRoleEnum("role").notNull().default("editor"),
+
+    // Invitation fields (populated when the row is created as a pending invite)
+    invitedEmail: text("invited_email"),
+    invitedName: text("invited_name"),
+    inviteToken: text("invite_token").unique(),
+    inviteStatus: inviteStatusEnum("invite_status")
       .notNull()
-      .references(() => profiles.id, { onDelete: "cascade" }),
-    role: eventMemberRoleEnum("role").notNull().default("viewer"),
+      .default("accepted"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    acceptedEmail: text("accepted_email"),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+    invitedBy: uuid("invited_by").references(() => profiles.id, {
+      onDelete: "set null",
+    }),
+
     invitedAt: timestamp("invited_at", { withTimezone: true }).notNull().defaultNow(),
     acceptedAt: timestamp("accepted_at", { withTimezone: true }),
   },
   (t) => ({
-    eventUserUnique: unique().on(t.eventId, t.userId),
+    eventUserUnique: unique("event_members_event_id_user_id_unique").on(
+      t.eventId,
+      t.userId,
+    ),
+    eventEmailUnique: unique("event_members_event_id_invited_email_unique").on(
+      t.eventId,
+      t.invitedEmail,
+    ),
   }),
 );
+
+// ---------- activity_logs (append-only audit trail) ----------
+
+export const activityLogs = pgTable("activity_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => profiles.id, { onDelete: "cascade" }),
+  userEmail: text("user_email").notNull(),
+  userName: text("user_name"),
+  action: text("action").notNull(),
+  targetType: text("target_type"),
+  targetId: text("target_id"),
+  summary: text("summary").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
 // ---------- couples (mempelai profile) ----------
 
@@ -361,3 +424,5 @@ export type GuestGroup = typeof guestGroups.$inferSelect;
 export type Message = typeof messages.$inferSelect;
 export type MessageDelivery = typeof messageDeliveries.$inferSelect;
 export type Order = typeof orders.$inferSelect;
+export type EventMember = typeof eventMembers.$inferSelect;
+export type ActivityLog = typeof activityLogs.$inferSelect;

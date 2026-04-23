@@ -81,6 +81,7 @@ async function resolveEffectiveRole(
     LEFT JOIN event_members em
       ON em.event_id = e.id
      AND em.user_id = ${userId}
+     AND em.invite_status = 'accepted'
     WHERE e.id = ${eventId}
       AND e.deleted_at IS NULL
     LIMIT 1
