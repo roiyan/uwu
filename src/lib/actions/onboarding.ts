@@ -13,6 +13,7 @@ import {
 import { requireSessionUserFast as requireAuthedUser } from "@/lib/auth-guard";
 import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import { buildCoupleSlug } from "@/lib/utils/slug";
+import { createPartnerInvite } from "@/lib/actions/collaborator";
 import {
   mempelaiSchema,
   schedulesSchema,
@@ -53,22 +54,33 @@ export async function saveMempelaiAction(
     brideNickname: formData.get("brideNickname") || undefined,
     groomName: formData.get("groomName"),
     groomNickname: formData.get("groomNickname") || undefined,
+    ownerRole: (formData.get("ownerRole") as string) || "bride",
+    partnerEmail: formData.get("partnerEmail") || undefined,
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Input tidak valid" };
   }
-  const { brideName, brideNickname, groomName, groomNickname } = parsed.data;
+  const {
+    brideName,
+    brideNickname,
+    groomName,
+    groomNickname,
+    ownerRole,
+    partnerEmail,
+  } = parsed.data;
 
   const existing = await getCurrentEventForUser(user.id);
   const title = `${brideName.split(" ")[0]} & ${groomName.split(" ")[0]}`;
   const now = new Date();
+  let eventId: string;
 
   if (existing) {
+    eventId = existing.event.id;
     await Promise.all([
       db
         .update(events)
-        .set({ title, updatedAt: now })
-        .where(eq(events.id, existing.event.id)),
+        .set({ title, ownerRole, updatedAt: now })
+        .where(eq(events.id, eventId)),
       db
         .update(couples)
         .set({
@@ -78,18 +90,19 @@ export async function saveMempelaiAction(
           groomNickname: groomNickname || null,
           updatedAt: now,
         })
-        .where(eq(couples.eventId, existing.event.id)),
+        .where(eq(couples.eventId, eventId)),
     ]);
   } else {
     const slug = buildCoupleSlug(brideName, groomName);
     const starter = await defaultStarterPackageId();
-    await db.transaction(async (tx) => {
+    eventId = await db.transaction(async (tx) => {
       const [created] = await tx
         .insert(events)
         .values({
           ownerId: user.id,
           slug,
           title,
+          ownerRole,
           packageId: starter ?? null,
         })
         .returning({ id: events.id });
@@ -100,7 +113,21 @@ export async function saveMempelaiAction(
         groomName,
         groomNickname: groomNickname || null,
       });
+      return created.id;
     });
+  }
+
+  // Partner invite: create/refresh a pending invite row if the user supplied
+  // a partner email and the role is not "both". This does NOT await the
+  // token generation — it's fire-and-forget so it can't slow mempelai save.
+  if (ownerRole !== "both" && partnerEmail) {
+    const partnerName =
+      ownerRole === "bride" ? groomName : brideName;
+    void createPartnerInvite({
+      eventId,
+      partnerEmail,
+      partnerName,
+    }).catch((err) => console.error("[mempelai partnerInvite]", err));
   }
 
   console.log(`[ACTION] saveMempelai: ${Math.round(performance.now() - t0)}ms`);
