@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { asc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { packages } from "@/lib/db/schema";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import { listOrdersForUser } from "@/lib/actions/checkout";
 
@@ -24,7 +24,7 @@ function formatIdr(value: number) {
 }
 
 export default async function PackagesPage() {
-  const user = await requireAuthedUser();
+  const user = await requireSessionUserFast();
   const current = await getCurrentEventForUser(user.id);
   if (!current) redirect("/onboarding");
   const bundle = await getEventBundle(current.event.id);

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { messages } from "@/lib/db/schema";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import { listDeliveriesForMessage } from "@/lib/actions/broadcast";
 
@@ -21,7 +21,7 @@ export default async function BroadcastDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const user = await requireAuthedUser();
+  const user = await requireSessionUserFast();
   const current = await getCurrentEventForUser(user.id);
   if (!current) redirect("/onboarding");
 

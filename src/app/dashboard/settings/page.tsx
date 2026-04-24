@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { eventMembers, profiles } from "@/lib/db/schema";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import { SettingsTabs } from "./tabs";
 
@@ -19,30 +19,32 @@ export default async function SettingsPage({
 }: {
   searchParams: Promise<{ tab?: string }>;
 }) {
-  const user = await requireAuthedUser();
+  const user = await requireSessionUserFast();
   const current = await getCurrentEventForUser(user.id);
   if (!current) redirect("/onboarding");
   const bundle = await getEventBundle(current.event.id);
   if (!bundle) redirect("/onboarding");
 
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
-
-  // Active partner collaborators (pending + accepted). Revoked / expired
-  // are hidden — the Kolaborator tab only surfaces live state.
-  const collabRows = await db
-    .select()
-    .from(eventMembers)
-    .where(
-      and(
-        eq(eventMembers.eventId, bundle.event.id),
-        inArray(eventMembers.inviteStatus, ["pending", "accepted"]),
-      ),
-    )
-    .orderBy(asc(eventMembers.invitedAt));
+  // Profile + collaborators are independent, run them in parallel.
+  const [[profile], collabRows] = await Promise.all([
+    db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.id, user.id))
+      .limit(1),
+    // Active partner collaborators (pending + accepted). Revoked /
+    // expired are hidden — the Kolaborator tab only surfaces live state.
+    db
+      .select()
+      .from(eventMembers)
+      .where(
+        and(
+          eq(eventMembers.eventId, bundle.event.id),
+          inArray(eventMembers.inviteStatus, ["pending", "accepted"]),
+        ),
+      )
+      .orderBy(asc(eventMembers.invitedAt)),
+  ]);
 
   const isOwner = bundle.event.ownerId === user.id;
 

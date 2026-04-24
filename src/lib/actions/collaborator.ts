@@ -181,7 +181,9 @@ export async function acceptInvite(
     summary: `Bergabung sebagai ${row.invitedName ?? "pasangan"}`,
   });
 
-  revalidatePath("/dashboard", "layout");
+  // The invitee's first visit to /dashboard has no warm cache anyway;
+  // the owner's sidebar isn't affected by who accepted. Revalidating
+  // the whole layout wiped cache for every unrelated user. Dropped.
   return { ok: true, data: { eventId: row.eventId } };
 }
 
@@ -225,8 +227,10 @@ export async function revokeCollaborator(
     summary: `Menghapus akses ${row.invitedName ?? row.invitedEmail ?? "pasangan"}`,
   });
 
+  // Revoke removes the collaborator's access on their NEXT request via
+  // the withAuth role check. No sidebar data for the current user (the
+  // owner) changes — scoped to the settings page only.
   revalidatePath("/dashboard/settings");
-  revalidatePath("/dashboard", "layout");
   return { ok: true };
 }
 
@@ -327,7 +331,10 @@ export async function leaveEvent(
     summary: "Keluar dari undangan",
   });
 
-  revalidatePath("/dashboard", "layout");
+  // User leaves the event; next navigation will miss on withAuth
+  // role check and route them elsewhere. No cache to invalidate
+  // for other unrelated users.
+  revalidatePath("/dashboard/settings");
   return { ok: true };
 }
 

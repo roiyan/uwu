@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import {
   countGuestsByStatus,
@@ -39,7 +39,7 @@ function formatDate(iso: string) {
 // Each data-heavy card streams in independently via Suspense boundaries
 // so one slow query doesn't block the entire page.
 export default async function DashboardBerandaPage() {
-  const user = await requireAuthedUser();
+  const user = await requireSessionUserFast();
   return (
     <main className="flex-1 px-6 py-8 lg:px-10">
       <Suspense fallback={<HeaderSkeleton />}>

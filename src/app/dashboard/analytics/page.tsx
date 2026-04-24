@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import {
   countGuestsByStatus,
@@ -9,7 +9,7 @@ import {
 import { EmptyState } from "@/components/shared/EmptyState";
 
 export default async function AnalyticsPage() {
-  const user = await requireAuthedUser();
+  const user = await requireSessionUserFast();
   const current = await getCurrentEventForUser(user.id);
   if (!current) redirect("/onboarding");
 
