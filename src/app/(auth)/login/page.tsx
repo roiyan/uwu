@@ -1,14 +1,28 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { loginAction, signInWithGoogleAction } from "@/lib/actions/auth";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-[color:var(--dark-border-hover)] bg-[color:var(--color-dark-surface-alt)] px-4 py-3 text-sm text-[color:var(--color-dark-text)] outline-none placeholder:text-[color:var(--color-dark-text-muted)] focus:border-[color:var(--color-brand-blue)] focus:shadow-[var(--focus-ring-gradient)]";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, null);
+  const params = useSearchParams();
+  // `next` flows through to the auth action so we can bounce the user
+  // back to wherever they came from (e.g. /invite/[token]?accept=1).
+  const next = params.get("next") ?? "/dashboard";
+  const registerHref = `/register?next=${encodeURIComponent(next)}`;
 
   return (
     <div>
@@ -18,6 +32,7 @@ export default function LoginPage() {
       </p>
 
       <form action={signInWithGoogleAction} className="mt-6">
+        <input type="hidden" name="next" value={next} />
         <button
           type="submit"
           className="flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--dark-border-hover)] bg-[color:var(--color-dark-surface-alt)] px-5 py-3 text-sm font-medium text-[color:var(--color-dark-text)] transition-colors hover:border-[color:var(--dark-border-strong)]"
@@ -33,6 +48,7 @@ export default function LoginPage() {
       </div>
 
       <form action={formAction} className="space-y-4">
+        <input type="hidden" name="next" value={next} />
         <label className="block">
           <span className="text-sm font-medium text-[color:var(--color-dark-text)]">Email</span>
           <input
@@ -79,7 +95,7 @@ export default function LoginPage() {
         <span>
           Belum punya akun?{" "}
           <Link
-            href="/register"
+            href={registerHref}
             className="font-medium text-[color:var(--color-brand-blue)] hover:underline"
           >
             Daftar gratis

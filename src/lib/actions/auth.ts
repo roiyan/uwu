@@ -18,6 +18,15 @@ function appUrl() {
   return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 }
 
+// Only honor same-origin relative paths as `next` so a crafted link
+// can't redirect a signed-in user off-site.
+function safeNext(raw: unknown): string {
+  if (typeof raw !== "string" || !raw.startsWith("/") || raw.startsWith("//")) {
+    return "/dashboard";
+  }
+  return raw;
+}
+
 export async function loginAction(
   _: ActionResult | null,
   formData: FormData,
@@ -37,7 +46,7 @@ export async function loginAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect(safeNext(formData.get("next")));
 }
 
 export async function registerAction(
@@ -71,7 +80,7 @@ export async function registerAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  redirect(safeNext(formData.get("next")));
 }
 
 export async function requestPasswordResetAction(
@@ -120,7 +129,7 @@ export async function signOutAction() {
 }
 
 export async function signInWithGoogleAction(formData: FormData) {
-  const next = (formData.get("next") as string | null) ?? "/dashboard";
+  const next = safeNext(formData.get("next"));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
