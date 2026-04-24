@@ -344,19 +344,29 @@ export async function importGuestsAction(
       }
     }
 
-    // Build insert rows with resolved groupId.
+    // Build insert rows. Every row gets `groupId = UUID | null` —
+    // never a string name. Guard explicitly in case the map somehow
+    // doesn't resolve, so we don't pass a bare string to a UUID col.
     const rows = payload.map((p) => {
-      const match = p.groupName
-        ? byLower.get(p.groupName.trim().toLowerCase())
-        : null;
+      let groupId: string | null = null;
+      const rawGroup = p.groupName?.trim();
+      if (rawGroup) {
+        const match = byLower.get(rawGroup.toLowerCase());
+        if (match && typeof match.id === "string") {
+          groupId = match.id;
+        }
+      }
+      const plusCount = Number.isFinite(Number(p.plusCount))
+        ? Math.min(Math.max(Math.round(Number(p.plusCount)), 1), 10)
+        : 1;
       return {
         eventId,
-        groupId: match?.id ?? null,
+        groupId,
         name: p.name.trim(),
         nickname: p.nickname?.trim() || null,
         phone: p.phone || null,
         email: p.email?.trim() || null,
-        plusCount: Math.min(Math.max(p.plusCount, 1), 10),
+        plusCount,
         notes: p.notes?.trim() || null,
       };
     });
@@ -364,39 +374,59 @@ export async function importGuestsAction(
     try {
       await db.insert(guests).values(rows);
     } catch (err) {
-      // Surface specific Postgres error codes with actionable messages.
-      // withAuth's outer catch otherwise swallows everything into a
-      // generic "Terjadi kendala" toast which makes this hard to debug.
-      const pgErr = err as { code?: string; message?: string; detail?: string };
+      // Drizzle wraps postgres-js errors, so `err.code` is usually
+      // undefined — the real code lives on `err.cause`. Walk the
+      // chain and also fall back to message-substring matching so we
+      // surface a useful toast instead of raw "Failed query: ...".
+      const code = extractPgCode(err);
+      const pgMessage = extractPgMessage(err);
       console.error("[importGuestsAction] insert failed", {
-        code: pgErr.code,
-        message: pgErr.message,
-        detail: pgErr.detail,
+        code,
+        pgMessage,
+        top: err instanceof Error ? err.message : String(err),
         sample: rows.slice(0, 2),
       });
-      if (pgErr.code === "42703") {
-        // Undefined column — migration 0008 (nickname / plus_count /
-        // notes) hasn't been applied to Supabase yet.
+
+      const msg = (pgMessage ?? "").toLowerCase();
+
+      if (
+        code === "42703" ||
+        msg.includes("does not exist") ||
+        msg.includes("column") ||
+        msg.includes("undefined column")
+      ) {
         throw new Error(
           "Kolom database belum lengkap. Jalankan migrasi terbaru (pnpm db:migrate) lalu coba lagi.",
         );
       }
-      if (pgErr.code === "42P01") {
+      if (code === "42P01" || msg.includes("relation") && msg.includes("does not exist")) {
         throw new Error(
           "Tabel guests tidak ditemukan. Jalankan migrasi database.",
         );
       }
-      if (pgErr.code === "23503") {
+      if (code === "23503" || msg.includes("foreign key")) {
         throw new Error(
           "Foreign key tidak valid (event atau grup tidak ditemukan).",
         );
       }
-      if (pgErr.code === "23505") {
+      if (code === "23505" || msg.includes("duplicate key")) {
         throw new Error("Terdapat tamu duplikat. Periksa file Anda.");
       }
-      // Fall through — include PG message so Vercel logs show why.
+      if (code === "23502" || msg.includes("not-null") || msg.includes("null value")) {
+        throw new Error(
+          "Data wajib tidak lengkap — pastikan kolom Nama tidak kosong.",
+        );
+      }
+      if (code === "22P02" || msg.includes("invalid input syntax")) {
+        throw new Error(
+          "Format data tidak valid (cek Jumlah Undangan harus angka).",
+        );
+      }
+      // Unknown — include code + short message so the toast is useful
+      // without dumping the whole SQL query.
+      const short = pgMessage ? pgMessage.split("\n")[0].slice(0, 160) : "";
       throw new Error(
-        `Gagal menyimpan tamu: ${pgErr.message ?? "kesalahan database"}`,
+        `Gagal menyimpan tamu${code ? ` [${code}]` : ""}${short ? `: ${short}` : "."}`,
       );
     }
 
@@ -408,4 +438,34 @@ export async function importGuestsAction(
   });
   if (result.ok) revalidatePath("/dashboard/guests");
   return result;
+}
+
+/**
+ * Walk the error cause chain looking for a Postgres error code.
+ * Drizzle wraps postgres-js errors, so `err.code` on the outer object
+ * is usually undefined — the real code lives on `err.cause`, which
+ * may itself be wrapped.
+ */
+function extractPgCode(err: unknown): string | undefined {
+  let cur: unknown = err;
+  for (let i = 0; i < 4 && cur; i++) {
+    const obj = cur as { code?: string; cause?: unknown };
+    if (typeof obj.code === "string" && /^[0-9A-Z]{5}$/.test(obj.code)) {
+      return obj.code;
+    }
+    cur = obj.cause;
+  }
+  return undefined;
+}
+
+function extractPgMessage(err: unknown): string | undefined {
+  let cur: unknown = err;
+  const msgs: string[] = [];
+  for (let i = 0; i < 4 && cur; i++) {
+    const obj = cur as { message?: string; cause?: unknown };
+    if (typeof obj.message === "string") msgs.push(obj.message);
+    cur = obj.cause;
+  }
+  // Prefer the deepest message since that's usually the raw PG one.
+  return msgs.length > 0 ? msgs[msgs.length - 1] : undefined;
 }
