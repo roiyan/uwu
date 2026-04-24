@@ -2,9 +2,6 @@
 
 import { useEffect, useRef } from "react";
 
-// Shared reveal behavior — attach an IntersectionObserver to every
-// `.reveal` element inside this section and toggle `.in` when ≥15% is
-// visible. Matches the original site's behavior.
 function useRevealOnScroll(rootRef: React.RefObject<HTMLElement | null>) {
   useEffect(() => {
     const root = rootRef.current;
@@ -33,9 +30,24 @@ function useRevealOnScroll(rootRef: React.RefObject<HTMLElement | null>) {
   }, [rootRef]);
 }
 
-function ArrowLink({ children }: { children: React.ReactNode }) {
+// Cursor spotlight on .story-visual: updates --mx / --my CSS vars so
+// the ::after gradient follows the mouse. Matches the reference's
+// `story-visual` hover treatment.
+function spotlight(el: HTMLElement, e: React.MouseEvent) {
+  const r = el.getBoundingClientRect();
+  el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+  el.style.setProperty("--my", `${e.clientY - r.top}px`);
+}
+
+function ArrowLink({
+  href = "#experience",
+  children,
+}: {
+  href?: string;
+  children: React.ReactNode;
+}) {
   return (
-    <a className="story-link" href="#">
+    <a className="story-link" href={href}>
       {children}
       <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
         <path
@@ -59,140 +71,346 @@ export function StorySection() {
     <section className="chapter" id="story" ref={rootRef}>
       <div className="chapter-head reveal">
         <div>
-          <div className="chapter-label">Chapter 01 — The Why</div>
+          <div className="chapter-label">Chapter 01 — Platform</div>
           <h2 className="chapter-title">
-            Tiga puluh detik.
-            <br />
-            Kesan <em>seumur</em> hidup.
+            Empat hal. Satu <em>platform.</em>
           </h2>
         </div>
         <p className="chapter-lead">
-          Tamu kalian hanya membuka undangan sekali, selama tiga puluh detik —
-          tapi kesan itu menempel seumur hidup. Kami memperlakukan tiga puluh
-          detik itu seperti sebuah short film.
+          Bukan sekadar template. uwu adalah ruang kreatif Anda — dari desain,
+          manajemen tamu, hingga analytics — diciptakan berdua dari layar
+          masing-masing.
         </p>
       </div>
 
       <div className="story-wrap">
-        {/* Scene 1 — visual LEFT, copy RIGHT */}
+        {/* Scene 1 — DESAIN — visual LEFT, copy RIGHT */}
         <article className="story-scene reveal">
-          <div className="story-visual sv-1">
+          <div
+            className="story-visual sv-design"
+            onMouseMove={(e) => spotlight(e.currentTarget, e)}
+          >
             <div className="sv-glow" />
-            <div className="envelope-card">
-              <div className="mono-dark">The Wedding Of</div>
-              <h5>Anaya</h5>
-              <span className="amp">&amp;</span>
-              <h5 style={{ fontStyle: "italic" }}>Raka</h5>
-              <div className="date">14 · 06 · 2026</div>
-              <div className="seal">U</div>
-            </div>
+            <DesignMockup />
           </div>
           <div className="story-copy">
-            <div className="mono">N° 01 — Kurasi</div>
+            <div className="mono">N° 01 — Desain</div>
             <h3>
-              Diukir, bukan
+              Cerminan sempurna
               <br />
-              <em>sekadar dibuat.</em>
+              <em>dari Anda berdua.</em>
             </h3>
             <p>
-              Setiap undangan melewati tangan art director senior — bukan
-              template generik yang dipakai ribuan couple lain. Komposisi,
-              tipografi, palet warna, dan ritme visual kami sesuaikan dengan
-              kepribadian kalian berdua.
+              Pilih dari koleksi tema profesional. Sesuaikan warna dan tipografi
+              hingga terasa personal — tanpa menulis satu baris kode.
             </p>
             <p className="highlight">
-              &ldquo;Kami tidak membuat undangan. Kami merangkai perkenalan
-              pertama untuk cerita kalian.&rdquo;
+              Ubah warna, ganti font — hasilnya langsung terlihat.
             </p>
-            <ArrowLink>Proses Kurasi</ArrowLink>
+            <ArrowLink>Jelajahi Koleksi Tema →</ArrowLink>
           </div>
         </article>
 
-        {/* Scene 2 — reversed */}
+        {/* Scene 2 — TAMU — visual RIGHT, copy LEFT */}
         <article className="story-scene reversed reveal">
-          <div className="story-visual sv-2">
+          <div
+            className="story-visual sv-guests"
+            onMouseMove={(e) => spotlight(e.currentTarget, e)}
+          >
             <div className="sv-glow" />
-            <div className="timeline">
-              <div className="t-mono">Average turnaround</div>
-              <div className="t-num">
-                48<em>h</em>
-              </div>
-              <div className="t-unit">dari brief ke tayang</div>
-              <div className="t-bar" />
-              <div className="t-labels">
-                <span>Brief</span>
-                <span>Desain</span>
-                <span>Revisi</span>
-                <span>Live</span>
-              </div>
-            </div>
+            <GuestsMockup />
           </div>
           <div className="story-copy">
-            <div className="mono">N° 02 — Kecepatan</div>
+            <div className="mono">N° 02 — Tamu</div>
             <h3>
-              Siap tayang
+              Tidak ada tamu
               <br />
-              <em>dalam 48 jam.</em>
+              yang <em>terlewat.</em>
             </h3>
             <p>
-              Cukup isi brief sekali. Kami urus sisanya — dari desain, animasi
-              pembuka, countdown, integrasi Google Maps, QRIS amplop digital,
-              hingga streaming live. Kalian tinggal share link, cerita pun
-              dimulai.
+              Import sekali, pantau selamanya. Setiap tamu mendapat undangan
+              personal dengan nama mereka — dan Anda tahu persis siapa yang
+              sudah merespons.
             </p>
             <p className="highlight">
-              Tidak ada couple yang menunggu lebih dari dua hari kerja. Tidak
-              pernah.
+              Link unik per tamu. Nama mereka muncul di sampul, RSVP langsung
+              tercatat.
             </p>
-            <ArrowLink>Lihat Timeline Kerja</ArrowLink>
+            <ArrowLink>Cara Import Tamu →</ArrowLink>
           </div>
         </article>
 
-        {/* Scene 3 — visual LEFT */}
+        {/* Scene 3 — ANALYTICS — visual LEFT, copy RIGHT */}
         <article className="story-scene reveal">
-          <div className="story-visual sv-3">
+          <div
+            className="story-visual sv-analytics"
+            onMouseMove={(e) => spotlight(e.currentTarget, e)}
+          >
             <div className="sv-glow" />
-            <div className="browser">
-              <div className="browser-bar">
-                <div className="browser-dots">
-                  <i />
-                  <i />
-                  <i />
-                </div>
-                <div className="browser-url">
-                  uwu.id/<span className="hl">anaya-raka</span>
-                </div>
-              </div>
-              <div className="browser-body">
-                <h5>
-                  Anaya <em>&amp; Raka</em>
-                </h5>
-                <div className="browser-mono">14 · 06 · 2026</div>
-                <div className="infinity">∞</div>
-              </div>
-            </div>
+            <AnalyticsMockup />
           </div>
           <div className="story-copy">
-            <div className="mono">N° 03 — Keabadian</div>
+            <div className="mono">N° 03 — Analytics</div>
             <h3>
-              Abadi, <em>selamanya</em>
+              Tenang, semuanya
               <br />
-              bisa dibuka.
+              <em>terpantau.</em>
             </h3>
             <p>
-              Tidak ada tanggal kadaluarsa. Undangan kalian — lengkap dengan
-              galeri prewedding, ucapan tamu, live streaming ceremony, dan
-              seluruh kenangan — tetap hidup di domain pribadi kalian, seumur
-              cerita.
+              Satu dashboard yang menunjukkan segalanya — berapa yang membuka,
+              siapa yang merespons, dan siapa yang perlu diingatkan.
             </p>
             <p className="highlight">
-              Lima, sepuluh, dua puluh tahun dari sekarang — buka URL yang
-              sama, semuanya masih di sana.
+              Real-time · Privacy-first · Export anytime.
             </p>
-            <ArrowLink>Detail Hosting</ArrowLink>
+            <ArrowLink>Lihat Demo Dashboard →</ArrowLink>
+          </div>
+        </article>
+
+        {/* Scene 4 — KOLABORASI — visual RIGHT, copy LEFT */}
+        <article className="story-scene reversed reveal">
+          <div
+            className="story-visual sv-collab"
+            onMouseMove={(e) => spotlight(e.currentTarget, e)}
+          >
+            <div className="sv-glow" />
+            <CollabMockup />
+          </div>
+          <div className="story-copy">
+            <div className="mono">N° 04 — Kolaborasi</div>
+            <h3>
+              Satu undangan,
+              <br />
+              <em>dua kreator.</em>
+            </h3>
+            <p>
+              Desain berdua dari layar masing-masing. Setiap perubahan langsung
+              terlihat — beri komentar, sesuaikan bersama, dan ciptakan undangan
+              yang benar-benar milik berdua.
+            </p>
+            <p className="highlight">
+              Real-time sync. Unlimited revisions. Tanpa perlu meeting.
+            </p>
+            <ArrowLink>Cara Kerja Kolaborasi →</ArrowLink>
           </div>
         </article>
       </div>
     </section>
+  );
+}
+
+/* ========= Mockups ========= */
+
+function DesignMockup() {
+  const swatches = ["#F5E6D3", "#1F4235", "#F0A09C", "#B89DD4", "#1A2341", "#D4B896"];
+  return (
+    <div className="mk-card mk-design">
+      <div className="mk-tabs">
+        <span>Tema</span>
+        <span className="on">Warna</span>
+        <span>Tipografi</span>
+      </div>
+      <div className="mk-swatches">
+        {swatches.map((c, i) => (
+          <span
+            key={c}
+            className={`mk-sw${i === 2 ? " on" : ""}`}
+            style={{ background: c }}
+          />
+        ))}
+      </div>
+      <div className="mk-preview">
+        <div className="mk-preview-mono">Preview Live</div>
+        <div className="mk-preview-name">Anaya</div>
+        <div className="mk-preview-amp">&amp;</div>
+        <div className="mk-preview-name italic-em">Raka</div>
+      </div>
+      <div className="mk-slider">
+        <span className="mk-slider-label">Radius Sudut</span>
+        <div className="mk-slider-track">
+          <div className="mk-slider-fill" style={{ width: "62%" }} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GuestsMockup() {
+  const guests: Array<{
+    initial: string;
+    color: string;
+    name: string;
+    status: "ok" | "wait" | "no";
+    statusLabel: string;
+  }> = [
+    {
+      initial: "R",
+      color: "#8FA3D9",
+      name: "Rizki Pratama + 1",
+      status: "ok",
+      statusLabel: "Hadir",
+    },
+    {
+      initial: "D",
+      color: "#F0A09C",
+      name: "Dian Kusuma + 2",
+      status: "ok",
+      statusLabel: "Hadir",
+    },
+    {
+      initial: "S",
+      color: "#B89DD4",
+      name: "Sari Wijaya",
+      status: "wait",
+      statusLabel: "Menunggu",
+    },
+    {
+      initial: "A",
+      color: "#D4B896",
+      name: "Ayu Lestari + 1",
+      status: "ok",
+      statusLabel: "Hadir",
+    },
+    {
+      initial: "M",
+      color: "#F4B8A3",
+      name: "Made Putra",
+      status: "no",
+      statusLabel: "Tidak",
+    },
+  ];
+  return (
+    <div className="mk-card mk-guests">
+      <div className="mk-guests-head">
+        <div>
+          <div className="mk-guests-title">Daftar Tamu</div>
+          <div className="mk-guests-chip">248 tamu</div>
+        </div>
+        <div className="mk-guests-btn">↑ Import CSV</div>
+      </div>
+      <ul className="mk-guests-list">
+        {guests.map((g) => (
+          <li key={g.name}>
+            <span className="mk-avatar" style={{ background: g.color }}>
+              {g.initial}
+            </span>
+            <span className="mk-guests-name">{g.name}</span>
+            <span className={`mk-badge mk-badge-${g.status}`}>
+              ● {g.statusLabel}
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="mk-guests-foot">
+        Link personal · <span>uwu.id/a&amp;r?u=rizki</span>
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsMockup() {
+  return (
+    <div className="mk-card mk-analytics">
+      <div className="mk-stat-grid">
+        <div>
+          <div className="mk-stat-big">
+            812<span className="mk-stat-denom">/840</span>
+          </div>
+          <div className="mk-stat-label">Dibuka</div>
+        </div>
+        <div>
+          <div className="mk-stat-big">634</div>
+          <div className="mk-stat-label">Hadir</div>
+        </div>
+        <div>
+          <div className="mk-stat-big">28</div>
+          <div className="mk-stat-label">Perlu Ingat</div>
+        </div>
+      </div>
+      <div className="mk-chart">
+        <svg viewBox="0 0 280 110" width="100%" height="110" aria-hidden="true">
+          <defs>
+            <linearGradient id="mkAreaGrad" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor="#F0A09C" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#F0A09C" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0 90 C 40 88, 70 80, 100 68 C 135 55, 170 42, 210 26 C 240 16, 260 10, 280 8 L 280 110 L 0 110 Z"
+            fill="url(#mkAreaGrad)"
+          />
+          <path
+            d="M0 90 C 40 88, 70 80, 100 68 C 135 55, 170 42, 210 26 C 240 16, 260 10, 280 8"
+            stroke="#F0A09C"
+            strokeWidth="1.5"
+            fill="none"
+          />
+        </svg>
+        <div className="mk-chart-axis">
+          <span>7 hari sebelum</span>
+          <span>Hari H</span>
+        </div>
+      </div>
+      <div className="mk-activity">
+        <span className="mk-activity-dot" aria-hidden="true" />
+        <span className="mk-activity-label">Terakhir dibuka</span>
+        <span className="mk-activity-val">2 menit lalu · Jakarta</span>
+      </div>
+    </div>
+  );
+}
+
+function CollabMockup() {
+  return (
+    <div className="mk-card mk-collab">
+      <div className="mk-canvas">
+        <div className="mk-inv-mono">The Wedding Of</div>
+        <div className="mk-inv-name">Anaya</div>
+        <div className="mk-inv-amp">&amp;</div>
+        <div className="mk-inv-name italic-em">Raka</div>
+        <span className="mk-cursor mk-cursor-1" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path
+              d="M2 2 L 14 8 L 8 10 L 6 16 Z"
+              fill="#8FA3D9"
+              stroke="#fff"
+              strokeWidth="1"
+            />
+          </svg>
+          <span>Anaya</span>
+        </span>
+        <span className="mk-cursor mk-cursor-2" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path
+              d="M2 2 L 14 8 L 8 10 L 6 16 Z"
+              fill="#F0A09C"
+              stroke="#fff"
+              strokeWidth="1"
+            />
+          </svg>
+          <span>Raka</span>
+        </span>
+      </div>
+      <div className="mk-chat">
+        <div className="mk-chat-row">
+          <span className="mk-avatar" style={{ background: "#F0A09C" }}>
+            R
+          </span>
+          <div>
+            <div className="mk-chat-name">Raka</div>
+            <div className="mk-chat-bubble">Warna coral lebih cocok ✨</div>
+          </div>
+        </div>
+        <div className="mk-chat-row">
+          <span className="mk-avatar" style={{ background: "#8FA3D9" }}>
+            A
+          </span>
+          <div>
+            <div className="mk-chat-name">Anaya</div>
+            <div className="mk-chat-bubble">Setuju! Aku ubah ya.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

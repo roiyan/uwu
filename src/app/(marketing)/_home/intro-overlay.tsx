@@ -68,53 +68,14 @@ export function IntroOverlay() {
       aria-hidden="true"
       id="introOverlay"
     >
-      <IntroWordmark />
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/UWU_with_text.svg"
+        alt=""
+        className="intro-logo"
+        draggable={false}
+      />
       <div className="intro-caption">A Love Story · Beautifully Told</div>
-    </div>
-  );
-}
-
-// Inline wordmark: `uwu` in Fraunces italic with a small heart above
-// the middle `w`. Uses the site's brand gradient tokens so it keeps
-// visual identity with the nav logo without depending on a raster/SVG
-// asset download.
-function IntroWordmark() {
-  return (
-    <div className="intro-logo">
-      <svg
-        viewBox="0 0 640 240"
-        role="img"
-        aria-label="uwu"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient id="uwuGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#8FA3D9" />
-            <stop offset="40%" stopColor="#B89DD4" />
-            <stop offset="75%" stopColor="#F0A09C" />
-            <stop offset="100%" stopColor="#F4B8A3" />
-          </linearGradient>
-        </defs>
-        {/* heart above middle `w` */}
-        <path
-          d="M320 36 C 310 22, 290 22, 290 44 C 290 62, 320 78, 320 78 C 320 78, 350 62, 350 44 C 350 22, 330 22, 320 36 Z"
-          fill="url(#uwuGrad)"
-          opacity="0.95"
-        />
-        <text
-          x="320"
-          y="200"
-          textAnchor="middle"
-          fontFamily="var(--font-fraunces), 'Fraunces', 'Playfair Display', serif"
-          fontStyle="italic"
-          fontWeight="300"
-          fontSize="180"
-          letterSpacing="-0.02em"
-          fill="url(#uwuGrad)"
-        >
-          uwu
-        </text>
-      </svg>
     </div>
   );
 }
