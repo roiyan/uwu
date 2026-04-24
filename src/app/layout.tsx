@@ -26,6 +26,12 @@ export const metadata: Metadata = {
   title: "uwu — A Love Story, Beautifully Told.",
   description:
     "Platform undangan pernikahan digital untuk pasangan Indonesia. Kelola tamu, kirim via WhatsApp, terima RSVP — semua di satu tempat.",
+  openGraph: {
+    title: "uwu — A Love Story, Beautifully Told.",
+    description:
+      "Platform undangan pernikahan digital untuk pasangan Indonesia. Kelola tamu, kirim via WhatsApp, terima RSVP — semua di satu tempat.",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({

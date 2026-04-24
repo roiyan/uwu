@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ScrollReveal } from "@/components/motion/ScrollReveal";
@@ -22,9 +23,15 @@ export function HomeHero() {
             style={{ background: "var(--brand-gradient)" }}
             aria-hidden
           />
-          <h1 className="font-logo text-7xl leading-none text-gradient md:text-9xl">
-            uwu
-          </h1>
+          <h1 className="sr-only">uwu</h1>
+          <Image
+            src="/logo.png"
+            alt=""
+            width={640}
+            height={206}
+            priority
+            className="h-24 w-auto md:h-40"
+          />
         </motion.div>
 
         <motion.p
