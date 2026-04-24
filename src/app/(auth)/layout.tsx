@@ -1,27 +1,24 @@
 import type { ReactNode } from "react";
-import { BrandLogo } from "@/components/shared/BrandLogo";
+import Link from "next/link";
+import "./auth.css";
 
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
-    <main className="theme-dark relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 py-12">
-      <div className="hero-mesh" aria-hidden />
-
-      <div className="relative mb-8">
-        <BrandLogo href="/" size="xl" />
+    <div className="theme-auth">
+      <div className="auth-bg" aria-hidden="true">
+        <div className="auth-glow g-blue" />
+        <div className="auth-glow g-coral" />
+        <div className="auth-glow g-lilac" />
       </div>
 
-      <div
-        className="relative w-full max-w-md rounded-2xl p-[1px]"
-        style={{ background: "var(--brand-gradient-dim)" }}
-      >
-        <div className="rounded-2xl border border-[color:var(--dark-border)] bg-[color:var(--color-dark-surface)] p-8 shadow-2xl">
-          {children}
-        </div>
-      </div>
+      <Link href="/" className="auth-logo" aria-label="uwu">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/UWU_with_text.svg" alt="uwu" draggable={false} />
+      </Link>
 
-      <p className="relative mt-6 text-xs text-[color:var(--color-dark-text-muted)]">
-        © 2026 uwu Wedding Platform
-      </p>
-    </main>
+      <div className="auth-card">{children}</div>
+
+      <p className="auth-foot">© 2026 uwu Wedding Platform</p>
+    </div>
   );
 }
