@@ -14,6 +14,7 @@ import {
   runBroadcastAction,
 } from "@/lib/actions/broadcast";
 import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
+import { WaFallbackSender } from "./wa-fallback-sender";
 
 type RecipientSample = {
   id: string;
@@ -35,7 +36,10 @@ type EventContext = {
   venue: string;
 };
 
-type Channel = "whatsapp" | "email";
+// "both" is a UI affordance that creates two broadcasts (one per
+// channel) on submit. The schema/server action only ever sees
+// "whatsapp" or "email".
+type Channel = "whatsapp" | "email" | "both";
 type GuestStatus = "baru" | "diundang" | "dibuka" | "hadir" | "tidak_hadir";
 type Audience =
   | { type: "all" }
@@ -102,10 +106,12 @@ export function MessagesClient({
   eventContext: EventContext;
 }) {
   const [channel, setChannel] = useState<Channel>("whatsapp");
-  const channelTemplates = useMemo(
-    () => templates.filter((t) => t.channel === channel),
-    [templates, channel],
-  );
+  // For "both", the editable body uses WA templates; the email half
+  // uses its matching template body unmodified at submit time.
+  const channelTemplates = useMemo(() => {
+    const lookup = channel === "both" ? "whatsapp" : channel;
+    return templates.filter((t) => t.channel === lookup);
+  }, [templates, channel]);
 
   const defaultTemplate =
     channelTemplates.find((t) => t.culturalPreference === culturalPreference) ??
@@ -174,18 +180,96 @@ export function MessagesClient({
   const [state, formAction, pending] = useActionState(create, null);
   const [runPending, startRun] = useTransition();
   const [runError, setRunError] = useState<string | null>(null);
+  // For "both" channel: paired email broadcast created in the
+  // background after the primary WA broadcast lands.
+  const [pairedEmailId, setPairedEmailId] = useState<string | null>(null);
+  const [pairedError, setPairedError] = useState<string | null>(null);
+  const [pairedPending, startPaired] = useTransition();
+  // Toggle to render the client-side WA fallback sender after a WA
+  // broadcast is created when WA Cloud API isn't configured.
+  const [waFallbackOpen, setWaFallbackOpen] = useState(false);
+
+  // When channel === "both" and the WA broadcast was just created,
+  // fire a second createBroadcastAction with the matching cultural-
+  // preference email template (un-edited body + subject). Same
+  // audience and resendMode as the WA half.
+  useEffect(() => {
+    if (channel !== "both") return;
+    if (!state?.ok || !state.data?.messageId) return;
+    if (pairedEmailId || pairedPending) return;
+
+    const emailTpl =
+      templates.find(
+        (x) => x.channel === "email" && x.culturalPreference === culturalPreference,
+      ) ??
+      templates.find(
+        (x) => x.channel === "email" && x.culturalPreference === "umum",
+      ) ??
+      templates.find((x) => x.channel === "email")!;
+
+    startPaired(async () => {
+      const fd = new FormData();
+      fd.append("channel", "email");
+      fd.append("templateSlug", emailTpl.slug);
+      fd.append("subject", emailTpl.subject ?? subject);
+      fd.append("body", emailTpl.body);
+      fd.append("audience", JSON.stringify(audience));
+      fd.append("resendMode", includeSent ? "include_sent" : "new_only");
+      const res = await create(null, fd);
+      if (res.ok && res.data?.messageId) {
+        setPairedEmailId(res.data.messageId);
+      } else if (!res.ok) {
+        setPairedError(res.error);
+      }
+    });
+  }, [
+    channel,
+    state,
+    pairedEmailId,
+    pairedPending,
+    templates,
+    culturalPreference,
+    subject,
+    audience,
+    includeSent,
+    create,
+  ]);
 
   function selectChannel(c: Channel) {
     setChannel(c);
+    // For "both", we use a WA template as the editable body (WA is the
+    // more constrained channel). The matching email template runs
+    // unmodified at submit time.
+    const lookupChannel = c === "both" ? "whatsapp" : c;
     const t =
       templates.find(
-        (x) => x.channel === c && x.culturalPreference === culturalPreference,
+        (x) =>
+          x.channel === lookupChannel &&
+          x.culturalPreference === culturalPreference,
       ) ??
-      templates.find((x) => x.channel === c && x.culturalPreference === "umum") ??
-      templates.find((x) => x.channel === c)!;
+      templates.find(
+        (x) => x.channel === lookupChannel && x.culturalPreference === "umum",
+      ) ??
+      templates.find((x) => x.channel === lookupChannel)!;
     setTemplateSlug(t.slug);
     setBody(t.body);
-    setSubject(t.subject ?? "");
+    // Email subject is auto-derived from the matching email template
+    // when sending both; user can still override via the input.
+    if (c === "both") {
+      const emailTpl =
+        templates.find(
+          (x) =>
+            x.channel === "email" &&
+            x.culturalPreference === culturalPreference,
+        ) ??
+        templates.find(
+          (x) => x.channel === "email" && x.culturalPreference === "umum",
+        ) ??
+        templates.find((x) => x.channel === "email")!;
+      setSubject(emailTpl.subject ?? "");
+    } else {
+      setSubject(t.subject ?? "");
+    }
   }
 
   function selectTemplate(slug: string) {
@@ -204,12 +288,16 @@ export function MessagesClient({
 
           <div className="mt-4">
             <span className="text-sm font-medium text-ink">Kanal</span>
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-3 gap-2">
               <ChannelButton
                 active={channel === "whatsapp"}
                 onClick={() => selectChannel("whatsapp")}
                 label="📱 WhatsApp"
-                hint={providers.whatsappConfigured ? "Aktif" : "Mode simulasi"}
+                hint={
+                  providers.whatsappConfigured
+                    ? "Server aktif"
+                    : "Mode manual"
+                }
               />
               <ChannelButton
                 active={channel === "email"}
@@ -217,10 +305,22 @@ export function MessagesClient({
                 label="✉️ Email"
                 hint={providers.emailConfigured ? "Aktif" : "Mode simulasi"}
               />
+              <ChannelButton
+                active={channel === "both"}
+                onClick={() => selectChannel("both")}
+                label="📨 Keduanya"
+                hint="Email + WA"
+              />
             </div>
           </div>
 
-          <input type="hidden" name="channel" value={channel} />
+          {/* The form sends the WA half when channel is "both"; the
+              email half is fired separately by the submit handler. */}
+          <input
+            type="hidden"
+            name="channel"
+            value={channel === "both" ? "whatsapp" : channel}
+          />
 
           <label className="mt-4 block">
             <span className="text-sm font-medium text-ink">Template</span>
@@ -509,11 +609,22 @@ export function MessagesClient({
           )}
           {state?.ok && state.data?.messageId && (
             <div className="mt-4 rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
-              Broadcast dibuat. Tekan &quot;Kirim Sekarang&quot; di bawah untuk memulai.
+              {channel === "both"
+                ? pairedEmailId
+                  ? "Dua broadcast dibuat (Email + WA). Kirim masing-masing di bawah."
+                  : pairedPending
+                    ? "Broadcast WA dibuat. Membuat broadcast Email…"
+                    : "Broadcast dibuat. Tekan tombol kirim di bawah."
+                : "Broadcast dibuat. Tekan \"Kirim Sekarang\" di bawah."}
             </div>
           )}
+          {pairedError && (
+            <p className="mt-2 text-sm text-rose-dark">
+              Broadcast email gagal dibuat: {pairedError}
+            </p>
+          )}
 
-          <div className="mt-6 flex justify-end gap-3">
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
             <button
               type="submit"
               disabled={pending}
@@ -521,28 +632,76 @@ export function MessagesClient({
             >
               {pending ? "Menyimpan..." : "Simpan Broadcast"}
             </button>
-            {state?.ok && state.data?.messageId && (
+
+            {/* Paired Email broadcast (only shown when channel ===
+                "both"). Kept first so the user sends email before
+                opening WA tabs. */}
+            {pairedEmailId && (
               <button
                 type="button"
                 disabled={runPending}
                 onClick={() => {
-                  const id = state.data!.messageId;
                   setRunError(null);
                   startRun(async () => {
-                    const r = await runBroadcastAction(eventId, id);
+                    const r = await runBroadcastAction(eventId, pairedEmailId);
                     if (!r.ok) setRunError(r.error);
                   });
                 }}
-                className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+                className="rounded-full bg-navy px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
               >
-                {runPending ? "Mengirim..." : "Kirim Sekarang"}
+                ✉️ Kirim Email
               </button>
+            )}
+
+            {state?.ok && state.data?.messageId && (
+              <>
+                {/* The active WA broadcast — server-side run when the
+                    Cloud API is configured, client-side fallback
+                    otherwise. */}
+                {providers.whatsappConfigured ? (
+                  <button
+                    type="button"
+                    disabled={runPending}
+                    onClick={() => {
+                      const id = state.data!.messageId;
+                      setRunError(null);
+                      startRun(async () => {
+                        const r = await runBroadcastAction(eventId, id);
+                        if (!r.ok) setRunError(r.error);
+                      });
+                    }}
+                    className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+                  >
+                    {runPending ? "Mengirim..." : "📱 Kirim WhatsApp"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setWaFallbackOpen(true)}
+                    className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+                  >
+                    📱 Kirim WhatsApp (manual)
+                  </button>
+                )}
+              </>
             )}
           </div>
           {runError && (
             <p className="mt-3 text-sm text-rose-dark">{runError}</p>
           )}
         </form>
+
+        {/* Client-side WhatsApp fallback — only renders when the user
+            opted in via the "Kirim WhatsApp (manual)" button above. */}
+        {waFallbackOpen && state?.ok && state.data?.messageId && (
+          <div className="mt-4">
+            <WaFallbackSender
+              eventId={eventId}
+              messageId={state.data.messageId}
+              onClose={() => setWaFallbackOpen(false)}
+            />
+          </div>
+        )}
       </section>
 
       <section className="lg:col-span-2">

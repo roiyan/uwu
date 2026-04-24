@@ -25,6 +25,9 @@ export type ResendMode = z.infer<typeof resendModeSchema>;
 
 export const broadcastInputSchema = z
   .object({
+    // Server-side schema — `both` is a UI affordance the client splits
+    // into two createBroadcastAction calls; the action itself never
+    // sees `both`.
     channel: z.enum(["whatsapp", "email"]),
     templateSlug: z.string().min(1),
     subject: z.string().max(120).optional().or(z.literal("")),

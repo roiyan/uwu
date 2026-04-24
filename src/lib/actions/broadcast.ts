@@ -393,3 +393,141 @@ export async function listDeliveriesForMessage(messageId: string) {
     .where(eq(messageDeliveries.messageId, messageId))
     .orderBy(asc(messageDeliveries.createdAt));
 }
+
+/**
+ * Mark a single delivery as sent — used by the client-side WA fallback
+ * sender (api.whatsapp.com/send tab opener mode). Mirrors the
+ * bookkeeping that processWhatsappBatch / processEmailBatch do
+ * server-side, but for one delivery at a time so the client can drive
+ * the loop with user pacing.
+ */
+export async function markDeliverySentAction(
+  eventId: string,
+  deliveryId: string,
+  channel: "whatsapp" | "email",
+): Promise<ActionResult> {
+  return withAuth(eventId, "editor", async () => {
+    const [d] = await db
+      .select()
+      .from(messageDeliveries)
+      .where(eq(messageDeliveries.id, deliveryId))
+      .limit(1);
+    if (!d) throw new Error("Delivery tidak ditemukan.");
+
+    // Cross-check the delivery belongs to a message on this event so
+    // a stray ID can't update someone else's data.
+    const [msg] = await db
+      .select({ id: messages.id, eventId: messages.eventId })
+      .from(messages)
+      .where(eq(messages.id, d.messageId))
+      .limit(1);
+    if (!msg || msg.eventId !== eventId) {
+      throw new Error("Delivery bukan milik acara ini.");
+    }
+
+    await db
+      .update(messageDeliveries)
+      .set({
+        status: "sent",
+        sentAt: new Date(),
+        attemptCount: sql`${messageDeliveries.attemptCount} + 1`,
+      })
+      .where(eq(messageDeliveries.id, deliveryId));
+
+    if (d.guestId) {
+      await db
+        .update(guests)
+        .set({
+          rsvpStatus: sql`case when ${guests.rsvpStatus} = 'baru' then 'diundang'::guest_rsvp_status else ${guests.rsvpStatus} end`,
+          invitedAt: sql`coalesce(${guests.invitedAt}, now())`,
+          sendCount: sql`${guests.sendCount} + 1`,
+          lastSentAt: new Date(),
+          lastSentVia: channel,
+        })
+        .where(eq(guests.id, d.guestId));
+    }
+
+    // After the last delivery flips to sent/failed, mark the parent
+    // message as completed so the history card stops showing "queued".
+    const [{ pendingCount }] = await db
+      .select({ pendingCount: sql<number>`count(*)::int` })
+      .from(messageDeliveries)
+      .where(
+        and(
+          eq(messageDeliveries.messageId, d.messageId),
+          eq(messageDeliveries.status, "pending"),
+        ),
+      );
+
+    if (pendingCount === 0) {
+      const [{ sentCount }] = await db
+        .select({ sentCount: sql<number>`count(*)::int` })
+        .from(messageDeliveries)
+        .where(
+          and(
+            eq(messageDeliveries.messageId, d.messageId),
+            eq(messageDeliveries.status, "sent"),
+          ),
+        );
+      await db
+        .update(messages)
+        .set({
+          status: "completed",
+          completedAt: new Date(),
+          sentCount,
+          updatedAt: new Date(),
+        })
+        .where(eq(messages.id, d.messageId));
+    } else {
+      // Keep the running tally fresh while we're mid-flight.
+      await db
+        .update(messages)
+        .set({
+          status: "sending",
+          startedAt: sql`coalesce(${messages.startedAt}, now())`,
+          sentCount: sql`(select count(*)::int from ${messageDeliveries} where ${messageDeliveries.messageId} = ${d.messageId} and ${messageDeliveries.status} = 'sent')`,
+          updatedAt: new Date(),
+        })
+        .where(eq(messages.id, d.messageId));
+    }
+  });
+}
+
+/**
+ * Mark a single delivery as skipped — used by the client-side WA
+ * fallback when a guest has no phone or the user clicks Skip. Just
+ * advances the delivery without bumping the guest's send_count.
+ */
+export async function markDeliverySkippedAction(
+  eventId: string,
+  deliveryId: string,
+  reason: string,
+): Promise<ActionResult> {
+  return withAuth(eventId, "editor", async () => {
+    const [d] = await db
+      .select()
+      .from(messageDeliveries)
+      .where(eq(messageDeliveries.id, deliveryId))
+      .limit(1);
+    if (!d) throw new Error("Delivery tidak ditemukan.");
+
+    const [msg] = await db
+      .select({ id: messages.id, eventId: messages.eventId })
+      .from(messages)
+      .where(eq(messages.id, d.messageId))
+      .limit(1);
+    if (!msg || msg.eventId !== eventId) {
+      throw new Error("Delivery bukan milik acara ini.");
+    }
+
+    await db
+      .update(messageDeliveries)
+      .set({
+        status: "failed",
+        failedAt: new Date(),
+        errorMessage: reason.slice(0, 500),
+        attemptCount: sql`${messageDeliveries.attemptCount} + 1`,
+      })
+      .where(eq(messageDeliveries.id, deliveryId));
+  });
+}
