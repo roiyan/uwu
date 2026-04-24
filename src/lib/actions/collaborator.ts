@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { eventMembers, events } from "@/lib/db/schema";
+import { eventMembers, events, profiles } from "@/lib/db/schema";
 import { requireSessionUserFast, type ActionResult } from "@/lib/auth-guard";
 import { logActivity } from "@/lib/actions/activity";
 
@@ -364,6 +364,13 @@ export async function checkEventAccess(
  * Public (anon-safe): look up an invite by token, return enough context
  * to render the /invite/[token] landing page — without leaking sensitive
  * data.
+ *
+ * Uses the Drizzle `postgres` connection (DATABASE_URL = superuser role)
+ * so RLS is bypassed — we don't need anon auth for this lookup.
+ *
+ * Logs the error code + message on failure so Vercel function logs pinpoint
+ * the cause (column drift, connection timeout, etc.) instead of a generic
+ * digest.
  */
 export async function resolveInviteToken(token: string): Promise<
   | {
@@ -379,42 +386,56 @@ export async function resolveInviteToken(token: string): Promise<
   | { state: "expired" }
   | { state: "not_found" }
 > {
-  const [row] = await db
-    .select({
-      member: eventMembers,
-      eventTitle: events.title,
-      ownerName: sql<string | null>`(SELECT full_name FROM profiles WHERE id = ${events.ownerId})`,
-    })
-    .from(eventMembers)
-    .leftJoin(events, eq(events.id, eventMembers.eventId))
-    .where(eq(eventMembers.inviteToken, token))
-    .limit(1);
+  if (!token || token.length < 8) return { state: "not_found" };
 
-  if (!row) {
-    // Token may have been one-time-used (set to null on accept). Could also
-    // be an invalid string. Distinguish by looking for any accepted row with
-    // the same token... no, it's cleared on accept. So check if an accepted
-    // row exists with no token but we can't match. Treat every not-found as
-    // 'not_found' and let the UI suggest login for the "already used" case.
-    return { state: "not_found" };
-  }
+  try {
+    // Flat column selection + explicit LEFT JOIN to profiles. Avoids the
+    // earlier correlated subquery that could be sensitive to Drizzle's
+    // column-in-sql-template interpolation.
+    const rows = await db
+      .select({
+        id: eventMembers.id,
+        eventId: eventMembers.eventId,
+        invitedEmail: eventMembers.invitedEmail,
+        invitedName: eventMembers.invitedName,
+        inviteStatus: eventMembers.inviteStatus,
+        expiresAt: eventMembers.expiresAt,
+        eventTitle: events.title,
+        ownerName: profiles.fullName,
+      })
+      .from(eventMembers)
+      .leftJoin(events, eq(events.id, eventMembers.eventId))
+      .leftJoin(profiles, eq(profiles.id, events.ownerId))
+      .where(eq(eventMembers.inviteToken, token))
+      .limit(1);
 
-  const m = row.member;
-  if (m.inviteStatus === "accepted") return { state: "used" };
-  if (m.inviteStatus === "revoked" || m.inviteStatus === "expired_manual") {
-    return { state: "not_found" };
-  }
-  if (m.expiresAt && m.expiresAt.getTime() < Date.now()) {
-    return { state: "expired" };
-  }
+    const row = rows[0];
+    if (!row) return { state: "not_found" };
 
-  return {
-    state: "valid",
-    collaboratorId: m.id,
-    eventTitle: row.eventTitle ?? "Undangan",
-    invitedEmail: m.invitedEmail ?? "",
-    invitedName: m.invitedName,
-    ownerDisplayName: row.ownerName,
-    expiresAt: m.expiresAt?.toISOString() ?? new Date().toISOString(),
-  };
+    if (row.inviteStatus === "accepted") return { state: "used" };
+    if (row.inviteStatus === "revoked" || row.inviteStatus === "expired_manual") {
+      return { state: "not_found" };
+    }
+    if (row.expiresAt && row.expiresAt.getTime() < Date.now()) {
+      return { state: "expired" };
+    }
+
+    return {
+      state: "valid",
+      collaboratorId: row.id,
+      eventTitle: row.eventTitle ?? "Undangan",
+      invitedEmail: row.invitedEmail ?? "",
+      invitedName: row.invitedName,
+      ownerDisplayName: row.ownerName,
+      expiresAt: row.expiresAt?.toISOString() ?? new Date().toISOString(),
+    };
+  } catch (err) {
+    const e = err as { code?: string; message?: string; detail?: string };
+    console.error("[resolveInviteToken] query failed", {
+      code: e.code,
+      message: e.message,
+      detail: e.detail,
+    });
+    throw err;
+  }
 }

@@ -36,7 +36,12 @@ async function InviteContent({ token }: { token: string }) {
   try {
     result = await resolveInviteToken(token);
   } catch (err) {
-    console.error("[invite] resolveInviteToken failed", err);
+    const e = err as { code?: string; message?: string };
+    console.error("[invite] resolveInviteToken failed", {
+      tokenPrefix: token.slice(0, 8),
+      code: e.code,
+      message: e.message,
+    });
     return (
       <Card
         icon="⚠️"
