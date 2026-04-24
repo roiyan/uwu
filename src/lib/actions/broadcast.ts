@@ -44,12 +44,18 @@ async function selectRecipients(
   eventId: string,
   channel: "whatsapp" | "email",
   audience: ReturnType<typeof JSON.parse>,
+  resendMode: "new_only" | "include_sent" = "new_only",
 ) {
   const conditions = [eq(guests.eventId, eventId), isNull(guests.deletedAt)];
   if (audience.type === "group") {
     conditions.push(inArray(guests.groupId, audience.groupIds));
   } else if (audience.type === "status") {
     conditions.push(inArray(guests.rsvpStatus, audience.statuses));
+  }
+  // Default: skip guests already invited at least once. User can flip
+  // this with the "Sertakan yang sudah diundang" toggle in the UI.
+  if (resendMode === "new_only") {
+    conditions.push(eq(guests.sendCount, 0));
   }
   const rows = await db
     .select()
@@ -96,6 +102,7 @@ export async function createBroadcastAction(
     subject: formData.get("subject") ?? "",
     body: formData.get("body"),
     audience,
+    resendMode: formData.get("resendMode") ?? "new_only",
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Input tidak valid" };
@@ -105,7 +112,12 @@ export async function createBroadcastAction(
     const ctx = await resolveEventContext(eventId);
     if (!ctx.couple) throw new Error("Detail mempelai belum diisi.");
 
-    const recipients = await selectRecipients(eventId, parsed.data.channel, parsed.data.audience);
+    const recipients = await selectRecipients(
+      eventId,
+      parsed.data.channel,
+      parsed.data.audience,
+      parsed.data.resendMode,
+    );
     if (recipients.length === 0) {
       throw new Error(
         parsed.data.channel === "whatsapp"

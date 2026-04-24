@@ -14,6 +14,15 @@ export const audienceSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+/**
+ * Resend filter.
+ * - "new_only"     → only guests with send_count = 0 (default; safest).
+ * - "include_sent" → include guests who've been invited before
+ *                    (user explicitly opts in via a checkbox).
+ */
+export const resendModeSchema = z.enum(["new_only", "include_sent"]);
+export type ResendMode = z.infer<typeof resendModeSchema>;
+
 export const broadcastInputSchema = z
   .object({
     channel: z.enum(["whatsapp", "email"]),
@@ -24,6 +33,7 @@ export const broadcastInputSchema = z
       .min(20, "Pesan minimal 20 karakter")
       .max(4096, "Pesan terlalu panjang"),
     audience: audienceSchema,
+    resendMode: resendModeSchema.default("new_only"),
   })
   .refine(
     (v) => v.channel !== "email" || !!v.subject,
