@@ -75,7 +75,6 @@ export function IntroOverlay() {
         className="intro-logo"
         draggable={false}
       />
-      <div className="intro-caption">A Love Story · Beautifully Told</div>
     </div>
   );
 }

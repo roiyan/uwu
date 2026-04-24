@@ -221,9 +221,9 @@ function DesignMockup() {
       </div>
       <div className="mk-preview">
         <div className="mk-preview-mono">Preview Live</div>
-        <div className="mk-preview-name">Anaya</div>
+        <div className="mk-preview-name">Hawa</div>
         <div className="mk-preview-amp">&amp;</div>
-        <div className="mk-preview-name italic-em">Raka</div>
+        <div className="mk-preview-name italic-em">Adam</div>
       </div>
       <div className="mk-slider">
         <span className="mk-slider-label">Radius Sudut</span>
@@ -302,7 +302,7 @@ function GuestsMockup() {
         ))}
       </ul>
       <div className="mk-guests-foot">
-        Link personal · <span>uwu.id/a&amp;r?u=rizki</span>
+        Link personal · <span>uwu.id/h&amp;a?u=rizki</span>
       </div>
     </div>
   );
@@ -365,9 +365,9 @@ function CollabMockup() {
     <div className="mk-card mk-collab">
       <div className="mk-canvas">
         <div className="mk-inv-mono">The Wedding Of</div>
-        <div className="mk-inv-name">Anaya</div>
+        <div className="mk-inv-name">Hawa</div>
         <div className="mk-inv-amp">&amp;</div>
-        <div className="mk-inv-name italic-em">Raka</div>
+        <div className="mk-inv-name italic-em">Adam</div>
         <span className="mk-cursor mk-cursor-1" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path
@@ -377,7 +377,7 @@ function CollabMockup() {
               strokeWidth="1"
             />
           </svg>
-          <span>Anaya</span>
+          <span>Hawa</span>
         </span>
         <span className="mk-cursor mk-cursor-2" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 18 18">
@@ -388,7 +388,7 @@ function CollabMockup() {
               strokeWidth="1"
             />
           </svg>
-          <span>Raka</span>
+          <span>Adam</span>
         </span>
       </div>
       <div className="mk-chat">
@@ -397,7 +397,7 @@ function CollabMockup() {
             R
           </span>
           <div>
-            <div className="mk-chat-name">Raka</div>
+            <div className="mk-chat-name">Adam</div>
             <div className="mk-chat-bubble">Warna coral lebih cocok ✨</div>
           </div>
         </div>
@@ -406,7 +406,7 @@ function CollabMockup() {
             A
           </span>
           <div>
-            <div className="mk-chat-name">Anaya</div>
+            <div className="mk-chat-name">Hawa</div>
             <div className="mk-chat-bubble">Setuju! Aku ubah ya.</div>
           </div>
         </div>

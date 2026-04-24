@@ -684,10 +684,12 @@
   display: flex;
   gap: 48px;
   white-space: nowrap;
+  align-items: center;
   animation: slide 50s linear infinite;
   font-family: var(--font-fraunces), serif;
   font-size: 24px;
   font-weight: 300;
+  line-height: 1.2;
   color: var(--ink);
 }
 @keyframes slide {
@@ -705,12 +707,13 @@
   color: var(--coral);
   margin: 0 0.25em;
 }
-.theme-homepage .marquee-item > span {
+.theme-homepage .marquee-bullet {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: var(--ink-faint);
   display: inline-block;
+  flex-shrink: 0;
 }
 
 /* ========= CHAPTERS ========= */
@@ -2462,6 +2465,33 @@
   }
   .theme-homepage .meta-item:last-child {
     border-bottom: none;
+  }
+  /* Marquee: smaller type + tighter gap so couple names don't overlap
+     and stay readable on 390px viewports. */
+  .theme-homepage .marquee {
+    padding: 36px 0;
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 60px,
+      #000 calc(100% - 60px),
+      transparent
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 60px,
+      #000 calc(100% - 60px),
+      transparent
+    );
+  }
+  .theme-homepage .marquee-track {
+    font-size: 16px;
+    gap: 32px;
+    animation-duration: 38s;
+  }
+  .theme-homepage .marquee-item {
+    gap: 32px;
   }
   .theme-homepage .home-footer {
     padding: 60px 20px 30px;
