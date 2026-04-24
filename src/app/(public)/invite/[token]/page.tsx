@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { resolveInviteToken } from "@/lib/queries/invite";
-import { InviteAction } from "./action";
 
 // Dynamic — each token produces a different page. No point caching.
 export const dynamic = "force-dynamic";
@@ -142,7 +141,12 @@ async function InviteContent({ token }: { token: string }) {
         <Row label="Email tujuan" value={result.invitedEmail} />
         {result.invitedName && <Row label="Untuk" value={result.invitedName} />}
       </dl>
-      <InviteAction token={token} />
+      <Link
+        href={`/login?next=${encodeURIComponent(`/invite/${token}?accept=1`)}`}
+        className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-brand px-8 py-3 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02]"
+      >
+        Terima &amp; Bergabung
+      </Link>
       <p className="mt-4 text-xs text-white/40">
         Anda perlu masuk atau mendaftar untuk melanjutkan.
       </p>

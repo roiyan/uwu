@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { updateProfileAction } from "@/lib/actions/profile";
 import {
   publishEventAction,
@@ -723,6 +724,7 @@ function InviteDialog({
   onClose: () => void;
 }) {
   const toast = useToast();
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -748,6 +750,9 @@ function InviteDialog({
       if (res.ok) {
         toast.success("Undangan dibuat");
         onClose();
+        // createPartnerInvite no longer revalidates (see collaborator.ts),
+        // so refresh the page so the new pending invite appears in the list.
+        router.refresh();
       } else {
         toast.error(res.error);
       }

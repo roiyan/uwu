@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { acceptInvite } from "@/lib/actions/collaborator";
 import {
   loginSchema,
   registerSchema,
@@ -27,6 +28,21 @@ function safeNext(raw: unknown): string {
   return raw;
 }
 
+// If `next` points back at an /invite/<token> URL with accept=1, auto-fire
+// acceptInvite while we still have a Server Action context. On success we
+// land the user on /dashboard; on a recoverable failure fall through and
+// let the invite page render its error state.
+async function maybeAutoAcceptInvite(next: string): Promise<string> {
+  const match = next.match(/^\/invite\/([A-Za-z0-9_-]+)(?:\?(.*))?$/);
+  if (!match) return next;
+  const token = match[1];
+  const qs = new URLSearchParams(match[2] ?? "");
+  if (qs.get("accept") !== "1") return next;
+
+  const res = await acceptInvite(token);
+  return res.ok ? "/dashboard" : next;
+}
+
 export async function loginAction(
   _: ActionResult | null,
   formData: FormData,
@@ -46,7 +62,8 @@ export async function loginAction(
   }
 
   revalidatePath("/", "layout");
-  redirect(safeNext(formData.get("next")));
+  const next = await maybeAutoAcceptInvite(safeNext(formData.get("next")));
+  redirect(next);
 }
 
 export async function registerAction(
@@ -80,7 +97,8 @@ export async function registerAction(
   }
 
   revalidatePath("/", "layout");
-  redirect(safeNext(formData.get("next")));
+  const next = await maybeAutoAcceptInvite(safeNext(formData.get("next")));
+  redirect(next);
 }
 
 export async function requestPasswordResetAction(
