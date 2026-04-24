@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UWU — A Love Story, Beautifully Told</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">
+    <svg viewBox="0 0 40 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#8FA3D9"/>
+          <stop offset="40%" stop-color="#B89DD4"/>
+          <stop offset="75%" stop-color="#F0A09C"/>
+          <stop offset="100%" stop-color="#F4B8A3"/>
+        </linearGradient>
+      </defs>
+      <path d="M11 4 C4 4, 4 18, 11 18 C17 18, 20 11, 20 11 C20 11, 23 4, 29 4 C36 4, 36 18, 29 18 C23 18, 20 11, 20 11 C20 11, 17 4, 11 4 Z" stroke="url(#logoGrad)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    </svg>
+    <span>UWU<em>.</em></span>
+  </div>
+  <div class="nav-links">
+    <a href="#story">The Story</a>
+    <a href="#experience">Experience</a>
+    <a href="#atelier">Atelier</a>
+    <a href="#investment">Investment</a>
+  </div>
+  <div class="nav-cta">
+    <a href="#" class="btn btn-ghost">Masuk</a>
+    <a href="#experience" class="btn btn-primary"><span>Mulai Cerita</span></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-layer layer-stars" id="layerStars"></div>
+  <div class="hero-layer layer-glow" id="layerGlow">
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+    <div class="glow glow-3"></div>
+  </div>
+  <div class="hero-layer layer-symbol" id="layerSymbol">
+    <svg class="infinity-mark" viewBox="0 0 900 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="infGrad" x1="0%" y1="0%" x2="100%" y2="50%">
+          <stop offset="0%" stop-color="#8FA3D9" stop-opacity="0.9"/>
+          <stop offset="40%" stop-color="#B89DD4" stop-opacity="0.9"/>
+          <stop offset="75%" stop-color="#F0A09C" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#F4B8A3" stop-opacity="0.9"/>
+        </linearGradient>
+      </defs>
+      <path d="M 220 200 C 120 200, 120 80, 220 80 C 340 80, 420 320, 540 320 C 640 320, 680 200, 680 200 C 680 200, 640 80, 540 80 C 420 80, 340 320, 220 320 C 120 320, 120 200, 220 200 Z" stroke="url(#infGrad)" stroke-width="1.2" fill="none"/>
+      <path d="M 240 200 C 150 200, 150 110, 240 110 C 340 110, 420 290, 540 290 C 630 290, 660 200, 660 200 C 660 200, 630 110, 540 110 C 420 110, 340 290, 240 290 C 150 290, 150 200, 240 200 Z" stroke="url(#infGrad)" stroke-width="0.6" fill="none" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="hero-layer layer-lines">
+    <div class="hero-corner tl"></div>
+    <div class="hero-corner tr"></div>
+    <div class="hero-corner bl"></div>
+    <div class="hero-corner br"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="eyebrow">
+      <span class="dot"></span>
+      <span>Couture Digital Invitations · Est. 2021</span>
+    </div>
+    <h1 class="hero-title">
+      <span class="line">Setiap cinta</span>
+      <span class="line">layak <em>diabadikan.</em></span>
+    </h1>
+    <p class="hero-sub">
+      Bukan sekadar undangan digital. Ini adalah ruang dimana cerita kalian dirangkai — dengan ketelitian seorang tukang jam, dan puisi seorang kekasih.
+    </p>
+    <div class="hero-actions">
+      <a href="#experience" class="btn btn-primary btn-large"><span>Lihat Demo Langsung</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#atelier" class="btn btn-outline btn-large">Jelajahi Koleksi</a>
+    </div>
+
+    <div class="hero-meta">
+      <div class="meta-item">
+        <div class="meta-num">12,400<em>+</em></div>
+        <div class="meta-label">Cerita Terukir</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-num">4.<em>97</em></div>
+        <div class="meta-label">Rating Bintang</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-num">48<em>h</em></div>
+        <div class="meta-label">Siap Tayang</div>
+      </div>
+      <div class="meta-item">
+        <div class="meta-num">∞</div>
+        <div class="meta-label">Masa Akses</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <span>Scroll · Temukan</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- CHAPTER: STORY -->
+<section class="chapter" id="story">
+  <div class="chapter-head">
+    <div>
+      <div class="chapter-label">Chapter 01 — The Why</div>
+      <h2 class="chapter-title">Undangan adalah<br/>kesan <em>pertama.</em><br/>Dan satu-satunya.</h2>
+    </div>
+    <p class="chapter-lead">
+      Tamu kalian hanya membuka undangan sekali, selama tiga puluh detik — tapi kesan itu menempel seumur hidup. Kami percaya tiga puluh detik itu pantas diperlakukan seperti sebuah short film.
+    </p>
+  </div>
+
+  <div class="story-grid">
+    <div class="story-card">
+      <div class="story-num">N° 01</div>
+      <div class="story-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F0A09C" stroke-width="1.2"><path d="M12 2 L14 9 L21 9 L15.5 13.5 L17.5 20.5 L12 16.5 L6.5 20.5 L8.5 13.5 L3 9 L10 9 Z"/></svg>
+      </div>
+      <h3>Diukir, tidak<br/><em>sekadar dibuat.</em></h3>
+      <p>Setiap undangan melewati tangan desainer senior — bukan template generik. Komposisi, tipografi, dan ritme visual kami sesuaikan dengan kepribadian kalian berdua.</p>
+      <div class="story-link">Proses Kurasi
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <div class="story-card">
+      <div class="story-num">N° 02</div>
+      <div class="story-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F0A09C" stroke-width="1.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      </div>
+      <h3>Siap tayang<br/>dalam <em>48 jam.</em></h3>
+      <p>Cukup isi brief sekali. Kami urus sisanya — dari desain, animasi pembuka, countdown, hingga integrasi peta dan RSVP. Kalian tinggal share.</p>
+      <div class="story-link">Lihat Timeline
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <div class="story-card">
+      <div class="story-num">N° 03</div>
+      <div class="story-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F0A09C" stroke-width="1.2"><path d="M3 12 C 3 6, 9 3, 12 8 C 15 3, 21 6, 21 12 C 21 17, 12 22, 12 22 C 12 22, 3 17, 3 12 Z"/></svg>
+      </div>
+      <h3>Abadi, <em>selamanya</em><br/>bisa dibuka.</h3>
+      <p>Tidak ada tanggal kadaluarsa. Undangan kalian — lengkap dengan galeri, ucapan tamu, dan kenangan — tetap hidup di domain pribadi, seumur cerita kalian.</p>
+      <div class="story-link">Detail Hosting
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="demo-section" id="experience">
+  <div class="demo-bg">
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+  </div>
+  <div class="demo-wrap">
+    <div class="demo-left">
+      <div class="chapter-label">Chapter 02 — Live Preview</div>
+      <h2>Rasakan sekarang.<br/>Klik, <em>dan hidupkan.</em></h2>
+      <p>
+        Pilih satu dari empat koleksi signature. Undangan di sebelah akan berubah secara real-time. Ini bukan screenshot — ini undangan yang bisa kalian dapatkan minggu depan.
+      </p>
+
+      <div class="theme-picker" id="themePicker">
+        <button class="theme-opt active" data-theme="ivory">
+          <div class="theme-swatch ivory"></div>
+          <div class="theme-info">
+            <div class="theme-name">Ivory <em>Whisper</em></div>
+            <div class="theme-tagline">Klasik · Hangat · Timeless</div>
+          </div>
+          <div class="theme-indicator"></div>
+        </button>
+        <button class="theme-opt" data-theme="midnight">
+          <div class="theme-swatch midnight"></div>
+          <div class="theme-info">
+            <div class="theme-name">Midnight <em>Gold</em></div>
+            <div class="theme-tagline">Cinematic · Mewah · Nocturnal</div>
+          </div>
+          <div class="theme-indicator"></div>
+        </button>
+        <button class="theme-opt" data-theme="sakura">
+          <div class="theme-swatch sakura"></div>
+          <div class="theme-info">
+            <div class="theme-name">Sakura <em>Bloom</em></div>
+            <div class="theme-tagline">Romantis · Lembut · Feminin</div>
+          </div>
+          <div class="theme-indicator"></div>
+        </button>
+        <button class="theme-opt" data-theme="emerald">
+          <div class="theme-swatch emerald"></div>
+          <div class="theme-info">
+            <div class="theme-name">Emerald <em>Heritage</em></div>
+            <div class="theme-tagline">Javanese · Royal · Heritage</div>
+          </div>
+          <div class="theme-indicator"></div>
+        </button>
+      </div>
+
+      <div class="demo-controls">
+        <button class="ctrl-pill active" data-section="cover">Sampul</button>
+        <button class="ctrl-pill" data-section="countdown">Hitung Mundur</button>
+        <button class="ctrl-pill" data-section="venue">Lokasi</button>
+      </div>
+    </div>
+
+    <div class="phone-stage">
+      <div class="phone-glow"></div>
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-screen theme-ivory" id="phoneScreen">
+          <div class="inv" id="invContent">
+            <div class="inv-mono" style="text-align:center;">The Wedding Of</div>
+            <div class="inv-ornament">✦ ⸻ ✦</div>
+            <h4>Anaya</h4>
+            <span class="amp">&amp;</span>
+            <h4><em>Raka</em></h4>
+            <div class="inv-divider"></div>
+            <div class="inv-sub italic">Sebuah undangan untuk menyaksikan<br/>bab baru kami, dimulai.</div>
+
+            <div class="inv-countdown">
+              <div class="cd-box"><div class="cd-num">124</div><div class="cd-lbl">Hari</div></div>
+              <div class="cd-box"><div class="cd-num">08</div><div class="cd-lbl">Jam</div></div>
+              <div class="cd-box"><div class="cd-num">42</div><div class="cd-lbl">Menit</div></div>
+              <div class="cd-box"><div class="cd-num">16</div><div class="cd-lbl">Detik</div></div>
+            </div>
+
+            <div class="inv-date">
+              <div class="d1">Sabtu</div>
+              <div class="d2">14 · 06 · 2026</div>
+              <div class="d3">15:00 — 21:00 WIB</div>
+            </div>
+
+            <div class="inv-location">
+              <div class="inv-loc-label">Resepsi</div>
+              <div class="inv-loc-name">The Ritz-Carlton, Mega Kuningan</div>
+              <div class="inv-loc-addr">Jl. DR. Ide Anak Agung Gde Agung, Jakarta</div>
+              <div class="inv-rsvp">Buka Undangan</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section class="quote-section">
+  <div class="quote-wrap">
+    <div class="quote-mark">"</div>
+    <div class="quote-text reveal">
+      Kami mengirim undangan kepada 840 tamu. 812 membuka — dan 14 diantaranya menangis. <span>Itu bukan statistik. Itu kesaksian.</span>
+    </div>
+    <div class="quote-cite">
+      <div>
+        <div class="quote-cite-name">Dian &amp; Arkan</div>
+        <div class="quote-cite-meta">Bali · November 2024</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CHAPTER: PROCESS -->
+<section class="chapter" id="atelier">
+  <div class="chapter-head">
+    <div>
+      <div class="chapter-label">Chapter 03 — The Atelier</div>
+      <h2 class="chapter-title">Empat langkah.<br/>Nol <em>drama.</em></h2>
+    </div>
+    <p class="chapter-lead">
+      Prosesnya setenang studio fotografi di hari yang cerah. Kami bekerja — kalian tinggal menantikan.
+    </p>
+  </div>
+
+  <div class="process">
+    <div class="step">
+      <div class="step-num">STEP 01</div>
+      <h4><em>Brief</em> singkat.<br/>15 menit saja.</h4>
+      <p>Isi form cerita cinta — nama, tanggal, lokasi, foto favorit. Semua yang kami butuhkan untuk memulai.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 02</div>
+      <h4>Desainer <em>merangkai.</em></h4>
+      <p>Art director kami menyusun layout, tipografi, dan animasi pembuka — disesuaikan dengan energi cerita kalian.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 03</div>
+      <h4>Tinjau, <em>poles</em>, setujui.</h4>
+      <p>Dua putaran revisi tanpa batas. Dari tone warna sampai kata sambutan — semua bisa dipersonalisasi.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 04</div>
+      <h4><em>Tayang</em> di domain kalian.</h4>
+      <p>Undangan live di URL pribadi — siap dibagikan via WhatsApp, IG, atau QR code di amplop fisik.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="investment">
+  <div class="chapter-head">
+    <div>
+      <div class="chapter-label">Chapter 04 — Investment</div>
+      <h2 class="chapter-title">Harga yang<br/>layak <em>diingat.</em></h2>
+    </div>
+    <p class="chapter-lead">
+      Harga launching berakhir 31 Desember. Setelah itu, kembali normal. Tidak ada biaya tersembunyi — apa yang kalian lihat adalah apa yang kalian bayar.
+    </p>
+  </div>
+
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-name">Silk</div>
+      <div class="price-tagline">Untuk intimate wedding hingga 100 tamu.</div>
+      <div class="price-amt">
+        <span class="price-currency">Rp</span>
+        <span class="price-num">399K</span>
+      </div>
+      <div class="price-old">Normalnya Rp 599K</div>
+      <ul class="price-features">
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>1 template signature</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Subdomain uwu.id/kalian</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Countdown &amp; Google Maps</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>RSVP &amp; ucapan tamu</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Masa aktif 12 bulan</li>
+      </ul>
+      <a href="#" class="btn btn-outline" style="justify-content:center;">Pilih Silk</a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="price-badge"><span>★</span> Paling Dipilih</div>
+      <div class="price-name">Velvet <em>Edition</em></div>
+      <div class="price-tagline">Pilihan 78% couple kami. Lengkap & cinematic.</div>
+      <div class="price-amt">
+        <span class="price-currency">Rp</span>
+        <span class="price-num">899K</span>
+      </div>
+      <div class="price-old">Normalnya Rp 1.299K</div>
+      <ul class="price-features">
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Semua fitur Silk</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Domain pribadi .com</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Galeri prewedding + musik</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Live streaming embed</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Digital amplop (QRIS)</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Hosting selamanya</li>
+      </ul>
+      <a href="#" class="btn btn-primary" style="justify-content:center;"><span>Pilih Velvet</span></a>
+    </div>
+
+    <div class="price-card">
+      <div class="price-name"><em>Couture</em></div>
+      <div class="price-tagline">Custom dari nol, dengan art director pribadi.</div>
+      <div class="price-amt">
+        <span class="price-currency">Rp</span>
+        <span class="price-num">3.5<span style="font-size:28px">Jt</span></span>
+      </div>
+      <div class="price-old">Mulai dari · konsultasi gratis</div>
+      <ul class="price-features">
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Desain 100% custom</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Art director dedicated</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Animasi &amp; interaksi unik</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Fotografi &amp; videografi opsional</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Revisi unlimited</li>
+        <li><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>Concierge 24/7</li>
+      </ul>
+      <a href="#" class="btn btn-outline" style="justify-content:center;">Konsultasi Privat</a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-bg"><div class="glow"></div></div>
+  <div class="final-cta-inner">
+    <div class="chapter-label" style="justify-content:center; display:inline-flex;">Epilogue</div>
+    <h2>Hari itu datang <em>sekali.</em><br/>Pastikan <em>layak</em> diingat.</h2>
+    <p>Setiap hari yang berlalu adalah undangan yang belum sampai ke tangan orang terkasih. Mulai cerita kalian — malam ini.</p>
+    <div class="hero-actions" style="margin-bottom:0;">
+      <a href="#" class="btn btn-primary btn-large"><span>Mulai Cerita Kami</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#" class="btn btn-outline btn-large">Booking Konsultasi</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="nav-logo">
+        <svg viewBox="0 0 40 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M11 4 C4 4, 4 18, 11 18 C17 18, 20 11, 20 11 C20 11, 23 4, 29 4 C36 4, 36 18, 29 18 C23 18, 20 11, 20 11 C20 11, 17 4, 11 4 Z" stroke="url(#logoGrad)" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <span>UWU<em>.</em></span>
+      </div>
+      <p>Couture digital invitations, diukir untuk cerita yang layak diabadikan. Didirikan di Jakarta, dicintai di seluruh Nusantara.</p>
+    </div>
+    <div class="footer-col">
+      <h5>Atelier</h5>
+      <a href="#">Koleksi Silk</a>
+      <a href="#">Koleksi Velvet</a>
+      <a href="#">Couture Custom</a>
+      <a href="#">Galeri Karya</a>
+    </div>
+    <div class="footer-col">
+      <h5>Perusahaan</h5>
+      <a href="#">Tentang Kami</a>
+      <a href="#">Jurnal</a>
+      <a href="#">Press</a>
+      <a href="#">Karir</a>
+    </div>
+    <div class="footer-col">
+      <h5>Kontak</h5>
+      <a href="#">hello@uwu.id</a>
+      <a href="#">WhatsApp</a>
+      <a href="#">Instagram</a>
+      <a href="#">TikTok</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 UWU.ID · Crafted in Jakarta</p>
+    <p>Privasi · Syarat · Cookies</p>
+  </div>
+</footer>
+
+<!-- TWEAKS PANEL -->
+<div class="tweaks-panel" id="tweaks">
+  <h5>Tweaks</h5>
+  <div class="tweak-row">
+    <label>Parallax Intensity</label>
+    <input type="range" min="0" max="2" step="0.1" value="1" id="tw-parallax"/>
+  </div>
+  <div class="tweak-row">
+    <label>Star Density</label>
+    <input type="range" min="0" max="200" step="10" value="80" id="tw-stars"/>
+  </div>
+  <div class="tweak-row">
+    <label>Accent Color</label>
+    <div class="swatches">
+      <button data-accent="#F0A09C" style="background:#F0A09C" class="on"></button>
+      <button data-accent="#B89DD4" style="background:#B89DD4"></button>
+      <button data-accent="#8FA3D9" style="background:#8FA3D9"></button>
+      <button data-accent="#D4B896" style="background:#D4B896"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "parallax": 0.9,
+  "stars": 110,
+  "accent": "#F0A09C"
+}/*EDITMODE-END*/;
+
+// ==================== NAV SCROLL ====================
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+});
+
+// ==================== STARS ====================
+function renderStars(count) {
+  const layer = document.getElementById('layerStars');
+  layer.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const s = document.createElement('div');
+    const r = Math.random();
+    s.className = 'star' + (r > 0.9 ? ' big' : r < 0.3 ? ' tiny' : '');
+    s.style.left = Math.random() * 100 + '%';
+    s.style.top = Math.random() * 100 + '%';
+    s.dataset.depth = (0.2 + Math.random() * 0.8).toFixed(2);
+    layer.appendChild(s);
+  }
+}
+renderStars(TWEAK_DEFAULTS.stars);
+
+// ==================== PARALLAX ====================
+let parallaxMul = TWEAK_DEFAULTS.parallax;
+const hero = document.querySelector('.hero');
+const stars = () => document.querySelectorAll('.star');
+const layerGlow = document.getElementById('layerGlow');
+const layerSymbol = document.getElementById('layerSymbol');
+const heroContent = document.querySelector('.hero-content');
+
+function onScroll() {
+  const y = window.scrollY;
+  if (y > window.innerHeight) return;
+  const m = parallaxMul;
+  layerGlow.style.transform = `translate3d(0, ${y * 0.15 * m}px, 0)`;
+  layerSymbol.style.transform = `translate3d(0, ${y * 0.25 * m}px, 0) scale(${1 - y * 0.0003})`;
+  heroContent.style.transform = `translate3d(0, ${y * 0.35 * m}px, 0)`;
+  heroContent.style.opacity = Math.max(0, 1 - y / (window.innerHeight * 0.7));
+  stars().forEach(s => {
+    const d = parseFloat(s.dataset.depth);
+    s.style.transform = `translate3d(0, ${y * d * 0.4 * m}px, 0)`;
+  });
+}
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// Mouse parallax
+window.addEventListener('mousemove', (e) => {
+  if (window.scrollY > window.innerHeight) return;
+  const x = (e.clientX / window.innerWidth - 0.5);
+  const y = (e.clientY / window.innerHeight - 0.5);
+  const m = parallaxMul;
+  layerGlow.style.transform += ` translate(${x * 20 * m}px, ${y * 20 * m}px)`;
+  layerSymbol.style.transform += ` translate(${x * 35 * m}px, ${y * 35 * m}px)`;
+});
+
+// ==================== THEME PICKER ====================
+const themePicker = document.getElementById('themePicker');
+const phoneScreen = document.getElementById('phoneScreen');
+themePicker.addEventListener('click', (e) => {
+  const btn = e.target.closest('.theme-opt');
+  if (!btn) return;
+  themePicker.querySelectorAll('.theme-opt').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const theme = btn.dataset.theme;
+  phoneScreen.className = 'phone-screen theme-' + theme;
+  // Update countdown numbers per theme for variety
+  phoneScreen.style.opacity = '0.4';
+  setTimeout(() => { phoneScreen.style.opacity = '1'; }, 180);
+});
+
+// ==================== SECTION SCROLLER ====================
+const ctrlPills = document.querySelectorAll('.ctrl-pill');
+const inv = document.getElementById('invContent');
+ctrlPills.forEach(p => p.addEventListener('click', () => {
+  ctrlPills.forEach(x => x.classList.remove('active'));
+  p.classList.add('active');
+  const section = p.dataset.section;
+  // fake scroll inside phone
+  inv.style.transition = 'transform 0.5s ease, opacity 0.3s';
+  inv.style.opacity = '0.2';
+  setTimeout(() => {
+    if (section === 'cover') inv.style.transform = 'translateY(0)';
+    if (section === 'countdown') inv.style.transform = 'translateY(-140px)';
+    if (section === 'venue') inv.style.transform = 'translateY(-280px)';
+    inv.style.opacity = '1';
+  }, 200);
+}));
+
+// ==================== REVEAL ====================
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => e.isIntersecting && e.target.classList.add('in'));
+}, { threshold: 0.2 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ==================== COUNTDOWN LIVE ====================
+const target = new Date('2026-06-14T15:00:00+07:00').getTime();
+function tickCountdown() {
+  const now = Date.now();
+  const diff = Math.max(0, target - now);
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const boxes = document.querySelectorAll('.cd-num');
+  if (boxes.length >= 4) {
+    boxes[0].textContent = d;
+    boxes[1].textContent = String(h).padStart(2,'0');
+    boxes[2].textContent = String(m).padStart(2,'0');
+    boxes[3].textContent = String(s).padStart(2,'0');
+  }
+}
+tickCountdown();
+setInterval(tickCountdown, 1000);
+
+// ==================== TWEAKS MODE ====================
+const tweaks = document.getElementById('tweaks');
+window.addEventListener('message', (e) => {
+  if (e.data?.type === '__activate_edit_mode') tweaks.classList.add('open');
+  if (e.data?.type === '__deactivate_edit_mode') tweaks.classList.remove('open');
+});
+window.parent.postMessage({type: '__edit_mode_available'}, '*');
+
+document.getElementById('tw-parallax').addEventListener('input', e => {
+  parallaxMul = parseFloat(e.target.value);
+  window.parent.postMessage({type: '__edit_mode_set_keys', edits: { parallax: parallaxMul }}, '*');
+});
+document.getElementById('tw-stars').addEventListener('input', e => {
+  renderStars(parseInt(e.target.value));
+  window.parent.postMessage({type: '__edit_mode_set_keys', edits: { stars: parseInt(e.target.value) }}, '*');
+});
+document.querySelectorAll('#tweaks .swatches button').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('#tweaks .swatches button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    const c = b.dataset.accent;
+    document.documentElement.style.setProperty('--coral', c);
+    window.parent.postMessage({type: '__edit_mode_set_keys', edits: { accent: c }}, '*');
+  });
+});
+
+// Apply saved defaults
+document.getElementById('tw-parallax').value = TWEAK_DEFAULTS.parallax;
+document.getElementById('tw-stars').value = TWEAK_DEFAULTS.stars;
+document.documentElement.style.setProperty('--coral', TWEAK_DEFAULTS.accent);
+</script>
+
+</body>
+</html>
