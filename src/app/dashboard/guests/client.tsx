@@ -1,14 +1,18 @@
 "use client";
 
+import { useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { useToast } from "@/components/shared/Toast";
 import {
   softDeleteGuestAction,
 } from "@/lib/actions/guest";
+import { downloadGuestTemplate } from "@/lib/utils/guest-template";
+import { parseGuestFile, type ParseResult } from "@/lib/utils/guest-parser";
 import { GuestFormDialog } from "./guest-form-dialog";
 import { GroupsPanel } from "./groups-panel";
+import { GuestImportModal } from "./guest-import-modal";
 import type { GuestStatus } from "@/lib/db/queries/guests";
 
 export type GuestRow = {
@@ -74,12 +78,60 @@ export function GuestsClient({
   const params = useSearchParams();
   const [, startTransition] = useTransition();
 
+  const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [addOpen, setAddOpen] = useState(false);
   const [editGuest, setEditGuest] = useState<GuestRow | null>(null);
   const [deleteGuest, setDeleteGuest] = useState<GuestRow | null>(null);
   const [deletePending, setDeletePending] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [templatePending, setTemplatePending] = useState(false);
+  const [importModal, setImportModal] = useState<
+    { fileName: string; result: ParseResult } | null
+  >(null);
+  const [parsing, setParsing] = useState(false);
+
+  async function handleTemplateDownload() {
+    if (templatePending) return;
+    setTemplatePending(true);
+    try {
+      await downloadGuestTemplate(groups.map((g) => ({ name: g.name })));
+      toast.success("Template terunduh");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Gagal mengunduh template",
+      );
+    } finally {
+      setTemplatePending(false);
+    }
+  }
+
+  async function handleFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    // Reset input so selecting the same file twice still fires onChange.
+    e.target.value = "";
+    if (!file) return;
+    setParsing(true);
+    try {
+      const result = await parseGuestFile(
+        file,
+        groups.map((g) => g.name),
+      );
+      if (result.valid.length === 0 && result.warnings.length === 0) {
+        toast.error("File kosong atau format tidak dikenali");
+        return;
+      }
+      setImportModal({ fileName: file.name, result });
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Gagal membaca file",
+      );
+    } finally {
+      setParsing(false);
+    }
+  }
 
   function updateParam(key: string, value: string | null) {
     const next = new URLSearchParams(params);
@@ -125,6 +177,29 @@ export function GuestsClient({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleTemplateDownload}
+            disabled={templatePending}
+            className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
+          >
+            {templatePending ? "Menyiapkan..." : "📥 Template"}
+          </button>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={parsing || atLimit}
+            className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
+          >
+            {parsing ? "Membaca..." : "📤 Import Excel"}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx,.xls"
+            hidden
+            onChange={handleFilePicked}
+          />
           <button
             type="button"
             onClick={() => setGroupsOpen(true)}
@@ -371,6 +446,25 @@ export function GuestsClient({
         onConfirm={confirmDelete}
         onCancel={() => setDeleteGuest(null)}
       />
+
+      {importModal && (
+        <GuestImportModal
+          eventId={eventId}
+          fileName={importModal.fileName}
+          result={importModal.result}
+          onClose={() => setImportModal(null)}
+          onSuccess={({ imported, newGroups, warnings }) => {
+            setImportModal(null);
+            const suffix = newGroups.length
+              ? ` · ${newGroups.length} grup baru dibuat`
+              : "";
+            toast.success(`${imported} tamu berhasil diimport${suffix}`);
+            if (warnings > 0) {
+              toast.error(`${warnings} baris memiliki peringatan`);
+            }
+          }}
+        />
+      )}
     </>
   );
 }

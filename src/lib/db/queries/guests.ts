@@ -56,7 +56,41 @@ export async function listGuestsForEvent(
     .orderBy(asc(guests.createdAt));
 }
 
+// Seven default groups seeded the first time a user opens /guests.
+// Keeps onboarding flow untouched — the inserts fire only when the
+// event has zero groups yet.
+export const DEFAULT_GUEST_GROUPS = [
+  "Keluarga Mempelai Wanita",
+  "Keluarga Mempelai Pria",
+  "Teman Mempelai Wanita",
+  "Teman Mempelai Pria",
+  "Teman Sekolah",
+  "Teman Kantor",
+  "Tetangga",
+] as const;
+
 export async function listGuestGroups(eventId: string) {
+  const rows = await db
+    .select()
+    .from(guestGroups)
+    .where(eq(guestGroups.eventId, eventId))
+    .orderBy(asc(guestGroups.sortOrder), asc(guestGroups.name));
+
+  if (rows.length > 0) return rows;
+
+  // Lazy seed defaults on first access. onConflictDoNothing in case two
+  // renders race to seed (very unlikely, but cheap to handle).
+  await db
+    .insert(guestGroups)
+    .values(
+      DEFAULT_GUEST_GROUPS.map((name, i) => ({
+        eventId,
+        name,
+        sortOrder: i,
+      })),
+    )
+    .onConflictDoNothing();
+
   return db
     .select()
     .from(guestGroups)
