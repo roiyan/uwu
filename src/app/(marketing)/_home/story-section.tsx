@@ -184,12 +184,13 @@ export function StorySection() {
               <em>dua kreator.</em>
             </h3>
             <p>
-              Desain berdua dari layar masing-masing. Setiap perubahan langsung
-              terlihat — beri komentar, sesuaikan bersama, dan ciptakan undangan
-              yang benar-benar milik berdua.
+              Desain berdua dari layar masing-masing. Beri komentar, sesuaikan
+              bersama, dan ciptakan undangan yang benar-benar milik berdua —
+              tanpa kirim file bolak-balik.
             </p>
             <p className="highlight">
-              Real-time sync. Unlimited revisions. Tanpa perlu meeting.
+              Satu akun, dua akses. Revisi tanpa batas. Tanpa kirim file
+              bolak-balik.
             </p>
             <ArrowLink>Cara Kerja Kolaborasi →</ArrowLink>
           </div>
