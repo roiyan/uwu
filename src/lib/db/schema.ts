@@ -318,8 +318,16 @@ export const guests = pgTable("guests", {
     .references(() => events.id, { onDelete: "cascade" }),
   groupId: uuid("group_id").references(() => guestGroups.id, { onDelete: "set null" }),
   name: text("name").notNull(),
+  // Optional salutation / nickname — "Pak Ahmad dan Istri", "Mbak Siti".
+  // Used in the invitation greeting when present, falls back to `name`.
+  nickname: text("nickname"),
   phone: text("phone"),
   email: text("email"),
+  // Invited capacity (1–10). Distinct from `rsvpAttendees` which is the
+  // actual count the guest reports at RSVP time.
+  plusCount: integer("plus_count").notNull().default(1),
+  // Owner-facing private note (e.g. "Saksi Nikah", "Handicap access").
+  notes: text("notes"),
   token: uuid("token").notNull().defaultRandom().unique(), // used in ?to=<token>
   rsvpStatus: guestRsvpStatusEnum("rsvp_status").notNull().default("baru"),
   rsvpAttendees: integer("rsvp_attendees"),
