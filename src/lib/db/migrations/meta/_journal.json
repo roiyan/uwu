@@ -57,6 +57,13 @@
       "when": 1776987664000,
       "tag": "0007_rls_collab_phase1",
       "breakpoints": false
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1777046694405,
+      "tag": "0008_oval_red_ghost",
+      "breakpoints": true
     }
   ]
 }
