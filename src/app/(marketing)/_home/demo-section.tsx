@@ -152,10 +152,10 @@ export function DemoSection() {
               >
                 <div className="inv-mono">The Wedding Of</div>
                 <div className="inv-ornament">✦ ⸻ ✦</div>
-                <h4>Anaya</h4>
+                <h4>Hawa</h4>
                 <span className="amp">&amp;</span>
                 <h4>
-                  <em>Raka</em>
+                  <em>Adam</em>
                 </h4>
                 <div className="inv-divider" />
                 <div className="inv-sub">

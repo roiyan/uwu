@@ -12,8 +12,8 @@ const CARDS: Card[] = [
   {
     slot: 1,
     meta: "Ivory Whisper · N° 142",
-    first: "Anaya",
-    second: "Raka",
+    first: "Hawa",
+    second: "Adam",
     date: "14 · 06 · 2026",
   },
   {

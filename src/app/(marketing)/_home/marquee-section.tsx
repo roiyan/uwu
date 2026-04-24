@@ -71,7 +71,7 @@ export function MarqueeSection() {
         {loop.map((item, i) => (
           <div className="marquee-item" key={i}>
             <span className="marquee-text">{item.text}</span>
-            {item.bullet && <span />}
+            {item.bullet && <span className="marquee-bullet" aria-hidden="true" />}
           </div>
         ))}
       </div>
