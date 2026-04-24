@@ -132,6 +132,14 @@ export async function withAuth<T>(
     return { ok: true, data };
   } catch (err) {
     console.error(`${label} err`, err);
+    // Preserve the Error message when the action threw a deliberate
+    // user-facing string (e.g. "Batas paket … tercapai", "Grup … sudah
+    // ada"). Only fall back to the generic message for unexpected
+    // errors with no meaningful message — that way toast errors can
+    // tell the user what actually went wrong.
+    if (err instanceof Error && err.message && err.message.length > 0) {
+      return { ok: false, error: err.message };
+    }
     return { ok: false, error: "Terjadi kendala. Silakan coba lagi." };
   }
 }

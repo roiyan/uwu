@@ -175,22 +175,58 @@ export async function deleteGuestGroupAction(
 /**
  * Rename a guest group. FK relationships on guests.group_id are
  * preserved (guests keep pointing at the same row — just with a new
- * display name).
+ * display name). Kept as a thin wrapper around updateGuestGroupAction
+ * for existing callers.
  */
 export async function renameGuestGroupAction(
   eventId: string,
   groupId: string,
   newName: string,
 ): Promise<ActionResult> {
-  const trimmed = newName.trim();
-  if (trimmed.length < 2) {
-    return { ok: false, error: "Nama grup minimal 2 karakter." };
+  return updateGuestGroupAction(eventId, groupId, { name: newName });
+}
+
+/**
+ * Update a guest group's name and/or color. Pass only the fields you
+ * want to change.
+ */
+export async function updateGuestGroupAction(
+  eventId: string,
+  groupId: string,
+  updates: { name?: string; color?: string | null },
+): Promise<ActionResult> {
+  const patch: { name?: string; color?: string | null } = {};
+
+  if (updates.name !== undefined) {
+    const trimmed = updates.name.trim();
+    if (trimmed.length < 2) {
+      return { ok: false, error: "Nama grup minimal 2 karakter." };
+    }
+    patch.name = trimmed;
   }
+
+  if (updates.color !== undefined) {
+    // Accept either null (to clear) or a #rrggbb hex string.
+    if (updates.color !== null) {
+      const normalized = updates.color.trim();
+      if (!/^#[0-9a-fA-F]{6}$/.test(normalized)) {
+        return { ok: false, error: "Kode warna tidak valid." };
+      }
+      patch.color = normalized;
+    } else {
+      patch.color = null;
+    }
+  }
+
+  if (Object.keys(patch).length === 0) {
+    return { ok: false, error: "Tidak ada perubahan." };
+  }
+
   const result = await withAuth(eventId, "editor", async () => {
     try {
       await db
         .update(guestGroups)
-        .set({ name: trimmed })
+        .set(patch)
         .where(
           and(eq(guestGroups.id, groupId), eq(guestGroups.eventId, eventId)),
         );
@@ -325,7 +361,44 @@ export async function importGuestsAction(
       };
     });
 
-    await db.insert(guests).values(rows);
+    try {
+      await db.insert(guests).values(rows);
+    } catch (err) {
+      // Surface specific Postgres error codes with actionable messages.
+      // withAuth's outer catch otherwise swallows everything into a
+      // generic "Terjadi kendala" toast which makes this hard to debug.
+      const pgErr = err as { code?: string; message?: string; detail?: string };
+      console.error("[importGuestsAction] insert failed", {
+        code: pgErr.code,
+        message: pgErr.message,
+        detail: pgErr.detail,
+        sample: rows.slice(0, 2),
+      });
+      if (pgErr.code === "42703") {
+        // Undefined column — migration 0008 (nickname / plus_count /
+        // notes) hasn't been applied to Supabase yet.
+        throw new Error(
+          "Kolom database belum lengkap. Jalankan migrasi terbaru (pnpm db:migrate) lalu coba lagi.",
+        );
+      }
+      if (pgErr.code === "42P01") {
+        throw new Error(
+          "Tabel guests tidak ditemukan. Jalankan migrasi database.",
+        );
+      }
+      if (pgErr.code === "23503") {
+        throw new Error(
+          "Foreign key tidak valid (event atau grup tidak ditemukan).",
+        );
+      }
+      if (pgErr.code === "23505") {
+        throw new Error("Terdapat tamu duplikat. Periksa file Anda.");
+      }
+      // Fall through — include PG message so Vercel logs show why.
+      throw new Error(
+        `Gagal menyimpan tamu: ${pgErr.message ?? "kesalahan database"}`,
+      );
+    }
 
     return {
       imported: rows.length,
