@@ -28,7 +28,31 @@ export default async function InvitePage({
 }
 
 async function InviteContent({ token }: { token: string }) {
-  const result = await resolveInviteToken(token);
+  // Defensive: if the DB query throws (migrations drift, transient
+  // connection error, etc) render a friendly card instead of a generic
+  // 500. The error boundary in error.tsx backstops anything that slips
+  // past this catch.
+  let result: Awaited<ReturnType<typeof resolveInviteToken>>;
+  try {
+    result = await resolveInviteToken(token);
+  } catch (err) {
+    console.error("[invite] resolveInviteToken failed", err);
+    return (
+      <Card
+        icon="⚠️"
+        title="Terjadi kendala"
+        body="Kami tidak bisa memproses undangan ini saat ini. Silakan coba lagi sebentar lagi."
+        cta={
+          <Link
+            href="/"
+            className="rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            Kembali ke Beranda
+          </Link>
+        }
+      />
+    );
+  }
 
   if (result.state === "not_found") {
     return (
