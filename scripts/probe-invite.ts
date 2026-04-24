@@ -4,7 +4,7 @@ loadEnv({ path: ".env.local" });
 
 async function main() {
   // Dynamic import so env loads first.
-  const { resolveInviteToken } = await import("../src/lib/actions/collaborator");
+  const { resolveInviteToken } = await import("../src/lib/queries/invite");
   console.log("Probing resolveInviteToken (against configured DB)...");
 
   const fake = "fake-token-for-smoke-test-12345";
