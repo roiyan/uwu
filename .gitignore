@@ -42,3 +42,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 UWU.code-workspace
+.claude/worktrees/
+tmp-homepage-map.md
