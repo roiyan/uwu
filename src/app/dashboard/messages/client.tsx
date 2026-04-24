@@ -16,7 +16,12 @@ type Audience =
   | { type: "group"; groupIds: string[] }
   | { type: "status"; statuses: GuestStatus[] };
 
-type GroupRow = { id: string; name: string; color: string | null };
+type GroupRow = {
+  id: string;
+  name: string;
+  color: string | null;
+  liveCount: number;
+};
 
 type HistoryRow = {
   id: string;
@@ -245,6 +250,9 @@ export function MessagesClient({
                             style={{ background: g.color ?? "var(--color-gold-50)" }}
                           />
                           {g.name}
+                          <span className="text-[10px] text-ink-hint">
+                            ({g.liveCount})
+                          </span>
                         </label>
                       );
                     })}

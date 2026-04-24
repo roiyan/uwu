@@ -335,6 +335,12 @@ export const guests = pgTable("guests", {
   rsvpedAt: timestamp("rsvped_at", { withTimezone: true }),
   openedAt: timestamp("opened_at", { withTimezone: true }),
   invitedAt: timestamp("invited_at", { withTimezone: true }),
+  // Per-guest send tracking (Sprint A). Complements the campaign
+  // ledger in messageDeliveries with a denormalized per-guest view:
+  // "how many times have we invited this person, and when last".
+  sendCount: integer("send_count").notNull().default(0),
+  lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
+  lastSentVia: text("last_sent_via"), // 'whatsapp' | 'email'
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),

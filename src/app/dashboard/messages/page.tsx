@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { and, count, eq, isNull, sql } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { guests } from "@/lib/db/schema";
 import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import { listGuestGroups } from "@/lib/db/queries/guests";
@@ -16,10 +19,29 @@ export default async function MessagesPage() {
   const bundle = await getEventBundle(current.event.id);
   if (!bundle) redirect("/onboarding");
 
-  const [groups, history] = await Promise.all([
+  const [groups, history, groupCounts] = await Promise.all([
     listGuestGroups(current.event.id),
     listBroadcastsForEvent(current.event.id),
+    // Per-group live guest counts — rendered next to each checkbox so
+    // the user can see group size before picking recipients.
+    db
+      .select({
+        groupId: guests.groupId,
+        liveCount: count(),
+      })
+      .from(guests)
+      .where(
+        and(
+          eq(guests.eventId, current.event.id),
+          isNull(guests.deletedAt),
+          sql`${guests.groupId} IS NOT NULL`,
+        ),
+      )
+      .groupBy(guests.groupId),
   ]);
+  const countByGroupId = new Map(
+    groupCounts.map((r) => [r.groupId!, r.liveCount]),
+  );
 
   const cp = bundle.event.culturalPreference;
 
@@ -45,7 +67,12 @@ export default async function MessagesPage() {
         eventId={bundle.event.id}
         culturalPreference={cp}
         templates={MESSAGE_TEMPLATES}
-        groups={groups.map((g) => ({ id: g.id, name: g.name, color: g.color }))}
+        groups={groups.map((g) => ({
+          id: g.id,
+          name: g.name,
+          color: g.color,
+          liveCount: countByGroupId.get(g.id) ?? 0,
+        }))}
         history={history.map((h) => ({
           id: h.id,
           channel: h.channel,

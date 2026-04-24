@@ -144,6 +144,7 @@ export async function createBroadcastAction(
         recipientEmail: g.email,
         personalisedBody: renderTemplate(parsed.data.body, {
           name: g.name,
+          nickname: g.nickname,
           bride: ctx.couple!.brideName,
           groom: ctx.couple!.groomName,
           date: dateStr,
@@ -191,13 +192,17 @@ async function processWhatsappBatch(messageId: string) {
           attemptCount: sql`${messageDeliveries.attemptCount} + 1`,
         })
         .where(eq(messageDeliveries.id, d.id));
-      // Bump guest status from 'baru' → 'diundang'
+      // Bump guest status from 'baru' → 'diundang' and update the
+      // denormalized per-guest send tracking (Sprint A).
       if (d.guestId) {
         await db
           .update(guests)
           .set({
             rsvpStatus: sql`case when ${guests.rsvpStatus} = 'baru' then 'diundang'::guest_rsvp_status else ${guests.rsvpStatus} end`,
             invitedAt: sql`coalesce(${guests.invitedAt}, now())`,
+            sendCount: sql`${guests.sendCount} + 1`,
+            lastSentAt: new Date(),
+            lastSentVia: "whatsapp",
           })
           .where(eq(guests.id, d.guestId));
       }
@@ -259,6 +264,9 @@ async function processEmailBatch(messageId: string) {
           .set({
             rsvpStatus: sql`case when ${guests.rsvpStatus} = 'baru' then 'diundang'::guest_rsvp_status else ${guests.rsvpStatus} end`,
             invitedAt: sql`coalesce(${guests.invitedAt}, now())`,
+            sendCount: sql`${guests.sendCount} + 1`,
+            lastSentAt: new Date(),
+            lastSentVia: "email",
           })
           .where(eq(guests.id, d.guestId));
       }

@@ -110,6 +110,9 @@ export function renderTemplate(
   body: string,
   data: {
     name: string;
+    /** Salutation / panggilan — e.g. "Pak Ahmad dan Istri". Falls
+     *  back to `name` when absent so {panggilan} is always filled. */
+    nickname?: string | null;
     bride: string;
     groom: string;
     date: string;
@@ -117,13 +120,25 @@ export function renderTemplate(
     link: string;
   },
 ) {
+  const panggilan =
+    data.nickname && data.nickname.trim().length > 0
+      ? data.nickname.trim()
+      : data.name;
+  // English keys ({name}, {link}) kept for the 5 shipped templates;
+  // Indonesian aliases ({nama}, {panggilan}, {link_undangan}) added
+  // for the Sprint A brief. {panggilan} falls back to {nama} when
+  // the guest has no nickname on file.
   return body
     .replace(/\{name\}/g, data.name)
+    .replace(/\{nama\}/g, data.name)
+    .replace(/\{nickname\}/g, panggilan)
+    .replace(/\{panggilan\}/g, panggilan)
     .replace(/\{bride\}/g, data.bride)
     .replace(/\{groom\}/g, data.groom)
     .replace(/\{date\}/g, data.date)
     .replace(/\{venue\}/g, data.venue)
-    .replace(/\{link\}/g, data.link);
+    .replace(/\{link\}/g, data.link)
+    .replace(/\{link_undangan\}/g, data.link);
 }
 
 export function pickDefaultTemplate(
