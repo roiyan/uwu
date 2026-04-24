@@ -64,6 +64,13 @@
       "when": 1777046694405,
       "tag": "0008_oval_red_ghost",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1777048880667,
+      "tag": "0009_premium_cassandra_nova",
+      "breakpoints": true
     }
   ]
 }
