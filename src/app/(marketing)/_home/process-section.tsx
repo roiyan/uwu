@@ -15,49 +15,49 @@ const STEPS: Step[] = [
     num: "01",
     head: (
       <>
-        <em>Brief</em> singkat. 15 menit.
+        Pilih yang <em>terasa</em> seperti kalian.
       </>
     ),
     body:
-      "Ceritakan kisah kalian — nama, tanggal, lokasi, foto favorit, mood yang kalian inginkan. Semua yang kami butuhkan untuk mulai merangkai.",
-    meta: "Hari 1 · 15 menit",
-    progressLabel: "Step 01 · Brief",
+      "Jelajahi koleksi tema — dari yang klasik sampai cinematic. Satu klik, dan fondasi undangan kalian sudah terbentuk.",
+    meta: "Langkah 1 · 2 menit",
+    progressLabel: "Step 01 · Pilih",
   },
   {
     num: "02",
     head: (
       <>
-        Desainer <em>merangkai.</em>
+        Isi <em>cerita</em>, bukan formulir.
       </>
     ),
     body:
-      "Art director kami menyusun layout, tipografi, palet warna, dan animasi pembuka — disesuaikan dengan energi cerita kalian. Draft pertama siap dalam 24 jam.",
-    meta: "Hari 1 — 2 · 24 jam",
-    progressLabel: "Step 02 · Desain",
+      "Nama, tanggal, lokasi, kata sambutan — isi sekali, muncul di seluruh undangan. Seperti menulis surat cinta yang otomatis terformat indah.",
+    meta: "Langkah 2 · 5 menit",
+    progressLabel: "Step 02 · Isi",
   },
   {
     num: "03",
     head: (
       <>
-        Tinjau, <em>poles</em>, setujui.
+        Sentuhan <em>terakhir.</em> Milik kalian.
       </>
     ),
     body:
-      "Revisi tanpa batas. Dari tone warna sampai kata sambutan, dari urutan section sampai font — hingga terasa benar-benar milik kalian.",
-    meta: "Hari 2 — 3 · 4 jam turnaround",
-    progressLabel: "Step 03 · Revisi",
+      "Ganti warna, ubah font, tambah foto — setiap perubahan langsung terlihat di preview. Tidak ada yang tahu selera kalian lebih baik dari kalian sendiri.",
+    meta: "Langkah 3 · sebebas kalian",
+    progressLabel: "Step 03 · Poles",
   },
   {
     num: "04",
     head: (
       <>
-        <em>Tayang</em> di domain kalian.
+        <em>Kirim</em> ke dunia.
       </>
     ),
     body:
-      "Undangan live di URL pribadi — uwu.id/nama-kalian atau domain .com kalian sendiri. Siap dibagikan via WhatsApp, IG, email, atau QR code di amplop fisik.",
-    meta: "Hari 3 · selamanya online",
-    progressLabel: "Step 04 · Live",
+      "Satu tombol — undangan kalian tayang di uwu.id/nama-kalian. Bagikan via WhatsApp, Instagram, email, atau QR code di amplop fisik. Aktif selamanya.",
+    meta: "Langkah 4 · selamanya online",
+    progressLabel: "Step 04 · Kirim",
   },
 ];
 
@@ -91,11 +91,11 @@ export function ProcessSection() {
           <h2>
             Empat langkah.
             <br />
-            Nol <em>drama.</em>
+            Satu <em>malam.</em>
           </h2>
           <p>
-            Prosesnya setenang sesi foto pre-wedding. Kami merangkai — kalian
-            menantikan.
+            Tidak perlu desainer. Tidak perlu berminggu-minggu. Cukup kalian
+            berdua dan satu malam yang tenang.
           </p>
           <ul className="pp" id="pp">
             {STEPS.map((s, idx) => (
