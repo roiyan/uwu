@@ -164,33 +164,41 @@ export function HeroSection() {
       </div>
       <div className="hero-vignette" aria-hidden="true" />
 
-      <div className="hero-content cascade" ref={contentRef}>
-        <div className="eyebrow">
-          <span className="dot" />
-          <span>Couture Digital Invitations · Est. 2021</span>
-        </div>
+      <div className="hero-content">
+        {/* `.hero-parallax` gets the scroll-linked fade + translate.
+            `.hero-meta` below is a sibling so it stays fully readable
+            regardless of scroll position — critical on mobile where
+            the stats sit outside the viewport-height × 0.72 fade
+            window and would otherwise disappear before the user gets
+            to them. */}
+        <div className="hero-parallax cascade" ref={contentRef}>
+          <div className="eyebrow">
+            <span className="dot" />
+            <span>Couture Digital Invitations · Est. 2021</span>
+          </div>
 
-        <h1 className="hero-title">
-          <span className="line">Setiap cinta</span>
-          <span className="line">
-            layak <em>diabadikan.</em>
-          </span>
-        </h1>
+          <h1 className="hero-title">
+            <span className="line">Setiap cinta</span>
+            <span className="line">
+              layak <em>diabadikan.</em>
+            </span>
+          </h1>
 
-        <p className="hero-sub">
-          Desain berdua, kelola tamu, pantau semuanya — dari satu dashboard.
-          Undangan yang terasa personal, diciptakan bersama, dalam hitungan
-          menit.
-        </p>
+          <p className="hero-sub">
+            Desain berdua, kelola tamu, pantau semuanya — dari satu dashboard.
+            Undangan yang terasa personal, diciptakan bersama, dalam hitungan
+            menit.
+          </p>
 
-        <div className="hero-actions">
-          <a href="#experience" className="btn btn-primary btn-large">
-            <span>Lihat Demo Langsung</span>
-            <ArrowRight />
-          </a>
-          <a href="#atelier" className="btn btn-outline btn-large">
-            Jelajahi Koleksi
-          </a>
+          <div className="hero-actions">
+            <a href="#experience" className="btn btn-primary btn-large">
+              <span>Lihat Demo Langsung</span>
+              <ArrowRight />
+            </a>
+            <a href="#atelier" className="btn btn-outline btn-large">
+              Jelajahi Koleksi
+            </a>
+          </div>
         </div>
 
         <div className="hero-meta" aria-label="Statistik UWU">
