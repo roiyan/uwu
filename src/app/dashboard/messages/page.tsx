@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { and, count, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, count, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { guests } from "@/lib/db/schema";
 import { requireSessionUserFast } from "@/lib/auth-guard";
@@ -19,7 +19,8 @@ export default async function MessagesPage() {
   const bundle = await getEventBundle(current.event.id);
   if (!bundle) redirect("/onboarding");
 
-  const [groups, history, groupCounts] = await Promise.all([
+  const [groups, history, groupCounts, alreadySentRow, recipientSample] =
+    await Promise.all([
     listGuestGroups(current.event.id),
     listBroadcastsForEvent(current.event.id),
     // Per-group live guest counts — rendered next to each checkbox so
@@ -38,12 +39,71 @@ export default async function MessagesPage() {
         ),
       )
       .groupBy(guests.groupId),
-  ]);
+    // Count of guests already invited at least once. Used by the
+    // "Sertakan yang sudah diundang" toggle info message.
+    db
+      .select({ total: count() })
+      .from(guests)
+      .where(
+        and(
+          eq(guests.eventId, current.event.id),
+          isNull(guests.deletedAt),
+          sql`${guests.sendCount} > 0`,
+        ),
+      ),
+    // Recipient sample for the client-side preview/navigator. Capped
+    // at 200 — keeps the payload small while covering realistic
+    // wedding sizes; client filters this by audience selection.
+    db
+      .select({
+        id: guests.id,
+        name: guests.name,
+        nickname: guests.nickname,
+        phone: guests.phone,
+        email: guests.email,
+        token: guests.token,
+        groupId: guests.groupId,
+        rsvpStatus: guests.rsvpStatus,
+        sendCount: guests.sendCount,
+      })
+      .from(guests)
+      .where(
+        and(eq(guests.eventId, current.event.id), isNull(guests.deletedAt)),
+      )
+      .orderBy(asc(guests.createdAt))
+      .limit(200),
+    ]);
   const countByGroupId = new Map(
     groupCounts.map((r) => [r.groupId!, r.liveCount]),
   );
+  const alreadySentCount = alreadySentRow[0]?.total ?? 0;
 
   const cp = bundle.event.culturalPreference;
+
+  // Event context used by the client-side preview renderer. We format
+  // the date the same way broadcast.ts does so preview matches the
+  // eventual server-personalised body.
+  const firstSchedule = bundle.schedules[0];
+  const dateStr = firstSchedule
+    ? new Date(`${firstSchedule.eventDate}T00:00:00Z`).toLocaleDateString(
+        "id-ID",
+        {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+          timeZone: "UTC",
+        },
+      )
+    : "(tanggal menyusul)";
+  const venueStr = firstSchedule?.venueName ?? "(lokasi menyusul)";
+  const eventContext = {
+    slug: bundle.event.slug,
+    bride: bundle.couple?.brideName ?? "Mempelai Wanita",
+    groom: bundle.couple?.groomName ?? "Mempelai Pria",
+    date: dateStr,
+    venue: venueStr,
+  };
 
   return (
     <main className="flex-1 px-6 py-8 lg:px-10">
@@ -73,6 +133,9 @@ export default async function MessagesPage() {
           color: g.color,
           liveCount: countByGroupId.get(g.id) ?? 0,
         }))}
+        alreadySentCount={alreadySentCount}
+        recipientSample={recipientSample}
+        eventContext={eventContext}
         history={history.map((h) => ({
           id: h.id,
           channel: h.channel,

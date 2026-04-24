@@ -1,13 +1,39 @@
 "use client";
 
-import { useActionState, useMemo, useState, useTransition } from "react";
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import Link from "next/link";
 import {
   createBroadcastAction,
   retryFailedDeliveriesAction,
   runBroadcastAction,
 } from "@/lib/actions/broadcast";
-import type { MessageTemplate } from "@/lib/templates/messages";
+import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
+
+type RecipientSample = {
+  id: string;
+  name: string;
+  nickname: string | null;
+  phone: string | null;
+  email: string | null;
+  token: string;
+  groupId: string | null;
+  rsvpStatus: GuestStatus;
+  sendCount: number;
+};
+
+type EventContext = {
+  slug: string;
+  bride: string;
+  groom: string;
+  date: string;
+  venue: string;
+};
 
 type Channel = "whatsapp" | "email";
 type GuestStatus = "baru" | "diundang" | "dibuka" | "hadir" | "tidak_hadir";
@@ -61,6 +87,9 @@ export function MessagesClient({
   groups,
   history,
   providers,
+  alreadySentCount,
+  recipientSample,
+  eventContext,
 }: {
   eventId: string;
   culturalPreference: "islami" | "umum" | "custom";
@@ -68,6 +97,9 @@ export function MessagesClient({
   groups: GroupRow[];
   history: HistoryRow[];
   providers: { whatsappConfigured: boolean; emailConfigured: boolean };
+  alreadySentCount: number;
+  recipientSample: RecipientSample[];
+  eventContext: EventContext;
 }) {
   const [channel, setChannel] = useState<Channel>("whatsapp");
   const channelTemplates = useMemo(
@@ -88,6 +120,55 @@ export function MessagesClient({
   const [subject, setSubject] = useState(currentTemplate.subject ?? "");
 
   const [audience, setAudience] = useState<Audience>({ type: "all" });
+  // "new_only" = skip guests already invited at least once (default,
+  // safer). User opts in to resend via the checkbox.
+  const [includeSent, setIncludeSent] = useState(false);
+  const [previewIndex, setPreviewIndex] = useState(0);
+
+  // Filter the recipient sample client-side the same way the server
+  // will filter at send time — channel availability, audience, resend
+  // mode. The preview navigator iterates this list.
+  const filteredRecipients = useMemo(() => {
+    return recipientSample.filter((g) => {
+      if (channel === "whatsapp" && !(g.phone && g.phone.trim().length > 0))
+        return false;
+      if (channel === "email" && !(g.email && g.email.trim().length > 0))
+        return false;
+      if (audience.type === "group" && !audience.groupIds.includes(g.groupId ?? ""))
+        return false;
+      if (audience.type === "status" && !audience.statuses.includes(g.rsvpStatus))
+        return false;
+      if (!includeSent && g.sendCount > 0) return false;
+      return true;
+    });
+  }, [recipientSample, channel, audience, includeSent]);
+
+  // Clamp previewIndex whenever the filtered list shrinks (e.g. user
+  // narrows the audience). Functional setState avoids the dep.
+  useEffect(() => {
+    setPreviewIndex((idx) =>
+      filteredRecipients.length === 0
+        ? 0
+        : Math.min(idx, filteredRecipients.length - 1),
+    );
+  }, [filteredRecipients.length]);
+
+  const previewGuest = filteredRecipients[previewIndex] ?? null;
+
+  const appBase =
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://uwu-beta.vercel.app";
+
+  const previewBody = previewGuest
+    ? renderTemplate(body, {
+        name: previewGuest.name,
+        nickname: previewGuest.nickname,
+        bride: eventContext.bride,
+        groom: eventContext.groom,
+        date: eventContext.date,
+        venue: eventContext.venue,
+        link: `${appBase}/${eventContext.slug}?to=${previewGuest.token}`,
+      })
+    : "";
 
   const create = createBroadcastAction.bind(null, eventId);
   const [state, formAction, pending] = useActionState(create, null);
@@ -184,12 +265,13 @@ export function MessagesClient({
               required
             />
             <span className="mt-1 block text-xs text-ink-hint">
-              Placeholder tersedia: <code className="rounded bg-surface-muted px-1">{"{name}"}</code>,{" "}
+              Placeholder: <code className="rounded bg-surface-muted px-1">{"{nama}"}</code>,{" "}
+              <code className="rounded bg-surface-muted px-1">{"{panggilan}"}</code>,{" "}
               <code className="rounded bg-surface-muted px-1">{"{bride}"}</code>,{" "}
               <code className="rounded bg-surface-muted px-1">{"{groom}"}</code>,{" "}
               <code className="rounded bg-surface-muted px-1">{"{date}"}</code>,{" "}
               <code className="rounded bg-surface-muted px-1">{"{venue}"}</code>,{" "}
-              <code className="rounded bg-surface-muted px-1">{"{link}"}</code>
+              <code className="rounded bg-surface-muted px-1">{"{link_undangan}"}</code>
             </span>
           </label>
 
@@ -308,6 +390,117 @@ export function MessagesClient({
           </div>
 
           <input type="hidden" name="audience" value={JSON.stringify(audience)} />
+          <input
+            type="hidden"
+            name="resendMode"
+            value={includeSent ? "include_sent" : "new_only"}
+          />
+
+          {/* Per-guest preview — shows what the first/current
+              filtered recipient will actually receive. Renders client-
+              side using the same renderTemplate as the server. */}
+          <div className="mt-5 rounded-xl border border-[color:var(--border-ghost)] bg-surface-muted p-4">
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-ink">
+                Preview Pesan
+              </span>
+              <span className="text-xs text-ink-hint">
+                {filteredRecipients.length === 0
+                  ? "Tidak ada tamu terpilih"
+                  : `${previewIndex + 1} dari ${filteredRecipients.length}`}
+              </span>
+            </div>
+            {previewGuest ? (
+              <>
+                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                  <span>
+                    Untuk:{" "}
+                    <strong className="text-ink">{previewGuest.name}</strong>
+                    {previewGuest.nickname && (
+                      <span className="ml-1 text-ink-hint">
+                        ({previewGuest.nickname})
+                      </span>
+                    )}
+                  </span>
+                  {channel === "whatsapp" && previewGuest.phone && (
+                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-ink-muted">
+                      {previewGuest.phone}
+                    </span>
+                  )}
+                  {channel === "email" && previewGuest.email && (
+                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-ink-muted">
+                      {previewGuest.email}
+                    </span>
+                  )}
+                  {previewGuest.sendCount > 0 && (
+                    <span className="rounded-full bg-coral-50 px-2 py-0.5 text-[10px] text-coral-dark">
+                      Kirim ulang · {previewGuest.sendCount}×
+                    </span>
+                  )}
+                </div>
+                <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-white p-3 font-mono text-[12px] leading-relaxed text-ink">
+                  {previewBody}
+                </pre>
+              </>
+            ) : (
+              <p className="text-xs text-ink-hint">
+                Pilih audiens dan kanal untuk melihat preview pesan.
+              </p>
+            )}
+            <div className="mt-3 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() =>
+                  setPreviewIndex((i) => Math.max(0, i - 1))
+                }
+                disabled={!previewGuest || previewIndex === 0}
+                className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy transition-colors hover:bg-white disabled:opacity-40"
+              >
+                ← Sebelumnya
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setPreviewIndex((i) =>
+                    Math.min(filteredRecipients.length - 1, i + 1),
+                  )
+                }
+                disabled={
+                  !previewGuest ||
+                  previewIndex >= filteredRecipients.length - 1
+                }
+                className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy transition-colors hover:bg-white disabled:opacity-40"
+              >
+                Berikutnya →
+              </button>
+            </div>
+          </div>
+
+          {alreadySentCount > 0 && (
+            <div className="mt-5 rounded-xl border border-[color:var(--border-ghost)] bg-surface-muted px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-ink">
+                <span>⚠️</span>
+                <span>
+                  <strong>{alreadySentCount}</strong> tamu sudah pernah
+                  diundang.
+                </span>
+              </div>
+              <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-ink-muted">
+                <input
+                  type="checkbox"
+                  checked={includeSent}
+                  onChange={(e) => setIncludeSent(e.target.checked)}
+                />
+                <span>
+                  Sertakan yang sudah diundang ({alreadySentCount} tamu)
+                </span>
+              </label>
+              <p className="mt-1 text-xs text-ink-hint">
+                Secara default, broadcast hanya dikirim ke tamu yang
+                belum pernah diundang.
+              </p>
+            </div>
+          )}
 
           {state && !state.ok && (
             <p className="mt-4 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
