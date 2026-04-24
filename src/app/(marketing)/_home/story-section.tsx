@@ -394,7 +394,7 @@ function CollabMockup() {
       <div className="mk-chat">
         <div className="mk-chat-row">
           <span className="mk-avatar" style={{ background: "#F0A09C" }}>
-            R
+            A
           </span>
           <div>
             <div className="mk-chat-name">Adam</div>
@@ -403,7 +403,7 @@ function CollabMockup() {
         </div>
         <div className="mk-chat-row">
           <span className="mk-avatar" style={{ background: "#8FA3D9" }}>
-            A
+            H
           </span>
           <div>
             <div className="mk-chat-name">Hawa</div>

@@ -5,9 +5,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { loginAction, signInWithGoogleAction } from "@/lib/actions/auth";
 
-const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--dark-border-hover)] bg-[color:var(--color-dark-surface-alt)] px-4 py-3 text-sm text-[color:var(--color-dark-text)] outline-none placeholder:text-[color:var(--color-dark-text-muted)] focus:border-[color:var(--color-brand-blue)] focus:shadow-[var(--focus-ring-gradient)]";
-
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
@@ -19,89 +16,108 @@ export default function LoginPage() {
 function LoginForm() {
   const [state, formAction, pending] = useActionState(loginAction, null);
   const params = useSearchParams();
-  // `next` flows through to the auth action so we can bounce the user
-  // back to wherever they came from (e.g. /invite/[token]?accept=1).
   const next = params.get("next") ?? "/dashboard";
   const registerHref = `/register?next=${encodeURIComponent(next)}`;
 
   return (
-    <div>
-      <h1 className="font-display text-3xl text-white">Masuk ke akun Anda</h1>
-      <p className="mt-2 text-sm text-[color:var(--color-dark-text-secondary)]">
-        Kelola undangan pernikahan Anda.
+    <>
+      <h1>
+        Selamat datang <em>kembali.</em>
+      </h1>
+      <p className="auth-sub">
+        Masuk untuk melanjutkan merangkai undangan pernikahan Anda.
       </p>
 
-      <form action={signInWithGoogleAction} className="mt-6">
+      <form action={signInWithGoogleAction}>
         <input type="hidden" name="next" value={next} />
-        <button
-          type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--dark-border-hover)] bg-[color:var(--color-dark-surface-alt)] px-5 py-3 text-sm font-medium text-[color:var(--color-dark-text)] transition-colors hover:border-[color:var(--dark-border-strong)]"
-        >
+        <button type="submit" className="auth-btn auth-btn-outline">
+          <GoogleIcon />
           <span>Masuk dengan Google</span>
         </button>
       </form>
 
-      <div className="my-6 flex items-center gap-3 text-xs text-[color:var(--color-dark-text-muted)]">
-        <span className="h-px flex-1 bg-[color:var(--dark-border)]" />
-        <span>atau dengan email</span>
-        <span className="h-px flex-1 bg-[color:var(--dark-border)]" />
+      <div className="auth-divider" aria-hidden="true">
+        atau dengan email
       </div>
 
-      <form action={formAction} className="space-y-4">
+      <form action={formAction}>
         <input type="hidden" name="next" value={next} />
-        <label className="block">
-          <span className="text-sm font-medium text-[color:var(--color-dark-text)]">Email</span>
+
+        <div className="auth-field">
+          <label className="auth-label" htmlFor="login-email">
+            Email
+          </label>
           <input
+            id="login-email"
             name="email"
             type="email"
             required
             autoComplete="email"
-            className={inputClass}
+            placeholder="kalian@contoh.com"
+            className="auth-input"
           />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-[color:var(--color-dark-text)]">
+        </div>
+
+        <div className="auth-field">
+          <label className="auth-label" htmlFor="login-password">
             Kata sandi
-          </span>
+          </label>
           <input
+            id="login-password"
             name="password"
             type="password"
             required
             autoComplete="current-password"
             minLength={8}
-            className={inputClass}
+            placeholder="••••••••"
+            className="auth-input"
           />
-        </label>
+        </div>
 
-        {state && !state.ok && (
-          <p className="rounded-md bg-rose-dark/20 px-3 py-2 text-sm text-rose-100">
-            {state.error}
-          </p>
-        )}
+        {state && !state.ok && <p className="auth-error">{state.error}</p>}
 
-        <button
-          type="submit"
-          disabled={pending}
-          className="w-full rounded-full bg-gradient-brand px-5 py-3 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(232,160,160,0.5)] transition-transform hover:scale-[1.02] disabled:opacity-60"
-        >
-          {pending ? "Memproses..." : "Masuk"}
-        </button>
+        <div className="auth-stack" style={{ marginTop: 28 }}>
+          <button
+            type="submit"
+            disabled={pending}
+            className="auth-btn auth-btn-primary"
+          >
+            <span>{pending ? "Memproses..." : "Masuk"}</span>
+          </button>
+        </div>
       </form>
 
-      <div className="mt-6 flex flex-col items-center gap-2 text-sm text-[color:var(--color-dark-text-secondary)]">
-        <Link href="/reset-password" className="transition-colors hover:text-white">
+      <div className="auth-links">
+        <Link href="/reset-password" className="auth-muted-link">
           Lupa kata sandi?
         </Link>
         <span>
-          Belum punya akun?{" "}
-          <Link
-            href={registerHref}
-            className="font-medium text-[color:var(--color-brand-blue)] hover:underline"
-          >
-            Daftar gratis
-          </Link>
+          Belum punya akun? <Link href={registerHref}>Daftar gratis</Link>
         </span>
       </div>
-    </div>
+    </>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 18 18" className="auth-google-ico" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.617z"
+      />
+      <path
+        fill="#34A853"
+        d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A9 9 0 0 0 9 18z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M3.964 10.707A5.4 5.4 0 0 1 3.682 9c0-.592.102-1.167.282-1.707V4.96H.957A9 9 0 0 0 0 9c0 1.452.348 2.827.957 4.04l3.007-2.333z"
+      />
+      <path
+        fill="#EA4335"
+        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A9 9 0 0 0 .957 4.96L3.964 7.29C4.672 5.164 6.656 3.58 9 3.58z"
+      />
+    </svg>
   );
 }
