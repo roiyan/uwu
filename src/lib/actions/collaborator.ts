@@ -113,7 +113,10 @@ export async function createPartnerInvite(input: {
     summary: `Mengundang ${email} sebagai pasangan`,
   });
 
-  revalidatePath("/dashboard/settings");
+  // No revalidatePath here — createPartnerInvite runs fire-and-forget from
+  // the onboarding mempelai action, and revalidating mid-render throws
+  // "used revalidatePath during render". Callers that need the settings
+  // list to refresh (dashboard/settings/tabs.tsx) use router.refresh().
 
   return {
     ok: true,

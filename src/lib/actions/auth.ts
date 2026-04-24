@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { acceptInvite } from "@/lib/actions/collaborator";
 import {
   loginSchema,
   registerSchema,
@@ -16,6 +17,30 @@ export type ActionResult<T = unknown> =
 
 function appUrl() {
   return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+}
+
+// Only honor same-origin relative paths as `next` so a crafted link
+// can't redirect a signed-in user off-site.
+function safeNext(raw: unknown): string {
+  if (typeof raw !== "string" || !raw.startsWith("/") || raw.startsWith("//")) {
+    return "/dashboard";
+  }
+  return raw;
+}
+
+// If `next` points back at an /invite/<token> URL with accept=1, auto-fire
+// acceptInvite while we still have a Server Action context. On success we
+// land the user on /dashboard; on a recoverable failure fall through and
+// let the invite page render its error state.
+async function maybeAutoAcceptInvite(next: string): Promise<string> {
+  const match = next.match(/^\/invite\/([A-Za-z0-9_-]+)(?:\?(.*))?$/);
+  if (!match) return next;
+  const token = match[1];
+  const qs = new URLSearchParams(match[2] ?? "");
+  if (qs.get("accept") !== "1") return next;
+
+  const res = await acceptInvite(token);
+  return res.ok ? "/dashboard" : next;
 }
 
 export async function loginAction(
@@ -37,7 +62,8 @@ export async function loginAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  const next = await maybeAutoAcceptInvite(safeNext(formData.get("next")));
+  redirect(next);
 }
 
 export async function registerAction(
@@ -71,7 +97,8 @@ export async function registerAction(
   }
 
   revalidatePath("/", "layout");
-  redirect("/dashboard");
+  const next = await maybeAutoAcceptInvite(safeNext(formData.get("next")));
+  redirect(next);
 }
 
 export async function requestPasswordResetAction(
@@ -120,7 +147,7 @@ export async function signOutAction() {
 }
 
 export async function signInWithGoogleAction(formData: FormData) {
-  const next = (formData.get("next") as string | null) ?? "/dashboard";
+  const next = safeNext(formData.get("next"));
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

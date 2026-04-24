@@ -1,14 +1,26 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { registerAction, signInWithGoogleAction } from "@/lib/actions/auth";
 
 const inputClass =
   "mt-1 w-full rounded-lg border border-[color:var(--dark-border-hover)] bg-[color:var(--color-dark-surface-alt)] px-4 py-3 text-sm text-[color:var(--color-dark-text)] outline-none placeholder:text-[color:var(--color-dark-text-muted)] focus:border-[color:var(--color-brand-blue)] focus:shadow-[var(--focus-ring-gradient)]";
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const [state, formAction, pending] = useActionState(registerAction, null);
+  const params = useSearchParams();
+  const next = params.get("next") ?? "/dashboard";
+  const loginHref = `/login?next=${encodeURIComponent(next)}`;
 
   return (
     <div>
@@ -18,6 +30,7 @@ export default function RegisterPage() {
       </p>
 
       <form action={signInWithGoogleAction} className="mt-6">
+        <input type="hidden" name="next" value={next} />
         <button
           type="submit"
           className="flex w-full items-center justify-center gap-2 rounded-full border border-[color:var(--dark-border-hover)] bg-[color:var(--color-dark-surface-alt)] px-5 py-3 text-sm font-medium text-[color:var(--color-dark-text)] transition-colors hover:border-[color:var(--dark-border-strong)]"
@@ -33,6 +46,7 @@ export default function RegisterPage() {
       </div>
 
       <form action={formAction} className="space-y-4">
+        <input type="hidden" name="next" value={next} />
         <label className="block">
           <span className="text-sm font-medium text-[color:var(--color-dark-text)]">
             Nama lengkap
@@ -91,7 +105,7 @@ export default function RegisterPage() {
       <p className="mt-6 text-center text-sm text-[color:var(--color-dark-text-secondary)]">
         Sudah punya akun?{" "}
         <Link
-          href="/login"
+          href={loginHref}
           className="font-medium text-[color:var(--color-brand-blue)] hover:underline"
         >
           Masuk
