@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { eventMembers, events, profiles } from "@/lib/db/schema";
+import { eventMembers, events } from "@/lib/db/schema";
 import { requireSessionUserFast, type ActionResult } from "@/lib/auth-guard";
 import { logActivity } from "@/lib/actions/activity";
 
@@ -360,82 +360,3 @@ export async function checkEventAccess(
   return { hasAccess: role !== null, role };
 }
 
-/**
- * Public (anon-safe): look up an invite by token, return enough context
- * to render the /invite/[token] landing page — without leaking sensitive
- * data.
- *
- * Uses the Drizzle `postgres` connection (DATABASE_URL = superuser role)
- * so RLS is bypassed — we don't need anon auth for this lookup.
- *
- * Logs the error code + message on failure so Vercel function logs pinpoint
- * the cause (column drift, connection timeout, etc.) instead of a generic
- * digest.
- */
-export async function resolveInviteToken(token: string): Promise<
-  | {
-      state: "valid";
-      collaboratorId: string;
-      eventTitle: string;
-      invitedEmail: string;
-      invitedName: string | null;
-      ownerDisplayName: string | null;
-      expiresAt: string;
-    }
-  | { state: "used" }
-  | { state: "expired" }
-  | { state: "not_found" }
-> {
-  if (!token || token.length < 8) return { state: "not_found" };
-
-  try {
-    // Flat column selection + explicit LEFT JOIN to profiles. Avoids the
-    // earlier correlated subquery that could be sensitive to Drizzle's
-    // column-in-sql-template interpolation.
-    const rows = await db
-      .select({
-        id: eventMembers.id,
-        eventId: eventMembers.eventId,
-        invitedEmail: eventMembers.invitedEmail,
-        invitedName: eventMembers.invitedName,
-        inviteStatus: eventMembers.inviteStatus,
-        expiresAt: eventMembers.expiresAt,
-        eventTitle: events.title,
-        ownerName: profiles.fullName,
-      })
-      .from(eventMembers)
-      .leftJoin(events, eq(events.id, eventMembers.eventId))
-      .leftJoin(profiles, eq(profiles.id, events.ownerId))
-      .where(eq(eventMembers.inviteToken, token))
-      .limit(1);
-
-    const row = rows[0];
-    if (!row) return { state: "not_found" };
-
-    if (row.inviteStatus === "accepted") return { state: "used" };
-    if (row.inviteStatus === "revoked" || row.inviteStatus === "expired_manual") {
-      return { state: "not_found" };
-    }
-    if (row.expiresAt && row.expiresAt.getTime() < Date.now()) {
-      return { state: "expired" };
-    }
-
-    return {
-      state: "valid",
-      collaboratorId: row.id,
-      eventTitle: row.eventTitle ?? "Undangan",
-      invitedEmail: row.invitedEmail ?? "",
-      invitedName: row.invitedName,
-      ownerDisplayName: row.ownerName,
-      expiresAt: row.expiresAt?.toISOString() ?? new Date().toISOString(),
-    };
-  } catch (err) {
-    const e = err as { code?: string; message?: string; detail?: string };
-    console.error("[resolveInviteToken] query failed", {
-      code: e.code,
-      message: e.message,
-      detail: e.detail,
-    });
-    throw err;
-  }
-}

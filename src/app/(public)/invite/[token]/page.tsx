@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { resolveInviteToken } from "@/lib/actions/collaborator";
+import { resolveInviteToken } from "@/lib/queries/invite";
 import { InviteAction } from "./action";
 
 // Dynamic — each token produces a different page. No point caching.
