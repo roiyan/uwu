@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import {
   countLiveGuests,
@@ -29,7 +29,7 @@ export default async function GuestsPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  const user = await requireAuthedUser();
+  const user = await requireSessionUserFast();
   const current = await getCurrentEventForUser(user.id);
   if (!current) redirect("/onboarding");
 

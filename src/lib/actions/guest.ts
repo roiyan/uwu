@@ -55,9 +55,12 @@ export async function createGuestAction(
     });
   });
 
+  // Guest add doesn't affect sidebar data (couple name / theme / publish
+  // state), so we scope to the guests route only. Was previously also
+  // revalidating the dashboard layout — that wiped the full subtree
+  // cache and forced every subsequent nav to cold-fetch.
   if (result.ok) {
     revalidatePath("/dashboard/guests");
-    revalidatePath("/dashboard", "layout");
   }
   return result;
 }

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { packages } from "@/lib/db/schema";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import {
   getMidtransClientKey,
   getSnapJsUrl,
@@ -25,7 +25,7 @@ export default async function CheckoutPage({
 }: {
   searchParams: Promise<Search>;
 }) {
-  await requireAuthedUser();
+  await requireSessionUserFast();
   const params = await searchParams;
   const tier = params.tier ?? "";
 

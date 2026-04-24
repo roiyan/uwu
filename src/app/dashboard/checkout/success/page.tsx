@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import {
   getOrderByRefAction,
   simulateOrderSettlementAction,
@@ -29,7 +29,7 @@ export default async function CheckoutSuccessPage({
 }: {
   searchParams: Promise<Search>;
 }) {
-  await requireAuthedUser();
+  await requireSessionUserFast();
   const params = await searchParams;
   const orderRef = params.order_id;
   if (!orderRef) redirect("/dashboard/packages");

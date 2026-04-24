@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAuthedUser } from "@/lib/auth-guard";
+import { requireSessionUserFast } from "@/lib/auth-guard";
 import {
   getCurrentEventForUser,
   getEventBundle,
@@ -22,7 +22,7 @@ function extractPalette(config: Record<string, unknown> | null | undefined) {
 }
 
 export default async function PreviewPage() {
-  const user = await requireAuthedUser();
+  const user = await requireSessionUserFast();
   const current = await getCurrentEventForUser(user.id);
   if (!current) notFound();
   const bundle = await getEventBundle(current.event.id);

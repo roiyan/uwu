@@ -23,28 +23,31 @@ export async function createCheckoutAction(
 ): Promise<ActionResult<{ orderRef: string; token: string; redirectUrl: string; simulated: boolean }>> {
   const user = await requireAuthedUser();
 
-  const [pkg] = await db
-    .select()
-    .from(packages)
-    .where(eq(packages.tier, packageTier as "starter" | "lite" | "pro" | "premium" | "ultimate"))
-    .limit(1);
+  // Package / profile / event are independent reads. Run them in
+  // parallel — 3 round trips → 1. Validation of pkg happens after.
+  const [[pkg], [profile], [ev]] = await Promise.all([
+    db
+      .select()
+      .from(packages)
+      .where(
+        eq(
+          packages.tier,
+          packageTier as "starter" | "lite" | "pro" | "premium" | "ultimate",
+        ),
+      )
+      .limit(1),
+    db.select().from(profiles).where(eq(profiles.id, user.id)).limit(1),
+    db
+      .select()
+      .from(events)
+      .where(eq(events.ownerId, user.id))
+      .orderBy(desc(events.createdAt))
+      .limit(1),
+  ]);
   if (!pkg) return { ok: false, error: "Paket tidak ditemukan." };
   if (pkg.priceIdr <= 0) {
     return { ok: false, error: "Paket ini gratis dan tidak memerlukan pembayaran." };
   }
-
-  const [profile] = await db
-    .select()
-    .from(profiles)
-    .where(eq(profiles.id, user.id))
-    .limit(1);
-
-  const [ev] = await db
-    .select()
-    .from(events)
-    .where(eq(events.ownerId, user.id))
-    .orderBy(desc(events.createdAt))
-    .limit(1);
 
   const orderRef = buildOrderRef(user.id);
   const expires = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h
@@ -162,7 +165,8 @@ export async function simulateOrderSettlementAction(
       .where(eq(events.id, row.eventId));
   }
 
+  // Package upgrade doesn't change sidebar data (couple/theme/title).
+  // Scoped to the packages page.
   revalidatePath("/dashboard/packages");
-  revalidatePath("/dashboard", "layout");
   return { ok: true };
 }

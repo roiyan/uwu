@@ -55,8 +55,11 @@ export async function submitRsvpAction(
     })
     .where(eq(guests.id, guest.id));
 
-  // Dashboard aggregates reflect new status
-  revalidatePath("/dashboard", "layout");
+  // RSVP is a guest-facing write that doesn't change sidebar-visible
+  // data — only counts on /guests and /analytics. Previously also
+  // wiped the dashboard layout on every guest submission; now scoped
+  // to the two aggregate pages and the Beranda summary.
+  revalidatePath("/dashboard");
   revalidatePath("/dashboard/guests");
   revalidatePath("/dashboard/analytics");
 

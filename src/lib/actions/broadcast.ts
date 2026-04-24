@@ -321,10 +321,12 @@ export async function runBroadcastAction(
       })
       .where(eq(messages.id, messageId));
   }).then((r) => {
+    // Broadcast send touches messages + guests (delivery status), not
+    // sidebar data. Was previously also wiping the dashboard layout
+    // subtree — removed to keep navigation cache warm.
     if (r.ok) {
       revalidatePath("/dashboard/messages");
       revalidatePath("/dashboard/guests");
-      revalidatePath("/dashboard", "layout");
     }
     return r;
   });
