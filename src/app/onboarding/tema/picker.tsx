@@ -128,7 +128,7 @@ export function TemaPicker({
       <div className="flex justify-between">
         <Link
           href="/onboarding/jadwal"
-          className="rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+          className="rounded-xl border border-white/[0.12] px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:border-white/25 hover:bg-white/[0.05] hover:text-white"
         >
           ← Kembali
         </Link>

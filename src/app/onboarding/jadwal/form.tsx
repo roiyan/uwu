@@ -19,7 +19,7 @@ export type ScheduleRow = {
 };
 
 const inputClass =
-  "mt-1 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 focus:border-[color:var(--color-brand-lavender)]/50 focus:ring-2 focus:ring-[color:var(--color-brand-lavender)]/30 [color-scheme:dark]";
+  "mt-1 w-full rounded-xl border border-white/[0.12] bg-white/[0.07] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition-colors focus:border-[color:var(--color-brand-lavender)]/60 focus:ring-2 focus:ring-[color:var(--color-brand-lavender)]/20 [color-scheme:dark]";
 
 function blankRow(): ScheduleRow {
   return {
@@ -96,7 +96,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
               <button
                 type="button"
                 onClick={() => remove(idx)}
-                className="text-xs text-white/50 transition-colors hover:text-red-400"
+                className="text-xs text-red-400/60 transition-colors hover:text-red-400"
               >
                 Hapus
               </button>
@@ -188,7 +188,7 @@ export function JadwalForm({ initial }: { initial: ScheduleRow[] }) {
       <div className="flex justify-between">
         <Link
           href="/onboarding/mempelai"
-          className="rounded-xl border border-white/20 px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/5 hover:text-white"
+          className="rounded-xl border border-white/[0.12] px-6 py-3 text-sm font-medium text-white/70 transition-colors hover:border-white/25 hover:bg-white/[0.05] hover:text-white"
         >
           ← Kembali
         </Link>
