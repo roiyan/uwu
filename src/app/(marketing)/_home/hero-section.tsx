@@ -127,7 +127,7 @@ export function HeroSection() {
 
   const cerita = useCounter(12400, 0, countersOn);
   const rating = useCounter(4.97, 2, countersOn);
-  const jam = useCounter(48, 0, countersOn);
+  const setup = useCounter(15, 0, countersOn);
 
   return (
     <section className="hero" ref={rootRef}>
@@ -178,9 +178,9 @@ export function HeroSection() {
         </h1>
 
         <p className="hero-sub">
-          Bukan sekadar undangan digital. Ini adalah ruang dimana cerita kalian
-          dirangkai — dengan ketelitian seorang tukang jam, dan puisi seorang
-          kekasih.
+          Desain berdua, kelola tamu, pantau semuanya — dari satu dashboard.
+          Undangan yang terasa personal, diciptakan bersama, dalam hitungan
+          menit.
         </p>
 
         <div className="hero-actions">
@@ -199,18 +199,18 @@ export function HeroSection() {
               {cerita}
               <em>+</em>
             </div>
-            <div className="meta-label">Cerita Terukir</div>
+            <div className="meta-label">Couple Terdaftar</div>
           </div>
           <div className="meta-item">
             <div className="meta-num">{rating}</div>
-            <div className="meta-label">Rating Bintang</div>
+            <div className="meta-label">Rating Pengguna</div>
           </div>
           <div className="meta-item">
             <div className="meta-num">
-              {jam}
-              <em>h</em>
+              {setup}
+              <em>min</em>
             </div>
-            <div className="meta-label">Siap Tayang</div>
+            <div className="meta-label">Setup Cepat</div>
           </div>
           <div className="meta-item">
             <div className="meta-num">∞</div>
