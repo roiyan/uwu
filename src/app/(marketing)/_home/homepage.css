@@ -213,36 +213,42 @@
   }
 }
 
-/* Before intro is done, keep hero content hidden. */
-.theme-homepage:not(.intro-done) .cascade > *,
-.theme-homepage:not(.intro-done) .home-nav,
-.theme-homepage:not(.intro-done) .scroll-cue {
+/*
+ * Hero cascade. The intro overlay toggles `.intro-done` on <html> so
+ * selectors below live on :root. Hero content is visible by DEFAULT
+ * (opacity:1 implicit); only while the intro is still gating do we
+ * hide it. On return visits the gate is never applied so there is no
+ * opacity:0 state to recover from.
+ */
+:root.intro-gating .theme-homepage .cascade > *,
+:root.intro-gating .theme-homepage .home-nav,
+:root.intro-gating .theme-homepage .scroll-cue {
   opacity: 0;
   transform: translateY(-8px);
 }
-.theme-homepage.intro-done .home-nav {
+:root.intro-gating.intro-done .theme-homepage .home-nav {
   animation: fadeDown 1s var(--ease) 0.2s forwards;
 }
-.theme-homepage.intro-done .cascade > * {
+:root.intro-gating.intro-done .theme-homepage .cascade > * {
   opacity: 0;
   animation: cascadeIn 1.2s var(--ease-dramatic) forwards;
 }
-.theme-homepage.intro-done .cascade > *:nth-child(1) {
+:root.intro-gating.intro-done .theme-homepage .cascade > *:nth-child(1) {
   animation-delay: 0.05s;
 }
-.theme-homepage.intro-done .cascade > *:nth-child(2) {
+:root.intro-gating.intro-done .theme-homepage .cascade > *:nth-child(2) {
   animation-delay: 0.2s;
 }
-.theme-homepage.intro-done .cascade > *:nth-child(3) {
+:root.intro-gating.intro-done .theme-homepage .cascade > *:nth-child(3) {
   animation-delay: 0.4s;
 }
-.theme-homepage.intro-done .cascade > *:nth-child(4) {
+:root.intro-gating.intro-done .theme-homepage .cascade > *:nth-child(4) {
   animation-delay: 0.6s;
 }
-.theme-homepage.intro-done .cascade > *:nth-child(5) {
+:root.intro-gating.intro-done .theme-homepage .cascade > *:nth-child(5) {
   animation-delay: 0.8s;
 }
-.theme-homepage.intro-done .scroll-cue {
+:root.intro-gating.intro-done .theme-homepage .scroll-cue {
   animation: fadeIn 1s var(--ease) 0.9s forwards;
 }
 @keyframes cascadeIn {
