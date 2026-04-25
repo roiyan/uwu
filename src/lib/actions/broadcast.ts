@@ -1,12 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
   couples,
   eventSchedules,
   events,
+  guestGroups,
   guests,
   messageDeliveries,
   messages,
@@ -103,10 +104,22 @@ export async function createBroadcastAction(
     body: formData.get("body"),
     audience,
     resendMode: formData.get("resendMode") ?? "new_only",
+    scheduledAt: formData.get("scheduledAt") ?? "",
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Input tidak valid" };
   }
+
+  // Schedule only applies to email — WA broadcasts are user-paced.
+  // Anything in the past gets sent immediately (status='queued') so a
+  // stale picker value doesn't strand a broadcast.
+  const scheduledAtRaw = parsed.data.scheduledAt;
+  const scheduledAt =
+    scheduledAtRaw && parsed.data.channel === "email"
+      ? new Date(scheduledAtRaw)
+      : null;
+  const scheduledForFuture =
+    scheduledAt !== null && scheduledAt.getTime() > Date.now() + 30_000;
 
   return withAuth(eventId, "editor", async (userId) => {
     const ctx = await resolveEventContext(eventId);
@@ -140,7 +153,8 @@ export async function createBroadcastAction(
         subject: parsed.data.subject || null,
         body: parsed.data.body,
         audience: parsed.data.audience,
-        status: "queued",
+        status: scheduledForFuture ? "scheduled" : "queued",
+        scheduledAt: scheduledForFuture ? scheduledAt : null,
         totalRecipients: recipients.length,
         createdByUserId: userId,
       })
@@ -530,4 +544,238 @@ export async function markDeliverySkippedAction(
       })
       .where(eq(messageDeliveries.id, deliveryId));
   });
+}
+
+/**
+ * Cancel a scheduled broadcast that hasn't fired yet. Flips status to
+ * 'cancelled' so the cron handler skips it. Anything already in
+ * sending/completed/failed cannot be cancelled.
+ */
+export async function cancelScheduledBroadcast(
+  eventId: string,
+  messageId: string,
+): Promise<ActionResult> {
+  return withAuth(eventId, "editor", async () => {
+    const [msg] = await db
+      .select()
+      .from(messages)
+      .where(and(eq(messages.id, messageId), eq(messages.eventId, eventId)))
+      .limit(1);
+    if (!msg) throw new Error("Broadcast tidak ditemukan.");
+    if (msg.status !== "scheduled") {
+      throw new Error("Broadcast ini tidak terjadwal.");
+    }
+
+    await db
+      .update(messages)
+      .set({
+        status: "cancelled",
+        scheduledAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(messages.id, messageId));
+  }).then((r) => {
+    if (r.ok) revalidatePath("/dashboard/messages");
+    return r;
+  });
+}
+
+/**
+ * Cron entry point: fires all scheduled broadcasts whose scheduled_at
+ * is at or before now. Caller (api/cron/send-scheduled) is responsible
+ * for auth via CRON_SECRET. Returns number processed and any errors.
+ */
+export async function runScheduledDueBroadcasts(): Promise<{
+  processed: number;
+  succeeded: number;
+  failed: number;
+  errors: Array<{ messageId: string; error: string }>;
+}> {
+  const now = new Date();
+  const due = await db
+    .select({ id: messages.id, channel: messages.channel })
+    .from(messages)
+    .where(
+      and(
+        eq(messages.status, "scheduled"),
+        lte(messages.scheduledAt, now),
+      ),
+    );
+
+  let succeeded = 0;
+  let failed = 0;
+  const errors: Array<{ messageId: string; error: string }> = [];
+
+  for (const m of due) {
+    try {
+      // Flip to sending so a concurrent cron tick won't re-pick it.
+      await db
+        .update(messages)
+        .set({ status: "sending", startedAt: new Date(), updatedAt: new Date() })
+        .where(eq(messages.id, m.id));
+
+      if (m.channel === "whatsapp") {
+        await processWhatsappBatch(m.id);
+      } else {
+        await processEmailBatch(m.id);
+      }
+
+      const [counts] = await db
+        .select({
+          sent: sql<number>`count(*) filter (where status = 'sent')::int`,
+          failed: sql<number>`count(*) filter (where status = 'failed')::int`,
+        })
+        .from(messageDeliveries)
+        .where(eq(messageDeliveries.messageId, m.id));
+
+      await db
+        .update(messages)
+        .set({
+          status:
+            (counts?.failed ?? 0) > 0 && (counts?.sent ?? 0) === 0
+              ? "failed"
+              : "completed",
+          sentCount: counts?.sent ?? 0,
+          failedCount: counts?.failed ?? 0,
+          completedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(messages.id, m.id));
+
+      succeeded += 1;
+    } catch (err) {
+      failed += 1;
+      errors.push({
+        messageId: m.id,
+        error: err instanceof Error ? err.message : String(err),
+      });
+      // Park the broadcast back to queued so a retry can pick it up.
+      await db
+        .update(messages)
+        .set({ status: "queued", updatedAt: new Date() })
+        .where(eq(messages.id, m.id));
+    }
+  }
+
+  return { processed: due.length, succeeded, failed, errors };
+}
+
+/**
+ * Aggregated history for the dashboard "Riwayat" tab. Includes
+ * scheduled_at + audience so the riwayat list can render the planned
+ * send time and the chosen audience without a second round trip.
+ */
+export type BroadcastHistoryRow = {
+  id: string;
+  channel: "whatsapp" | "email";
+  templateSlug: string;
+  subject: string | null;
+  status:
+    | "draft"
+    | "queued"
+    | "sending"
+    | "completed"
+    | "failed"
+    | "scheduled"
+    | "cancelled";
+  audience: typeof messages.$inferSelect.audience;
+  totalRecipients: number;
+  sentCount: number;
+  failedCount: number;
+  scheduledAt: Date | null;
+  createdAt: Date;
+  startedAt: Date | null;
+  completedAt: Date | null;
+};
+
+export async function getBroadcastHistory(
+  eventId: string,
+): Promise<BroadcastHistoryRow[]> {
+  const rows = await db
+    .select({
+      id: messages.id,
+      channel: messages.channel,
+      templateSlug: messages.templateSlug,
+      subject: messages.subject,
+      status: messages.status,
+      audience: messages.audience,
+      totalRecipients: messages.totalRecipients,
+      sentCount: messages.sentCount,
+      failedCount: messages.failedCount,
+      scheduledAt: messages.scheduledAt,
+      createdAt: messages.createdAt,
+      startedAt: messages.startedAt,
+      completedAt: messages.completedAt,
+    })
+    .from(messages)
+    .where(eq(messages.eventId, eventId))
+    .orderBy(desc(messages.createdAt))
+    .limit(50);
+  return rows as BroadcastHistoryRow[];
+}
+
+/**
+ * Detail view for `/dashboard/messages/[id]`. Returns the parent
+ * message + per-delivery rows joined with guests (live RSVP status,
+ * opened-at) + resolved group names so the page can render the
+ * audience summary without a second fetch.
+ */
+export async function getBroadcastDetail(eventId: string, messageId: string) {
+  const [msg] = await db
+    .select()
+    .from(messages)
+    .where(and(eq(messages.id, messageId), eq(messages.eventId, eventId)))
+    .limit(1);
+  if (!msg) return null;
+
+  const deliveries = await db
+    .select({
+      id: messageDeliveries.id,
+      guestId: messageDeliveries.guestId,
+      recipientName: messageDeliveries.recipientName,
+      recipientPhone: messageDeliveries.recipientPhone,
+      recipientEmail: messageDeliveries.recipientEmail,
+      personalisedBody: messageDeliveries.personalisedBody,
+      status: messageDeliveries.status,
+      attemptCount: messageDeliveries.attemptCount,
+      sentAt: messageDeliveries.sentAt,
+      failedAt: messageDeliveries.failedAt,
+      errorMessage: messageDeliveries.errorMessage,
+      providerMessageId: messageDeliveries.providerMessageId,
+      createdAt: messageDeliveries.createdAt,
+      guestRsvpStatus: guests.rsvpStatus,
+      guestOpenedAt: guests.openedAt,
+    })
+    .from(messageDeliveries)
+    .leftJoin(guests, eq(guests.id, messageDeliveries.guestId))
+    .where(eq(messageDeliveries.messageId, messageId))
+    .orderBy(asc(messageDeliveries.createdAt));
+
+  let groupNames: string[] = [];
+  if (msg.audience.type === "group" && msg.audience.groupIds.length > 0) {
+    const grps = await db
+      .select({ id: guestGroups.id, name: guestGroups.name })
+      .from(guestGroups)
+      .where(inArray(guestGroups.id, msg.audience.groupIds));
+    groupNames = grps.map((g) => g.name);
+  }
+
+  // "Dibuka" = invitation opened. Counted from live guests, not from
+  // delivery rows, since the open event happens on the invitation page.
+  const opened = deliveries.filter(
+    (d) => d.guestOpenedAt !== null && d.guestOpenedAt !== undefined,
+  ).length;
+
+  return {
+    message: msg,
+    deliveries,
+    groupNames,
+    counts: {
+      total: deliveries.length,
+      sent: deliveries.filter((d) => d.status === "sent").length,
+      failed: deliveries.filter((d) => d.status === "failed").length,
+      pending: deliveries.filter((d) => d.status === "pending").length,
+      opened,
+    },
+  };
 }

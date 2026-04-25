@@ -6,7 +6,7 @@ import { guests } from "@/lib/db/schema";
 import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import { listGuestGroups } from "@/lib/db/queries/guests";
-import { listBroadcastsForEvent } from "@/lib/actions/broadcast";
+import { getBroadcastHistory } from "@/lib/actions/broadcast";
 import { MESSAGE_TEMPLATES } from "@/lib/templates/messages";
 import { isWhatsAppConfigured } from "@/lib/providers/whatsapp";
 import { isEmailConfigured } from "@/lib/providers/email";
@@ -22,7 +22,7 @@ export default async function MessagesPage() {
   const [groups, history, groupCounts, alreadySentRow, recipientSample] =
     await Promise.all([
     listGuestGroups(current.event.id),
-    listBroadcastsForEvent(current.event.id),
+    getBroadcastHistory(current.event.id),
     // Per-group live guest counts — rendered next to each checkbox so
     // the user can see group size before picking recipients.
     db
@@ -136,17 +136,35 @@ export default async function MessagesPage() {
         alreadySentCount={alreadySentCount}
         recipientSample={recipientSample}
         eventContext={eventContext}
-        history={history.map((h) => ({
-          id: h.id,
-          channel: h.channel,
-          templateSlug: h.templateSlug,
-          status: h.status,
-          totalRecipients: h.totalRecipients,
-          sentCount: h.sentCount,
-          failedCount: h.failedCount,
-          createdAt: h.createdAt.toISOString(),
-          subject: h.subject,
-        }))}
+        history={history.map((h) => {
+          // Resolve a friendly audience label so the riwayat list can
+          // show "Grup: VIP, Keluarga" instead of raw JSON.
+          let audienceLabel = "Semua tamu";
+          if (h.audience.type === "group") {
+            const names = h.audience.groupIds
+              .map((gid) => groups.find((g) => g.id === gid)?.name)
+              .filter((n): n is string => Boolean(n));
+            audienceLabel =
+              names.length > 0 ? `Grup: ${names.join(", ")}` : "Grup terpilih";
+          } else if (h.audience.type === "status") {
+            audienceLabel = `Status: ${h.audience.statuses.join(", ")}`;
+          }
+          return {
+            id: h.id,
+            channel: h.channel,
+            templateSlug: h.templateSlug,
+            status: h.status,
+            totalRecipients: h.totalRecipients,
+            sentCount: h.sentCount,
+            failedCount: h.failedCount,
+            createdAt: h.createdAt.toISOString(),
+            scheduledAt: h.scheduledAt
+              ? h.scheduledAt.toISOString()
+              : null,
+            subject: h.subject,
+            audienceLabel,
+          };
+        })}
         providers={{
           whatsappConfigured: isWhatsAppConfigured(),
           emailConfigured: isEmailConfigured(),
