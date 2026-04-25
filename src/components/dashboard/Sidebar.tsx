@@ -165,9 +165,15 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
 
+  // On desktop the sidebar pins to the viewport with `sticky top-0
+  // h-screen` so the page main column scrolls beneath it. The mobile
+  // drawer variant doesn't apply that — the drawer overlay
+  // positions itself absolutely and manages its own height.
   const sidebarClass = [
     "relative w-[280px] flex-col overflow-hidden",
-    responsive ? "hidden lg:flex" : "flex",
+    responsive
+      ? "hidden lg:sticky lg:top-0 lg:flex lg:h-screen"
+      : "flex h-full",
   ].join(" ");
 
   const couple = splitCoupleLabel(coupleLabel ?? "Belum ada acara");

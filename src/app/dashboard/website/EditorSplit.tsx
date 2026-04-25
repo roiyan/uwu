@@ -1075,27 +1075,18 @@ function CeritaForm({
   );
 }
 
-// HH:MM 24-hour validator mirrored from src/lib/schemas/event.ts so
-// the inline UI can show the same messages the server would return.
+// `<input type="time">` is already format-constrained by the
+// browser, so we don't validate the shape — just the cross-field
+// rule. String comparison works because the input always returns
+// HH:MM 24-hour, zero-padded.
 function validateTimes(start: string, end: string): {
   startError?: string;
   endError?: string;
 } {
-  const re = /^\d{2}:\d{2}$/;
-  const checkShape = (v: string): string | undefined => {
-    if (!v) return undefined;
-    if (!re.test(v)) return "Format jam: HH:MM (contoh 08:00)";
-    const [h, m] = v.split(":").map((n) => parseInt(n, 10));
-    if (h < 0 || h > 23) return "Jam harus 00–23";
-    if (m < 0 || m > 59) return "Menit harus 00–59";
-    return undefined;
-  };
-  const startError = checkShape(start);
-  const endError = checkShape(end);
-  if (!startError && !endError && start && end && end <= start) {
+  if (start && end && end <= start) {
     return { endError: "Jam selesai harus setelah jam mulai" };
   }
-  return { startError, endError };
+  return {};
 }
 
 function AcaraForm({
