@@ -451,6 +451,14 @@ export function MessagesClient({
             </div>
           </div>
 
+          {/* Upgrade CTA — visible only when the user has chosen a WA
+              channel but the Cloud API isn't configured. UI-only; the
+              Lite/PRO upgrade itself happens on the /harga page. */}
+          {(channel === "whatsapp" || channel === "both") &&
+            !providers.whatsappConfigured && (
+              <UpgradeWhatsAppCard />
+            )}
+
           {/* The form sends the WA half when channel is "both"; the
               email half is fired separately by the submit handler. */}
           <input
@@ -1362,6 +1370,54 @@ function HistoryListCard({
         </Link>
       </div>
     </li>
+  );
+}
+
+function UpgradeWhatsAppCard() {
+  return (
+    <div className="mt-4 rounded-xl border border-coral/30 bg-gradient-to-br from-coral/5 to-coral/10 p-4">
+      <div className="flex items-start gap-3">
+        <span className="text-xl" aria-hidden>
+          ✨
+        </span>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-ink">
+            Upgrade ke WhatsApp Business API
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">
+            Saat ini Anda mengirim WhatsApp secara manual (buka tab per
+            tamu). Dengan paket Lite ke atas, undangan WA terkirim
+            otomatis dari server.
+          </p>
+          <ul className="mt-3 space-y-1.5 text-xs text-ink-muted">
+            <li className="flex items-start gap-2">
+              <span className="text-coral" aria-hidden>
+                ✓
+              </span>
+              <span>Kirim ratusan WA otomatis tanpa buka tab satu-satu</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-coral" aria-hidden>
+                ✓
+              </span>
+              <span>Jadwalkan pengiriman WhatsApp sesuai waktu Anda</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-coral" aria-hidden>
+                ✓
+              </span>
+              <span>Status delivery & read receipt per tamu</span>
+            </li>
+          </ul>
+          <Link
+            href="/harga"
+            className="mt-4 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-coral-dark"
+          >
+            Lihat Paket →
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 
