@@ -53,7 +53,13 @@ export function WaFallbackSender({
   const [cursor, setCursor] = useState(0);
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [log, setLog] = useState<LogEntry[]>([]);
-  const [popupBlocked, setPopupBlocked] = useState<string | null>(null);
+  // 2-step flow: countdown + "Sudah Terkirim" only show once we know
+  // the WA tab actually opened. When the popup is blocked, waOpened
+  // stays false and the user is forced to click the explicit "Buka
+  // WhatsApp" CTA — preventing accidental skips that mark guests as
+  // sent without ever opening WA.
+  const [waOpened, setWaOpened] = useState(false);
+  const [waUrl, setWaUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Refs avoid stale closures inside the timer callback.
   const cursorRef = useRef(0);
@@ -83,8 +89,10 @@ export function WaFallbackSender({
     };
   }, [messageId]);
 
-  // Whenever phase enters "sending" with a fresh cursor, kick off the
-  // open-tab + countdown loop for that delivery.
+  // Step 1: when a fresh cursor enters "sending", attempt to open
+  // the WA tab. Sets waOpened=true on success → step 2 effect kicks
+  // in. On block, waOpened stays false and the user must click the
+  // manual CTA — no skip path until they explicitly confirm.
   useEffect(() => {
     if (phase !== "sending") return;
     cursorRef.current = cursor;
@@ -94,7 +102,9 @@ export function WaFallbackSender({
       return;
     }
 
-    setPopupBlocked(null);
+    // Reset the 2-step gate for the new guest.
+    setWaOpened(false);
+    setWaUrl(null);
 
     // Skip rows without a phone — mark as skipped server-side and move on.
     const phone = (d.recipientPhone ?? "").replace(/[^0-9+]/g, "");
@@ -116,20 +126,32 @@ export function WaFallbackSender({
       return;
     }
 
-    // Open WA. Fall back to a click-this-link card if the popup is blocked.
     const url = buildWaUrl(phone, d.personalisedBody);
+    setWaUrl(url);
+
     let opened: Window | null = null;
     try {
       opened = window.open(url, "_blank");
     } catch {
       opened = null;
     }
-    if (!opened) {
-      setPopupBlocked(url);
-      return; // user must click manually; advance() called from the link
+    if (opened) {
+      // Popup succeeded → step 2 (countdown effect picks up).
+      setWaOpened(true);
     }
+    // else: popup blocked — stay on waOpened=false. Render shows a
+    // big "Buka WhatsApp" CTA; clicking it flips waOpened=true.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, cursor, deliveries]);
 
-    // Start countdown.
+  // Step 2: countdown only runs when WA has actually been opened
+  // (popup success OR user clicked the manual CTA). This is the gate
+  // that prevents accidental "Sudah Terkirim" without ever opening WA.
+  useEffect(() => {
+    if (phase !== "sending" || !waOpened) return;
+    const d = deliveries[cursor];
+    if (!d) return;
+
     setCountdown(COUNTDOWN_SECONDS);
     const id = window.setInterval(() => {
       if (pausedRef.current || stoppedRef.current) return;
@@ -147,7 +169,7 @@ export function WaFallbackSender({
 
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, cursor, deliveries]);
+  }, [phase, waOpened, cursor, deliveries]);
 
   function advance() {
     if (stoppedRef.current) return;
@@ -181,6 +203,36 @@ export function WaFallbackSender({
     const d = deliveries[cursor];
     if (!d) return;
     void confirmAndAdvance(d, cursor);
+  }
+
+  async function skipCurrent() {
+    const d = deliveries[cursor];
+    if (!d) return;
+    const res = await markDeliverySkippedAction(
+      eventId,
+      d.id,
+      "Dilewati oleh pengirim",
+    );
+    if (!res.ok) {
+      setError(res.error);
+      return;
+    }
+    setLog((prev) => [
+      {
+        id: d.id,
+        index: cursor + 1,
+        name: d.recipientName ?? "Tamu",
+        kind: "skipped",
+        reason: "dilewati",
+      },
+      ...prev,
+    ]);
+    if (cursor + 1 >= deliveries.length) {
+      setPhase("completed");
+      router.refresh();
+    } else {
+      advance();
+    }
   }
 
   function pause() {
@@ -335,48 +387,63 @@ export function WaFallbackSender({
             Saat ini:{" "}
             <span className="font-normal">{current.recipientName ?? "Tamu"}</span>
           </div>
-          {popupBlocked ? (
-            <div className="mt-2 text-xs text-ink-muted">
-              Browser memblokir popup.{" "}
-              <a
-                href={popupBlocked}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => {
-                  // Allow the popup-blocked path to advance once the
-                  // user clicks the link — they'll see WA, click Send,
-                  // come back, and we mark sent.
-                  setPopupBlocked(null);
-                  // Start countdown immediately on click.
-                  setCountdown(COUNTDOWN_SECONDS);
-                }}
-                className="font-medium text-coral hover:underline"
-              >
-                Klik di sini untuk membuka WhatsApp →
-              </a>
-            </div>
+          {!waOpened ? (
+            <p className="mt-1 text-xs text-amber-700">
+              ⚠️ Browser memblokir popup otomatis. Klik tombol di bawah
+              untuk membuka WhatsApp.
+            </p>
           ) : (
-            <div className="mt-1 text-xs text-ink-muted">
-              📱 Tab WhatsApp terbuka — klik <strong>Kirim</strong> di WA
-            </div>
-          )}
-          {phase === "sending" && !popupBlocked && (
-            <div className="mt-2 text-xs text-ink-muted">
-              Lanjut otomatis dalam: <strong>{countdown}</strong>…
-            </div>
+            <>
+              <p className="mt-1 text-xs text-[#3B7A57]">
+                ✅ WhatsApp terbuka — kirim pesannya dulu, lalu tekan
+                tombol di bawah.
+              </p>
+              {phase === "sending" && (
+                <p className="mt-1 text-xs text-ink-muted">
+                  Lanjut otomatis dalam: <strong>{countdown}</strong>…
+                </p>
+              )}
+            </>
           )}
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={manualConfirm}
-          disabled={phase !== "sending" || !current}
-          className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white hover:bg-coral-dark disabled:opacity-60"
-        >
-          Kirim &amp; Lanjut →
-        </button>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {!waOpened ? (
+          // Step 1: WA hasn't been opened yet for this guest. The only
+          // primary CTA is the manual "Buka WhatsApp" anchor; we
+          // deliberately do NOT render "Sudah Terkirim" here so the
+          // user can't mark the guest as sent before opening WA.
+          <a
+            href={waUrl ?? "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => {
+              if (!waUrl) return;
+              setWaOpened(true);
+            }}
+            aria-disabled={!waUrl}
+            className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-medium text-white transition-opacity ${
+              waUrl
+                ? "bg-gradient-to-r from-[#8B9DC3] via-[#B8A0D0] to-[#E8A0A0] hover:opacity-90"
+                : "pointer-events-none bg-surface-muted text-ink-muted"
+            }`}
+          >
+            📱 Buka WhatsApp →
+          </a>
+        ) : (
+          // Step 2: WA is open. "Sudah Terkirim" confirms + advances.
+          // "Lewati tamu ini" is a small text link, not a primary CTA.
+          <button
+            type="button"
+            onClick={manualConfirm}
+            disabled={phase !== "sending" || !current}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#8B9DC3] via-[#B8A0D0] to-[#E8A0A0] px-6 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            Sudah Terkirim →
+            {phase === "sending" && countdown > 0 ? ` (${countdown})` : ""}
+          </button>
+        )}
         {phase === "sending" ? (
           <button
             type="button"
@@ -402,6 +469,20 @@ export function WaFallbackSender({
           ⏹ Berhenti
         </button>
       </div>
+
+      {/* Skip is a quiet text link, not a button — only meaningful
+          once WA has been opened so we don't tempt the user to skip
+          past the popup-blocked CTA. */}
+      {waOpened && current && (
+        <button
+          type="button"
+          onClick={skipCurrent}
+          disabled={phase !== "sending"}
+          className="mt-2 text-xs text-ink-muted hover:text-ink disabled:opacity-50"
+        >
+          ⏭ Lewati tamu ini
+        </button>
+      )}
 
       {log.length > 0 && (
         <div className="mt-5 max-h-48 overflow-y-auto rounded-xl bg-surface-muted/60 p-3 text-xs">
