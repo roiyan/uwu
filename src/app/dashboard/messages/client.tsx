@@ -83,6 +83,7 @@ type HistoryRow = {
   createdAt: string;
   scheduledAt: string | null;
   subject: string | null;
+  audienceLabel: string;
 };
 
 const inputClass =
@@ -371,7 +372,52 @@ export function MessagesClient({
     setSubject(t.subject ?? "");
   }
 
+  // Tab toggle between the compose form and the full history list. The
+  // side panel on the compose tab still shows recent broadcasts, so
+  // Riwayat is the "see everything in detail" view.
+  const [activeTab, setActiveTab] = useState<"compose" | "history">(
+    "compose",
+  );
+
   return (
+    <>
+      <div className="mb-6 inline-flex rounded-full border border-[color:var(--border-ghost)] bg-white p-1">
+        <button
+          type="button"
+          onClick={() => setActiveTab("compose")}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            activeTab === "compose"
+              ? "bg-navy text-white"
+              : "text-ink-muted hover:text-navy"
+          }`}
+        >
+          Kirim Baru
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("history")}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            activeTab === "history"
+              ? "bg-navy text-white"
+              : "text-ink-muted hover:text-navy"
+          }`}
+        >
+          Riwayat ({history.length})
+        </button>
+      </div>
+
+      {activeTab === "history" ? (
+        <HistoryListPanel history={history} eventId={eventId} />
+      ) : (
+        <ComposeView />
+      )}
+    </>
+  );
+
+  // Compose view kept as an inner function so the existing JSX stays
+  // intact and we don't have to thread every state value through props.
+  function ComposeView() {
+    return (
     <div className="grid gap-6 lg:grid-cols-5">
       <section className="lg:col-span-3">
         <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
@@ -981,14 +1027,25 @@ export function MessagesClient({
 
       <section className="lg:col-span-2">
         <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-          <h2 className="font-display text-xl text-ink">Riwayat</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl text-ink">Terbaru</h2>
+            {history.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("history")}
+                className="text-xs font-medium text-navy hover:underline"
+              >
+                Lihat semua →
+              </button>
+            )}
+          </div>
           {history.length === 0 ? (
             <p className="mt-4 text-sm text-ink-muted">
               Belum ada broadcast. Buat broadcast pertama di panel kiri.
             </p>
           ) : (
             <ul className="mt-4 space-y-3">
-              {history.map((h) => (
+              {history.slice(0, 5).map((h) => (
                 <HistoryCard key={h.id} row={h} eventId={eventId} />
               ))}
             </ul>
@@ -996,7 +1053,8 @@ export function MessagesClient({
         </div>
       </section>
     </div>
-  );
+    );
+  }
 }
 
 function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
@@ -1069,6 +1127,231 @@ function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
             className="font-medium text-navy hover:underline disabled:opacity-60"
           >
             {pending ? "Memproses..." : "Kirim ulang gagal"}
+          </button>
+        )}
+        <Link
+          href={`/dashboard/messages/${row.id}`}
+          className="font-medium text-ink-muted hover:text-navy"
+        >
+          Detail →
+        </Link>
+      </div>
+    </li>
+  );
+}
+
+function HistoryListPanel({
+  history,
+  eventId,
+}: {
+  history: HistoryRow[];
+  eventId: string;
+}) {
+  const [filter, setFilter] = useState<"all" | HistoryStatus>("all");
+
+  const counts = useMemo(() => {
+    const c: Record<HistoryStatus, number> = {
+      draft: 0,
+      queued: 0,
+      sending: 0,
+      completed: 0,
+      failed: 0,
+      scheduled: 0,
+      cancelled: 0,
+    };
+    for (const h of history) c[h.status] += 1;
+    return c;
+  }, [history]);
+
+  const visible = useMemo(() => {
+    if (filter === "all") return history;
+    return history.filter((h) => h.status === filter);
+  }, [history, filter]);
+
+  return (
+    <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
+      <h2 className="font-display text-xl text-ink">Riwayat Broadcast</h2>
+      <p className="mt-1 text-sm text-ink-muted">
+        Semua broadcast yang pernah dibuat di acara ini, terbaru di atas.
+      </p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <FilterChip
+          active={filter === "all"}
+          onClick={() => setFilter("all")}
+          label={`Semua (${history.length})`}
+        />
+        {(
+          [
+            "scheduled",
+            "queued",
+            "sending",
+            "completed",
+            "failed",
+            "cancelled",
+          ] as const
+        ).map((s) =>
+          counts[s] > 0 ? (
+            <FilterChip
+              key={s}
+              active={filter === s}
+              onClick={() => setFilter(s)}
+              label={`${HISTORY_STATUS_LABEL[s]} (${counts[s]})`}
+            />
+          ) : null,
+        )}
+      </div>
+
+      {visible.length === 0 ? (
+        <p className="mt-6 text-sm text-ink-muted">
+          {filter === "all"
+            ? "Belum ada broadcast."
+            : "Tidak ada broadcast pada filter ini."}
+        </p>
+      ) : (
+        <ul className="mt-5 space-y-3">
+          {visible.map((h) => (
+            <HistoryListCard key={h.id} row={h} eventId={eventId} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+        active
+          ? "bg-navy text-white"
+          : "border border-[color:var(--border-ghost)] bg-white text-ink-muted hover:text-navy"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+/**
+ * Wider variant of HistoryCard for the dedicated Riwayat tab — includes
+ * the audience label, channel icon, scheduled-at hint, and the same
+ * inline actions (kirim sekarang / detail).
+ */
+function HistoryListCard({
+  row,
+  eventId,
+}: {
+  row: HistoryRow;
+  eventId: string;
+}) {
+  const [pending, startTransition] = useTransition();
+  const pct =
+    row.totalRecipients > 0
+      ? Math.round((row.sentCount / row.totalRecipients) * 100)
+      : 0;
+
+  return (
+    <li className="rounded-xl border border-[color:var(--border-ghost)] bg-white p-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs uppercase tracking-wide text-ink-hint">
+            <span aria-hidden>
+              {row.channel === "whatsapp" ? "📱" : "✉️"}
+            </span>{" "}
+            {row.channel === "whatsapp" ? "WhatsApp" : "Email"} •{" "}
+            {new Date(row.createdAt).toLocaleString("id-ID", {
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+          <p className="mt-1 truncate text-sm font-medium text-ink">
+            {row.subject ?? row.templateSlug}
+          </p>
+          <p className="text-xs text-ink-muted">{row.audienceLabel}</p>
+          {row.scheduledAt && (
+            <p className="mt-1 text-xs text-[#3949AB]">
+              📅 Terjadwal:{" "}
+              {new Date(row.scheduledAt).toLocaleString("id-ID", {
+                dateStyle: "long",
+                timeStyle: "short",
+              })}
+            </p>
+          )}
+        </div>
+        <span
+          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${HISTORY_STATUS_STYLE[row.status]}`}
+        >
+          {HISTORY_STATUS_LABEL[row.status]}
+        </span>
+      </div>
+      <div className="mt-3 flex items-center justify-between text-xs">
+        <span className="text-ink-muted">
+          {row.sentCount}/{row.totalRecipients} terkirim
+          {row.failedCount > 0 && ` • ${row.failedCount} gagal`}
+        </span>
+        <span className="text-ink-muted">{pct}%</span>
+      </div>
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
+        <div
+          className="h-full rounded-full bg-[#3B7A57]"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-end gap-3 text-xs">
+        {row.status === "queued" && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                await runBroadcastAction(eventId, row.id);
+              })
+            }
+            className="font-medium text-navy hover:underline disabled:opacity-60"
+          >
+            {pending ? "Mengirim..." : "Kirim Sekarang"}
+          </button>
+        )}
+        {row.status === "completed" && row.failedCount > 0 && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                await retryFailedDeliveriesAction(eventId, row.id);
+              })
+            }
+            className="font-medium text-navy hover:underline disabled:opacity-60"
+          >
+            {pending ? "Memproses..." : "Kirim ulang gagal"}
+          </button>
+        )}
+        {row.status === "scheduled" && (
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              startTransition(async () => {
+                await cancelScheduledBroadcast(eventId, row.id);
+              })
+            }
+            className="font-medium text-rose-dark hover:underline disabled:opacity-60"
+          >
+            {pending ? "Membatalkan..." : "Batalkan"}
           </button>
         )}
         <Link

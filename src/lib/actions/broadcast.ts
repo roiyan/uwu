@@ -7,6 +7,7 @@ import {
   couples,
   eventSchedules,
   events,
+  guestGroups,
   guests,
   messageDeliveries,
   messages,
@@ -659,3 +660,122 @@ export async function runScheduledDueBroadcasts(): Promise<{
   return { processed: due.length, succeeded, failed, errors };
 }
 
+/**
+ * Aggregated history for the dashboard "Riwayat" tab. Includes
+ * scheduled_at + audience so the riwayat list can render the planned
+ * send time and the chosen audience without a second round trip.
+ */
+export type BroadcastHistoryRow = {
+  id: string;
+  channel: "whatsapp" | "email";
+  templateSlug: string;
+  subject: string | null;
+  status:
+    | "draft"
+    | "queued"
+    | "sending"
+    | "completed"
+    | "failed"
+    | "scheduled"
+    | "cancelled";
+  audience: typeof messages.$inferSelect.audience;
+  totalRecipients: number;
+  sentCount: number;
+  failedCount: number;
+  scheduledAt: Date | null;
+  createdAt: Date;
+  startedAt: Date | null;
+  completedAt: Date | null;
+};
+
+export async function getBroadcastHistory(
+  eventId: string,
+): Promise<BroadcastHistoryRow[]> {
+  const rows = await db
+    .select({
+      id: messages.id,
+      channel: messages.channel,
+      templateSlug: messages.templateSlug,
+      subject: messages.subject,
+      status: messages.status,
+      audience: messages.audience,
+      totalRecipients: messages.totalRecipients,
+      sentCount: messages.sentCount,
+      failedCount: messages.failedCount,
+      scheduledAt: messages.scheduledAt,
+      createdAt: messages.createdAt,
+      startedAt: messages.startedAt,
+      completedAt: messages.completedAt,
+    })
+    .from(messages)
+    .where(eq(messages.eventId, eventId))
+    .orderBy(desc(messages.createdAt))
+    .limit(50);
+  return rows as BroadcastHistoryRow[];
+}
+
+/**
+ * Detail view for `/dashboard/messages/[id]`. Returns the parent
+ * message + per-delivery rows joined with guests (live RSVP status,
+ * opened-at) + resolved group names so the page can render the
+ * audience summary without a second fetch.
+ */
+export async function getBroadcastDetail(eventId: string, messageId: string) {
+  const [msg] = await db
+    .select()
+    .from(messages)
+    .where(and(eq(messages.id, messageId), eq(messages.eventId, eventId)))
+    .limit(1);
+  if (!msg) return null;
+
+  const deliveries = await db
+    .select({
+      id: messageDeliveries.id,
+      guestId: messageDeliveries.guestId,
+      recipientName: messageDeliveries.recipientName,
+      recipientPhone: messageDeliveries.recipientPhone,
+      recipientEmail: messageDeliveries.recipientEmail,
+      personalisedBody: messageDeliveries.personalisedBody,
+      status: messageDeliveries.status,
+      attemptCount: messageDeliveries.attemptCount,
+      sentAt: messageDeliveries.sentAt,
+      failedAt: messageDeliveries.failedAt,
+      errorMessage: messageDeliveries.errorMessage,
+      providerMessageId: messageDeliveries.providerMessageId,
+      createdAt: messageDeliveries.createdAt,
+      guestRsvpStatus: guests.rsvpStatus,
+      guestOpenedAt: guests.openedAt,
+    })
+    .from(messageDeliveries)
+    .leftJoin(guests, eq(guests.id, messageDeliveries.guestId))
+    .where(eq(messageDeliveries.messageId, messageId))
+    .orderBy(asc(messageDeliveries.createdAt));
+
+  let groupNames: string[] = [];
+  if (msg.audience.type === "group" && msg.audience.groupIds.length > 0) {
+    const grps = await db
+      .select({ id: guestGroups.id, name: guestGroups.name })
+      .from(guestGroups)
+      .where(inArray(guestGroups.id, msg.audience.groupIds));
+    groupNames = grps.map((g) => g.name);
+  }
+
+  // "Dibuka" = invitation opened. Counted from live guests, not from
+  // delivery rows, since the open event happens on the invitation page.
+  const opened = deliveries.filter(
+    (d) => d.guestOpenedAt !== null && d.guestOpenedAt !== undefined,
+  ).length;
+
+  return {
+    message: msg,
+    deliveries,
+    groupNames,
+    counts: {
+      total: deliveries.length,
+      sent: deliveries.filter((d) => d.status === "sent").length,
+      failed: deliveries.filter((d) => d.status === "failed").length,
+      pending: deliveries.filter((d) => d.status === "pending").length,
+      opened,
+    },
+  };
+}
