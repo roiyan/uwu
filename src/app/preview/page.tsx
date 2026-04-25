@@ -43,7 +43,6 @@ export default async function PreviewPage() {
           title: bundle.event.title,
           slug: bundle.event.slug,
           musicUrl: bundle.event.musicUrl,
-          checkinEnabled: bundle.event.checkinEnabled,
         }}
         palette={palette}
         couple={
