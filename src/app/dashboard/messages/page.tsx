@@ -150,6 +150,9 @@ export default async function MessagesPage() {
         providers={{
           whatsappConfigured: isWhatsAppConfigured(),
           emailConfigured: isEmailConfigured(),
+          // Drives the "✨ Bantu Tulis" button visibility. We don't
+          // ship the key to the client — just whether it exists.
+          aiAvailable: Boolean(process.env.ANTHROPIC_API_KEY),
         }}
       />
     </main>
