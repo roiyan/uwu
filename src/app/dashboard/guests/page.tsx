@@ -52,18 +52,19 @@ export default async function GuestsPage({
     countLiveGuests(current.event.id),
   ]);
 
+  // GuestsClient renders its own <main> wrapper with the dark theme
+  // padding/typography — pass-through here keeps the server boundary
+  // surface minimal.
   return (
-    <main className="flex-1 px-6 py-8 lg:px-10">
-      <GuestsClient
-        eventId={current.event.id}
-        eventSlug={current.event.slug}
-        guests={guests}
-        groups={groups}
-        limit={limit.limit}
-        packageName={limit.packageName}
-        totalLive={totalLive}
-        filter={{ search, groupId, status }}
-      />
-    </main>
+    <GuestsClient
+      eventId={current.event.id}
+      eventSlug={current.event.slug}
+      guests={guests}
+      groups={groups}
+      limit={limit.limit}
+      packageName={limit.packageName}
+      totalLive={totalLive}
+      filter={{ search, groupId, status }}
+    />
   );
 }

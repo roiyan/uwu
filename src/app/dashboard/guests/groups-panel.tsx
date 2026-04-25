@@ -17,7 +17,10 @@ import { useToast } from "@/components/shared/Toast";
 import type { GuestGroupRow } from "./client";
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-2.5 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "mt-2 w-full bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink)] outline-none placeholder:text-[var(--d-ink-faint)] focus:border-[var(--d-coral)] transition-colors";
+
+const labelClass =
+  "d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]";
 
 const COLOR_PRESETS = [
   "#F0CDD4",
@@ -62,33 +65,38 @@ export function GroupsPanel({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      className="theme-dashboard fixed inset-0 z-50 flex items-center justify-center px-4"
     >
       <div
-        className="absolute inset-0 bg-[color:var(--overlay-modal)]"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={pending ? undefined : onClose}
       />
-      <div className="relative w-full max-w-lg rounded-2xl bg-surface-card p-6 shadow-ghost-lg">
+      <div className="relative w-full max-w-lg rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="font-display text-xl text-ink">Grup Tamu</h2>
-            <p className="mt-1 text-sm text-ink-muted">
+            <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+              Grup
+            </p>
+            <h2 className="d-serif mt-2 text-[26px] font-extralight text-[var(--d-ink)]">
+              Kelola Grup Tamu
+            </h2>
+            <p className="mt-2 text-[13px] text-[var(--d-ink-dim)]">
               Kelompokkan tamu untuk broadcast yang lebih terarah.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-ink-hint hover:text-ink"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--d-line-strong)] text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)]"
             aria-label="Tutup"
           >
             ✕
           </button>
         </div>
 
-        <form action={action} className="mt-5 space-y-3">
+        <form action={action} className="mt-6 space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-ink">Nama grup</span>
+            <span className={labelClass}>Nama grup</span>
             <input
               name="name"
               required
@@ -97,13 +105,13 @@ export function GroupsPanel({
             />
           </label>
           <div>
-            <span className="text-sm font-medium text-ink">Warna label</span>
+            <span className={labelClass}>Warna label</span>
             <ColorPalette value={color} onChange={setColor} />
             <input type="hidden" name="color" value={color} />
           </div>
 
           {state && !state.ok && (
-            <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+            <p className="rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
               {state.error}
             </p>
           )}
@@ -111,19 +119,23 @@ export function GroupsPanel({
           <button
             type="submit"
             disabled={pending}
-            className="w-full rounded-full bg-coral px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+            className="d-mono w-full rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-5 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Menyimpan..." : "+ Tambah Grup"}
+            {pending ? "Menyimpan…" : "+ Tambah Grup"}
           </button>
         </form>
 
-        <hr className="my-5 border-[color:var(--border-ghost)]" />
+        <hr className="my-6 border-[var(--d-line)]" />
 
-        <h3 className="text-sm font-medium text-ink">Grup saat ini</h3>
+        <h3 className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+          Grup Saat Ini
+        </h3>
         {groups.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-muted">Belum ada grup.</p>
+          <p className="mt-3 text-[13px] text-[var(--d-ink-dim)]">
+            Belum ada grup.
+          </p>
         ) : (
-          <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto">
+          <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto pr-1">
             {groups.map((g) => (
               <GroupRow
                 key={g.id}
@@ -216,11 +228,11 @@ function GroupRow({
   }
 
   return (
-    <li className="relative flex items-center gap-3 rounded-lg bg-surface-muted px-3 py-2">
+    <li className="relative flex items-center gap-3 rounded-md border border-[var(--d-line)] bg-[var(--d-bg-2)] px-3 py-2">
       <button
         type="button"
         onClick={() => setPaletteOpen((v) => !v)}
-        className="h-4 w-4 flex-shrink-0 rounded-full border border-black/10 transition-transform hover:scale-110"
+        className="h-4 w-4 flex-shrink-0 rounded-full border border-[var(--d-line-strong)] transition-transform hover:scale-110"
         style={{ background: group.color ?? DEFAULT_COLOR }}
         aria-label="Ubah warna"
         title="Ubah warna"
@@ -242,24 +254,24 @@ function GroupRow({
             }
           }}
           disabled={savingName}
-          className="flex-1 rounded border border-navy/40 bg-white px-2 py-0.5 text-sm outline-none"
+          className="flex-1 rounded border border-[var(--d-coral)] bg-transparent px-2 py-0.5 text-[13px] text-[var(--d-ink)] outline-none"
         />
       ) : (
         <button
           type="button"
           onClick={() => setEditing(true)}
           disabled={savingName || savingColor}
-          className="flex-1 text-left text-sm text-ink hover:text-navy"
+          className="flex-1 text-left text-[13px] text-[var(--d-ink)] transition-colors hover:text-[var(--d-coral)]"
           title="Klik untuk ubah nama"
         >
-          {savingName || savingColor ? "Menyimpan..." : group.name}
+          {savingName || savingColor ? "Menyimpan…" : group.name}
         </button>
       )}
       <button
         type="button"
         onClick={() => setEditing(true)}
         disabled={editing || savingName}
-        className="text-xs text-ink-muted hover:text-navy"
+        className="text-xs text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-ink)]"
         aria-label="Ubah nama"
         title="Ubah nama"
       >
@@ -269,13 +281,13 @@ function GroupRow({
         type="button"
         onClick={onDelete}
         disabled={savingName || savingColor}
-        className="text-xs font-medium text-ink-muted hover:text-rose"
+        className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-coral)]"
       >
         Hapus
       </button>
 
       {paletteOpen && (
-        <div className="absolute left-3 top-full z-10 mt-1 rounded-lg border border-[color:var(--border-medium)] bg-white p-2 shadow-lg">
+        <div className="absolute left-3 top-full z-10 mt-1 rounded-md border border-[var(--d-line-strong)] bg-[var(--d-bg-1)] p-3 shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)]">
           <ColorPalette
             value={group.color ?? DEFAULT_COLOR}
             onChange={saveColor}
@@ -304,7 +316,7 @@ function ColorPalette({
           key={c}
           onClick={() => onChange(c)}
           className={`h-8 w-8 rounded-full border transition-transform ${
-            value === c ? "scale-110 border-navy" : "border-transparent"
+            value === c ? "scale-110 border-[var(--d-coral)]" : "border-transparent"
           }`}
           style={{ background: c }}
           aria-label={`Pilih warna ${c}`}
@@ -313,7 +325,7 @@ function ColorPalette({
       {/* Custom color swatch — opens native picker via label trick */}
       <label
         className={`relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border transition-transform ${
-          isCustom ? "scale-110 border-navy" : "border-transparent"
+          isCustom ? "scale-110 border-[var(--d-coral)]" : "border-transparent"
         }`}
         style={{
           background: isCustom
