@@ -16,9 +16,14 @@ export default function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
+  // Mobile uses block flow with the MobileTopBar pinned at the top of
+  // the content column and the BottomTab fixed at the bottom; the
+  // desktop Sidebar is `hidden` on mobile so it costs zero layout
+  // space. On lg+ the outer becomes a flex row and the Sidebar
+  // occupies its 280px column.
   return (
     <div
-      className="theme-dashboard relative flex min-h-screen"
+      className="theme-dashboard relative min-h-screen lg:flex"
       style={{ background: "var(--d-bg-0)" }}
     >
       {/* Soft global glow orbs — kept very low opacity so content
@@ -40,13 +45,23 @@ export default function DashboardLayout({
       <Suspense fallback={<SidebarSkeleton />}>
         <SidebarHost />
       </Suspense>
-      <div className="flex flex-1 flex-col pb-20 lg:pb-0">{children}</div>
+      {/* Content column — flex column so the MobileTopBar can sit
+          stickily at the top above {children} on mobile. */}
+      <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
+        <Suspense fallback={null}>
+          <MobileTopBarHost />
+        </Suspense>
+        {children}
+      </div>
       <BottomTab />
     </div>
   );
 }
 
-async function SidebarHost() {
+// Sidebar pulls the same data used by SidebarHost + MobileTopBarHost.
+// We resolve once per host and don't share between them — Next dedups
+// the underlying queries via React `cache()` inside getEventBundle.
+async function resolveSidebarData() {
   const user = await getSessionUserFast();
   if (!user) redirect("/login?next=/dashboard");
 
@@ -63,26 +78,34 @@ async function SidebarHost() {
       : bundle.event.title;
   const themeLabel = bundle.theme?.name ?? null;
 
-  // Live guest count drives the Tamu badge in the sidebar nav.
   // Soft-fail to null so a slow/failing query still renders the
   // sidebar without a badge instead of breaking the layout.
   const tamuCount = await countLiveGuests(bundle.event.id).catch(() => null);
 
+  return { coupleLabel, themeLabel, tamuCount };
+}
+
+async function SidebarHost() {
+  const { coupleLabel, themeLabel, tamuCount } = await resolveSidebarData();
   return (
-    <>
-      <Sidebar
-        coupleLabel={coupleLabel}
-        themeLabel={themeLabel}
-        previewHref="/preview"
-        tamuCount={tamuCount}
-      />
-      <MobileTopBar
-        coupleLabel={coupleLabel}
-        themeLabel={themeLabel}
-        previewHref="/preview"
-        tamuCount={tamuCount}
-      />
-    </>
+    <Sidebar
+      coupleLabel={coupleLabel}
+      themeLabel={themeLabel}
+      previewHref="/preview"
+      tamuCount={tamuCount}
+    />
+  );
+}
+
+async function MobileTopBarHost() {
+  const { coupleLabel, themeLabel, tamuCount } = await resolveSidebarData();
+  return (
+    <MobileTopBar
+      coupleLabel={coupleLabel}
+      themeLabel={themeLabel}
+      previewHref="/preview"
+      tamuCount={tamuCount}
+    />
   );
 }
 
