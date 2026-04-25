@@ -73,24 +73,34 @@ export function SettingsTabs({
   const activeTab = TABS.find((t) => t.id === active);
   return (
     <div className="space-y-8">
-      <nav
-        className="flex w-fit gap-1 overflow-x-auto rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-1"
-        aria-label="Pengaturan tabs"
-      >
-        {TABS.map((tab) => (
-          <Link
-            key={tab.id}
-            href={`/dashboard/settings?tab=${tab.id}`}
-            className={`d-mono whitespace-nowrap rounded-full px-5 py-2 text-[11px] uppercase tracking-[0.22em] transition-colors ${
-              active === tab.id
-                ? "bg-[var(--d-bg-1)] text-[var(--d-ink)] shadow-[0_4px_14px_rgba(0,0,0,0.4)]"
-                : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
+      {/* Tab strip — scrolls horizontally inside its own container.
+          Previously the <nav> had `w-fit` which made the element
+          itself wider than the viewport on mobile, causing the whole
+          page to scroll right. The outer wrapper now caps the strip
+          at viewport width and handles the swipe; the inner pill
+          rail uses `w-max` so all tabs sit on a single row. The
+          `-mx-5 px-5` negative-margin trick lets the scroll trough
+          extend edge-to-edge on the mobile main padding. */}
+      <div className="-mx-5 overflow-x-auto px-5 scrollbar-hide lg:mx-0 lg:px-0">
+        <nav
+          className="inline-flex w-max gap-1 rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-1"
+          aria-label="Pengaturan tabs"
+        >
+          {TABS.map((tab) => (
+            <Link
+              key={tab.id}
+              href={`/dashboard/settings?tab=${tab.id}`}
+              className={`d-mono whitespace-nowrap rounded-full px-5 py-2 text-[11px] uppercase tracking-[0.22em] transition-colors ${
+                active === tab.id
+                  ? "bg-[var(--d-bg-1)] text-[var(--d-ink)] shadow-[0_4px_14px_rgba(0,0,0,0.4)]"
+                  : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
+              }`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
 
       {activeTab && (
         <div className="flex items-center gap-3">
