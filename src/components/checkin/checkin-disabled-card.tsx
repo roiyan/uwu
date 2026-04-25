@@ -25,7 +25,7 @@ export function CheckinDisabledCard() {
         terkirim seperti biasa — fitur ini opsional.
       </p>
       <Link
-        href="/dashboard/settings?tab=acara"
+        href="/dashboard/settings?tab=budaya"
         className="d-mono mt-7 inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90"
       >
         Buka Pengaturan
