@@ -138,6 +138,7 @@ export function MessagesClient({
   alreadySentCount,
   recipientSample,
   eventContext,
+  presetGroupId,
 }: {
   eventId: string;
   isPublished: boolean;
@@ -153,6 +154,7 @@ export function MessagesClient({
   alreadySentCount: number;
   recipientSample: RecipientSample[];
   eventContext: EventContext;
+  presetGroupId: string | null;
 }) {
   const [channel, setChannel] = useState<Channel>("whatsapp");
   // For "both", the editable body uses WA templates; the email half
@@ -193,7 +195,13 @@ export function MessagesClient({
   // "email"   = the secondary email body shown only when "both".
   const [aiTarget, setAiTarget] = useState<null | "primary" | "email">(null);
 
-  const [audience, setAudience] = useState<Audience>({ type: "all" });
+  // Initial audience seeds from /dashboard/messages?group=<id> deep link
+  // (per-group "KIRIM GRUP" CTA on the Tamu page). Default = all guests.
+  const [audience, setAudience] = useState<Audience>(() =>
+    presetGroupId
+      ? { type: "group", groupIds: [presetGroupId] }
+      : { type: "all" },
+  );
   // "new_only" = skip guests already invited at least once (default,
   // safer). User opts in to resend via the checkbox.
   const [includeSent, setIncludeSent] = useState(false);

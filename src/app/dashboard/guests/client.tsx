@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -16,13 +17,19 @@ import type { GuestStatus } from "@/lib/db/queries/guests";
 export type GuestRow = {
   id: string;
   name: string;
+  nickname: string | null;
   phone: string | null;
   email: string | null;
   token: string;
   rsvpStatus: GuestStatus;
   rsvpAttendees: number | null;
+  rsvpMessage: string | null;
   rsvpedAt: Date | null;
   openedAt: Date | null;
+  invitedAt: Date | null;
+  lastSentAt: Date | null;
+  lastSentVia: string | null;
+  createdAt: Date;
   groupId: string | null;
   groupName: string | null;
   groupColor: string | null;
@@ -127,6 +134,9 @@ export function GuestsClient({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [addOpen, setAddOpen] = useState(false);
+  // When the user clicks "+ TAMBAH" inside a group header, we pass that
+  // group's id into GuestFormDialog so the Grup dropdown opens to it.
+  const [addPresetGroup, setAddPresetGroup] = useState<string | null>(null);
   const [editGuest, setEditGuest] = useState<GuestRow | null>(null);
   const [deleteGuest, setDeleteGuest] = useState<GuestRow | null>(null);
   const [deletePending, setDeletePending] = useState(false);
@@ -155,6 +165,39 @@ export function GuestsClient({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [drawerGuest]);
+
+  // Grouped vs flat view: when no group filter is active, the list
+  // collapses into per-group sections (each with its own header +
+  // "+ TAMBAH" + "KIRIM GRUP" actions). When a specific group is
+  // filtered, we drop back to a flat list showing only that group.
+  const groupedView = !filter.groupId;
+
+  type GroupSection = {
+    key: string;
+    group: GuestGroupRow | null; // null = "Tanpa Grup" bucket
+    rows: GuestRow[];
+  };
+
+  const sections: GroupSection[] = useMemo(() => {
+    if (!groupedView) return [];
+    const byGroupId = new Map<string | null, GuestRow[]>();
+    for (const g of guests) {
+      const k = g.groupId ?? null;
+      if (!byGroupId.has(k)) byGroupId.set(k, []);
+      byGroupId.get(k)!.push(g);
+    }
+    const out: GroupSection[] = [];
+    for (const grp of groups) {
+      const rows = byGroupId.get(grp.id);
+      if (!rows || rows.length === 0) continue;
+      out.push({ key: grp.id, group: grp, rows });
+    }
+    const ungrouped = byGroupId.get(null);
+    if (ungrouped && ungrouped.length > 0) {
+      out.push({ key: "__ungrouped", group: null, rows: ungrouped });
+    }
+    return out;
+  }, [guests, groups, groupedView]);
 
   // Stat pills sourced from the same guests array we already render.
   const stats = useMemo(() => {
@@ -351,7 +394,10 @@ export function GuestsClient({
           </HeaderBtn>
           <button
             type="button"
-            onClick={() => setAddOpen(true)}
+            onClick={() => {
+              setAddPresetGroup(null);
+              setAddOpen(true);
+            }}
             disabled={atLimit}
             className="inline-flex items-center gap-2 rounded-full px-[18px] py-[11px] text-[13px] font-medium text-[#0B0B15] transition-transform hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(240,160,156,0.24)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
             style={{
@@ -535,7 +581,8 @@ export function GuestsClient({
         />
       ) : (
         <>
-          {/* Desktop table */}
+          {/* Desktop view — single table; in grouped mode, group-header
+              <tr>s are interleaved between guest rows of each section. */}
           <div className="hidden overflow-hidden rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] md:block">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -564,189 +611,84 @@ export function GuestsClient({
                   </tr>
                 </thead>
                 <tbody>
-                  {guests.map((g, i) => {
-                    const isSel = selectedIds.has(g.id);
-                    return (
-                      <tr
-                        key={g.id}
-                        onClick={(e) => {
-                          // Ignore clicks coming from interactive elements
-                          // inside the row (buttons, checkbox, links).
-                          const target = e.target as HTMLElement;
-                          if (target.closest("button,input,a")) return;
-                          setDrawerGuest(g);
-                        }}
-                        className={`group/row relative cursor-pointer border-b border-[var(--d-line)] transition-colors last:border-0 ${
-                          isSel
-                            ? "bg-[rgba(240,160,156,0.06)]"
-                            : "hover:bg-[rgba(255,255,255,0.018)]"
-                        }`}
-                      >
-                        {isSel && (
-                          <td className="absolute inset-y-0 left-0 w-[2px] bg-[var(--d-coral)] p-0" />
-                        )}
-                        <td className="px-6 py-4">
-                          <input
-                            type="checkbox"
-                            checked={isSel}
-                            onChange={() => toggleSelect(g.id)}
-                            aria-label={`Pilih ${g.name}`}
-                            className="h-4 w-4 cursor-pointer accent-[var(--d-coral)]"
-                          />
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3.5">
-                            <Avatar name={g.name} index={i} />
-                            <div className="min-w-0">
-                              <p className="truncate text-[14px] text-[var(--d-ink)]">
-                                {g.name}
-                              </p>
-                              {g.openedAt && (
-                                <p className="d-mono mt-0.5 truncate text-[11px] tracking-[0.04em] text-[var(--d-ink-faint)]">
-                                  dibuka {formatRelative(g.openedAt)}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {g.groupName ? (
-                            <GroupTag
-                              name={g.groupName}
-                              color={g.groupColor}
-                            />
-                          ) : (
-                            <span className="text-[var(--d-ink-faint)]">—</span>
-                          )}
-                        </td>
-                        <td className="d-mono px-6 py-4 text-[11.5px] tracking-[0.02em] text-[var(--d-ink-dim)]">
-                          {g.phone || g.email || (
-                            <span className="text-[var(--d-ink-faint)]">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <StatusPill status={g.rsvpStatus} />
-                        </td>
-                        <td className="d-serif px-6 py-4 text-[14px] italic text-[var(--d-ink-dim)]">
-                          {g.rsvpStatus === "hadir" && g.rsvpAttendees ? (
-                            <span className="text-[var(--d-green)]">
-                              {g.rsvpAttendees}
-                              <span className="d-mono ml-1.5 text-[9.5px] not-italic tracking-[0.16em] text-[var(--d-ink-faint)]">
-                                PAX
-                              </span>
-                            </span>
-                          ) : g.rsvpStatus === "tidak_hadir" ? (
-                            <span className="text-[var(--d-coral)]">—</span>
-                          ) : (
-                            <span>—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-end gap-1.5 opacity-0 transition-opacity group-hover/row:opacity-100">
-                            <IconAction
-                              label={
-                                copied === g.id ? "Tersalin" : "Salin link"
-                              }
-                              onClick={() => copyInviteLink(g)}
-                              tone={copied === g.id ? "active" : "default"}
-                            >
-                              {copied === g.id ? (
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                  <path d="M20 6L9 17l-5-5" />
-                                </svg>
-                              ) : (
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                                  <rect x="9" y="9" width="13" height="13" rx="2" />
-                                  <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-                                </svg>
-                              )}
-                            </IconAction>
-                            <IconAction
-                              label="Edit"
-                              onClick={() => setEditGuest(g)}
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                                <path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4z" />
-                              </svg>
-                            </IconAction>
-                            <IconAction
-                              label="Hapus"
-                              onClick={() => setDeleteGuest(g)}
-                            >
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14" />
-                              </svg>
-                            </IconAction>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {groupedView
+                    ? sections.flatMap((s, sIdx) => [
+                        <GroupHeaderRow
+                          key={`gh-${s.key}`}
+                          section={s}
+                          isFirst={sIdx === 0}
+                          onAdd={() => {
+                            setAddPresetGroup(s.group?.id ?? null);
+                            setAddOpen(true);
+                          }}
+                        />,
+                        ...s.rows.map((g, i) =>
+                          renderDesktopRow(g, i, {
+                            selectedIds,
+                            copied,
+                            setDrawerGuest,
+                            setEditGuest,
+                            setDeleteGuest,
+                            toggleSelect,
+                            copyInviteLink,
+                          }),
+                        ),
+                      ])
+                    : guests.map((g, i) =>
+                        renderDesktopRow(g, i, {
+                          selectedIds,
+                          copied,
+                          setDrawerGuest,
+                          setEditGuest,
+                          setDeleteGuest,
+                          toggleSelect,
+                          copyInviteLink,
+                        }),
+                      )}
                 </tbody>
               </table>
             </div>
           </div>
 
-          {/* Mobile card list */}
-          <div className="space-y-3 md:hidden">
-            {guests.map((g, i) => (
-              <article
-                key={g.id}
-                onClick={() => setDrawerGuest(g)}
-                className="d-card cursor-pointer p-4"
-              >
-                <div className="flex items-start gap-3.5">
-                  <Avatar name={g.name} index={i} size={40} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[14px] text-[var(--d-ink)]">
-                      {g.name}
-                    </p>
-                    <p className="d-mono mt-0.5 truncate text-[11px] tracking-[0.02em] text-[var(--d-ink-dim)]">
-                      {g.phone || g.email || "—"}
-                    </p>
-                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                      {g.groupName && (
-                        <GroupTag name={g.groupName} color={g.groupColor} />
-                      )}
-                      <StatusPill status={g.rsvpStatus} />
-                    </div>
+          {/* Mobile view — grouped sections OR flat list */}
+          {groupedView ? (
+            <div className="space-y-6 md:hidden">
+              {sections.map((s) => (
+                <section key={`m-${s.key}`}>
+                  <GroupHeaderMobile
+                    section={s}
+                    onAdd={() => {
+                      setAddPresetGroup(s.group?.id ?? null);
+                      setAddOpen(true);
+                    }}
+                  />
+                  <div className="mt-3 space-y-3">
+                    {s.rows.map((g, i) =>
+                      renderMobileCard(g, i, {
+                        copied,
+                        setDrawerGuest,
+                        setEditGuest,
+                        setDeleteGuest,
+                        copyInviteLink,
+                      }),
+                    )}
                   </div>
-                </div>
-                <div className="mt-3 flex justify-end gap-3 text-[11px]">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyInviteLink(g);
-                    }}
-                    className="d-mono uppercase tracking-[0.18em] text-[var(--d-coral)]"
-                  >
-                    {copied === g.id ? "Disalin ✓" : "Salin"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditGuest(g);
-                    }}
-                    className="d-mono uppercase tracking-[0.18em] text-[var(--d-ink-dim)]"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDeleteGuest(g);
-                    }}
-                    className="d-mono uppercase tracking-[0.18em] text-[var(--d-coral)]"
-                  >
-                    Hapus
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
+                </section>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3 md:hidden">
+              {guests.map((g, i) =>
+                renderMobileCard(g, i, {
+                  copied,
+                  setDrawerGuest,
+                  setEditGuest,
+                  setDeleteGuest,
+                  copyInviteLink,
+                }),
+              )}
+            </div>
+          )}
         </>
       )}
 
@@ -816,10 +758,11 @@ export function GuestsClient({
             <div className="relative flex items-center justify-between gap-3 border-b border-[var(--d-line)] px-7 py-5">
               <div className="flex flex-col gap-0.5">
                 <p className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-coral)]">
-                  Detail Tamu
+                  Detail Tamu · #
+                  {drawerGuest.id.replace(/-/g, "").slice(0, 5).toUpperCase()}
                 </p>
                 <p className="d-serif text-[18px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
-                  Profil &amp; aktivitas
+                  Profil <em className="d-serif italic text-[var(--d-coral)]">tamu</em>
                 </p>
               </div>
               <button
@@ -842,6 +785,7 @@ export function GuestsClient({
 
             {/* Body */}
             <div className="relative flex-1 overflow-y-auto px-7 py-7">
+              {/* Hero — avatar + name + status pill + pax */}
               <div className="mb-7 flex items-center gap-[18px]">
                 <Avatar
                   name={drawerGuest.name}
@@ -852,73 +796,17 @@ export function GuestsClient({
                   <h2 className="d-serif text-[26px] font-light leading-[1.1] tracking-[-0.018em] text-[var(--d-ink)]">
                     {drawerGuest.name}
                   </h2>
-                  <p className="mt-1.5 flex items-center gap-2.5 text-[12px] text-[var(--d-ink-dim)]">
-                    {drawerGuest.groupName ? (
-                      <GroupTag
-                        name={drawerGuest.groupName}
-                        color={drawerGuest.groupColor}
-                      />
-                    ) : (
-                      <span className="text-[var(--d-ink-faint)]">
-                        Tanpa grup
-                      </span>
-                    )}
-                  </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-[12px] text-[var(--d-ink-dim)]">
+                    <StatusPill status={drawerGuest.rsvpStatus} />
+                    {drawerGuest.rsvpStatus === "hadir" &&
+                      drawerGuest.rsvpAttendees && (
+                        <span className="d-serif italic text-[var(--d-green)]">
+                          {drawerGuest.rsvpAttendees} pax
+                        </span>
+                      )}
+                  </div>
                 </div>
               </div>
-
-              {/* Invite link card */}
-              <div
-                className="mb-5 rounded-[12px] border border-[var(--d-line-strong)] p-[18px]"
-                style={{
-                  background:
-                    "linear-gradient(115deg, rgba(143,163,217,0.06), rgba(184,157,212,0.06) 50%, rgba(240,160,156,0.08))",
-                }}
-              >
-                <p className="d-mono mb-2.5 text-[9.5px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
-                  Link Undangan
-                </p>
-                <p className="d-mono mb-3 break-all rounded-lg border border-[var(--d-line)] bg-black/30 px-3 py-2.5 text-[11.5px] text-[var(--d-ink)]">
-                  {typeof window !== "undefined" ? window.location.origin : ""}
-                  /{eventSlug}?to={drawerGuest.token}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={() => copyInviteLink(drawerGuest)}
-                    className={`d-mono inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-[11.5px] tracking-[0.04em] transition-colors ${
-                      copied === drawerGuest.id
-                        ? "border-[var(--d-coral)] bg-[var(--d-coral)] text-[#0B0B15]"
-                        : "border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.04)] text-[var(--d-ink)] hover:border-[var(--d-ink-dim)] hover:bg-[rgba(255,255,255,0.08)]"
-                    }`}
-                  >
-                    {copied === drawerGuest.id ? "Tersalin ✓" : "Salin link"}
-                  </button>
-                  <a
-                    href={`/${eventSlug}?to=${drawerGuest.token}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="d-mono inline-flex items-center gap-1.5 rounded-lg border border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.04)] px-3.5 py-2 text-[11.5px] tracking-[0.04em] text-[var(--d-ink)] transition-colors hover:border-[var(--d-ink-dim)] hover:bg-[rgba(255,255,255,0.08)]"
-                  >
-                    Pratinjau ↗
-                  </a>
-                </div>
-              </div>
-
-              <DrawerSection title="RSVP">
-                <DrawerRow label="Status">
-                  <StatusPill status={drawerGuest.rsvpStatus} />
-                </DrawerRow>
-                <DrawerRow label="Jumlah hadir">
-                  {drawerGuest.rsvpAttendees ?? "—"}
-                </DrawerRow>
-                <DrawerRow label="Direspons">
-                  {formatRelative(drawerGuest.rsvpedAt)}
-                </DrawerRow>
-                <DrawerRow label="Dibuka link">
-                  {formatRelative(drawerGuest.openedAt)}
-                </DrawerRow>
-              </DrawerSection>
 
               <DrawerSection title="Kontak">
                 <DrawerRow label="No. WhatsApp" mono>
@@ -931,6 +819,45 @@ export function GuestsClient({
                     <span className="text-[var(--d-ink-faint)]">—</span>
                   )}
                 </DrawerRow>
+                <DrawerRow label="Grup">
+                  {drawerGuest.groupName ? (
+                    <GroupTag
+                      name={drawerGuest.groupName}
+                      color={drawerGuest.groupColor}
+                    />
+                  ) : (
+                    <span className="text-[var(--d-ink-faint)]">—</span>
+                  )}
+                </DrawerRow>
+                <DrawerRow label="Panggilan">
+                  {drawerGuest.nickname || (
+                    <span className="text-[var(--d-ink-faint)]">—</span>
+                  )}
+                </DrawerRow>
+              </DrawerSection>
+
+              {/* Link Undangan */}
+              <DrawerSection title="Link Undangan">
+                <InviteLinkCard
+                  guest={drawerGuest}
+                  eventSlug={eventSlug}
+                  copied={copied === drawerGuest.id}
+                  onCopy={() => copyInviteLink(drawerGuest)}
+                  onWhatsAppToast={() =>
+                    toast.success("Membuka WhatsApp…")
+                  }
+                  onMissingPhone={() =>
+                    toast.error("Tamu belum punya nomor WhatsApp.")
+                  }
+                  onMissingEmail={() =>
+                    toast.error("Tamu belum punya email.")
+                  }
+                />
+              </DrawerSection>
+
+              {/* Aktivitas timeline */}
+              <DrawerSection title="Aktivitas">
+                <ActivityTimeline guest={drawerGuest} />
               </DrawerSection>
             </div>
 
@@ -943,20 +870,47 @@ export function GuestsClient({
                   setDrawerGuest(null);
                   setEditGuest(guest);
                 }}
-                className="d-mono flex-1 rounded-full bg-[linear-gradient(115deg,var(--d-blue),var(--d-lilac)_50%,var(--d-coral))] px-5 py-3 text-[11.5px] font-medium uppercase tracking-[0.18em] text-[#0B0B15] transition-transform hover:-translate-y-px"
+                className="d-mono flex-1 rounded-full border border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.04)] px-5 py-3 text-[11.5px] uppercase tracking-[0.18em] text-[var(--d-ink)] transition-colors hover:border-[var(--d-ink-dim)] hover:bg-[rgba(255,255,255,0.08)]"
               >
-                Edit Tamu
+                Edit Detail
               </button>
               <button
                 type="button"
                 onClick={() => {
                   const guest = drawerGuest;
-                  setDrawerGuest(null);
-                  setDeleteGuest(guest);
+                  // Prefer WhatsApp resend (works without server provider).
+                  // Falls back to mailto when there's no phone but an email
+                  // is present. If neither, surface a clear error.
+                  const link = `${window.location.origin}/${eventSlug}?to=${guest.token}`;
+                  const greeting = guest.nickname
+                    ? `Halo ${guest.nickname}`
+                    : `Halo ${guest.name}`;
+                  if (guest.phone) {
+                    const text = encodeURIComponent(
+                      `${greeting}, ini link undangan kami: ${link}`,
+                    );
+                    const phone = guest.phone.replace(/[^\d]/g, "");
+                    window.open(
+                      `https://api.whatsapp.com/send?phone=${phone}&text=${text}`,
+                      "_blank",
+                    );
+                    toast.success("Membuka WhatsApp untuk kirim ulang…");
+                  } else if (guest.email) {
+                    const subject = encodeURIComponent(
+                      "Undangan Pernikahan",
+                    );
+                    const body = encodeURIComponent(
+                      `${greeting},\n\nBerikut link undangan kami:\n${link}\n\nTerima kasih.`,
+                    );
+                    window.location.href = `mailto:${guest.email}?subject=${subject}&body=${body}`;
+                    toast.success("Membuka email untuk kirim ulang…");
+                  } else {
+                    toast.error("Tidak ada kontak — tambahkan WA/email dulu.");
+                  }
                 }}
-                className="d-mono flex-1 rounded-full border border-[rgba(224,138,138,0.3)] bg-[rgba(0,0,0,0.2)] px-5 py-3 text-[11.5px] uppercase tracking-[0.18em] text-[var(--d-coral)] transition-colors hover:border-[var(--d-coral)] hover:bg-[rgba(240,160,156,0.06)]"
+                className="d-mono flex-1 rounded-full bg-[linear-gradient(115deg,var(--d-blue),var(--d-lilac)_50%,var(--d-coral))] px-5 py-3 text-[11.5px] font-medium uppercase tracking-[0.18em] text-[#0B0B15] transition-transform hover:-translate-y-px"
               >
-                Hapus
+                Kirim Ulang
               </button>
             </div>
           </aside>
@@ -968,9 +922,11 @@ export function GuestsClient({
         eventId={eventId}
         groups={groups}
         editing={editGuest}
+        presetGroupId={addPresetGroup}
         onClose={() => {
           setAddOpen(false);
           setEditGuest(null);
+          setAddPresetGroup(null);
         }}
       />
 
@@ -1251,6 +1207,317 @@ const AVATAR_GRADIENTS = [
   "linear-gradient(135deg, var(--d-green), var(--d-blue))",
 ];
 
+// Stats line shown under each group header — counts by RSVP status of
+// the rows inside that section. Returns "X TAMU · Y HADIR · Z BELUM
+// MERESPONS"-style copy depending on which buckets are non-zero.
+function summarizeSection(rows: GuestRow[]): string {
+  let hadir = 0;
+  let menunggu = 0;
+  let tidak = 0;
+  for (const r of rows) {
+    if (r.rsvpStatus === "hadir") hadir++;
+    else if (r.rsvpStatus === "tidak_hadir") tidak++;
+    else menunggu++;
+  }
+  const parts: string[] = [`${String(rows.length).padStart(2, "0")} TAMU`];
+  if (hadir > 0) parts.push(`${hadir} HADIR`);
+  if (tidak > 0) parts.push(`${tidak} TIDAK HADIR`);
+  if (menunggu > 0) parts.push(`${menunggu} BELUM MERESPONS`);
+  return parts.join(" · ");
+}
+
+type RowHandlers = {
+  selectedIds: Set<string>;
+  copied: string | null;
+  setDrawerGuest: (g: GuestRow) => void;
+  setEditGuest: (g: GuestRow) => void;
+  setDeleteGuest: (g: GuestRow) => void;
+  toggleSelect: (id: string) => void;
+  copyInviteLink: (g: GuestRow) => void;
+};
+
+type CardHandlers = Omit<RowHandlers, "selectedIds" | "toggleSelect">;
+
+// Stamps one desktop guest <tr>. Extracted so the same row markup can
+// be rendered both inside group sections (with interleaved headers)
+// and inside the flat single-group view.
+function renderDesktopRow(g: GuestRow, i: number, h: RowHandlers) {
+  const isSel = h.selectedIds.has(g.id);
+  return (
+    <tr
+      key={g.id}
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest("button,input,a")) return;
+        h.setDrawerGuest(g);
+      }}
+      className={`group/row relative cursor-pointer border-b border-[var(--d-line)] transition-colors last:border-0 ${
+        isSel
+          ? "bg-[rgba(240,160,156,0.06)]"
+          : "hover:bg-[rgba(255,255,255,0.018)]"
+      }`}
+    >
+      {isSel && (
+        <td className="absolute inset-y-0 left-0 w-[2px] bg-[var(--d-coral)] p-0" />
+      )}
+      <td className="px-6 py-4">
+        <input
+          type="checkbox"
+          checked={isSel}
+          onChange={() => h.toggleSelect(g.id)}
+          aria-label={`Pilih ${g.name}`}
+          className="h-4 w-4 cursor-pointer accent-[var(--d-coral)]"
+        />
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex items-center gap-3.5">
+          <Avatar name={g.name} index={i} />
+          <div className="min-w-0">
+            <p className="truncate text-[14px] text-[var(--d-ink)]">{g.name}</p>
+            {g.openedAt && (
+              <p className="d-mono mt-0.5 truncate text-[11px] tracking-[0.04em] text-[var(--d-ink-faint)]">
+                dibuka {formatRelative(g.openedAt)}
+              </p>
+            )}
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4">
+        {g.groupName ? (
+          <GroupTag name={g.groupName} color={g.groupColor} />
+        ) : (
+          <span className="text-[var(--d-ink-faint)]">—</span>
+        )}
+      </td>
+      <td className="d-mono px-6 py-4 text-[11.5px] tracking-[0.02em] text-[var(--d-ink-dim)]">
+        {g.phone || g.email || (
+          <span className="text-[var(--d-ink-faint)]">—</span>
+        )}
+      </td>
+      <td className="px-6 py-4">
+        <StatusPill status={g.rsvpStatus} />
+      </td>
+      <td className="d-serif px-6 py-4 text-[14px] italic text-[var(--d-ink-dim)]">
+        {g.rsvpStatus === "hadir" && g.rsvpAttendees ? (
+          <span className="text-[var(--d-green)]">
+            {g.rsvpAttendees}
+            <span className="d-mono ml-1.5 text-[9.5px] not-italic tracking-[0.16em] text-[var(--d-ink-faint)]">
+              PAX
+            </span>
+          </span>
+        ) : g.rsvpStatus === "tidak_hadir" ? (
+          <span className="text-[var(--d-coral)]">—</span>
+        ) : (
+          <span>—</span>
+        )}
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex items-center justify-end gap-1.5 opacity-0 transition-opacity group-hover/row:opacity-100">
+          <IconAction
+            label={h.copied === g.id ? "Tersalin" : "Salin link"}
+            onClick={() => h.copyInviteLink(g)}
+            tone={h.copied === g.id ? "active" : "default"}
+          >
+            {h.copied === g.id ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <rect x="9" y="9" width="13" height="13" rx="2" />
+                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+              </svg>
+            )}
+          </IconAction>
+          <IconAction label="Edit" onClick={() => h.setEditGuest(g)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4z" />
+            </svg>
+          </IconAction>
+          <IconAction label="Hapus" onClick={() => h.setDeleteGuest(g)}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14" />
+            </svg>
+          </IconAction>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function renderMobileCard(g: GuestRow, i: number, h: CardHandlers) {
+  return (
+    <article
+      key={g.id}
+      onClick={() => h.setDrawerGuest(g)}
+      className="d-card cursor-pointer p-4"
+    >
+      <div className="flex items-start gap-3.5">
+        <Avatar name={g.name} index={i} size={40} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[14px] text-[var(--d-ink)]">{g.name}</p>
+          <p className="d-mono mt-0.5 truncate text-[11px] tracking-[0.02em] text-[var(--d-ink-dim)]">
+            {g.phone || g.email || "—"}
+          </p>
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            {g.groupName && (
+              <GroupTag name={g.groupName} color={g.groupColor} />
+            )}
+            <StatusPill status={g.rsvpStatus} />
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 flex justify-end gap-3 text-[11px]">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            h.copyInviteLink(g);
+          }}
+          className="d-mono uppercase tracking-[0.18em] text-[var(--d-coral)]"
+        >
+          {h.copied === g.id ? "Disalin ✓" : "Salin"}
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            h.setEditGuest(g);
+          }}
+          className="d-mono uppercase tracking-[0.18em] text-[var(--d-ink-dim)]"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            h.setDeleteGuest(g);
+          }}
+          className="d-mono uppercase tracking-[0.18em] text-[var(--d-coral)]"
+        >
+          Hapus
+        </button>
+      </div>
+    </article>
+  );
+}
+
+// Group header row inside the desktop <table> — spans all 7 columns
+// and shows the colored dot + group name + stats + per-group actions.
+function GroupHeaderRow({
+  section,
+  isFirst,
+  onAdd,
+}: {
+  section: { group: GuestGroupRow | null; rows: GuestRow[]; key: string };
+  isFirst: boolean;
+  onAdd: () => void;
+}) {
+  const name = section.group?.name ?? "Tanpa Grup";
+  const color = section.group?.color ?? "var(--d-ink-faint)";
+  const messagesHref = section.group
+    ? `/dashboard/messages?group=${section.group.id}`
+    : "/dashboard/messages";
+  return (
+    <tr
+      className={`bg-[rgba(255,255,255,0.02)] ${
+        isFirst
+          ? ""
+          : "border-t-[6px] border-t-[var(--d-bg-1)]"
+      }`}
+    >
+      <td colSpan={7} className="px-6 py-3.5">
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            aria-hidden
+            className="h-2 w-2 rounded-full"
+            style={{ background: color, boxShadow: `0 0 6px ${color}` }}
+          />
+          <h3 className="d-serif text-[15px] text-[var(--d-ink)]">
+            {section.group ? (
+              <>
+                {name.split(" ")[0]}{" "}
+                <em className="d-serif italic text-[var(--d-coral)]">
+                  {name.split(" ").slice(1).join(" ") || ""}
+                </em>
+              </>
+            ) : (
+              <em className="d-serif italic text-[var(--d-ink-dim)]">{name}</em>
+            )}
+          </h3>
+          <span className="d-mono text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+            {summarizeSection(section.rows)}
+          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onAdd}
+              className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.025)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
+            >
+              <span aria-hidden>+</span> Tambah
+            </button>
+            {section.group && (
+              <Link
+                href={messagesHref}
+                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.025)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
+              >
+                Kirim Grup
+              </Link>
+            )}
+          </div>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+function GroupHeaderMobile({
+  section,
+  onAdd,
+}: {
+  section: { group: GuestGroupRow | null; rows: GuestRow[]; key: string };
+  onAdd: () => void;
+}) {
+  const name = section.group?.name ?? "Tanpa Grup";
+  const color = section.group?.color ?? "var(--d-ink-faint)";
+  const messagesHref = section.group
+    ? `/dashboard/messages?group=${section.group.id}`
+    : "/dashboard/messages";
+  return (
+    <div className="rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span
+          aria-hidden
+          className="h-2 w-2 rounded-full"
+          style={{ background: color, boxShadow: `0 0 6px ${color}` }}
+        />
+        <h3 className="d-serif text-[15px] text-[var(--d-ink)]">{name}</h3>
+      </div>
+      <p className="d-mono mt-1 text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+        {summarizeSection(section.rows)}
+      </p>
+      <div className="mt-3 flex gap-2">
+        <button
+          type="button"
+          onClick={onAdd}
+          className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.025)] px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
+        >
+          <span aria-hidden>+</span> Tambah
+        </button>
+        {section.group && (
+          <Link
+            href={messagesHref}
+            className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.025)] px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
+          >
+            Kirim Grup
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Avatar({
   name,
   index = 0,
@@ -1274,6 +1541,235 @@ function Avatar({
     >
       {initialsOf(name)}
     </span>
+  );
+}
+
+function InviteLinkCard({
+  guest,
+  eventSlug,
+  copied,
+  onCopy,
+  onWhatsAppToast,
+  onMissingPhone,
+  onMissingEmail,
+}: {
+  guest: GuestRow;
+  eventSlug: string;
+  copied: boolean;
+  onCopy: () => void;
+  onWhatsAppToast: () => void;
+  onMissingPhone: () => void;
+  onMissingEmail: () => void;
+}) {
+  const link =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/${eventSlug}?to=${guest.token}`
+      : `/${eventSlug}?to=${guest.token}`;
+
+  function openWhatsApp() {
+    if (!guest.phone) {
+      onMissingPhone();
+      return;
+    }
+    const greeting = guest.nickname
+      ? `Halo ${guest.nickname}`
+      : `Halo ${guest.name}`;
+    const text = encodeURIComponent(
+      `${greeting}, ini link undangan untuk Anda: ${link}`,
+    );
+    const phone = guest.phone.replace(/[^\d]/g, "");
+    window.open(
+      `https://api.whatsapp.com/send?phone=${phone}&text=${text}`,
+      "_blank",
+    );
+    onWhatsAppToast();
+  }
+
+  function openEmail() {
+    if (!guest.email) {
+      onMissingEmail();
+      return;
+    }
+    const greeting = guest.nickname
+      ? `Halo ${guest.nickname}`
+      : `Halo ${guest.name}`;
+    const subject = encodeURIComponent("Undangan Pernikahan");
+    const body = encodeURIComponent(
+      `${greeting},\n\nBerikut link undangan kami:\n${link}\n\nTerima kasih.`,
+    );
+    window.location.href = `mailto:${guest.email}?subject=${subject}&body=${body}`;
+  }
+
+  return (
+    <div
+      className="rounded-[12px] border border-[var(--d-line-strong)] p-[18px]"
+      style={{
+        background:
+          "linear-gradient(115deg, rgba(143,163,217,0.06), rgba(184,157,212,0.06) 50%, rgba(240,160,156,0.08))",
+      }}
+    >
+      <p className="d-mono mb-2.5 text-[9.5px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+        Link Personal · Trackable
+      </p>
+      <p className="d-mono mb-3 break-all rounded-lg border border-[var(--d-line)] bg-black/30 px-3 py-2.5 text-[11.5px] text-[var(--d-ink)]">
+        {link}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={onCopy}
+          className={`d-mono inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-[11.5px] tracking-[0.04em] transition-colors ${
+            copied
+              ? "border-[var(--d-coral)] bg-[var(--d-coral)] text-[#0B0B15]"
+              : "border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.04)] text-[var(--d-ink)] hover:border-[var(--d-ink-dim)] hover:bg-[rgba(255,255,255,0.08)]"
+          }`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+          {copied ? "Tersalin ✓" : "Salin Link"}
+        </button>
+        <button
+          type="button"
+          onClick={openWhatsApp}
+          className="d-mono inline-flex items-center gap-1.5 rounded-lg border border-[rgba(126,211,164,0.3)] bg-[rgba(126,211,164,0.06)] px-3.5 py-2 text-[11.5px] tracking-[0.04em] text-[var(--d-green)] transition-colors hover:border-[var(--d-green)] hover:bg-[rgba(126,211,164,0.12)] disabled:opacity-50"
+          disabled={!guest.phone}
+          title={!guest.phone ? "Tamu belum punya nomor WhatsApp" : undefined}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3.5 w-3.5">
+            <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+          </svg>
+          WhatsApp
+        </button>
+        <button
+          type="button"
+          onClick={openEmail}
+          className="d-mono inline-flex items-center gap-1.5 rounded-lg border border-[rgba(143,163,217,0.3)] bg-[rgba(143,163,217,0.06)] px-3.5 py-2 text-[11.5px] tracking-[0.04em] text-[var(--d-blue)] transition-colors hover:border-[var(--d-blue)] hover:bg-[rgba(143,163,217,0.12)] disabled:opacity-50"
+          disabled={!guest.email}
+          title={!guest.email ? "Tamu belum punya email" : undefined}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-3.5 w-3.5">
+            <path d="M3 7l9 6 9-6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7a2 2 0 012-2h14a2 2 0 012 2" />
+          </svg>
+          Email
+        </button>
+      </div>
+    </div>
+  );
+}
+
+type ActivityEvent = {
+  date: Date;
+  type: "rsvp" | "opened" | "invited" | "created";
+  text: React.ReactNode;
+  color: string;
+};
+
+function buildTimeline(guest: GuestRow): ActivityEvent[] {
+  const events: ActivityEvent[] = [];
+  if (guest.rsvpedAt) {
+    const status =
+      guest.rsvpStatus === "hadir"
+        ? "Hadir"
+        : guest.rsvpStatus === "tidak_hadir"
+          ? "Tidak hadir"
+          : "Direspons";
+    const att = guest.rsvpAttendees ?? 1;
+    events.push({
+      date: guest.rsvpedAt,
+      type: "rsvp",
+      color: "var(--d-coral)",
+      text: (
+        <>
+          RSVP dikirim — {status}
+          {guest.rsvpStatus === "hadir" ? ` untuk ${att} orang` : ""}.
+          {guest.rsvpMessage && (
+            <span className="d-serif mt-1 block italic text-[var(--d-ink-dim)]">
+              &ldquo;{guest.rsvpMessage}&rdquo;
+            </span>
+          )}
+        </>
+      ),
+    });
+  }
+  if (guest.openedAt) {
+    events.push({
+      date: guest.openedAt,
+      type: "opened",
+      color: "var(--d-lilac)",
+      text: (
+        <>
+          Undangan dibuka
+          {guest.lastSentVia ? ` via ${guest.lastSentVia}` : ""}.
+        </>
+      ),
+    });
+  }
+  if (guest.invitedAt) {
+    events.push({
+      date: guest.invitedAt,
+      type: "invited",
+      color: "var(--d-blue)",
+      text: (
+        <>
+          Undangan dikirim
+          {guest.lastSentVia ? ` via ${guest.lastSentVia}` : ""}.
+        </>
+      ),
+    });
+  }
+  events.push({
+    date: guest.createdAt,
+    type: "created",
+    color: "var(--d-ink-faint)",
+    text: <>Tamu ditambahkan ke daftar.</>,
+  });
+  events.sort((a, b) => b.date.getTime() - a.date.getTime());
+  return events;
+}
+
+function ActivityTimeline({ guest }: { guest: GuestRow }) {
+  const events = buildTimeline(guest);
+  if (events.length === 0) {
+    return (
+      <p className="d-serif text-[12.5px] italic text-[var(--d-ink-faint)]">
+        Belum ada aktivitas.
+      </p>
+    );
+  }
+  return (
+    <ol className="relative pl-5">
+      <span
+        aria-hidden
+        className="absolute bottom-2 left-[5px] top-2 w-px bg-[var(--d-line-strong)]"
+      />
+      {events.map((e, i) => (
+        <li key={i} className="relative pb-4 last:pb-0">
+          <span
+            aria-hidden
+            className="absolute left-[-15px] top-2 h-[10px] w-[10px] rounded-full border-2"
+            style={{
+              background: i === 0 ? e.color : "var(--d-bg-1)",
+              borderColor: e.color,
+            }}
+          />
+          <p className="d-mono text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+            {e.date
+              .toLocaleString("id-ID", {
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              .replace(",", " ·")}
+          </p>
+          <div className="mt-1 text-[12.5px] leading-[1.5] text-[var(--d-ink-dim)]">
+            {e.text}
+          </div>
+        </li>
+      ))}
+    </ol>
   );
 }
 
