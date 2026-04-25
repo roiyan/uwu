@@ -254,13 +254,13 @@ export function WaFallbackSender({
 
   if (error) {
     return (
-      <div className="rounded-2xl bg-rose-50 p-6 text-sm text-rose-dark">
+      <div className="rounded-2xl border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] p-6 text-sm text-[var(--d-coral)]">
         <p className="font-medium">Gagal memuat broadcast.</p>
         <p className="mt-1">{error}</p>
         <button
           type="button"
           onClick={onClose}
-          className="mt-4 rounded-full border border-rose-dark/30 px-4 py-1.5 text-xs text-rose-dark hover:bg-white"
+          className="mt-4 rounded-full border border-rose-dark/30 px-4 py-1.5 text-xs text-[var(--d-coral)] hover:bg-[var(--d-bg-card)]"
         >
           Tutup
         </button>
@@ -270,7 +270,7 @@ export function WaFallbackSender({
 
   if (phase === "loading") {
     return (
-      <div className="rounded-2xl bg-surface-card p-6 text-sm text-ink-muted">
+      <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 text-sm text-[var(--d-ink-dim)]">
         Memuat daftar tamu…
       </div>
     );
@@ -280,31 +280,31 @@ export function WaFallbackSender({
     const first = deliveries[0];
     const sample = deliveries.slice(0, 5);
     return (
-      <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-        <h3 className="font-display text-lg text-ink">📤 Siap Kirim WhatsApp</h3>
-        <p className="mt-2 text-sm text-ink-muted">
+      <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
+        <h3 className="font-display text-lg text-[var(--d-ink)]">📤 Siap Kirim WhatsApp</h3>
+        <p className="mt-2 text-sm text-[var(--d-ink-dim)]">
           Akan mengirim ke{" "}
-          <strong className="text-ink">{deliveries.length} tamu</strong>,
+          <strong className="text-[var(--d-ink)]">{deliveries.length} tamu</strong>,
           mulai dari{" "}
-          <strong className="text-ink">
+          <strong className="text-[var(--d-ink)]">
             {first?.recipientName ?? "tamu pertama"}
           </strong>
           . Setiap tamu menerima pesan yang sudah dipersonalisasi.
         </p>
-        <div className="mt-4 rounded-xl bg-surface-muted/60 p-3 text-xs text-ink-muted">
-          <p className="font-medium text-ink">Urutan kirim:</p>
+        <div className="mt-4 rounded-xl bg-[var(--d-bg-2)] p-3 text-xs text-[var(--d-ink-dim)]">
+          <p className="font-medium text-[var(--d-ink)]">Urutan kirim:</p>
           <ol className="mt-1 list-decimal pl-5">
             {sample.map((d) => (
               <li key={d.id}>{d.recipientName ?? "Tamu"}</li>
             ))}
           </ol>
           {deliveries.length > sample.length && (
-            <p className="mt-1 text-ink-hint">
+            <p className="mt-1 text-[var(--d-ink-faint)]">
               … dan {deliveries.length - sample.length} tamu lainnya
             </p>
           )}
         </div>
-        <p className="mt-3 text-xs text-ink-hint">
+        <p className="mt-3 text-xs text-[var(--d-ink-faint)]">
           ℹ️ Preview di form compose hanya untuk cek template. Broadcast
           tetap dikirim ke seluruh audiens terpilih.
         </p>
@@ -312,14 +312,14 @@ export function WaFallbackSender({
           <button
             type="button"
             onClick={() => setPhase("sending")}
-            className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white hover:bg-coral-dark"
+            className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white hover:opacity-90"
           >
             Mulai Kirim →
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm text-navy hover:bg-surface-muted"
+            className="rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
           >
             Batal
           </button>
@@ -336,11 +336,11 @@ export function WaFallbackSender({
 
   if (phase === "completed" || phase === "stopped") {
     return (
-      <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-        <h3 className="font-display text-lg text-ink">
+      <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
+        <h3 className="font-display text-lg text-[var(--d-ink)]">
           {phase === "completed" ? "✅ Broadcast selesai" : "⏹ Dihentikan"}
         </h3>
-        <p className="mt-1 text-sm text-ink-muted">
+        <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
           {sentCount} terkirim
           {skippedCount > 0 ? ` · ${skippedCount} dilewati` : ""}
           {phase === "stopped"
@@ -351,7 +351,7 @@ export function WaFallbackSender({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white hover:bg-coral-dark"
+            className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white hover:opacity-90"
           >
             Tutup
           </button>
@@ -361,20 +361,20 @@ export function WaFallbackSender({
   }
 
   return (
-    <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
+    <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
       <header className="mb-4 flex items-center justify-between gap-3">
-        <h3 className="font-display text-lg text-ink">
+        <h3 className="font-display text-lg text-[var(--d-ink)]">
           📤 Mengirim via WhatsApp
-          <span className="ml-2 rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-normal text-ink-muted">
+          <span className="ml-2 rounded-full bg-[var(--d-bg-2)] px-2 py-0.5 text-[10px] font-normal text-[var(--d-ink-dim)]">
             mode manual
           </span>
         </h3>
-        <span className="text-xs text-ink-muted">
+        <span className="text-xs text-[var(--d-ink-dim)]">
           {cursor + 1} / {total}
         </span>
       </header>
 
-      <div className="mb-2 h-2 overflow-hidden rounded-full bg-surface-muted">
+      <div className="mb-2 h-2 overflow-hidden rounded-full bg-[var(--d-bg-2)]">
         <div
           className="h-full bg-gradient-brand transition-all"
           style={{ width: `${percent}%` }}
@@ -382,8 +382,8 @@ export function WaFallbackSender({
       </div>
 
       {current && (
-        <div className="rounded-xl bg-surface-muted px-4 py-3 text-sm">
-          <div className="font-medium text-ink">
+        <div className="rounded-xl bg-[var(--d-bg-2)] px-4 py-3 text-sm">
+          <div className="font-medium text-[var(--d-ink)]">
             Saat ini:{" "}
             <span className="font-normal">{current.recipientName ?? "Tamu"}</span>
           </div>
@@ -399,7 +399,7 @@ export function WaFallbackSender({
                 tombol di bawah.
               </p>
               {phase === "sending" && (
-                <p className="mt-1 text-xs text-ink-muted">
+                <p className="mt-1 text-xs text-[var(--d-ink-dim)]">
                   Lanjut otomatis dalam: <strong>{countdown}</strong>…
                 </p>
               )}
@@ -426,7 +426,7 @@ export function WaFallbackSender({
             className={`inline-flex flex-1 items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-medium text-white transition-opacity ${
               waUrl
                 ? "bg-gradient-to-r from-[#8B9DC3] via-[#B8A0D0] to-[#E8A0A0] hover:opacity-90"
-                : "pointer-events-none bg-surface-muted text-ink-muted"
+                : "pointer-events-none bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]"
             }`}
           >
             📱 Buka WhatsApp →
@@ -448,7 +448,7 @@ export function WaFallbackSender({
           <button
             type="button"
             onClick={pause}
-            className="rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm text-navy hover:bg-surface-muted"
+            className="rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
           >
             ⏸ Jeda
           </button>
@@ -456,7 +456,7 @@ export function WaFallbackSender({
           <button
             type="button"
             onClick={resume}
-            className="rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm text-navy hover:bg-surface-muted"
+            className="rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
           >
             ▶ Lanjutkan
           </button>
@@ -464,7 +464,7 @@ export function WaFallbackSender({
         <button
           type="button"
           onClick={stop}
-          className="rounded-full border border-rose/40 px-4 py-2 text-sm text-rose-dark hover:bg-rose-50"
+          className="rounded-full border border-rose/40 px-4 py-2 text-sm text-[var(--d-coral)] hover:border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)]"
         >
           ⏹ Berhenti
         </button>
@@ -478,14 +478,14 @@ export function WaFallbackSender({
           type="button"
           onClick={skipCurrent}
           disabled={phase !== "sending"}
-          className="mt-2 text-xs text-ink-muted hover:text-ink disabled:opacity-50"
+          className="mt-2 text-xs text-[var(--d-ink-dim)] hover:text-[var(--d-ink)] disabled:opacity-50"
         >
           ⏭ Lewati tamu ini
         </button>
       )}
 
       {log.length > 0 && (
-        <div className="mt-5 max-h-48 overflow-y-auto rounded-xl bg-surface-muted/60 p-3 text-xs">
+        <div className="mt-5 max-h-48 overflow-y-auto rounded-xl bg-[var(--d-bg-2)] p-3 text-xs">
           {log.slice(0, 30).map((entry) => (
             <div key={entry.id} className="py-0.5">
               {entry.kind === "sent" ? "✅" : "⏭️"} {entry.index}.{" "}

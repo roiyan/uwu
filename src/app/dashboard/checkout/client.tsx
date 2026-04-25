@@ -83,29 +83,29 @@ export function CheckoutClient({
         <Script src={snapJsUrl} data-client-key={clientKey} strategy="afterInteractive" />
       )}
 
-      <h2 className="font-display text-xl text-ink">Ringkasan Pembayaran</h2>
+      <h2 className="font-display text-xl text-[var(--d-ink)]">Ringkasan Pembayaran</h2>
       <div className="mt-4 space-y-3 text-sm">
         <Row label="Paket" value={packageName} />
         <Row label="Jumlah" value={`1 × ${formattedAmount}`} />
         <Row label="Metode" value="Pilih di popup Midtrans" muted />
       </div>
 
-      <hr className="my-5 border-[color:var(--border-ghost)]" />
+      <hr className="my-5 border-[var(--d-line)]" />
 
       <div className="flex items-center justify-between">
-        <span className="text-sm text-ink-muted">Total biaya</span>
-        <span className="font-display text-2xl text-navy">{formattedAmount}</span>
+        <span className="text-sm text-[var(--d-ink-dim)]">Total biaya</span>
+        <span className="font-display text-2xl text-[var(--d-ink)]">{formattedAmount}</span>
       </div>
 
       {!midtransConfigured && (
-        <div className="mt-5 rounded-lg bg-gold-50 px-4 py-3 text-xs text-gold-dark">
+        <div className="mt-5 rounded-lg bg-[rgba(212,184,150,0.10)] px-4 py-3 text-xs text-[var(--d-gold)]">
           Mode simulasi aktif: Midtrans belum dikonfigurasi di environment.
           Pembayaran akan ditandai berhasil tanpa proses pembayaran sungguhan.
         </div>
       )}
 
       {error && (
-        <p className="mt-4 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+        <p className="mt-4 rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
           {error}
         </p>
       )}
@@ -114,18 +114,18 @@ export function CheckoutClient({
         type="button"
         onClick={handleCheckout}
         disabled={pending || amount <= 0}
-        className="mt-6 w-full rounded-full bg-coral px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+        className="mt-6 w-full rounded-full bg-coral px-6 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
       >
         {pending ? "Memproses..." : "Bayar Sekarang"}
       </button>
 
-      <p className="mt-3 text-center text-[11px] text-ink-hint">
+      <p className="mt-3 text-center text-[11px] text-[var(--d-ink-faint)]">
         Dengan melanjutkan Anda menyetujui{" "}
         <a
           href="/terms"
           target="_blank"
           rel="noreferrer"
-          className="underline decoration-dotted underline-offset-2 hover:text-navy"
+          className="underline decoration-dotted underline-offset-2 hover:text-[var(--d-ink)]"
         >
           ketentuan layanan
         </a>{" "}
@@ -138,8 +138,8 @@ export function CheckoutClient({
 function Row({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-ink-muted">{label}</span>
-      <span className={muted ? "text-ink-hint" : "font-medium text-ink"}>{value}</span>
+      <span className="text-[var(--d-ink-dim)]">{label}</span>
+      <span className={muted ? "text-[var(--d-ink-faint)]" : "font-medium text-[var(--d-ink)]"}>{value}</span>
     </div>
   );
 }

@@ -54,11 +54,29 @@ export default async function SettingsPage({
     requested && VALID_TABS.includes(requested) ? requested : "akun";
 
   return (
-    <main className="flex-1 px-6 py-8 lg:px-10">
-      <header className="mb-8">
-        <h1 className="font-display text-3xl text-navy">Pengaturan</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Kelola akun Anda dan pengaturan acara.
+    <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
+      <header className="mb-10">
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className="h-px w-10"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
+            }}
+          />
+          <p className="d-eyebrow">Pengaturan</p>
+        </div>
+        <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px]">
+          Atur{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">
+            preferensi
+          </em>{" "}
+          akun Anda.
+        </h1>
+        <p className="mt-3 max-w-[60ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
+          Kelola akun Anda dan pengaturan acara — profil, kolaborator,
+          publikasi, dan preferensi tampilan undangan.
         </p>
       </header>
 

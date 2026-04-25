@@ -19,11 +19,11 @@ type DeliveryRow = {
 type Filter = "all" | "sent" | "failed" | "opened";
 
 const STATUS_STYLE: Record<DeliveryStatus, string> = {
-  pending: "bg-surface-muted text-ink-muted",
+  pending: "bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]",
   sent: "bg-[#E8F3EE] text-[#3B7A57]",
   delivered: "bg-[#E8F3EE] text-[#3B7A57]",
-  read: "bg-navy-50 text-navy",
-  failed: "bg-rose-50 text-rose-dark",
+  read: "bg-[rgba(143,163,217,0.08)] text-[var(--d-ink)]",
+  failed: "border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]",
 };
 
 const STATUS_LABEL: Record<DeliveryStatus, string> = {
@@ -57,9 +57,9 @@ export function DeliveryListClient({
   }, [deliveries, filter]);
 
   return (
-    <div className="rounded-2xl bg-surface-card shadow-ghost-sm">
-      <div className="border-b border-[color:var(--border-ghost)] p-4">
-        <h2 className="font-display text-lg text-ink">
+    <div className="rounded-2xl bg-[var(--d-bg-card)] shadow-ghost-sm">
+      <div className="border-b border-[var(--d-line)] p-4">
+        <h2 className="font-display text-lg text-[var(--d-ink)]">
           Daftar Penerima ({deliveries.length})
         </h2>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -86,7 +86,7 @@ export function DeliveryListClient({
         </div>
       </div>
       {visible.length === 0 ? (
-        <p className="p-6 text-sm text-ink-muted">
+        <p className="p-6 text-sm text-[var(--d-ink-dim)]">
           Tidak ada penerima pada filter ini.
         </p>
       ) : (
@@ -95,14 +95,14 @@ export function DeliveryListClient({
             <li key={d.id} className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-ink">
+                  <p className="truncate text-sm font-medium text-[var(--d-ink)]">
                     {d.recipientName}
                   </p>
-                  <p className="truncate text-xs text-ink-muted">
+                  <p className="truncate text-xs text-[var(--d-ink-dim)]">
                     {channel === "whatsapp" ? d.recipientPhone : d.recipientEmail}
                   </p>
                   {d.errorMessage && (
-                    <p className="mt-1 text-xs text-rose-dark">
+                    <p className="mt-1 text-xs text-[var(--d-coral)]">
                       {d.errorMessage}
                     </p>
                   )}
@@ -147,8 +147,8 @@ function Chip({
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? "bg-navy text-white"
-          : "border border-[color:var(--border-ghost)] bg-white text-ink-muted hover:text-navy"
+          ? "bg-[var(--d-bg-2)] text-white"
+          : "border border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
       }`}
     >
       {label}

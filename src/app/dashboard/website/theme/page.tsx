@@ -22,17 +22,33 @@ export default async function ThemeEditorPage() {
     {};
 
   return (
-    <main className="flex-1 px-6 py-8 lg:px-10">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl text-navy">Tema Undangan</h1>
-          <p className="mt-1 text-sm text-ink-muted">
-            Pilih dasar visual undangan. Anda dapat menyesuaikan warna di bawah.
+    <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
+      <header className="mb-10 flex flex-wrap items-end justify-between gap-6">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-3">
+            <span
+              aria-hidden
+              className="h-px w-10"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
+              }}
+            />
+            <p className="d-eyebrow">Tema Undangan</p>
+          </div>
+          <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px]">
+            Pilih{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">mood</em>{" "}
+            visual.
+          </h1>
+          <p className="mt-3 max-w-[60ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
+            Pilih dasar visual undangan. Anda dapat menyesuaikan warna di
+            bawah.
           </p>
         </div>
         <Link
           href="/dashboard/website"
-          className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
+          className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-5 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)]"
         >
           ← Kembali ke Editor
         </Link>

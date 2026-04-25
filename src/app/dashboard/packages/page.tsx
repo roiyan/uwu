@@ -47,19 +47,34 @@ export default async function PackagesPage() {
     failed: "Gagal",
   };
   const ORDER_STATUS_STYLE: Record<string, string> = {
-    pending: "bg-gold-50 text-gold-dark",
+    pending: "bg-[rgba(212,184,150,0.10)] text-[var(--d-gold)]",
     paid: "bg-[#E8F3EE] text-[#3B7A57]",
-    expired: "bg-surface-muted text-ink-muted",
-    canceled: "bg-surface-muted text-ink-muted",
-    failed: "bg-rose-50 text-rose-dark",
+    expired: "bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]",
+    canceled: "bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]",
+    failed: "border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]",
   };
 
   return (
-    <main className="flex-1 px-6 py-8 lg:px-10">
-      <header className="mb-8">
-        <h1 className="font-display text-3xl text-navy">Paket</h1>
-        <p className="mt-1 text-sm text-ink-muted">
-          Pilih paket yang sesuai dengan kebutuhan undangan Anda.
+    <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
+      <header className="mb-10">
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className="h-px w-10"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
+            }}
+          />
+          <p className="d-eyebrow">Paket</p>
+        </div>
+        <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px]">
+          Pilih paket yang{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">tepat</em>.
+        </h1>
+        <p className="mt-3 max-w-[60ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
+          Setiap paket terhubung dengan kapasitas tamu, akses tema, dan fitur
+          broadcast yang berbeda.
         </p>
       </header>
 
@@ -70,35 +85,35 @@ export default async function PackagesPage() {
           return (
             <article
               key={pkg.id}
-              className={`flex flex-col rounded-2xl bg-surface-card p-6 shadow-ghost-sm ring-1 ${
+              className={`flex flex-col rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm ring-1 ${
                 isRecommended
                   ? "ring-2 ring-coral"
                   : "ring-[color:var(--border-ghost)]"
               }`}
             >
               <div className="flex items-center justify-between">
-                <h2 className="font-display text-xl text-ink">{pkg.name}</h2>
+                <h2 className="font-display text-xl text-[var(--d-ink)]">{pkg.name}</h2>
                 {isRecommended && (
-                  <span className="rounded-full bg-coral-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-coral-dark">
+                  <span className="rounded-full bg-coral-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--d-coral)]">
                     Populer
                   </span>
                 )}
                 {isCurrent && (
-                  <span className="rounded-full bg-navy-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-navy">
+                  <span className="rounded-full bg-[rgba(143,163,217,0.08)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--d-ink)]">
                     Paket Aktif
                   </span>
                 )}
               </div>
-              <p className="mt-3 font-display text-2xl text-navy">
+              <p className="mt-3 font-display text-2xl text-[var(--d-ink)]">
                 {pkg.priceIdr === 0 ? "Gratis" : formatIdr(pkg.priceIdr)}
               </p>
-              <p className="text-xs text-ink-hint">
+              <p className="text-xs text-[var(--d-ink-faint)]">
                 {pkg.guestLimit} tamu • {pkg.whatsappEnabled ? "WA aktif" : "Tanpa WA"}
               </p>
-              <ul className="mt-4 flex-1 space-y-1.5 text-sm text-ink-muted">
+              <ul className="mt-4 flex-1 space-y-1.5 text-sm text-[var(--d-ink-dim)]">
                 {pkg.features.map((f) => (
                   <li key={f} className="flex gap-2">
-                    <span className="text-gold-dark">♡</span>
+                    <span className="text-[var(--d-gold)]">♡</span>
                     <span>{f}</span>
                   </li>
                 ))}
@@ -107,7 +122,7 @@ export default async function PackagesPage() {
                 <button
                   type="button"
                   disabled
-                  className="mt-5 rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm font-medium text-ink-muted"
+                  className="mt-5 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm font-medium text-[var(--d-ink-dim)]"
                 >
                   Paket Aktif
                 </button>
@@ -115,14 +130,14 @@ export default async function PackagesPage() {
                 <button
                   type="button"
                   disabled
-                  className="mt-5 rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm font-medium text-ink-hint"
+                  className="mt-5 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm font-medium text-[var(--d-ink-faint)]"
                 >
                   Paket Gratis
                 </button>
               ) : (
                 <Link
                   href={`/dashboard/checkout?tier=${pkg.tier}`}
-                  className="mt-5 rounded-full bg-coral px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+                  className="mt-5 rounded-full bg-coral px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:opacity-90"
                 >
                   Upgrade ke {pkg.name}
                 </Link>
@@ -133,14 +148,14 @@ export default async function PackagesPage() {
       </div>
 
       <section className="mt-10">
-        <h2 className="font-display text-xl text-ink">Riwayat Pembayaran</h2>
+        <h2 className="font-display text-xl text-[var(--d-ink)]">Riwayat Pembayaran</h2>
         {orders.length === 0 ? (
-          <p className="mt-2 text-sm text-ink-muted">Belum ada pembayaran.</p>
+          <p className="mt-2 text-sm text-[var(--d-ink-dim)]">Belum ada pembayaran.</p>
         ) : (
-          <div className="mt-4 overflow-hidden rounded-2xl bg-surface-card shadow-ghost-sm">
+          <div className="mt-4 overflow-hidden rounded-2xl bg-[var(--d-bg-card)] shadow-ghost-sm">
             <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wide text-ink-hint">
-                <tr className="border-b border-[color:var(--border-ghost)]">
+              <thead className="text-left text-xs uppercase tracking-wide text-[var(--d-ink-faint)]">
+                <tr className="border-b border-[var(--d-line)]">
                   <th className="px-4 py-3">Order ID</th>
                   <th className="px-4 py-3">Paket</th>
                   <th className="px-4 py-3">Jumlah</th>
@@ -152,13 +167,13 @@ export default async function PackagesPage() {
                 {orders.map(({ order, pkg }) => (
                   <tr
                     key={order.id}
-                    className="border-b border-[color:var(--border-ghost)] last:border-0"
+                    className="border-b border-[var(--d-line)] last:border-0"
                   >
-                    <td className="px-4 py-3 font-mono text-[11px] text-ink">
+                    <td className="px-4 py-3 font-mono text-[11px] text-[var(--d-ink)]">
                       {order.orderRef}
                     </td>
-                    <td className="px-4 py-3 text-ink">{pkg?.name ?? "—"}</td>
-                    <td className="px-4 py-3 text-ink">
+                    <td className="px-4 py-3 text-[var(--d-ink)]">{pkg?.name ?? "—"}</td>
+                    <td className="px-4 py-3 text-[var(--d-ink)]">
                       {formatIdr(order.amountIdr)}
                     </td>
                     <td className="px-4 py-3">
@@ -170,7 +185,7 @@ export default async function PackagesPage() {
                         {ORDER_STATUS_LABEL[order.status] ?? order.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-xs text-ink-muted">
+                    <td className="px-4 py-3 text-xs text-[var(--d-ink-dim)]">
                       {new Date(order.createdAt).toLocaleString("id-ID", {
                         day: "numeric",
                         month: "short",
