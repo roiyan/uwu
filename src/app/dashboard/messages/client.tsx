@@ -87,9 +87,6 @@ type HistoryRow = {
   audienceLabel: string;
 };
 
-const inputClass =
-  "mt-1 w-full rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-4 py-2.5 text-sm outline-none focus:border-[var(--d-coral)] focus:shadow-[var(--focus-ring-navy)]";
-
 const STATUS_LABEL: Record<GuestStatus, string> = {
   baru: "Baru",
   diundang: "Diundang",
@@ -385,13 +382,13 @@ export function MessagesClient({
   return (
     <>
       {!isPublished && <UnpublishedBanner />}
-      <div className="mb-6 inline-flex rounded-full border border-[var(--d-line)] bg-[var(--d-bg-card)] p-1">
+      <div className="mb-7 inline-flex rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1">
         <button
           type="button"
           onClick={() => setActiveTab("compose")}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+          className={`d-mono rounded-full px-5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
             activeTab === "compose"
-              ? "bg-[var(--d-bg-2)] text-white"
+              ? "bg-[var(--d-coral)] text-[#0B0B15]"
               : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
           }`}
         >
@@ -400,13 +397,13 @@ export function MessagesClient({
         <button
           type="button"
           onClick={() => setActiveTab("history")}
-          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+          className={`d-mono rounded-full px-5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
             activeTab === "history"
-              ? "bg-[var(--d-bg-2)] text-white"
+              ? "bg-[var(--d-coral)] text-[#0B0B15]"
               : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
           }`}
         >
-          Riwayat ({history.length})
+          Riwayat <span className="ml-1 opacity-60">({history.length})</span>
         </button>
       </div>
 
@@ -429,12 +426,29 @@ export function MessagesClient({
       <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
     <div className="grid gap-6 lg:grid-cols-5">
       <section className="lg:col-span-3">
-        <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-          <h2 className="font-display text-xl text-[var(--d-ink)]">Buat Broadcast</h2>
+        <form
+          action={formAction}
+          className="relative overflow-hidden rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6 lg:p-7"
+        >
+          <div className="mb-5 flex items-center gap-3">
+            <span
+              aria-hidden
+              className="h-px w-7 bg-[var(--d-coral)]"
+            />
+            <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+              N° 01 — Buat Broadcast
+            </p>
+          </div>
+          <h2 className="d-serif text-[24px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
+            Susun pesan, pilih audiens, lalu{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">kirim</em>.
+          </h2>
 
-          <div className="mt-4">
-            <span className="text-sm font-medium text-[var(--d-ink)]">Kanal</span>
-            <div className="mt-2 grid grid-cols-3 gap-2">
+          <div className="mt-6">
+            <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+              Kanal
+            </span>
+            <div className="mt-2.5 grid grid-cols-3 gap-2.5">
               <ChannelButton
                 active={channel === "whatsapp"}
                 onClick={() => selectChannel("whatsapp")}
@@ -476,56 +490,64 @@ export function MessagesClient({
             value={channel === "both" ? "whatsapp" : channel}
           />
 
-          <label className="mt-4 block">
-            <span className="text-sm font-medium text-[var(--d-ink)]">Template</span>
-            <select
-              value={templateSlug}
-              onChange={(e) => selectTemplate(e.target.value)}
-              className={inputClass}
-            >
-              {channelTemplates.map((t) => (
-                <option key={t.slug} value={t.slug}>
-                  {t.label}
-                </option>
-              ))}
-            </select>
-            <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
+          <label className="mt-5 block">
+            <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+              Template
+            </span>
+            <div className="relative mt-2.5">
+              <select
+                value={templateSlug}
+                onChange={(e) => selectTemplate(e.target.value)}
+                className="w-full cursor-pointer appearance-none rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] py-3 pl-4 pr-10 text-[13px] text-[var(--d-ink)] outline-none transition-colors hover:border-[var(--d-line-strong)] focus:border-[var(--d-coral)]"
+              >
+                {channelTemplates.map((t) => (
+                  <option key={t.slug} value={t.slug}>
+                    {t.label}
+                  </option>
+                ))}
+              </select>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-4 top-1/2 h-2 w-2 -translate-y-[70%] rotate-45 border-b-[1.5px] border-r-[1.5px] border-[var(--d-ink-dim)]"
+              />
+            </div>
+            <span className="d-serif mt-2 block text-[12.5px] italic text-[var(--d-ink-faint)]">
               {currentTemplate.description}
             </span>
           </label>
           <input type="hidden" name="templateSlug" value={templateSlug} />
 
           {(channel === "email" || channel === "both") && (
-            <label className="mt-4 block">
-              <span className="text-sm font-medium text-[var(--d-ink)]">
+            <label className="mt-5 block">
+              <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
                 {channel === "both" ? "Subject Email" : "Subject"}
               </span>
               <input
                 name="subject"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className={inputClass}
+                className="mt-2.5 w-full rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3 text-[13px] text-[var(--d-ink)] outline-none transition-colors focus:border-[var(--d-coral)]"
                 placeholder="Undangan Pernikahan — {bride} & {groom}"
               />
             </label>
           )}
 
-          <div className="mt-4">
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-sm font-medium text-[var(--d-ink)]">
+          <div className="mt-5">
+            <div className="mb-2.5 flex items-center justify-between">
+              <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
                 {channel === "both"
-                  ? "📱 Isi Pesan WhatsApp"
+                  ? "Isi Pesan WhatsApp"
                   : channel === "email"
-                    ? "✉️ Isi Pesan Email"
+                    ? "Isi Pesan Email"
                     : "Isi Pesan"}
               </span>
               {providers.aiAvailable && (
                 <button
                   type="button"
                   onClick={() => setAiTarget("primary")}
-                  className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
+                  className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(184,157,212,0.3)] bg-[rgba(184,157,212,0.06)] px-3 py-1 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-lilac)] transition-colors hover:border-[var(--d-lilac)] hover:bg-[rgba(184,157,212,0.12)]"
                 >
-                  ✨ Bantu Tulis
+                  <span aria-hidden>✦</span> Bantu Tulis
                 </button>
               )}
             </div>
@@ -544,18 +566,18 @@ export function MessagesClient({
           </div>
 
           {channel === "both" && (
-            <div className="mt-4">
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-sm font-medium text-[var(--d-ink)]">
-                  ✉️ Isi Pesan Email
+            <div className="mt-5">
+              <div className="mb-2.5 flex items-center justify-between">
+                <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+                  Isi Pesan Email
                 </span>
                 {providers.aiAvailable && (
                   <button
                     type="button"
                     onClick={() => setAiTarget("email")}
-                    className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
+                    className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(184,157,212,0.3)] bg-[rgba(184,157,212,0.06)] px-3 py-1 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-lilac)] transition-colors hover:border-[var(--d-lilac)] hover:bg-[rgba(184,157,212,0.12)]"
                   >
-                    ✨ Bantu Tulis
+                    <span aria-hidden>✦</span> Bantu Tulis
                   </button>
                 )}
               </div>
@@ -573,19 +595,19 @@ export function MessagesClient({
           )}
 
           {(channel === "email" || channel === "both") && (
-            <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-card)] p-4">
-              <label className="flex cursor-pointer items-start gap-2">
+            <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-4">
+              <label className="flex cursor-pointer items-start gap-2.5">
                 <input
                   type="checkbox"
                   checked={scheduleEnabled}
                   onChange={(e) => setScheduleEnabled(e.target.checked)}
-                  className="mt-0.5"
+                  className="mt-1 h-4 w-4 cursor-pointer accent-[var(--d-coral)]"
                 />
                 <span>
-                  <span className="block text-sm font-medium text-[var(--d-ink)]">
-                    📅 Jadwalkan pengiriman email
+                  <span className="d-serif block text-[14px] text-[var(--d-ink)]">
+                    Jadwalkan pengiriman email
                   </span>
-                  <span className="block text-xs text-[var(--d-ink-dim)]">
+                  <span className="mt-0.5 block text-[12px] text-[var(--d-ink-dim)]">
                     Email akan otomatis terkirim pada waktu yang Anda pilih.
                     Jika tidak dicentang, email dikirim segera setelah Anda
                     tekan tombol kirim.
@@ -593,8 +615,8 @@ export function MessagesClient({
                 </span>
               </label>
               {scheduleEnabled && (
-                <div className="mt-3">
-                  <label className="block text-xs font-medium text-[var(--d-ink-dim)]">
+                <div className="mt-3 pl-7">
+                  <label className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
                     Waktu kirim
                   </label>
                   <input
@@ -602,9 +624,9 @@ export function MessagesClient({
                     value={scheduledLocal}
                     onChange={(e) => setScheduledLocal(e.target.value)}
                     min={nowPlusMinutes(5)}
-                    className={inputClass}
+                    className="mt-2 w-full rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] px-4 py-2.5 text-[13px] text-[var(--d-ink)] outline-none transition-colors focus:border-[var(--d-coral)]"
                   />
-                  <p className="mt-1 text-[11px] text-[var(--d-ink-faint)]">
+                  <p className="mt-2 text-[11px] text-[var(--d-ink-faint)]">
                     Cron menjalankan pengiriman setiap hari pukul 09:00 UTC
                     (16:00 WIB). Email akan terkirim pada cron berikutnya
                     setelah waktu yang Anda pilih lewat.
@@ -615,9 +637,11 @@ export function MessagesClient({
           )}
           <input type="hidden" name="scheduledAt" value={scheduledAtIso} />
 
-          <div className="mt-5">
-            <span className="text-sm font-medium text-[var(--d-ink)]">Audiens</span>
-            <div className="mt-2 space-y-2">
+          <div className="mt-6">
+            <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+              Audiens
+            </span>
+            <div className="mt-2.5 space-y-2">
               <AudienceRadio
                 active={audience.type === "all"}
                 onClick={() => setAudience({ type: "all" })}
@@ -637,9 +661,9 @@ export function MessagesClient({
                 hint="Pilih grup tamu tertentu."
               >
                 {audience.type === "group" && (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2 pl-7">
                     {groups.length === 0 && (
-                      <span className="text-xs text-[var(--d-ink-faint)]">
+                      <span className="d-serif text-[12.5px] italic text-[var(--d-ink-faint)]">
                         Belum ada grup — buat di halaman Tamu.
                       </span>
                     )}
@@ -648,10 +672,10 @@ export function MessagesClient({
                       return (
                         <label
                           key={g.id}
-                          className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-xs ${
+                          className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] transition-colors ${
                             checked
-                              ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)] text-[var(--d-ink)]"
-                              : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
+                              ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.1)] text-[var(--d-ink)]"
+                              : "border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] text-[var(--d-ink-dim)] hover:border-[var(--d-line-strong)] hover:text-[var(--d-ink)]"
                           }`}
                         >
                           <input
@@ -668,12 +692,19 @@ export function MessagesClient({
                             }
                           />
                           <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ background: g.color ?? "var(--color-gold-50)" }}
+                            aria-hidden
+                            className="h-1.5 w-1.5 rounded-full"
+                            style={{ background: g.color ?? "var(--d-gold)" }}
                           />
                           {g.name}
-                          <span className="text-[10px] text-[var(--d-ink-faint)]">
-                            ({g.liveCount})
+                          <span
+                            className={`d-mono rounded-[3px] px-1.5 py-px text-[10px] tracking-[0.06em] ${
+                              checked
+                                ? "bg-[rgba(240,160,156,0.18)] text-[var(--d-coral)]"
+                                : "bg-[rgba(255,255,255,0.05)] text-[var(--d-ink-faint)]"
+                            }`}
+                          >
+                            {String(g.liveCount).padStart(2, "0")}
                           </span>
                         </label>
                       );
@@ -694,16 +725,16 @@ export function MessagesClient({
                 hint="Misalnya: kirim ulang ke tamu yang belum buka."
               >
                 {audience.type === "status" && (
-                  <div className="mt-2 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2 pl-7">
                     {(Object.keys(STATUS_LABEL) as GuestStatus[]).map((s) => {
                       const checked = audience.statuses.includes(s);
                       return (
                         <label
                           key={s}
-                          className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-xs ${
+                          className={`d-mono flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
                             checked
-                              ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)] text-[var(--d-ink)]"
-                              : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
+                              ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.1)] text-[var(--d-coral)]"
+                              : "border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] text-[var(--d-ink-dim)] hover:border-[var(--d-line-strong)] hover:text-[var(--d-ink)]"
                           }`}
                         >
                           <input
@@ -739,23 +770,25 @@ export function MessagesClient({
           {/* Per-guest preview — shows what the first/current
               filtered recipient will actually receive. Renders client-
               side using the same renderTemplate as the server. */}
-          <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-2)] p-4">
-            <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-[var(--d-ink)]">
-                Preview Pesan
-              </span>
-              <span className="text-xs text-[var(--d-ink-faint)]">
+          <div className="mt-6 rounded-2xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.015)] p-5">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+                Pratinjau Pesan
+              </p>
+              <p className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
                 {filteredRecipients.length === 0
                   ? "Tidak ada tamu terpilih"
-                  : `${previewIndex + 1} dari ${filteredRecipients.length}`}
-              </span>
+                  : `${String(previewIndex + 1).padStart(2, "0")} / ${String(filteredRecipients.length).padStart(2, "0")}`}
+              </p>
             </div>
             {previewGuest ? (
               <>
-                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-[var(--d-ink-dim)]">
-                  <span>
-                    Untuk:{" "}
-                    <strong className="text-[var(--d-ink)]">{previewGuest.name}</strong>
+                <div className="mb-3 flex flex-wrap items-center gap-2 text-[12px] text-[var(--d-ink-dim)]">
+                  <span className="d-serif italic">
+                    Untuk{" "}
+                    <strong className="not-italic text-[var(--d-ink)]">
+                      {previewGuest.name}
+                    </strong>
                     {previewGuest.nickname && (
                       <span className="ml-1 text-[var(--d-ink-faint)]">
                         ({previewGuest.nickname})
@@ -763,40 +796,42 @@ export function MessagesClient({
                     )}
                   </span>
                   {channel === "whatsapp" && previewGuest.phone && (
-                    <span className="rounded-full bg-[var(--d-bg-card)] px-2 py-0.5 font-mono text-[10px] text-[var(--d-ink-dim)]">
+                    <span className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(126,211,164,0.25)] bg-[rgba(126,211,164,0.06)] px-2.5 py-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-green)]">
+                      <span className="h-1 w-1 rounded-full bg-[var(--d-green)]" />
                       {previewGuest.phone}
                     </span>
                   )}
                   {channel === "email" && previewGuest.email && (
-                    <span className="rounded-full bg-[var(--d-bg-card)] px-2 py-0.5 font-mono text-[10px] text-[var(--d-ink-dim)]">
+                    <span className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(143,163,217,0.25)] bg-[rgba(143,163,217,0.06)] px-2.5 py-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-blue)]">
+                      <span className="h-1 w-1 rounded-full bg-[var(--d-blue)]" />
                       {previewGuest.email}
                     </span>
                   )}
                   {previewGuest.sendCount > 0 && (
-                    <span className="rounded-full bg-[rgba(240,160,156,0.12)] px-2 py-0.5 text-[10px] text-[var(--d-coral)]">
+                    <span className="d-mono rounded-full bg-[rgba(240,160,156,0.12)] px-2.5 py-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-coral)]">
                       Kirim ulang · {previewGuest.sendCount}×
                     </span>
                   )}
                 </div>
-                <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-[var(--d-bg-card)] p-3 font-mono text-[12px] leading-relaxed text-[var(--d-ink)]">
+                <pre className="d-mono max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-2)] p-4 text-[12px] leading-[1.7] text-[var(--d-ink)]">
                   {previewBody}
                 </pre>
               </>
             ) : (
-              <p className="text-xs text-[var(--d-ink-faint)]">
-                Pilih audiens dan kanal untuk melihat preview pesan.
+              <p className="d-serif text-[13px] italic text-[var(--d-ink-faint)]">
+                Pilih audiens dan kanal untuk melihat pratinjau pesan.
               </p>
             )}
-            <div className="mt-3 flex items-center justify-between">
+            <div className="mt-4 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() =>
                   setPreviewIndex((i) => Math.max(0, i - 1))
                 }
                 disabled={!previewGuest || previewIndex === 0}
-                className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-card)] disabled:opacity-40"
+                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-transparent px-3.5 py-1.5 text-[11px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-ink-dim)] hover:text-[var(--d-ink)] disabled:cursor-not-allowed disabled:opacity-30"
               >
-                ← Sebelumnya
+                <span aria-hidden>←</span> Sebelumnya
               </button>
               <button
                 type="button"
@@ -809,35 +844,40 @@ export function MessagesClient({
                   !previewGuest ||
                   previewIndex >= filteredRecipients.length - 1
                 }
-                className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-card)] disabled:opacity-40"
+                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-transparent px-3.5 py-1.5 text-[11px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-ink-dim)] hover:text-[var(--d-ink)] disabled:cursor-not-allowed disabled:opacity-30"
               >
-                Berikutnya →
+                Berikutnya <span aria-hidden>→</span>
               </button>
             </div>
           </div>
 
           {alreadySentCount > 0 && (
-            <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-2)] px-4 py-3">
-              <div className="flex items-center gap-2 text-sm text-[var(--d-ink)]">
-                <span>⚠️</span>
+            <div className="mt-5 rounded-xl border border-[rgba(212,184,150,0.22)] bg-[rgba(212,184,150,0.06)] px-4 py-3.5">
+              <div className="d-serif flex items-center gap-2 text-[13.5px] text-[var(--d-ink)]">
+                <span aria-hidden className="text-[var(--d-gold)]">
+                  ⓘ
+                </span>
                 <span>
-                  <strong>{alreadySentCount}</strong> tamu sudah pernah
-                  diundang.
+                  <em className="d-serif italic text-[var(--d-gold)]">
+                    {alreadySentCount}
+                  </em>{" "}
+                  tamu sudah pernah diundang.
                 </span>
               </div>
-              <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-[var(--d-ink-dim)]">
+              <label className="mt-2.5 flex cursor-pointer items-center gap-2.5 text-[13px] text-[var(--d-ink-dim)]">
                 <input
                   type="checkbox"
                   checked={includeSent}
                   onChange={(e) => setIncludeSent(e.target.checked)}
+                  className="h-4 w-4 cursor-pointer accent-[var(--d-coral)]"
                 />
                 <span>
                   Sertakan yang sudah diundang ({alreadySentCount} tamu)
                 </span>
               </label>
-              <p className="mt-1 text-xs text-[var(--d-ink-faint)]">
-                Secara default, broadcast hanya dikirim ke tamu yang
-                belum pernah diundang.
+              <p className="mt-1.5 text-[11.5px] text-[var(--d-ink-faint)]">
+                Secara default, broadcast hanya dikirim ke tamu yang belum
+                pernah diundang.
               </p>
             </div>
           )}
@@ -1188,17 +1228,27 @@ function HistoryListPanel({
   }, [history, filter]);
 
   return (
-    <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-      <h2 className="font-display text-xl text-[var(--d-ink)]">Riwayat Broadcast</h2>
-      <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
+    <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6 lg:p-7">
+      <div className="flex items-center gap-3">
+        <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
+        <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+          Riwayat Broadcast
+        </p>
+      </div>
+      <h2 className="d-serif mt-3 text-[24px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
+        Setiap kabar yang pernah{" "}
+        <em className="d-serif italic text-[var(--d-coral)]">terkirim</em>.
+      </h2>
+      <p className="d-serif mt-2 text-[13px] italic text-[var(--d-ink-dim)]">
         Semua broadcast yang pernah dibuat di acara ini, terbaru di atas.
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-5 flex flex-wrap gap-2">
         <FilterChip
           active={filter === "all"}
           onClick={() => setFilter("all")}
-          label={`Semua (${history.length})`}
+          label="Semua"
+          count={history.length}
         />
         {(
           [
@@ -1215,20 +1265,21 @@ function HistoryListPanel({
               key={s}
               active={filter === s}
               onClick={() => setFilter(s)}
-              label={`${HISTORY_STATUS_LABEL[s]} (${counts[s]})`}
+              label={HISTORY_STATUS_LABEL[s]}
+              count={counts[s]}
             />
           ) : null,
         )}
       </div>
 
       {visible.length === 0 ? (
-        <p className="mt-6 text-sm text-[var(--d-ink-dim)]">
+        <p className="d-serif mt-7 text-[13.5px] italic text-[var(--d-ink-dim)]">
           {filter === "all"
             ? "Belum ada broadcast."
             : "Tidak ada broadcast pada filter ini."}
         </p>
       ) : (
-        <ul className="mt-5 space-y-3">
+        <ul className="mt-6 space-y-3">
           {visible.map((h) => (
             <HistoryListCard key={h.id} row={h} eventId={eventId} />
           ))}
@@ -1242,22 +1293,34 @@ function FilterChip({
   active,
   onClick,
   label,
+  count,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
+  count: number;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+      aria-pressed={active}
+      className={`d-mono inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
         active
-          ? "bg-[var(--d-bg-2)] text-white"
-          : "border border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
+          ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.1)] text-[var(--d-ink)]"
+          : "border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] text-[var(--d-ink-dim)] hover:border-[var(--d-line-strong)] hover:text-[var(--d-ink)]"
       }`}
     >
       {label}
+      <span
+        className={`rounded-[3px] px-1.5 py-px text-[9.5px] tracking-[0.06em] ${
+          active
+            ? "bg-[rgba(240,160,156,0.18)] text-[var(--d-coral)]"
+            : "bg-[rgba(255,255,255,0.05)] text-[var(--d-ink-faint)]"
+        }`}
+      >
+        {String(count).padStart(2, "0")}
+      </span>
     </button>
   );
 }
@@ -1280,57 +1343,89 @@ function HistoryListCard({
       ? Math.round((row.sentCount / row.totalRecipients) * 100)
       : 0;
 
+  const isWa = row.channel === "whatsapp";
   return (
-    <li className="rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-card)] p-4">
+    <li className="rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-4 transition-colors hover:border-[var(--d-line-strong)]">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-wide text-[var(--d-ink-faint)]">
-            <span aria-hidden>
-              {row.channel === "whatsapp" ? "📱" : "✉️"}
-            </span>{" "}
-            {row.channel === "whatsapp" ? "WhatsApp" : "Email"} •{" "}
-            {new Date(row.createdAt).toLocaleString("id-ID", {
-              day: "numeric",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </p>
-          <p className="mt-1 truncate text-sm font-medium text-[var(--d-ink)]">
-            {row.subject ?? row.templateSlug}
-          </p>
-          <p className="text-xs text-[var(--d-ink-dim)]">{row.audienceLabel}</p>
-          {row.scheduledAt && (
-            <p className="mt-1 text-xs text-[#3949AB]">
-              📅 Terjadwal:{" "}
-              {new Date(row.scheduledAt).toLocaleString("id-ID", {
-                dateStyle: "long",
-                timeStyle: "short",
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <span
+            aria-hidden
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border"
+            style={{
+              borderColor: isWa
+                ? "rgba(126,211,164,0.25)"
+                : "rgba(143,163,217,0.25)",
+              background: isWa
+                ? "rgba(126,211,164,0.06)"
+                : "rgba(143,163,217,0.06)",
+              color: isWa ? "var(--d-green)" : "var(--d-blue)",
+            }}
+          >
+            {isWa ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-4 w-4">
+                <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-4 w-4">
+                <path d="M3 7l9 6 9-6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7a2 2 0 012-2h14a2 2 0 012 2" />
+              </svg>
+            )}
+          </span>
+          <div className="min-w-0">
+            <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+              {isWa ? "WhatsApp" : "Email"} ·{" "}
+              {new Date(row.createdAt).toLocaleString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
               })}
             </p>
-          )}
+            <p className="d-serif mt-1 truncate text-[14.5px] text-[var(--d-ink)]">
+              {row.subject ?? row.templateSlug}
+            </p>
+            <p className="mt-0.5 text-[12px] text-[var(--d-ink-dim)]">
+              {row.audienceLabel}
+            </p>
+            {row.scheduledAt && (
+              <p className="d-mono mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-[rgba(143,163,217,0.25)] bg-[rgba(143,163,217,0.06)] px-2.5 py-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-blue)]">
+                <span className="h-1 w-1 rounded-full bg-[var(--d-blue)]" />
+                Terjadwal{" "}
+                {new Date(row.scheduledAt).toLocaleString("id-ID", {
+                  dateStyle: "long",
+                  timeStyle: "short",
+                })}
+              </p>
+            )}
+          </div>
         </div>
         <span
-          className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${HISTORY_STATUS_STYLE[row.status]}`}
+          className={`d-mono shrink-0 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] ${HISTORY_STATUS_STYLE[row.status]}`}
         >
           {HISTORY_STATUS_LABEL[row.status]}
         </span>
       </div>
-      <div className="mt-3 flex items-center justify-between text-xs">
-        <span className="text-[var(--d-ink-dim)]">
+      <div className="mt-3.5 flex items-center justify-between text-[11.5px]">
+        <span className="d-mono tracking-[0.04em] text-[var(--d-ink-dim)]">
           {row.sentCount}/{row.totalRecipients} terkirim
-          {row.failedCount > 0 && ` • ${row.failedCount} gagal`}
+          {row.failedCount > 0 && ` · ${row.failedCount} gagal`}
         </span>
-        <span className="text-[var(--d-ink-dim)]">{pct}%</span>
+        <span className="d-mono tracking-[0.04em] text-[var(--d-ink-dim)]">
+          {pct}%
+        </span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--d-bg-2)]">
+      <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.04)]">
         <div
-          className="h-full rounded-full bg-[#3B7A57]"
-          style={{ width: `${pct}%` }}
+          className="h-full rounded-full transition-all"
+          style={{
+            width: `${pct}%`,
+            background:
+              "linear-gradient(90deg, var(--d-blue), var(--d-lilac) 50%, var(--d-coral))",
+          }}
         />
       </div>
-      <div className="mt-3 flex items-center justify-end gap-3 text-xs">
+      <div className="mt-3.5 flex items-center justify-end gap-4 text-[11.5px]">
         {row.status === "queued" && (
           <button
             type="button"
@@ -1386,24 +1481,40 @@ function HistoryListCard({
 
 function UnpublishedBanner() {
   return (
-    <div className="mb-6 rounded-2xl border border-coral/30 bg-coral/5 p-4">
-      <div className="flex items-start gap-3">
-        <span className="text-xl" aria-hidden>
-          ⚠️
+    <div
+      className="relative mb-6 overflow-hidden rounded-2xl border border-[rgba(240,160,156,0.3)] p-5"
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(240,160,156,0.08), rgba(240,160,156,0.04))",
+      }}
+    >
+      <div className="flex items-start gap-3.5">
+        <span
+          aria-hidden
+          className="d-serif flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[18px] italic text-[#0B0B15]"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--d-coral), var(--d-peach))",
+          }}
+        >
+          !
         </span>
         <div className="flex-1">
-          <p className="text-sm font-medium text-[var(--d-ink)]">
-            Undangan belum dipublikasikan
+          <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+            Belum dipublikasikan
           </p>
-          <p className="mt-1 text-xs text-[var(--d-ink-dim)]">
+          <p className="d-serif mt-1.5 text-[16px] font-light leading-tight text-[var(--d-ink)]">
+            Undangan masih tersembunyi.
+          </p>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--d-ink-dim)]">
             Tamu yang menerima link undangan saat ini akan melihat halaman
             404. Publikasikan dulu di Pengaturan agar undangan bisa dibuka.
           </p>
           <Link
             href="/dashboard/settings?tab=acara"
-            className="mt-3 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90"
+            className="d-mono mt-4 inline-flex items-center gap-1.5 rounded-full bg-[var(--d-coral)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[#0B0B15] transition-transform hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(240,160,156,0.32)]"
           >
-            Buka Pengaturan untuk Publikasi →
+            Buka Pengaturan <span aria-hidden>→</span>
           </Link>
         </div>
       </div>
@@ -1413,45 +1524,72 @@ function UnpublishedBanner() {
 
 function UpgradeWhatsAppCard() {
   return (
-    <div className="mt-4 rounded-xl border border-coral/30 bg-gradient-to-br from-coral/5 to-coral/10 p-4">
-      <div className="flex items-start gap-3">
-        <span className="text-xl" aria-hidden>
-          ✨
+    <div
+      className="relative mt-4 overflow-hidden rounded-xl border border-[rgba(212,184,150,0.22)] p-5"
+      style={{
+        background:
+          "linear-gradient(135deg, rgba(212,184,150,0.08), rgba(244,184,163,0.05) 50%, rgba(212,184,150,0.08))",
+      }}
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full opacity-60 blur-[40px]"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(212,184,150,0.18), transparent 70%)",
+        }}
+      />
+      <div className="relative flex items-start gap-3.5">
+        <span
+          aria-hidden
+          className="d-serif flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[16px] italic text-[#0B0B15]"
+          style={{
+            background:
+              "linear-gradient(135deg, var(--d-gold), var(--d-peach))",
+          }}
+        >
+          ✦
         </span>
         <div className="flex-1">
-          <p className="text-sm font-medium text-[var(--d-ink)]">
-            Upgrade ke WhatsApp Business API
+          <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-gold)]">
+            Upgrade · WhatsApp Business
           </p>
-          <p className="mt-1 text-xs text-[var(--d-ink-dim)]">
-            Saat ini Anda mengirim WhatsApp secara manual (buka tab per
-            tamu). Dengan paket Lite ke atas, undangan WA terkirim
-            otomatis dari server.
+          <p className="d-serif mt-1.5 text-[16px] font-light leading-tight text-[var(--d-ink)]">
+            Otomatiskan pengiriman WhatsApp.
           </p>
-          <ul className="mt-3 space-y-1.5 text-xs text-[var(--d-ink-dim)]">
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--d-coral)]" aria-hidden>
+          <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--d-ink-dim)]">
+            Saat ini Anda mengirim secara manual (buka tab per tamu). Dengan
+            paket Lite ke atas, undangan WA terkirim otomatis dari server.
+          </p>
+          <ul className="mt-3.5 space-y-2 text-[12px] text-[var(--d-ink-dim)]">
+            <li className="flex items-start gap-2.5">
+              <span className="d-mono mt-0.5 text-[var(--d-gold)]" aria-hidden>
                 ✓
               </span>
               <span>Kirim ratusan WA otomatis tanpa buka tab satu-satu</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--d-coral)]" aria-hidden>
+            <li className="flex items-start gap-2.5">
+              <span className="d-mono mt-0.5 text-[var(--d-gold)]" aria-hidden>
                 ✓
               </span>
               <span>Jadwalkan pengiriman WhatsApp sesuai waktu Anda</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[var(--d-coral)]" aria-hidden>
+            <li className="flex items-start gap-2.5">
+              <span className="d-mono mt-0.5 text-[var(--d-gold)]" aria-hidden>
                 ✓
               </span>
-              <span>Status delivery & read receipt per tamu</span>
+              <span>Status delivery &amp; read receipt per tamu</span>
             </li>
           </ul>
           <Link
             href="/harga"
-            className="mt-4 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90"
+            className="d-mono mt-4 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[#0B0B15] transition-transform hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(212,184,150,0.32)]"
+            style={{
+              background:
+                "linear-gradient(115deg, var(--d-gold), var(--d-peach))",
+            }}
           >
-            Lihat Paket →
+            Lihat Paket <span aria-hidden>→</span>
           </Link>
         </div>
       </div>
@@ -1474,14 +1612,25 @@ function ChannelButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl px-4 py-3 text-left transition-colors ${
+      aria-pressed={active}
+      className={`relative overflow-hidden rounded-xl border px-4 py-4 text-left transition-all ${
         active
-          ? "bg-[var(--d-bg-2)] text-white"
-          : "border border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
+          ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.06)] text-[var(--d-ink)]"
+          : "border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] text-[var(--d-ink)] hover:border-[var(--d-line-strong)] hover:bg-[rgba(255,255,255,0.04)]"
       }`}
     >
-      <p className="text-sm font-medium">{label}</p>
-      <p className={`text-[11px] ${active ? "text-white/80" : "text-[var(--d-ink-dim)]"}`}>
+      {active && (
+        <span
+          aria-hidden
+          className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[var(--d-coral)] shadow-[0_0_8px_var(--d-coral)]"
+        />
+      )}
+      <p className="d-serif text-[14px]">{label}</p>
+      <p
+        className={`d-mono mt-1 text-[10.5px] uppercase tracking-[0.18em] ${
+          active ? "text-[var(--d-coral)]" : "text-[var(--d-ink-faint)]"
+        }`}
+      >
         {hint}
       </p>
     </button>
@@ -1503,8 +1652,10 @@ function AudienceRadio({
 }) {
   return (
     <div
-      className={`rounded-xl border p-3 transition-colors ${
-        active ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)]" : "border-[var(--d-line)] bg-[var(--d-bg-card)]"
+      className={`rounded-xl border p-4 transition-colors ${
+        active
+          ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.04)]"
+          : "border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] hover:border-[var(--d-line-strong)]"
       }`}
     >
       <button
@@ -1513,15 +1664,23 @@ function AudienceRadio({
         className="flex w-full items-start gap-3 text-left"
       >
         <span
-          className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-            active ? "border-[var(--d-coral)]" : "border-ink-hint"
+          className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors ${
+            active
+              ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)]"
+              : "border-[var(--d-line-strong)]"
           }`}
         >
-          {active && <span className="h-2 w-2 rounded-full bg-[var(--d-bg-2)]" />}
+          {active && (
+            <span className="h-2 w-2 rounded-full bg-[var(--d-coral)]" />
+          )}
         </span>
         <span>
-          <span className="block text-sm font-medium text-[var(--d-ink)]">{label}</span>
-          <span className="block text-xs text-[var(--d-ink-dim)]">{hint}</span>
+          <span className="d-serif block text-[14px] text-[var(--d-ink)]">
+            {label}
+          </span>
+          <span className="mt-0.5 block text-[12px] text-[var(--d-ink-dim)]">
+            {hint}
+          </span>
         </span>
       </button>
       {children}

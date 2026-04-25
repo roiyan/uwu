@@ -112,30 +112,27 @@ export default async function MessagesPage() {
           <div className="flex items-center gap-3">
             <span
               aria-hidden
-              className="h-px w-10"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
-              }}
+              className="h-px w-7 bg-[var(--d-coral)]"
             />
             <p className="d-eyebrow">Kirim Undangan</p>
           </div>
-          <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px]">
-            Saatnya{" "}
-            <em className="d-serif italic text-[var(--d-coral)]">
-              menyebarkan
-            </em>{" "}
-            kabar.
+          <h1 className="d-serif mt-3.5 text-[clamp(36px,4.5vw,54px)] font-extralight leading-[1] tracking-[-0.025em] text-[var(--d-ink)]">
+            Sampaikan kabar{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">bahagia</em>{" "}
+            kalian.
           </h1>
-          <p className="mt-3 max-w-[60ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-            Kirim undangan via WhatsApp atau Email. Template otomatis
+          <p className="d-serif mt-3.5 max-w-[60ch] text-[14px] italic leading-relaxed text-[var(--d-ink-dim)]">
+            Kirim undangan via WhatsApp atau Email — template otomatis
             disesuaikan dengan preferensi budaya acara Anda.
           </p>
         </div>
         <Link
           href="/dashboard/guests"
-          className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-5 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)]"
+          className="inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-transparent px-[18px] py-[11px] text-[13px] text-[var(--d-ink)] transition-colors hover:border-[var(--d-ink-dim)] hover:bg-[rgba(255,255,255,0.03)]"
         >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-3.5 w-3.5">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+          </svg>
           Kelola Tamu
         </Link>
       </header>
