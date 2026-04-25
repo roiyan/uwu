@@ -98,6 +98,43 @@ export async function updateGuestAction(
   return result;
 }
 
+/**
+ * Reassign a single guest to a different group (or to "Tanpa Grup" by
+ * passing `null`). Used by the drag-and-drop affordance on the Tamu
+ * page so the operator doesn't have to open the edit dialog just to
+ * move someone between sections. Validates that the target group, when
+ * given, belongs to the same event — preventing cross-event leaks
+ * even though the UI never exposes other events.
+ */
+export async function moveGuestToGroupAction(
+  eventId: string,
+  guestId: string,
+  newGroupId: string | null,
+): Promise<ActionResult> {
+  const result = await withAuth(eventId, "editor", async () => {
+    if (newGroupId) {
+      const [grp] = await db
+        .select({ id: guestGroups.id })
+        .from(guestGroups)
+        .where(
+          and(
+            eq(guestGroups.id, newGroupId),
+            eq(guestGroups.eventId, eventId),
+          ),
+        )
+        .limit(1);
+      if (!grp) throw new Error("Grup tujuan tidak ditemukan.");
+    }
+    await db
+      .update(guests)
+      .set({ groupId: newGroupId, updatedAt: new Date() })
+      .where(and(eq(guests.id, guestId), eq(guests.eventId, eventId)));
+  });
+
+  if (result.ok) revalidatePath("/dashboard/guests");
+  return result;
+}
+
 export async function softDeleteGuestAction(
   eventId: string,
   guestId: string,
