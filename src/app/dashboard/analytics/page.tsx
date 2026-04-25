@@ -110,6 +110,7 @@ export default async function AnalyticsPage() {
 
   return (
     <AnalyticsClient
+      eventId={eventId}
       total={total}
       guestLimit={packageInfo.limit}
       packageName={packageInfo.packageName}

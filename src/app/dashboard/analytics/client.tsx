@@ -96,6 +96,7 @@ function fmtTimestamp(d: Date | null): string {
 }
 
 export function AnalyticsClient({
+  eventId,
   total,
   guestLimit,
   packageName,
@@ -112,6 +113,7 @@ export function AnalyticsClient({
   wishesTotal,
   wishesGuestTotal,
 }: {
+  eventId: string;
   total: number;
   guestLimit: number;
   packageName: string;
@@ -292,6 +294,10 @@ export function AnalyticsClient({
         engagementPct={engagementPct}
       />
 
+      {/* PDF capture target — wraps every section the PDF should
+          include. ExportSection is rendered OUTSIDE this wrapper so
+          the PDF doesn't show the "Ekspor Laporan" buttons themselves. */}
+      <div id="analytics-pdf-target">
       {/* 1. KPI strip */}
       <div className="mt-7">
         <KpiCards cards={kpiCards} />
@@ -410,10 +416,14 @@ export function AnalyticsClient({
           </table>
         </div>
       </section>
+      </div>
+      {/* /analytics-pdf-target */}
 
-      {/* 7. Export — last block so it's the operator's final stop. */}
+      {/* 7. Export — last block so it's the operator's final stop.
+          Mounted outside the PDF capture wrapper so the buttons
+          themselves don't end up in the rendered PDF. */}
       <div className="mt-6">
-        <ExportSection />
+        <ExportSection eventId={eventId} />
       </div>
     </main>
   );
