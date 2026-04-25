@@ -6,7 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useToast } from "@/components/shared/Toast";
-import { softDeleteGuestAction } from "@/lib/actions/guest";
+import {
+  moveGuestToGroupAction,
+  softDeleteGuestAction,
+} from "@/lib/actions/guest";
 import { downloadGuestTemplate } from "@/lib/utils/guest-template";
 import { parseGuestFile, type ParseResult } from "@/lib/utils/guest-parser";
 import { GuestFormDialog } from "./guest-form-dialog";
@@ -327,6 +330,57 @@ export function GuestsClient({
   const allSelected = guests.length > 0 && selectedIds.size === guests.length;
   const someSelected = selectedIds.size > 0 && !allSelected;
 
+  // ----- Drag-and-drop reassignment (desktop, grouped view only) -----
+  // The HTML5 DnD API gives us a free re-order without a third-party
+  // library. We track which guest is being dragged so its row can dim,
+  // and which group header is hovered so its row can light up. The
+  // actual move runs through `moveGuestToGroupAction` which the server
+  // gates with `withAuth("editor")`.
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [draggingFromGroupId, setDraggingFromGroupId] = useState<
+    string | null
+  >(null);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+
+  function handleRowDragStart(g: GuestRow, e: React.DragEvent) {
+    setDraggingId(g.id);
+    setDraggingFromGroupId(g.groupId);
+    // Some browsers refuse to start a drag without any data set.
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", g.id);
+  }
+
+  function handleRowDragEnd() {
+    setDraggingId(null);
+    setDraggingFromGroupId(null);
+    setDragOverKey(null);
+  }
+
+  async function handleHeaderDrop(targetKey: string, targetGroupId: string | null) {
+    const guestId = draggingId;
+    const fromGroupId = draggingFromGroupId;
+    setDragOverKey(null);
+    setDraggingId(null);
+    setDraggingFromGroupId(null);
+    if (!guestId) return;
+    // Same group → silent no-op so the operator doesn't see a toast for
+    // accidentally dropping back where they started.
+    if (fromGroupId === targetGroupId) return;
+    const targetName =
+      groups.find((g) => g.id === targetGroupId)?.name ?? "Tanpa Grup";
+    const guest = guests.find((g) => g.id === guestId);
+    const res = await moveGuestToGroupAction(eventId, guestId, targetGroupId);
+    if (res.ok) {
+      toast.success(
+        `${guest?.name ?? "Tamu"} dipindahkan ke ${targetName}`,
+      );
+      startTransition(() => router.refresh());
+    } else {
+      toast.error(res.error);
+    }
+    void targetKey;
+  }
+
   return (
     <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
       <header className="mb-8 flex flex-wrap items-end justify-between gap-6">
@@ -564,21 +618,25 @@ export function GuestsClient({
       </section>
 
       {guests.length === 0 ? (
-        <EmptyState
-          icon="👥"
-          title={
-            filter.search || filter.groupId || filter.status
-              ? "Tidak ada tamu cocok"
-              : "Belum ada tamu"
-          }
-          description={
-            filter.search || filter.groupId || filter.status
-              ? "Coba ubah kata kunci pencarian atau filter."
-              : "Tambah tamu satu per satu. Setiap tamu otomatis mendapat link undangan unik."
-          }
-          actionLabel="+ Tambah Tamu Pertama"
-          actionHref="#"
-        />
+        (() => {
+          const filtering = Boolean(
+            filter.search || filter.groupId || filter.status,
+          );
+          return (
+            <EmptyState
+              icon="✦"
+              title={filtering ? "Belum ada yang cocok" : "Belum ada tamu"}
+              description={
+                filtering
+                  ? "Coba ubah kata kunci, kelompok, atau status. Setiap tamu yang Anda tambahkan akan tampil di sini."
+                  : "Tambah tamu satu per satu — atau import dari Excel. Setiap tamu otomatis menerima tautan undangan unik."
+              }
+              actionLabel={filtering ? undefined : "+ Tambah Tamu Pertama"}
+              onAction={filtering ? undefined : () => setAddOpen(true)}
+              note={filtering ? "Atau hapus filter di atas." : undefined}
+            />
+          );
+        })()
       ) : (
         <>
           {/* Desktop view — single table; in grouped mode, group-header
@@ -621,6 +679,17 @@ export function GuestsClient({
                             setAddPresetGroup(s.group?.id ?? null);
                             setAddOpen(true);
                           }}
+                          isDropTarget={draggingId !== null}
+                          isDragOver={dragOverKey === s.key}
+                          onDragEnter={() => setDragOverKey(s.key)}
+                          onDragLeave={() => {
+                            setDragOverKey((cur) =>
+                              cur === s.key ? null : cur,
+                            );
+                          }}
+                          onDrop={() =>
+                            handleHeaderDrop(s.key, s.group?.id ?? null)
+                          }
                         />,
                         ...s.rows.map((g, i) =>
                           renderDesktopRow(g, i, {
@@ -631,6 +700,9 @@ export function GuestsClient({
                             setDeleteGuest,
                             toggleSelect,
                             copyInviteLink,
+                            draggingId,
+                            onRowDragStart: handleRowDragStart,
+                            onRowDragEnd: handleRowDragEnd,
                           }),
                         ),
                       ])
@@ -1234,6 +1306,12 @@ type RowHandlers = {
   setDeleteGuest: (g: GuestRow) => void;
   toggleSelect: (id: string) => void;
   copyInviteLink: (g: GuestRow) => void;
+  // Drag-and-drop wiring. `null`-able so the flat (filtered) view can
+  // pass undefined and skip drag affordances entirely. The row uses
+  // `draggingId` to dim itself while a drag is in progress.
+  draggingId?: string | null;
+  onRowDragStart?: (g: GuestRow, e: React.DragEvent) => void;
+  onRowDragEnd?: () => void;
 };
 
 type CardHandlers = Omit<RowHandlers, "selectedIds" | "toggleSelect">;
@@ -1243,18 +1321,40 @@ type CardHandlers = Omit<RowHandlers, "selectedIds" | "toggleSelect">;
 // and inside the flat single-group view.
 function renderDesktopRow(g: GuestRow, i: number, h: RowHandlers) {
   const isSel = h.selectedIds.has(g.id);
+  const draggable = Boolean(h.onRowDragStart);
+  const isDragging = draggable && h.draggingId === g.id;
   return (
     <tr
       key={g.id}
+      draggable={draggable || undefined}
+      onDragStart={
+        draggable
+          ? (e) => {
+              const target = e.target as HTMLElement;
+              // Don't initiate a drag from interactive controls — the
+              // checkbox and the row-action buttons should still work.
+              if (target.closest("button,input,a")) {
+                e.preventDefault();
+                return;
+              }
+              h.onRowDragStart?.(g, e);
+            }
+          : undefined
+      }
+      onDragEnd={draggable ? h.onRowDragEnd : undefined}
       onClick={(e) => {
         const target = e.target as HTMLElement;
         if (target.closest("button,input,a")) return;
         h.setDrawerGuest(g);
       }}
-      className={`group/row relative cursor-pointer border-b border-[var(--d-line)] transition-colors last:border-0 ${
-        isSel
-          ? "bg-[rgba(240,160,156,0.06)]"
-          : "hover:bg-[rgba(255,255,255,0.018)]"
+      className={`group/row relative border-b border-[var(--d-line)] transition-colors last:border-0 ${
+        draggable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"
+      } ${
+        isDragging
+          ? "opacity-40"
+          : isSel
+            ? "bg-[rgba(240,160,156,0.06)]"
+            : "hover:bg-[rgba(255,255,255,0.018)]"
       }`}
     >
       {isSel && (
@@ -1405,14 +1505,27 @@ function renderMobileCard(g: GuestRow, i: number, h: CardHandlers) {
 
 // Group header row inside the desktop <table> — spans all 7 columns
 // and shows the colored dot + group name + stats + per-group actions.
+// Doubles as the drop target for the drag-and-drop reassign affordance:
+// a guest dropped on this row gets `groupId` set to `section.group.id`
+// (or null for the "Tanpa Grup" bucket).
 function GroupHeaderRow({
   section,
   isFirst,
   onAdd,
+  isDropTarget,
+  isDragOver,
+  onDragEnter,
+  onDragLeave,
+  onDrop,
 }: {
   section: { group: GuestGroupRow | null; rows: GuestRow[]; key: string };
   isFirst: boolean;
   onAdd: () => void;
+  isDropTarget?: boolean;
+  isDragOver?: boolean;
+  onDragEnter?: () => void;
+  onDragLeave?: () => void;
+  onDrop?: () => void;
 }) {
   const name = section.group?.name ?? "Tanpa Grup";
   const color = section.group?.color ?? "var(--d-ink-faint)";
@@ -1421,7 +1534,29 @@ function GroupHeaderRow({
     : "/dashboard/messages";
   return (
     <tr
-      className={`bg-[rgba(255,255,255,0.02)] ${
+      onDragOver={
+        isDropTarget
+          ? (e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+            }
+          : undefined
+      }
+      onDragEnter={isDropTarget ? onDragEnter : undefined}
+      onDragLeave={isDropTarget ? onDragLeave : undefined}
+      onDrop={
+        isDropTarget
+          ? (e) => {
+              e.preventDefault();
+              onDrop?.();
+            }
+          : undefined
+      }
+      className={`transition-colors ${
+        isDragOver
+          ? "bg-[rgba(240,160,156,0.10)] outline outline-1 outline-dashed outline-[var(--d-coral)] outline-offset-[-1px]"
+          : "bg-[rgba(255,255,255,0.02)]"
+      } ${
         isFirst
           ? ""
           : "border-t-[6px] border-t-[var(--d-bg-1)]"
@@ -1449,6 +1584,11 @@ function GroupHeaderRow({
           <span className="d-mono text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
             {summarizeSection(section.rows)}
           </span>
+          {isDragOver && (
+            <span className="d-mono inline-flex items-center gap-1.5 rounded-full bg-[rgba(240,160,156,0.12)] px-2.5 py-0.5 text-[9.5px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+              ↓ Pindahkan ke sini
+            </span>
+          )}
           <div className="ml-auto flex items-center gap-2">
             <button
               type="button"

@@ -96,6 +96,7 @@ export default async function SettingsPage({
           slug: bundle.event.slug,
           musicUrl: bundle.event.musicUrl ?? "",
           culturalPreference: bundle.event.culturalPreference,
+          checkinEnabled: bundle.event.checkinEnabled,
         }}
         owner={{
           fullName: profile?.fullName ?? null,

@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/components/shared/Toast";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { getWhatsAppShareUrl } from "@/lib/utils/share";
+import { CheckinToggleCard } from "./checkin-toggle-card";
 
 type Tab = "akun" | "acara" | "budaya" | "kolaborator";
 
@@ -65,6 +66,7 @@ export function SettingsTabs({
     slug: string;
     musicUrl: string;
     culturalPreference: "islami" | "umum" | "custom";
+    checkinEnabled: boolean;
   };
   owner: { fullName: string | null; email: string; isCurrentUser: boolean };
   collaborators: CollaboratorRow[];
@@ -122,7 +124,15 @@ export function SettingsTabs({
       {active === "acara" && (
         <AcaraTab eventId={eventId} isPublished={isPublished} event={event} />
       )}
-      {active === "budaya" && <BudayaTab eventId={eventId} event={event} />}
+      {active === "budaya" && (
+        <div className="space-y-6">
+          <BudayaTab eventId={eventId} event={event} />
+          <CheckinToggleCard
+            eventId={eventId}
+            initialEnabled={event.checkinEnabled}
+          />
+        </div>
+      )}
       {active === "kolaborator" && (
         <KolaboratorTab
           eventId={eventId}
@@ -405,7 +415,13 @@ function BudayaTab({
   event,
 }: {
   eventId: string;
-  event: { title: string; slug: string; musicUrl: string; culturalPreference: "islami" | "umum" | "custom" };
+  event: {
+    title: string;
+    slug: string;
+    musicUrl: string;
+    culturalPreference: "islami" | "umum" | "custom";
+    checkinEnabled: boolean;
+  };
 }) {
   const bound = updateEventSettingsAction.bind(null, eventId);
   const [state, formAction, pending] = useActionState(bound, null);

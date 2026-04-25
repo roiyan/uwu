@@ -255,6 +255,25 @@ export async function updateEventSettingsAction(
   return result;
 }
 
+export async function setCheckinEnabledAction(
+  eventId: string,
+  enabled: boolean,
+): Promise<ActionResult> {
+  const result = await withAuth(eventId, "editor", async () => {
+    await db
+      .update(events)
+      .set({ checkinEnabled: enabled, updatedAt: new Date() })
+      .where(eq(events.id, eventId));
+  });
+
+  if (result.ok) {
+    revalidatePath("/dashboard/settings");
+    revalidatePath("/dashboard/checkin");
+    revalidatePath("/dashboard", "layout");
+  }
+  return result;
+}
+
 // Combined save for the split-view website editor. One round-trip from the
 // client, one transaction on the DB. The Couple + Schedules payloads are
 // validated independently so a partial failure returns the specific error.
