@@ -419,10 +419,14 @@ export function MessagesClient({
           every keystroke, wiping the caret. Keeping both subtrees
           mounted preserves the editor's DOM across edits and across
           tab switches. */}
-      <div hidden={activeTab !== "history"}>
+      {/* Use style.display rather than the HTML `hidden` attribute.
+          `hidden` on a form's ancestor has been known to interfere
+          with React Server Action submissions; `display:none` is
+          layout-only and lets the form's submit click propagate. */}
+      <div style={{ display: activeTab === "history" ? undefined : "none" }}>
         <HistoryListPanel history={history} eventId={eventId} />
       </div>
-      <div hidden={activeTab !== "compose"}>
+      <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
     <div className="grid gap-6 lg:grid-cols-5">
       <section className="lg:col-span-3">
         <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
