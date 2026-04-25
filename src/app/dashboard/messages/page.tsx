@@ -12,12 +12,19 @@ import { isWhatsAppConfigured } from "@/lib/providers/whatsapp";
 import { isEmailConfigured } from "@/lib/providers/email";
 import { MessagesClient } from "./client";
 
-export default async function MessagesPage() {
+export default async function MessagesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ group?: string }>;
+}) {
   const user = await requireSessionUserFast();
   const current = await getCurrentEventForUser(user.id);
   if (!current) redirect("/onboarding");
   const bundle = await getEventBundle(current.event.id);
   if (!bundle) redirect("/onboarding");
+
+  const params = await searchParams;
+  const presetGroupId = params.group ?? null;
 
   const [groups, history, groupCounts, alreadySentRow, recipientSample] =
     await Promise.all([
@@ -148,6 +155,15 @@ export default async function MessagesPage() {
           color: g.color,
           liveCount: countByGroupId.get(g.id) ?? 0,
         }))}
+        // Pre-select audience from /dashboard/messages?group=<id> deep link
+        // (the per-group "KIRIM GRUP" button on the Tamu page). Only applied
+        // if the id matches an existing group.
+        presetGroupId={
+          presetGroupId &&
+          groups.some((g) => g.id === presetGroupId)
+            ? presetGroupId
+            : null
+        }
         alreadySentCount={alreadySentCount}
         recipientSample={recipientSample}
         eventContext={eventContext}

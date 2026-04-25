@@ -17,12 +17,17 @@ export function GuestFormDialog({
   eventId,
   groups,
   editing,
+  presetGroupId,
   onClose,
 }: {
   open: boolean;
   eventId: string;
   groups: GuestGroupRow[];
   editing: GuestRow | null;
+  // When set (and `editing` is null), pre-selects this group in the
+  // "Grup" dropdown — used by the per-group "+ Tambah" button on the
+  // grouped guest list.
+  presetGroupId?: string | null;
   onClose: () => void;
 }) {
   const create = createGuestAction.bind(null, eventId);
@@ -126,7 +131,11 @@ export function GuestFormDialog({
             <span className={labelClass}>Grup</span>
             <select
               name="groupId"
-              defaultValue={editing?.groupId ?? ""}
+              // `key` forces React to reset defaultValue when the
+              // preset switches between group buttons — uncontrolled
+              // <select> would otherwise stick to the first mount value.
+              key={editing?.id ?? presetGroupId ?? "blank"}
+              defaultValue={editing?.groupId ?? presetGroupId ?? ""}
               className={`${inputClass} bg-[var(--d-bg-2)]`}
             >
               <option value="">Tanpa grup</option>

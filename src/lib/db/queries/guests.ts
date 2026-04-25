@@ -36,6 +36,7 @@ export async function listGuestsForEvent(
     .select({
       id: guests.id,
       name: guests.name,
+      nickname: guests.nickname,
       phone: guests.phone,
       email: guests.email,
       token: guests.token,
@@ -45,6 +46,8 @@ export async function listGuestsForEvent(
       rsvpedAt: guests.rsvpedAt,
       openedAt: guests.openedAt,
       invitedAt: guests.invitedAt,
+      lastSentAt: guests.lastSentAt,
+      lastSentVia: guests.lastSentVia,
       createdAt: guests.createdAt,
       groupId: guests.groupId,
       groupName: guestGroups.name,
