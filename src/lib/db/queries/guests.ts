@@ -268,6 +268,130 @@ export async function listGuestsWithActivity(eventId: string) {
     .limit(100);
 }
 
+/**
+ * Traffic source breakdown for the Analytics page — counts opens grouped
+ * by the channel the invitation was last sent through. Buckets: whatsapp,
+ * email, direct (no send recorded yet — likely link-shared manually).
+ */
+export async function getTrafficSourceBreakdown(eventId: string) {
+  const rows = await db
+    .select({
+      via: guests.lastSentVia,
+      total: sql<number>`count(*)::int`,
+      opened: sql<number>`count(*) filter (where ${guests.openedAt} is not null)::int`,
+    })
+    .from(guests)
+    .where(and(eq(guests.eventId, eventId), isNull(guests.deletedAt)))
+    .groupBy(guests.lastSentVia);
+  const out = { whatsapp: 0, email: 0, direct: 0 };
+  for (const r of rows) {
+    if (r.via === "whatsapp") out.whatsapp = r.total;
+    else if (r.via === "email") out.email = r.total;
+    else out.direct += r.total;
+  }
+  return out;
+}
+
+/**
+ * Per-group engagement for the Analytics breakdown card. Returns the
+ * group's RSVP-attending count over its live total. Groups without any
+ * guests are omitted — the card highlights the engaged groups.
+ */
+export async function getGroupEngagement(eventId: string) {
+  const rows = await db
+    .select({
+      groupId: guestGroups.id,
+      name: guestGroups.name,
+      color: guestGroups.color,
+      total: sql<number>`count(${guests.id})::int`,
+      attending: sql<number>`count(*) filter (where ${guests.rsvpStatus} = 'hadir')::int`,
+      opened: sql<number>`count(*) filter (where ${guests.openedAt} is not null)::int`,
+    })
+    .from(guestGroups)
+    .leftJoin(
+      guests,
+      and(eq(guests.groupId, guestGroups.id), isNull(guests.deletedAt)),
+    )
+    .where(eq(guestGroups.eventId, eventId))
+    .groupBy(guestGroups.id, guestGroups.name, guestGroups.color)
+    .orderBy(asc(guestGroups.sortOrder), asc(guestGroups.name));
+  return rows.map((r) => ({
+    id: r.groupId,
+    name: r.name,
+    color: r.color,
+    total: r.total,
+    attending: r.attending,
+    opened: r.opened,
+  }));
+}
+
+/**
+ * 7×24 grid of opens by day-of-week and hour, used for the Pola
+ * Aktivitas heatmap. Day-of-week comes back as 0=Sunday … 6=Saturday
+ * to match JS Date.getDay(). Bucket counts are 0 when nothing happened
+ * in that slot — the renderer fills the matrix from this sparse list.
+ */
+export async function getOpenHeatmap(eventId: string) {
+  const rows = await db
+    .select({
+      day: sql<number>`extract(dow from ${guests.openedAt})::int`,
+      hour: sql<number>`extract(hour from ${guests.openedAt})::int`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(guests)
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        isNull(guests.deletedAt),
+        sql`${guests.openedAt} is not null`,
+      ),
+    )
+    .groupBy(
+      sql`extract(dow from ${guests.openedAt})`,
+      sql`extract(hour from ${guests.openedAt})`,
+    );
+  return rows;
+}
+
+/**
+ * Top-5 most engaged guests for the leaderboard. Ranked by RSVP
+ * (responded > not) then by openedAt presence then by send count.
+ * `sendCount` doubles as a proxy for "buka berkali" until we track
+ * per-open events.
+ */
+export async function listTopOpeners(eventId: string, limit = 5) {
+  return db
+    .select({
+      id: guests.id,
+      name: guests.name,
+      groupName: guestGroups.name,
+      groupColor: guestGroups.color,
+      rsvpStatus: guests.rsvpStatus,
+      rsvpAttendees: guests.rsvpAttendees,
+      sendCount: guests.sendCount,
+      openedAt: guests.openedAt,
+      rsvpedAt: guests.rsvpedAt,
+    })
+    .from(guests)
+    .leftJoin(guestGroups, eq(guestGroups.id, guests.groupId))
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        isNull(guests.deletedAt),
+        sql`(${guests.openedAt} is not null or ${guests.rsvpedAt} is not null)`,
+      ),
+    )
+    .orderBy(
+      sql`case when ${guests.rsvpStatus} = 'hadir' then 0
+                when ${guests.rsvpStatus} = 'tidak_hadir' then 1
+                when ${guests.openedAt} is not null then 2
+                else 3 end asc`,
+      sql`${guests.sendCount} desc`,
+      sql`${guests.openedAt} desc nulls last`,
+    )
+    .limit(limit);
+}
+
 export async function getEventPackageLimit(eventId: string) {
   const [row] = await db
     .select({ guestLimit: packages.guestLimit, packageName: packages.name })

@@ -4,10 +4,14 @@ import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import {
   countLiveGuests,
   getEventPackageLimit,
+  getGroupEngagement,
+  getOpenHeatmap,
   getResponseFunnel,
+  getTrafficSourceBreakdown,
   getWeeklyTrend,
   listGuestGroups,
   listGuestsWithActivity,
+  listTopOpeners,
   sumAttendees,
 } from "@/lib/db/queries/guests";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -28,6 +32,10 @@ export default async function AnalyticsPage() {
     responses,
     groups,
     packageInfo,
+    trafficSource,
+    groupEngagement,
+    heatmapBuckets,
+    topOpeners,
   ] = await Promise.all([
     countLiveGuests(eventId),
     sumAttendees(eventId),
@@ -36,6 +44,10 @@ export default async function AnalyticsPage() {
     listGuestsWithActivity(eventId),
     listGuestGroups(eventId),
     getEventPackageLimit(eventId),
+    getTrafficSourceBreakdown(eventId),
+    getGroupEngagement(eventId),
+    getOpenHeatmap(eventId),
+    listTopOpeners(eventId, 5),
   ]);
 
   if (total === 0) {
@@ -43,21 +55,12 @@ export default async function AnalyticsPage() {
       <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
         <header>
           <div className="flex items-center gap-3">
-            <span
-              aria-hidden
-              className="h-px w-10"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
-              }}
-            />
+            <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
             <p className="d-eyebrow">Analytics</p>
           </div>
-          <h1 className="d-serif mt-3 text-[32px] font-extralight leading-[1.1] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px] md:leading-[1.05]">
+          <h1 className="d-serif mt-3 text-[clamp(36px,4.5vw,54px)] font-extralight leading-[1] tracking-[-0.025em] text-[var(--d-ink)]">
             Bagaimana tamu{" "}
-            <em className="d-serif italic text-[var(--d-coral)]">
-              menanggapi
-            </em>
+            <em className="d-serif italic text-[var(--d-coral)]">menanggapi</em>
             ?
           </h1>
         </header>
@@ -88,6 +91,10 @@ export default async function AnalyticsPage() {
         name: g.name,
         color: g.color,
       }))}
+      trafficSource={trafficSource}
+      groupEngagement={groupEngagement}
+      heatmapBuckets={heatmapBuckets}
+      topOpeners={topOpeners}
     />
   );
 }
