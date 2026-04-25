@@ -111,12 +111,12 @@ async function Header({ userId }: { userId: string }) {
   const groomFirst = bundle.couple?.groomName?.split(" ")[0] ?? "Pasangan";
 
   return (
-    <header className="mb-10 flex flex-wrap items-end justify-between gap-6">
+    <header className="mb-5 flex flex-wrap items-end justify-between gap-3 lg:mb-10 lg:gap-6">
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-3">
+        <div className="mb-1.5 flex items-center gap-3 lg:mb-0">
           <span
             aria-hidden
-            className="h-px w-10"
+            className="h-px w-8 lg:w-10"
             style={{
               background:
                 "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
@@ -124,12 +124,18 @@ async function Header({ userId }: { userId: string }) {
           />
           <p className="d-eyebrow">Selamat datang kembali</p>
         </div>
-        <h1 className="d-serif mt-3 text-[44px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[54px]">
-          {brideFirst} <em className="d-serif italic text-[var(--d-coral)]">&</em>{" "}
+        {/* Mobile: 30px title; desktop: 54px. Most "{Bride} & {Groom}"
+            fits on one line at 30px in a 390px viewport. For unusually
+            long names the title wraps gracefully; we deliberately
+            don't whitespace-nowrap to avoid hiding overflow. */}
+        <h1 className="d-serif mt-2 text-[30px] font-extralight leading-[1.1] tracking-[-0.01em] text-[var(--d-ink)] lg:mt-3 lg:text-[54px] lg:leading-[1.05]">
+          {brideFirst}
+          {" "}
+          <em className="d-serif italic text-[var(--d-coral)]">&</em>{" "}
           {groomFirst}
         </h1>
         {firstSchedule && (
-          <p className="d-mono mt-3 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+          <p className="d-mono mt-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] lg:mt-3 lg:text-[11px]">
             {firstSchedule.label} · {formatDate(firstSchedule.eventDate)}
           </p>
         )}
@@ -139,13 +145,13 @@ async function Header({ userId }: { userId: string }) {
           href="/preview"
           target="_blank"
           rel="noreferrer"
-          className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-5 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)]"
+          className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:px-5 lg:py-2 lg:text-[11px]"
         >
           👁 Pratinjau
         </Link>
         <Link
           href="/dashboard/website"
-          className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[12px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-4 py-2 text-[11px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 lg:px-6 lg:py-2.5 lg:text-[12px]"
         >
           Edit Undangan →
         </Link>
