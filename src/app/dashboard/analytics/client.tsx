@@ -331,12 +331,9 @@ export function AnalyticsClient({
         <TopOpeners rows={topOpeners} />
       </div>
 
-      {/* 6. Export */}
-      <div className="mt-6">
-        <ExportSection />
-      </div>
-
-      {/* 7. Response table */}
+      {/* 6. Response table — placed above Ekspor so the operator can
+          review the raw list (and copy individual rows out) before
+          deciding which export bundle they need. */}
       <section className="mt-6 overflow-hidden rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)]">
         <header className="border-b border-[var(--d-line)] px-7 py-5">
           <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
@@ -413,6 +410,11 @@ export function AnalyticsClient({
           </table>
         </div>
       </section>
+
+      {/* 7. Export — last block so it's the operator's final stop. */}
+      <div className="mt-6">
+        <ExportSection />
+      </div>
     </main>
   );
 }
