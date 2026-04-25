@@ -124,6 +124,14 @@ export async function createBroadcastAction(
   return withAuth(eventId, "editor", async (userId) => {
     const ctx = await resolveEventContext(eventId);
     if (!ctx.couple) throw new Error("Detail mempelai belum diisi.");
+    // Guard against the most common live bug: broadcasting before
+    // publishing. Without this, every guest who clicks the WA link
+    // hits a 404 because the invitation route requires isPublished=true.
+    if (!ctx.event.isPublished) {
+      throw new Error(
+        "Publikasikan undangan dulu di Pengaturan sebelum kirim broadcast.",
+      );
+    }
 
     const recipients = await selectRecipients(
       eventId,
