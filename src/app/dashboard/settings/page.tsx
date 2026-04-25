@@ -53,8 +53,12 @@ export default async function SettingsPage({
   const active: Tab =
     requested && VALID_TABS.includes(requested) ? requested : "akun";
 
+  // `overflow-x-hidden` on <main> is a safety net so the body never
+  // scrolls horizontally even if a child briefly breaches viewport
+  // width. The negative-margin tab strip below has its own scroll
+  // container so it still pans normally.
   return (
-    <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
+    <main className="flex-1 overflow-x-hidden px-5 py-8 lg:px-12 lg:py-12">
       <header className="mb-10">
         <div className="flex items-center gap-3">
           <span
@@ -67,13 +71,13 @@ export default async function SettingsPage({
           />
           <p className="d-eyebrow">Pengaturan</p>
         </div>
-        <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[54px]">
+        <h1 className="d-serif mt-3 text-[32px] font-extralight leading-[1.1] tracking-[-0.01em] text-[var(--d-ink)] md:text-[54px] md:leading-[1.05]">
           Ruang kendali,
           <br />
           sepenuhnya milik{" "}
           <em className="d-serif italic text-[var(--d-coral)]">kalian</em>.
         </h1>
-        <p className="mt-4 max-w-[58ch] text-[15px] leading-relaxed text-[var(--d-ink-dim)]">
+        <p className="mt-4 max-w-[58ch] text-[14px] leading-relaxed text-[var(--d-ink-dim)] md:text-[15px]">
           Kelola profil, preferensi, dan pengaturan acara kalian.
         </p>
       </header>
