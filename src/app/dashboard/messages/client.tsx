@@ -1400,7 +1400,7 @@ function UnpublishedBanner() {
             404. Publikasikan dulu di Pengaturan agar undangan bisa dibuka.
           </p>
           <Link
-            href="/dashboard/settings"
+            href="/dashboard/settings?tab=acara"
             className="mt-3 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90"
           >
             Buka Pengaturan untuk Publikasi →
