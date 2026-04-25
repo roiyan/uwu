@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>UWU — Atelier Intake</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..700,30..100;1,9..144,200..700,30..100&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#06060B;--bg-1:#0C0C15;--bg-2:#13141F;--bg-card:#0E0F18;
+  --ink:#EDE8DE;--ink-dim:#9E9A95;--ink-faint:#4A4850;
+  --line:rgba(237,232,222,0.07);--line-strong:rgba(237,232,222,0.16);
+  --blue:#8FA3D9;--lilac:#B89DD4;--coral:#F0A09C;--peach:#F4B8A3;--gold:#D4B896;
+  --ease:cubic-bezier(.22,1,.36,1);--ease-d:cubic-bezier(.16,1,.3,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg-0);color:var(--ink);font-family:'Inter',sans-serif;font-weight:300;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.italic{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:"SOFT" 100}
+em{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100}
+
+/* ==== LAYOUT ==== */
+.app{display:grid;grid-template-columns:minmax(380px,38%) 1fr;min-height:100vh}
+
+/* ==== SIDEBAR ==== */
+.side{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,var(--bg-1) 0%,var(--bg-0) 100%);border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.side-bg{position:absolute;inset:0;pointer-events:none;z-index:0}
+.side-glow{position:absolute;width:520px;height:520px;border-radius:50%;filter:blur(130px);opacity:.14;transition:all 1.2s var(--ease)}
+.side-glow.g1{background:var(--coral);top:-120px;left:-100px}
+.side-glow.g2{background:var(--blue);bottom:-120px;right:-120px}
+.side-stars{position:absolute;inset:0}
+.side-stars .s{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--ink);opacity:.4}
+.side-inner{position:relative;z-index:2;padding:36px 44px;display:flex;flex-direction:column;height:100%}
+.side-top{display:flex;align-items:center;justify-content:space-between}
+.logo{height:26px;width:auto}
+.exit{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-dim);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .3s}
+.exit:hover{color:var(--ink)}
+
+.side-head{margin-top:64px;padding-right:20px}
+.chap-label{display:inline-flex;align-items:center;gap:14px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.26em;color:var(--coral);text-transform:uppercase}
+.chap-label::before{content:'';width:32px;height:1px;background:var(--coral)}
+.side-title{font-family:'Fraunces',serif;font-weight:200;font-size:clamp(38px,3.8vw,56px);line-height:.98;letter-spacing:-.028em;margin-top:24px;font-variation-settings:"opsz" 144,"SOFT" 30;transition:all .6s var(--ease)}
+.side-title em{color:var(--coral);font-variation-settings:"opsz" 144,"SOFT" 100}
+.side-lead{margin-top:24px;color:var(--ink-dim);font-size:15px;line-height:1.75;max-width:360px;transition:opacity .4s}
+
+/* Live preview card */
+.preview-wrap{margin-top:auto;padding-top:32px}
+.preview-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.24em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:14px}
+.preview-card{background:linear-gradient(180deg,#F5E6D3,#E8C7B8);border-radius:6px;padding:28px 22px;color:#3A2819;text-align:center;position:relative;box-shadow:0 24px 60px rgba(0,0,0,.4);transition:transform .6s var(--ease)}
+.preview-card::before{content:'';position:absolute;inset:10px;border:1px solid rgba(58,40,25,.2)}
+.pc-mono{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;opacity:.55;margin-bottom:8px;position:relative;z-index:1}
+.pc-orn{font-size:11px;opacity:.5;margin:2px 0 8px;position:relative;z-index:1}
+.pc-name{font-family:'Fraunces',serif;font-size:26px;font-weight:300;line-height:1;position:relative;z-index:1;min-height:26px}
+.pc-name em{font-style:italic}
+.pc-amp{font-family:'Fraunces',serif;font-style:italic;font-size:18px;margin:4px 0;opacity:.7;position:relative;z-index:1}
+.pc-date{font-family:'Fraunces',serif;font-size:11px;letter-spacing:.22em;margin-top:14px;position:relative;z-index:1;min-height:11px}
+.pc-venue{font-family:'Fraunces',serif;font-style:italic;font-size:10.5px;margin-top:4px;opacity:.6;position:relative;z-index:1}
+.side-footer{margin-top:22px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;display:flex;justify-content:space-between}
+
+/* Preview theme variants */
+.preview-card.t-midnight{background:linear-gradient(180deg,#0F1530,#2A2440 50%,#1A1628);color:#E8DDC2}
+.preview-card.t-midnight::before{border-color:rgba(212,184,150,.3)}
+.preview-card.t-midnight .pc-name em,.preview-card.t-midnight .pc-amp{color:var(--gold)}
+.preview-card.t-sakura{background:linear-gradient(180deg,#FFE4E4,#D4A5C7);color:#5A2E3E}
+.preview-card.t-emerald{background:linear-gradient(180deg,#1F4235,#2D5744);color:#E8D9B3}
+.preview-card.t-emerald .pc-name em,.preview-card.t-emerald .pc-amp{color:var(--gold)}
+
+/* ==== MAIN ==== */
+.main{position:relative;padding:48px 80px 80px;display:flex;flex-direction:column}
+.main-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.main-bg .mg{position:absolute;border-radius:50%;filter:blur(140px);opacity:.08}
+.main-bg .mg1{width:500px;height:500px;background:var(--lilac);top:-100px;right:-100px}
+.main-bg .mg2{width:400px;height:400px;background:var(--peach);bottom:-100px;left:20%}
+
+/* Progress rail */
+.rail{position:relative;z-index:2;display:flex;align-items:center;gap:14px;max-width:640px;margin:0 auto 64px;width:100%}
+.rail-step{display:flex;align-items:center;gap:14px;color:var(--ink-faint);transition:color .5s}
+.rail-step .n{width:32px;height:32px;border-radius:50%;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.04em;background:var(--bg-0);transition:all .5s}
+.rail-step .l{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase}
+.rail-step.done{color:var(--ink-dim)}
+.rail-step.done .n{border-color:var(--line-strong);color:var(--ink);background:var(--bg-1)}
+.rail-step.active{color:var(--ink)}
+.rail-step.active .n{border-color:var(--coral);color:var(--coral);box-shadow:0 0 0 4px rgba(240,160,156,.1),0 0 24px rgba(240,160,156,.3)}
+.rail-line{flex:1;height:1px;background:var(--line-strong);position:relative;overflow:hidden}
+.rail-line::after{content:'';position:absolute;inset:0;background:var(--coral);transform-origin:left;transform:scaleX(0);transition:transform .6s var(--ease)}
+.rail-line.filled::after{transform:scaleX(1)}
+
+/* Form canvas */
+.canvas{position:relative;z-index:2;max-width:720px;margin:0 auto;width:100%;flex:1}
+.step{display:none;animation:stepIn .6s var(--ease-d)}
+.step.on{display:block}
+@keyframes stepIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+
+.step-head{margin-bottom:52px}
+.step-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.28em;color:var(--coral);text-transform:uppercase;margin-bottom:18px}
+.step-title{font-family:'Fraunces',serif;font-weight:200;font-size:clamp(40px,4.4vw,64px);line-height:1;letter-spacing:-.028em;font-variation-settings:"opsz" 144,"SOFT" 30}
+.step-title em{color:var(--coral);font-variation-settings:"opsz" 144,"SOFT" 100}
+.step-sub{margin-top:18px;color:var(--ink-dim);font-size:15.5px;line-height:1.75;max-width:540px}
+
+/* Segment (role selector) */
+.segment-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.24em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:16px}
+.segment{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:44px}
+.seg-btn{padding:22px 18px;background:var(--bg-card);border:1px solid var(--line);border-radius:12px;color:var(--ink);cursor:pointer;font-family:inherit;transition:all .35s var(--ease);text-align:left;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden}
+.seg-btn:hover{border-color:var(--line-strong);background:var(--bg-2)}
+.seg-btn.on{border-color:var(--coral);background:rgba(240,160,156,.05);box-shadow:0 0 0 1px var(--coral) inset,0 10px 40px rgba(240,160,156,.12)}
+.seg-btn.on::before{content:'';position:absolute;top:14px;right:14px;width:6px;height:6px;border-radius:50%;background:var(--coral);box-shadow:0 0 10px var(--coral)}
+.seg-btn .sg-icon{font-family:'Fraunces',serif;font-style:italic;font-size:24px;color:var(--coral);line-height:1}
+.seg-btn .sg-name{font-family:'Fraunces',serif;font-size:16px;font-weight:400;margin-top:6px}
+.seg-btn .sg-note{font-size:11.5px;color:var(--ink-dim)}
+
+/* Field group (couple card) */
+.field-card{background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:36px;margin-bottom:20px;position:relative}
+.field-card .fc-label{display:flex;align-items:center;gap:12px;font-family:'Fraunces',serif;font-size:20px;font-weight:400;margin-bottom:26px;letter-spacing:-.01em}
+.field-card .fc-label em{color:var(--coral)}
+.field-card .fc-label .fc-tag{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;padding:4px 9px;border:1px solid var(--line-strong);border-radius:999px;margin-left:auto}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.fgrid.one{grid-template-columns:1fr}
+
+.field{display:flex;flex-direction:column;gap:8px;position:relative}
+.field label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--ink-dim);text-transform:uppercase}
+.field input,.field select,.field textarea{background:transparent;border:none;border-bottom:1px solid var(--line-strong);padding:12px 0;color:var(--ink);font-family:'Fraunces',serif;font-size:18px;font-weight:300;outline:none;transition:border-color .3s,color .3s;font-variation-settings:"opsz" 144}
+.field input::placeholder,.field textarea::placeholder{color:var(--ink-faint);font-style:italic;font-weight:300}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--coral)}
+.field input[type=date],.field input[type=time]{font-family:'Fraunces',serif;color-scheme:dark}
+.field .hint{font-size:11.5px;color:var(--ink-faint);font-family:'Inter',sans-serif;margin-top:2px}
+.field.locked input{color:var(--ink-dim)}
+.field.locked::after{content:'🔒 akun anda';position:absolute;right:0;bottom:14px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:var(--ink-faint);text-transform:uppercase}
+
+/* Event cards (step 2) */
+.event-card{background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:32px;margin-bottom:18px;position:relative}
+.ec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.ec-num{font-family:'Fraunces',serif;font-style:italic;font-size:22px;color:var(--coral);line-height:1}
+.ec-del{background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.2em;color:var(--ink-dim);text-transform:uppercase;cursor:pointer;transition:all .3s}
+.ec-del:hover{color:#E87878;border-color:#E87878}
+.ec-del.hide{display:none}
+.add-event{width:100%;padding:22px;background:transparent;border:1px dashed var(--line-strong);border-radius:16px;color:var(--ink-dim);font-family:inherit;font-size:14px;cursor:pointer;transition:all .3s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
+.add-event:hover{color:var(--ink);border-color:var(--ink-dim);background:rgba(255,255,255,.02)}
+.add-event .plus{font-family:'Fraunces',serif;font-style:italic;font-size:20px;line-height:1;color:var(--coral)}
+
+.map-row{margin-top:22px;padding:16px 18px;background:var(--bg-1);border-radius:12px;border:1px dashed var(--line-strong);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.map-input{flex:1;min-width:200px;background:var(--bg-0);border:1px solid var(--line);border-radius:8px;padding:10px 14px;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none}
+.map-input:focus{border-color:var(--coral)}
+.map-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:transparent;border:1px solid var(--line-strong);border-radius:999px;color:var(--ink);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;text-decoration:none;transition:all .3s}
+.map-btn:hover{border-color:var(--coral);color:var(--coral)}
+.map-hint{font-size:11px;color:var(--ink-faint);margin-top:10px;width:100%;line-height:1.6}
+.map-hint em{color:var(--coral);font-style:italic}
+
+/* Themes (step 3) */
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.theme{background:var(--bg-card);border:1px solid var(--line);border-radius:18px;padding:18px;cursor:pointer;transition:all .4s var(--ease);text-align:left;font-family:inherit;color:inherit;position:relative;overflow:hidden}
+.theme:hover{border-color:var(--line-strong);transform:translateY(-2px)}
+.theme.on{border-color:var(--coral);box-shadow:0 0 0 1px var(--coral) inset,0 20px 50px rgba(240,160,156,.16)}
+.theme.on::after{content:'';position:absolute;top:14px;right:14px;width:22px;height:22px;border-radius:50%;background:var(--coral);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%230B0B15' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");background-repeat:no-repeat;background-position:center;box-shadow:0 0 14px var(--coral)}
+.theme-preview{aspect-ratio:3/4;border-radius:10px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:18px}
+.theme-preview::before{content:'';position:absolute;inset:8px;border:1px solid rgba(0,0,0,.15)}
+.theme-preview .tp-mono{font-family:'JetBrains Mono',monospace;font-size:7.5px;letter-spacing:.28em;text-transform:uppercase;opacity:.5;position:relative}
+.theme-preview .tp-orn{font-size:11px;margin:4px 0;opacity:.5;position:relative}
+.theme-preview .tp-name{font-family:'Fraunces',serif;font-size:22px;font-weight:300;line-height:1;position:relative;text-align:center}
+.theme-preview .tp-name em{font-style:italic}
+.theme-preview .tp-amp{font-family:'Fraunces',serif;font-style:italic;font-size:16px;margin:4px 0;opacity:.7;position:relative}
+.theme-preview .tp-d{font-family:'Fraunces',serif;font-size:9px;margin-top:14px;letter-spacing:.2em;position:relative}
+.theme-preview.tp-sakura{background:linear-gradient(180deg,#FFE4E4,#D4A5C7);color:#5A2E3E}
+.theme-preview.tp-midnight{background:linear-gradient(180deg,#0F1530,#2A2440 50%,#1A1628);color:#E8DDC2}
+.theme-preview.tp-midnight .tp-name em,.theme-preview.tp-midnight .tp-amp{color:var(--gold)}
+.theme-preview.tp-navy{background:linear-gradient(180deg,#F5E8D3,#E8D0B8);color:#1A2341}
+.theme-preview.tp-emerald{background:linear-gradient(180deg,#1F4235,#2D5744);color:#E8D9B3}
+.theme-preview.tp-emerald .tp-name em,.theme-preview.tp-emerald .tp-amp{color:var(--gold)}
+.theme-preview.tp-ivory{background:linear-gradient(180deg,#F5E6D3,#E8C7B8);color:#3A2819}
+.theme-preview.tp-coral{background:linear-gradient(180deg,#FFD5C8,#E89B88);color:#5A2E2E}
+.theme-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.theme-name{font-family:'Fraunces',serif;font-size:18px;font-weight:400;letter-spacing:-.01em}
+.theme-name em{font-style:italic}
+.theme-tag{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(240,160,156,.12);color:var(--coral)}
+.theme-tag.free{background:rgba(143,163,217,.12);color:var(--blue)}
+.theme-tag.new{background:rgba(212,184,150,.14);color:var(--gold)}
+.theme-desc{font-size:12.5px;color:var(--ink-dim);line-height:1.6}
+
+/* Step 4 - finish */
+.finish{text-align:center;padding:40px 20px 20px;max-width:680px;margin:0 auto;position:relative}
+.finish-confetti{position:absolute;inset:-40px;pointer-events:none;overflow:hidden}
+.confetti{position:absolute;width:4px;height:14px;border-radius:1px;opacity:0;animation:conf 2.4s var(--ease-d) forwards}
+@keyframes conf{0%{opacity:0;transform:translate(0,0) rotate(0)}15%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--r))}}
+.finish-orn{font-family:'Fraunces',serif;font-style:italic;font-size:48px;color:var(--coral);opacity:.6;line-height:1;margin-bottom:24px}
+.finish-card{position:relative;z-index:1}
+.finish h2{font-family:'Fraunces',serif;font-weight:200;font-size:clamp(44px,5vw,72px);line-height:1;letter-spacing:-.028em;margin-bottom:24px;font-variation-settings:"opsz" 144,"SOFT" 30}
+.finish h2 em{color:var(--coral);font-variation-settings:"opsz" 144,"SOFT" 100}
+.finish p{color:var(--ink-dim);font-size:16px;line-height:1.8;max-width:520px;margin:0 auto 16px}
+.finish .sig{margin-top:36px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.28em;color:var(--ink-faint);text-transform:uppercase}
+
+.final-preview{margin:56px auto 48px;max-width:280px;aspect-ratio:3/4.2;border-radius:8px;padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;box-shadow:0 40px 100px rgba(0,0,0,.6);transform:rotate(-1deg);animation:cardIn 1.2s .4s var(--ease-d) both}
+@keyframes cardIn{from{opacity:0;transform:rotate(-8deg) translateY(40px) scale(.9)}to{opacity:1;transform:rotate(-1deg)}}
+.final-preview::before{content:'';position:absolute;inset:12px;border:1px solid rgba(58,40,25,.2)}
+.final-preview.t-ivory{background:linear-gradient(180deg,#F5E6D3,#E8C7B8);color:#3A2819}
+.final-preview.t-midnight{background:linear-gradient(180deg,#0F1530,#2A2440 50%,#1A1628);color:#E8DDC2}
+.final-preview.t-midnight::before{border-color:rgba(212,184,150,.28)}
+.final-preview.t-sakura{background:linear-gradient(180deg,#FFE4E4,#D4A5C7);color:#5A2E3E}
+.final-preview.t-emerald{background:linear-gradient(180deg,#1F4235,#2D5744);color:#E8D9B3}
+.final-preview.t-navy{background:linear-gradient(180deg,#F5E8D3,#E8D0B8);color:#1A2341}
+.final-preview.t-coral{background:linear-gradient(180deg,#FFD5C8,#E89B88);color:#5A2E2E}
+.fp-mono{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.3em;text-transform:uppercase;opacity:.55;position:relative}
+.fp-orn{font-size:13px;margin:10px 0;opacity:.5;position:relative}
+.fp-name{font-family:'Fraunces',serif;font-size:30px;font-weight:300;line-height:1;position:relative;text-align:center}
+.fp-name em{font-style:italic}
+.fp-amp{font-family:'Fraunces',serif;font-style:italic;font-size:22px;margin:8px 0;opacity:.7;position:relative}
+.fp-d{font-family:'Fraunces',serif;font-size:13px;margin-top:20px;letter-spacing:.22em;position:relative}
+.fp-v{font-family:'Fraunces',serif;font-style:italic;font-size:11.5px;margin-top:4px;opacity:.6;position:relative;text-align:center}
+
+/* Bottom bar */
+.bar{position:relative;z-index:2;max-width:720px;margin:56px auto 0;width:100%;display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid var(--line)}
+.bar-back{background:transparent;border:1px solid var(--line-strong);border-radius:999px;padding:14px 24px;color:var(--ink-dim);font-family:inherit;font-size:13px;cursor:pointer;transition:all .3s;display:inline-flex;align-items:center;gap:10px;text-decoration:none}
+.bar-back:hover{color:var(--ink);border-color:var(--ink-dim);background:rgba(255,255,255,.02)}
+.bar-back.hide{visibility:hidden}
+.bar-save{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.bar-save .dot{width:6px;height:6px;border-radius:50%;background:var(--coral);box-shadow:0 0 10px var(--coral);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.bar-next{display:inline-flex;align-items:center;gap:10px;padding:16px 28px;border-radius:999px;background:linear-gradient(115deg,var(--blue),var(--lilac) 50%,var(--coral));color:#0B0B15;font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;border:none;transition:all .4s var(--ease);position:relative;overflow:hidden}
+.bar-next::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,var(--lilac),var(--coral) 50%,var(--peach));opacity:0;transition:opacity .4s}
+.bar-next:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(240,160,156,.28)}
+.bar-next:hover::after{opacity:1}
+.bar-next>*{position:relative;z-index:1}
+.bar-next:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.bar-next:disabled:hover{box-shadow:none}
+
+/* Responsive */
+@media (max-width:1080px){
+  .app{grid-template-columns:1fr}
+  .side{position:relative;height:auto;min-height:auto;border-right:none;border-bottom:1px solid var(--line)}
+  .side-inner{padding:28px 32px 32px}
+  .side-head{margin-top:32px}
+  .side-title{font-size:clamp(30px,5vw,42px)}
+  .preview-wrap{display:none}
+  .main{padding:44px 32px 60px}
+}
+@media (max-width:720px){
+  .main{padding:32px 20px 60px}
+  .rail{gap:6px;margin-bottom:44px}
+  .rail-step .l{display:none}
+  .rail-step .n{width:28px;height:28px;font-size:10px}
+  .step-title{font-size:clamp(32px,8vw,44px)}
+  .step-sub{font-size:14.5px}
+  .segment{grid-template-columns:1fr;gap:8px}
+  .fgrid{grid-template-columns:1fr}
+  .field-card,.event-card{padding:24px 20px}
+  .themes{grid-template-columns:1fr 1fr;gap:12px}
+  .theme-preview{padding:16px}
+  .theme-preview .tp-name{font-size:18px}
+  .bar{flex-wrap:wrap;gap:14px;padding-top:22px}
+  .bar-save{order:3;width:100%;justify-content:center;font-size:9.5px}
+  .bar-back,.bar-next{flex:1;justify-content:center}
+  .side-inner{padding:20px 20px 28px}
+  .side-head{margin-top:24px}
+  .final-preview{max-width:220px}
+}
+@media (max-width:420px){
+  .themes{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="side">
+    <div class="side-bg">
+      <div class="side-glow g1"></div>
+      <div class="side-glow g2"></div>
+      <div class="side-stars" id="sideStars"></div>
+    </div>
+    <div class="side-inner">
+      <div class="side-top">
+        <img src="assets/uwu-logo.svg" alt="UWU" class="logo"/>
+        <a href="#" class="exit">Keluar ←</a>
+      </div>
+      <div class="side-head">
+        <div class="chap-label" id="sideChap">Chapter 01 — Mempelai</div>
+        <h1 class="side-title" id="sideTitle">Cerita ini dimulai, dengan <em>dua nama.</em></h1>
+        <p class="side-lead" id="sideLead">Biarkan kami mengenal kalian berdua. Setiap detail yang kalian tuliskan — akan dirangkai menjadi undangan yang tak akan dilupakan.</p>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="preview-label">Live Preview · Kartu Undangan</div>
+        <div class="preview-card" id="previewCard">
+          <div class="pc-mono">The Wedding Of</div>
+          <div class="pc-orn">✦ ⸻ ✦</div>
+          <div class="pc-name" id="pcName1">Nama Mempelai</div>
+          <div class="pc-amp">&amp;</div>
+          <div class="pc-name"><em id="pcName2">Pasangan</em></div>
+          <div class="pc-date" id="pcDate">· · ·</div>
+          <div class="pc-venue" id="pcVenue">Nama tempat</div>
+        </div>
+        <div class="side-footer">
+          <span>Tersimpan otomatis</span>
+          <span id="sidePct">25%</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <div class="main-bg"><div class="mg mg1"></div><div class="mg mg2"></div></div>
+
+    <!-- Progress rail -->
+    <div class="rail" id="rail">
+      <div class="rail-step active" data-s="1"><div class="n">1</div><div class="l">Mempelai</div></div>
+      <div class="rail-line"></div>
+      <div class="rail-step" data-s="2"><div class="n">2</div><div class="l">Jadwal</div></div>
+      <div class="rail-line"></div>
+      <div class="rail-step" data-s="3"><div class="n">3</div><div class="l">Tema</div></div>
+      <div class="rail-line"></div>
+      <div class="rail-step" data-s="4"><div class="n">4</div><div class="l">Selesai</div></div>
+    </div>
+
+    <div class="canvas" id="canvas">
+
+      <!-- STEP 1 -->
+      <div class="step on" data-step="1">
+        <div class="step-head">
+          <div class="step-eyebrow">N° 01 — Mempelai</div>
+          <h2 class="step-title">Ceritakan tentang <em>kalian berdua.</em></h2>
+          <p class="step-sub">Nama-nama ini akan tampil di undangan kalian dan di dashboard. Tidak perlu sempurna — kalian bisa mengubahnya kapan saja.</p>
+        </div>
+
+        <div class="segment-label">Siapa yang sedang mengisi?</div>
+        <div class="segment" id="segment">
+          <button class="seg-btn on" data-role="bride"><div class="sg-icon">♀</div><div class="sg-name">Mempelai Wanita</div><div class="sg-note">Email terhubung ke akun wanita</div></button>
+          <button class="seg-btn" data-role="groom"><div class="sg-icon">♂</div><div class="sg-name">Mempelai Pria</div><div class="sg-note">Email terhubung ke akun pria</div></button>
+          <button class="seg-btn" data-role="both"><div class="sg-icon">&amp;</div><div class="sg-name">Kami isi berdua</div><div class="sg-note">Login terpisah, edit bersama</div></button>
+        </div>
+
+        <div class="field-card">
+          <div class="fc-label"><em>Mempelai Wanita</em><span class="fc-tag" id="tagBride">Akun Anda</span></div>
+          <div class="fgrid">
+            <div class="field"><label>Nama lengkap</label><input id="brideName" type="text" placeholder="Anisa Putri Larasati" autocomplete="off"/></div>
+            <div class="field"><label>Nama panggilan</label><input id="brideNick" type="text" placeholder="Anisa" autocomplete="off"/></div>
+          </div>
+          <div class="fgrid one" style="margin-top:22px">
+            <div class="field locked"><label>Email</label><input id="brideEmail" type="email" value="royan.zdn@gmail.com" readonly/></div>
+          </div>
+        </div>
+
+        <div class="field-card">
+          <div class="fc-label"><em>Mempelai Pria</em></div>
+          <div class="fgrid">
+            <div class="field"><label>Nama lengkap</label><input id="groomName" type="text" placeholder="Rizky Pratama Hidayat" autocomplete="off"/></div>
+            <div class="field"><label>Nama panggilan</label><input id="groomNick" type="text" placeholder="Rizky" autocomplete="off"/></div>
+          </div>
+          <div class="fgrid one" style="margin-top:22px">
+            <div class="field"><label>Email pasangan (opsional)</label><input id="groomEmail" type="email" placeholder="Masukkan email pasangan"/><span class="hint">Jika diisi, pasangan bisa ikut mengelola undangan dari akun mereka sendiri.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step" data-step="2">
+        <div class="step-head">
+          <div class="step-eyebrow">N° 02 — Jadwal</div>
+          <h2 class="step-title">Kapan, dan <em>dimana?</em></h2>
+          <p class="step-sub">Tambah hari dan lokasi setiap acara — akad, resepsi, atau keduanya. Minimal satu acara harus diisi.</p>
+        </div>
+
+        <div id="eventsWrap"></div>
+        <button class="add-event" id="addEvent"><span class="plus">+</span> Tambah Acara</button>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step" data-step="3">
+        <div class="step-head">
+          <div class="step-eyebrow">N° 03 — Tema</div>
+          <h2 class="step-title">Pilih <em>palet cerita.</em></h2>
+          <p class="step-sub">Enam palet kurasi, masing-masing dengan mood berbeda. Kalian bisa mengubahnya kapan saja — tema ini akan mewarnai halaman undangan tamu.</p>
+        </div>
+
+        <div class="themes" id="themes">
+          <button class="theme on" data-theme="ivory">
+            <div class="theme-preview tp-ivory">
+              <div class="tp-mono">The Wedding Of</div><div class="tp-orn">✦ ⸻ ✦</div>
+              <div class="tp-name tpn1">Anisa</div><div class="tp-amp">&amp;</div><div class="tp-name"><em class="tpn2">Rizky</em></div>
+              <div class="tp-d tpd">· · ·</div>
+            </div>
+            <div class="theme-meta"><div class="theme-name">Ivory <em>Whisper</em></div><span class="theme-tag free">Gratis</span></div>
+            <div class="theme-desc">Klasik hangat, ivory &amp; terracotta. Timeless untuk segala acara.</div>
+          </button>
+          <button class="theme" data-theme="sakura">
+            <div class="theme-preview tp-sakura">
+              <div class="tp-mono">The Wedding Of</div><div class="tp-orn">✦ ⸻ ✦</div>
+              <div class="tp-name tpn1">Anisa</div><div class="tp-amp">&amp;</div><div class="tp-name"><em class="tpn2">Rizky</em></div>
+              <div class="tp-d tpd">· · ·</div>
+            </div>
+            <div class="theme-meta"><div class="theme-name">Sakura <em>Bloom</em></div><span class="theme-tag free">Gratis</span></div>
+            <div class="theme-desc">Pink-pastel &amp; sakura. Romantis untuk resepsi taman.</div>
+          </button>
+          <button class="theme" data-theme="midnight">
+            <div class="theme-preview tp-midnight">
+              <div class="tp-mono">The Wedding Of</div><div class="tp-orn">✦ ⸻ ✦</div>
+              <div class="tp-name tpn1">Anisa</div><div class="tp-amp">&amp;</div><div class="tp-name"><em class="tpn2">Rizky</em></div>
+              <div class="tp-d tpd">· · ·</div>
+            </div>
+            <div class="theme-meta"><div class="theme-name">Midnight <em>Gold</em></div><span class="theme-tag">Pro</span></div>
+            <div class="theme-desc">Cinematic nocturnal. Mewah untuk ballroom &amp; gala.</div>
+          </button>
+          <button class="theme" data-theme="emerald">
+            <div class="theme-preview tp-emerald">
+              <div class="tp-mono">The Wedding Of</div><div class="tp-orn">✦ ⸻ ✦</div>
+              <div class="tp-name tpn1">Anisa</div><div class="tp-amp">&amp;</div><div class="tp-name"><em class="tpn2">Rizky</em></div>
+              <div class="tp-d tpd">· · ·</div>
+            </div>
+            <div class="theme-meta"><div class="theme-name">Emerald <em>Heritage</em></div><span class="theme-tag">Pro</span></div>
+            <div class="theme-desc">Javanese royal green &amp; gold. Untuk akad adat.</div>
+          </button>
+          <button class="theme" data-theme="navy">
+            <div class="theme-preview tp-navy">
+              <div class="tp-mono">The Wedding Of</div><div class="tp-orn">✦ ⸻ ✦</div>
+              <div class="tp-name tpn1">Anisa</div><div class="tp-amp">&amp;</div><div class="tp-name"><em class="tpn2">Rizky</em></div>
+              <div class="tp-d tpd">· · ·</div>
+            </div>
+            <div class="theme-meta"><div class="theme-name">Navy <em>Elegance</em></div><span class="theme-tag new">Baru</span></div>
+            <div class="theme-desc">Navy-ivory formal. Untuk akad &amp; resepsi indoor.</div>
+          </button>
+          <button class="theme" data-theme="coral">
+            <div class="theme-preview tp-coral">
+              <div class="tp-mono">The Wedding Of</div><div class="tp-orn">✦ ⸻ ✦</div>
+              <div class="tp-name tpn1">Anisa</div><div class="tp-amp">&amp;</div><div class="tp-name"><em class="tpn2">Rizky</em></div>
+              <div class="tp-d tpd">· · ·</div>
+            </div>
+            <div class="theme-meta"><div class="theme-name">Coral <em>Sunset</em></div><span class="theme-tag new">Baru</span></div>
+            <div class="theme-desc">Warm coral &amp; peach. Untuk beach &amp; sunset wedding.</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step" data-step="4">
+        <div class="finish">
+          <div class="finish-confetti" id="confetti"></div>
+          <div class="finish-orn">✦</div>
+          <div class="finish-card">
+            <h2><em>Selamat.</em><br/>Cerita kalian siap dirangkai.</h2>
+            <p>Undangan untuk <strong id="coupleLine" style="font-family:'Fraunces',serif;font-style:italic;font-weight:400;color:var(--coral)">Anisa &amp; Rizky</strong> sudah disimpan. Lanjutkan ke dashboard untuk menyempurnakan detail, unggah foto, tambah ucapan, lalu kirim ke tamu.</p>
+            <div class="final-preview t-ivory" id="finalPreview">
+              <div class="fp-mono">The Wedding Of</div>
+              <div class="fp-orn">✦ ⸻ ✦</div>
+              <div class="fp-name" id="fpName1">Anisa</div>
+              <div class="fp-amp">&amp;</div>
+              <div class="fp-name"><em id="fpName2">Rizky</em></div>
+              <div class="fp-d" id="fpDate">14 · 06 · 2026</div>
+              <div class="fp-v" id="fpVenue">Hotel Mulia Ballroom</div>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+              <button class="bar-next" id="toDash"><span>Masuk Dashboard</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+              <button class="bar-back" id="editMore" style="padding:16px 28px">Edit Isi Undangan</button>
+            </div>
+            <div class="sig">— Tim UWU · Jakarta</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="bar" id="bar">
+      <button class="bar-back hide" id="btnBack">← Kembali</button>
+      <div class="bar-save"><span class="dot"></span><span id="saveText">Tersimpan otomatis</span></div>
+      <button class="bar-next" id="btnNext"><span id="nextLabel">Selanjutnya</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button>
+    </div>
+
+  </main>
+</div>
+
+<script>
+// ==== STARS ====
+const starField=document.getElementById('sideStars');
+for(let i=0;i<40;i++){const s=document.createElement('div');s.className='s';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.opacity=(0.15+Math.random()*0.5).toFixed(2);starField.appendChild(s)}
+
+// ==== STATE ====
+const state={step:1,role:'bride',theme:'ivory',events:[],bride:{},groom:{}};
+const MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+// ==== SIDE HEAD COPY ====
+const SIDE_COPY={
+  1:{chap:'Chapter 01 — Mempelai',title:'Cerita ini dimulai, dengan <em>dua nama.</em>',lead:'Biarkan kami mengenal kalian berdua. Setiap detail yang kalian tuliskan — akan dirangkai menjadi undangan yang tak akan dilupakan.'},
+  2:{chap:'Chapter 02 — Jadwal',title:'Sebuah hari, <em>beberapa acara.</em>',lead:'Akad pagi, resepsi malam, atau intimate dinner — tambahkan setiap momen yang ingin dihadirkan. Kami akan menyusun timeline untuk tamu kalian.'},
+  3:{chap:'Chapter 03 — Tema',title:'Temukan <em>mood</em> cerita kalian.',lead:'Tiap tema adalah palet warna, tipografi, dan ornamen yang sudah dikurasi. Pilih satu untuk memulai — bisa diganti kapan saja dari dashboard.'},
+  4:{chap:'Epilogue — Selesai',title:'Bab pembuka <em>sudah ditulis.</em>',lead:'Semua kepingan pertama sudah di tempatnya. Mari kita polish undangan kalian di dashboard — foto, ucapan, dan sentuhan akhir.'}
+};
+function updateSide(){
+  const c=SIDE_COPY[state.step];
+  document.getElementById('sideChap').textContent=c.chap;
+  document.getElementById('sideTitle').innerHTML=c.title;
+  document.getElementById('sideLead').textContent=c.lead;
+  document.getElementById('sidePct').textContent=(state.step*25)+'%';
+}
+
+// ==== PREVIEW CARD ====
+function updatePreview(){
+  const b=state.bride.nick||state.bride.name||'';
+  const g=state.groom.nick||state.groom.name||'';
+  document.getElementById('pcName1').textContent=b||'Nama Mempelai';
+  document.getElementById('pcName2').textContent=g||'Pasangan';
+  // date
+  const e=state.events[0];
+  let dateStr='· · ·';
+  if(e&&e.date){
+    const d=new Date(e.date);
+    if(!isNaN(d))dateStr=String(d.getDate()).padStart(2,'0')+' · '+String(d.getMonth()+1).padStart(2,'0')+' · '+d.getFullYear();
+  }
+  document.getElementById('pcDate').textContent=dateStr;
+  document.getElementById('pcVenue').textContent=(e&&e.venue)||'Nama tempat';
+  // theme
+  const pc=document.getElementById('previewCard');
+  pc.className='preview-card t-'+state.theme;
+  // update theme cards with names
+  document.querySelectorAll('.tpn1').forEach(n=>n.textContent=b||'Anisa');
+  document.querySelectorAll('.tpn2').forEach(n=>n.textContent=g||'Rizky');
+  document.querySelectorAll('.tpd').forEach(n=>n.textContent=dateStr);
+  // final preview
+  if(state.step===4)updateFinal();
+}
+function updateFinal(){
+  const b=state.bride.nick||state.bride.name||'Anisa';
+  const g=state.groom.nick||state.groom.name||'Rizky';
+  document.getElementById('fpName1').textContent=b;
+  document.getElementById('fpName2').textContent=g;
+  document.getElementById('coupleLine').textContent=b+' & '+g;
+  const e=state.events[0];
+  let dateStr='— · — · —';
+  if(e&&e.date){const d=new Date(e.date);if(!isNaN(d))dateStr=String(d.getDate()).padStart(2,'0')+' · '+String(d.getMonth()+1).padStart(2,'0')+' · '+d.getFullYear()}
+  document.getElementById('fpDate').textContent=dateStr;
+  document.getElementById('fpVenue').textContent=(e&&e.venue)||'Tempat Acara';
+  document.getElementById('finalPreview').className='final-preview t-'+state.theme;
+}
+
+// ==== STEP 1: bride/groom ====
+const segment=document.getElementById('segment');
+segment.addEventListener('click',e=>{
+  const b=e.target.closest('.seg-btn');if(!b)return;
+  segment.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');state.role=b.dataset.role;
+  // update which side gets "your account" tag
+  const tag=document.getElementById('tagBride');
+  if(state.role==='groom')tag.textContent='Akun pasangan';
+  else if(state.role==='both')tag.textContent='Akun utama';
+  else tag.textContent='Akun Anda';
+});
+function wireField(id,obj,key){
+  const el=document.getElementById(id);
+  el.addEventListener('input',()=>{obj[key]=el.value;updatePreview()});
+}
+wireField('brideName',state.bride,'name');
+wireField('brideNick',state.bride,'nick');
+wireField('brideEmail',state.bride,'email');
+wireField('groomName',state.groom,'name');
+wireField('groomNick',state.groom,'nick');
+wireField('groomEmail',state.groom,'email');
+
+// ==== STEP 2: events ====
+function renderEvents(){
+  const w=document.getElementById('eventsWrap');
+  w.innerHTML='';
+  state.events.forEach((ev,i)=>{
+    const c=document.createElement('div');c.className='event-card';
+    c.innerHTML=`
+      <div class="ec-head">
+        <div class="ec-num">Acara ${i+1}</div>
+        <button class="ec-del ${state.events.length<=1?'hide':''}" data-i="${i}">Hapus</button>
+      </div>
+      <div class="fgrid">
+        <div class="field"><label>Label acara</label><input type="text" data-k="label" value="${ev.label||''}" placeholder="Akad Nikah"/></div>
+        <div class="field"><label>Tanggal</label><input type="date" data-k="date" value="${ev.date||''}"/></div>
+      </div>
+      <div class="fgrid" style="margin-top:22px">
+        <div class="field"><label>Mulai</label><input type="time" data-k="start" value="${ev.start||''}"/></div>
+        <div class="field"><label>Selesai</label><input type="time" data-k="end" value="${ev.end||''}"/></div>
+      </div>
+      <div class="fgrid one" style="margin-top:22px">
+        <div class="field"><label>Nama tempat</label><input type="text" data-k="venue" value="${ev.venue||''}" placeholder="Hotel Mulia Ballroom"/></div>
+      </div>
+      <div class="fgrid one" style="margin-top:22px">
+        <div class="field"><label>Alamat</label><input type="text" data-k="addr" value="${ev.addr||''}" placeholder="Jl. Asia Afrika No. 8, Jakarta"/></div>
+      </div>
+      <div class="map-row">
+        <input type="url" class="map-input" data-k="map" value="${ev.map||''}" placeholder="Paste link Google Maps di sini"/>
+        <a href="https://maps.google.com" target="_blank" class="map-btn">◉ Cari di Maps</a>
+        <div class="map-hint">Klik <em>Cari di Maps</em> → temukan lokasi → salin URL address bar → paste di sini.</div>
+      </div>
+    `;
+    c.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input',()=>{ev[inp.dataset.k]=inp.value;updatePreview()});
+    });
+    const del=c.querySelector('.ec-del');
+    if(del)del.addEventListener('click',()=>{state.events.splice(i,1);renderEvents();updatePreview()});
+    w.appendChild(c);
+  });
+}
+document.getElementById('addEvent').addEventListener('click',()=>{state.events.push({label:'Resepsi'});renderEvents()});
+
+// ==== STEP 3: themes ====
+const themesEl=document.getElementById('themes');
+themesEl.addEventListener('click',e=>{
+  const t=e.target.closest('.theme');if(!t)return;
+  themesEl.querySelectorAll('.theme').forEach(x=>x.classList.remove('on'));
+  t.classList.add('on');state.theme=t.dataset.theme;updatePreview();
+});
+
+// ==== NAV ====
+const railSteps=document.querySelectorAll('.rail-step');
+const railLines=document.querySelectorAll('.rail-line');
+const steps=document.querySelectorAll('.step');
+function showStep(n){
+  state.step=n;
+  steps.forEach(s=>s.classList.toggle('on',parseInt(s.dataset.step)===n));
+  railSteps.forEach(r=>{
+    const v=parseInt(r.dataset.s);
+    r.classList.remove('active','done');
+    if(v<n)r.classList.add('done');
+    if(v===n)r.classList.add('active');
+  });
+  railLines.forEach((l,i)=>l.classList.toggle('filled',i<n-1));
+  document.getElementById('btnBack').classList.toggle('hide',n===1);
+  const nextBtn=document.getElementById('btnNext'),bar=document.getElementById('bar');
+  document.getElementById('nextLabel').textContent=n===3?'Gunakan tema ini':n===4?'Selesai':'Selanjutnya';
+  bar.style.display=n===4?'none':'flex';
+  updateSide();updatePreview();
+  if(n===4)fireConfetti();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.getElementById('btnNext').addEventListener('click',()=>{if(state.step<4)showStep(state.step+1)});
+document.getElementById('btnBack').addEventListener('click',()=>{if(state.step>1)showStep(state.step-1)});
+
+// ==== CONFETTI ====
+function fireConfetti(){
+  const box=document.getElementById('confetti');box.innerHTML='';
+  const colors=['#F0A09C','#B89DD4','#8FA3D9','#F4B8A3','#D4B896'];
+  for(let i=0;i<40;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.background=colors[i%colors.length];
+    c.style.left=(40+Math.random()*20)+'%';
+    c.style.top='40%';
+    c.style.setProperty('--x',(Math.random()*800-400)+'px');
+    c.style.setProperty('--y',(Math.random()*500+100)+'px');
+    c.style.setProperty('--r',(Math.random()*720-360)+'deg');
+    c.style.animationDelay=(Math.random()*0.6)+'s';
+    box.appendChild(c);
+  }
+}
+
+// ==== INIT ====
+state.events.push({label:'Akad Nikah',start:'08:00',end:'10:00'});
+renderEvents();updateSide();updatePreview();
+</script>
+</body>
+</html>

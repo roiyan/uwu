@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { requireAuthedUser } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
-import { Stepper } from "@/components/onboarding/Stepper";
+import { StepHeader } from "../components/step-header";
+import { HydratePreview } from "../components/preview-store";
 import { JadwalForm, type ScheduleRow } from "./form";
 
 function defaultRows(): ScheduleRow[] {
@@ -31,19 +32,21 @@ function defaultRows(): ScheduleRow[] {
 }
 
 // Page shell paints instantly; the data-dependent form streams in via Suspense.
-// Users see the stepper + heading + skeleton without waiting for the DB round-trip.
 export default function JadwalStep() {
   return (
     <div>
-      <Stepper current="jadwal" reached={["mempelai", "jadwal"]} />
-      <section className="mt-10">
-        <h1 className="font-display text-3xl text-white">
-          Jadwal <span className="italic text-gradient">acara</span>
-        </h1>
-        <p className="mt-2 text-sm text-white/60">
-          Tambah hari dan lokasi setiap acara. Minimal satu acara harus diisi.
-        </p>
-      </section>
+      <StepHeader
+        eyebrow="Bab kedua — momen yang dirayakan"
+        title={
+          <>
+            Sebuah hari,{" "}
+            <em className="ob-serif italic text-[var(--ob-coral)]">
+              beberapa acara.
+            </em>
+          </>
+        }
+        sub="Tambah hari dan lokasi setiap acara. Minimal satu acara harus diisi."
+      />
       <Suspense fallback={<FormSkeleton />}>
         <JadwalFormLoader />
       </Suspense>
@@ -72,14 +75,26 @@ async function JadwalFormLoader() {
       }))
     : defaultRows();
 
-  return <JadwalForm initial={initial} />;
+  return (
+    <>
+      <HydratePreview
+        brideName={bundle.couple.brideName}
+        brideNickname={bundle.couple.brideNickname ?? ""}
+        groomName={bundle.couple.groomName}
+        groomNickname={bundle.couple.groomNickname ?? ""}
+        eventDate={initial[0]?.eventDate ?? ""}
+        venue={initial[0]?.venueName ?? ""}
+      />
+      <JadwalForm initial={initial} />
+    </>
+  );
 }
 
 function FormSkeleton() {
   return (
-    <div className="mt-8 space-y-6">
-      <div className="h-64 animate-pulse rounded-2xl bg-surface-card/60" />
-      <div className="h-64 animate-pulse rounded-2xl bg-surface-card/60" />
+    <div className="mt-2 space-y-6">
+      <div className="h-64 animate-pulse rounded-[18px] border border-[var(--ob-line)] bg-[var(--ob-bg-card)]" />
+      <div className="h-64 animate-pulse rounded-[18px] border border-[var(--ob-line)] bg-[var(--ob-bg-card)]" />
     </div>
   );
 }
