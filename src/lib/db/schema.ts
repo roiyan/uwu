@@ -148,6 +148,11 @@ export const events = pgTable("events", {
   musicUrl: text("music_url"),
   isPublished: boolean("is_published").notNull().default(false),
   publishedAt: timestamp("published_at", { withTimezone: true }),
+  // Hari-H check-in switch. Couple flips this on in Pengaturan when
+  // they're ready to start scanning guests at the venue. Off by
+  // default so the public /check-in/[eventId] route refuses traffic
+  // until they're explicitly ready.
+  checkinEnabled: boolean("checkin_enabled").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
@@ -345,6 +350,15 @@ export const guests = pgTable("guests", {
   sendCount: integer("send_count").notNull().default(0),
   lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
   lastSentVia: text("last_sent_via"), // 'whatsapp' | 'email'
+  // Check-in tracking (Hari-H). NULL while the guest hasn't arrived;
+  // populated by the operator station via /lib/actions/checkin.ts.
+  // checkedInBy = operator name (free text — public station has no
+  // session). actualPax may differ from rsvpAttendees when more or
+  // fewer bodies show up than the RSVP promised.
+  checkedInAt: timestamp("checked_in_at", { withTimezone: true }),
+  checkedInBy: text("checked_in_by"),
+  actualPax: integer("actual_pax"),
+  checkinNotes: text("checkin_notes"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),

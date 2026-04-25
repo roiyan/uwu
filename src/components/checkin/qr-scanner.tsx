@@ -1,26 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-
-type Scanner = {
-  start: (
-    cameraIdOrConfig: { facingMode: string } | string,
-    config: {
-      fps: number;
-      qrbox: { width: number; height: number } | number;
-      aspectRatio?: number;
-    },
-    onScanSuccess: (decoded: string) => void,
-    onScanFailure?: (err: string) => void,
-  ) => Promise<void>;
-  stop: () => Promise<void>;
-  clear: () => void;
-};
-
-type Html5QrcodeCtor = new (
-  elementId: string,
-  config?: { verbose?: boolean },
-) => Scanner;
+import type { Html5Qrcode as Html5QrcodeType } from "html5-qrcode";
 
 /**
  * QR scanner that streams the back camera into a `<div>` and fires
@@ -50,7 +31,7 @@ export function QrScanner({
 }) {
   const elemId = useId().replace(/[^a-zA-Z0-9]/g, "");
   const fullId = `qr-scanner-${elemId}`;
-  const scannerRef = useRef<Scanner | null>(null);
+  const scannerRef = useRef<Html5QrcodeType | null>(null);
   const lastScanRef = useRef<{ value: string; at: number } | null>(null);
   const [status, setStatus] = useState<"loading" | "running" | "error">(
     "loading",
@@ -64,10 +45,9 @@ export function QrScanner({
       try {
         // Lazy import the lib. Server doesn't need it; the dashboard
         // only loads it when the scanner panel is mounted.
-        const mod = await import("html5-qrcode");
+        const { Html5Qrcode } = await import("html5-qrcode");
         if (cancelled) return;
-        const Ctor = (mod.Html5Qrcode ?? mod.default) as Html5QrcodeCtor;
-        const scanner = new Ctor(fullId, { verbose: false });
+        const scanner = new Html5Qrcode(fullId);
         scannerRef.current = scanner;
 
         await scanner.start(
