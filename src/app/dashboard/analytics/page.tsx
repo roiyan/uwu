@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import {
+  countGuestWishes,
   countLiveGuests,
   getEventPackageLimit,
   getGroupEngagement,
@@ -10,6 +11,7 @@ import {
   getTrafficSourceBreakdown,
   getWeeklyTrend,
   listGuestGroups,
+  listGuestWishes,
   listGuestsWithActivity,
   listTopOpeners,
   sumAttendees,
@@ -36,6 +38,8 @@ export default async function AnalyticsPage() {
     groupEngagement,
     heatmapBuckets,
     topOpeners,
+    wishes,
+    wishesTotal,
   ] = await Promise.all([
     countLiveGuests(eventId),
     sumAttendees(eventId),
@@ -48,6 +52,8 @@ export default async function AnalyticsPage() {
     getGroupEngagement(eventId),
     getOpenHeatmap(eventId),
     listTopOpeners(eventId, 5),
+    listGuestWishes(eventId, 3),
+    countGuestWishes(eventId),
   ]);
 
   if (total === 0) {
@@ -95,6 +101,9 @@ export default async function AnalyticsPage() {
       groupEngagement={groupEngagement}
       heatmapBuckets={heatmapBuckets}
       topOpeners={topOpeners}
+      wishes={wishes}
+      wishesTotal={wishesTotal}
+      wishesGuestTotal={total}
     />
   );
 }

@@ -10,6 +10,7 @@ import {
   BreakdownCards,
   type GroupEngagementRow,
   type SourceData,
+  type WishRow,
 } from "@/components/analytics/BreakdownCards";
 import { FunnelChart } from "@/components/analytics/FunnelChart";
 import { StatusDonut } from "@/components/analytics/StatusDonut";
@@ -107,6 +108,9 @@ export function AnalyticsClient({
   groupEngagement,
   heatmapBuckets,
   topOpeners,
+  wishes,
+  wishesTotal,
+  wishesGuestTotal,
 }: {
   total: number;
   guestLimit: number;
@@ -126,6 +130,9 @@ export function AnalyticsClient({
   groupEngagement: GroupEngagementRow[];
   heatmapBuckets: HeatmapBucket[];
   topOpeners: TopOpenerRow[];
+  wishes: WishRow[];
+  wishesTotal: number;
+  wishesGuestTotal: number;
 }) {
   const [range, setRange] = useState<Range>("7h");
   const [groupFilter, setGroupFilter] = useState<string>("");
@@ -301,6 +308,9 @@ export function AnalyticsClient({
           source={trafficSource}
           groups={groupEngagement}
           totalGuests={total}
+          wishes={wishes}
+          wishesTotal={wishesTotal}
+          wishesGuestTotal={wishesGuestTotal}
         />
       </div>
 
