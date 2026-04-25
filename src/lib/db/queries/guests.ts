@@ -137,6 +137,57 @@ export async function countLiveGuests(eventId: string) {
   return row?.count ?? 0;
 }
 
+/**
+ * Daily opens for the last N days, used by the Beranda time-series
+ * chart. Buckets `opened_at` by date in UTC so the result is stable
+ * across server restarts. Days with zero opens are filled in by the
+ * caller — this query only returns dates that actually had events.
+ */
+export async function getDailyOpens(eventId: string, days = 7) {
+  const sinceSql = sql`now() - (${days}::int || ' days')::interval`;
+  const rows = await db
+    .select({
+      date: sql<string>`to_char(date_trunc('day', ${guests.openedAt}), 'YYYY-MM-DD')`,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(guests)
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        isNull(guests.deletedAt),
+        sql`${guests.openedAt} is not null`,
+        sql`${guests.openedAt} >= ${sinceSql}`,
+      ),
+    )
+    .groupBy(sql`date_trunc('day', ${guests.openedAt})`)
+    .orderBy(sql`date_trunc('day', ${guests.openedAt}) asc`);
+  return rows;
+}
+
+/**
+ * Aggregate counts for the Beranda response funnel. All five tiers
+ * computed in a single round-trip via `count(*) filter (where ...)`.
+ */
+export async function getResponseFunnel(eventId: string) {
+  const [row] = await db
+    .select({
+      total: sql<number>`count(*)::int`,
+      invited: sql<number>`count(*) filter (where ${guests.sendCount} > 0)::int`,
+      opened: sql<number>`count(*) filter (where ${guests.openedAt} is not null)::int`,
+      responded: sql<number>`count(*) filter (where ${guests.rsvpStatus} in ('hadir','tidak_hadir'))::int`,
+      attending: sql<number>`count(*) filter (where ${guests.rsvpStatus} = 'hadir')::int`,
+    })
+    .from(guests)
+    .where(and(eq(guests.eventId, eventId), isNull(guests.deletedAt)));
+  return {
+    total: row?.total ?? 0,
+    invited: row?.invited ?? 0,
+    opened: row?.opened ?? 0,
+    responded: row?.responded ?? 0,
+    attending: row?.attending ?? 0,
+  };
+}
+
 export async function getEventPackageLimit(eventId: string) {
   const [row] = await db
     .select({ guestLimit: packages.guestLimit, packageName: packages.name })
