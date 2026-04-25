@@ -19,6 +19,13 @@ export async function exportAnalyticsPDF(
 
   const html2canvas = (await import("html2canvas")).default;
   const { jsPDF } = await import("jspdf");
+  const { buildOnClone } = await import("./html2canvas-onclone");
+
+  // Wait for any pending webfont so the captured glyphs match what
+  // the operator sees on screen.
+  if (typeof document !== "undefined" && document.fonts?.ready) {
+    await document.fonts.ready;
+  }
 
   // Force the dark background colour explicitly — html2canvas otherwise
   // picks up `transparent` and the export looks washed out on print.
@@ -29,6 +36,10 @@ export async function exportAnalyticsPDF(
     logging: false,
     windowWidth: element.scrollWidth,
     windowHeight: element.scrollHeight,
+    // Tailwind v4 emits oklch() in computed styles for default
+    // utilities. html2canvas can't parse them. The onClone hook pins
+    // every color prop to its resolved rgb string before painting.
+    onclone: buildOnClone(element),
   });
 
   const pdf = new jsPDF({
