@@ -41,13 +41,13 @@ export function PhoneFrame({
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative rounded-[inherit] shadow-ghost-lg ring-1 ring-[color:var(--border-ghost)]"
+        className="relative rounded-[inherit] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)] ring-1 ring-white/5"
         style={{
           width: displayWidth,
           height: displayHeight,
           borderRadius: radius * scale + 8,
           padding: 8 * scale + 2,
-          background: "#1A1A2E",
+          background: "#1A1B26",
         }}
       >
         <div
@@ -72,7 +72,9 @@ export function PhoneFrame({
           </div>
         </div>
       </div>
-      <p className="mt-3 text-xs text-ink-hint">{VIEWPORT[viewport].label}</p>
+      <p className="mt-3 text-xs text-[var(--d-ink-faint)]">
+        {VIEWPORT[viewport].label}
+      </p>
     </div>
   );
 }
@@ -93,7 +95,7 @@ export function ViewportToggle({
     <div
       role="tablist"
       aria-label="Ukuran preview"
-      className="inline-flex items-center gap-1 rounded-full bg-surface-muted p-1"
+      className="inline-flex items-center gap-1 rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1"
     >
       {items.map((item) => {
         const active = value === item.id;
@@ -104,10 +106,10 @@ export function ViewportToggle({
             role="tab"
             aria-selected={active}
             onClick={() => onChange(item.id)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+            className={`d-mono rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.22em] transition-colors ${
               active
-                ? "bg-navy text-ink-inverse"
-                : "text-ink-muted hover:text-navy"
+                ? "bg-[var(--d-bg-1)] text-[var(--d-ink)]"
+                : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
             }`}
           >
             <span className="mr-1">{item.icon}</span>
