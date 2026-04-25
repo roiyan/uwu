@@ -6,12 +6,20 @@ import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events"
 import {
   countGuestsByStatus,
   countLiveGuests,
+  getDailyOpens,
+  getEventPackageLimit,
+  getResponseFunnel,
   sumAttendees,
 } from "@/lib/db/queries/guests";
+import { getRecentActivity } from "@/lib/actions/activity";
 import {
   ProgressSetupCard,
   type SetupStep,
 } from "@/components/dashboard/ProgressSetupCard";
+import { DailyOpensChart } from "@/components/dashboard/DailyOpensChart";
+import { ResponseFunnel } from "@/components/dashboard/ResponseFunnel";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { TamuStatCard } from "@/components/dashboard/TamuStatCard";
 
 function formatDate(iso: string) {
   const [y, m, d] = iso.split("-").map((x) => parseInt(x, 10));
@@ -53,18 +61,35 @@ export default async function DashboardBerandaPage() {
       </Suspense>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="space-y-6 lg:col-span-2">
           <Suspense fallback={<ProgressSkeleton />}>
             <ProgressBlock userId={user.id} />
           </Suspense>
+
+          {/* Peek: time-series chart + 5-tier funnel side by side. On
+              mobile they stack with the funnel beneath the chart. */}
+          <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+            <Suspense fallback={<ChartSkeleton />}>
+              <ChartBlock userId={user.id} />
+            </Suspense>
+            <Suspense fallback={<FunnelSkeleton />}>
+              <FunnelBlock userId={user.id} />
+            </Suspense>
+          </div>
         </div>
 
         <div className="space-y-4">
+          <Suspense fallback={<TamuSkeleton />}>
+            <TamuBlock userId={user.id} />
+          </Suspense>
           <Suspense fallback={<RsvpSkeleton />}>
             <RsvpDetailCard userId={user.id} />
           </Suspense>
           <Suspense fallback={<PublishSkeleton />}>
             <PublishStatCard userId={user.id} />
+          </Suspense>
+          <Suspense fallback={<ActivitySkeleton />}>
+            <ActivityBlock userId={user.id} />
           </Suspense>
         </div>
       </div>
@@ -550,6 +575,109 @@ function PublishSkeleton() {
       <div className="h-3 w-32 animate-pulse rounded bg-[var(--d-bg-2)]" />
       <div className="mt-3 h-6 w-44 animate-pulse rounded bg-[var(--d-bg-2)]" />
       <div className="mt-3 h-3 w-full animate-pulse rounded bg-[var(--d-bg-2)]" />
+    </section>
+  );
+}
+
+// ===========================================================================
+// Beranda peek + activity blocks
+// ===========================================================================
+
+async function ChartBlock({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const data = await getDailyOpens(current.event.id, 7);
+  return <DailyOpensChart data={data} />;
+}
+
+async function FunnelBlock({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const data = await getResponseFunnel(current.event.id);
+  return <ResponseFunnel data={data} />;
+}
+
+async function TamuBlock({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const [count, packageInfo] = await Promise.all([
+    countLiveGuests(current.event.id),
+    getEventPackageLimit(current.event.id),
+  ]);
+  return (
+    <TamuStatCard
+      count={count}
+      limit={packageInfo.limit}
+      packageName={packageInfo.packageName}
+    />
+  );
+}
+
+async function ActivityBlock({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const rows = await getRecentActivity(current.event.id, 5);
+  return (
+    <RecentActivity
+      items={rows.map((r) => ({
+        id: r.id,
+        summary: r.summary,
+        userName: r.userName,
+        userEmail: r.userEmail,
+        createdAt: r.createdAt,
+      }))}
+    />
+  );
+}
+
+function ChartSkeleton() {
+  return (
+    <section
+      className="d-card h-[300px] animate-pulse"
+      style={{ background: "var(--d-bg-2)" }}
+    />
+  );
+}
+
+function FunnelSkeleton() {
+  return (
+    <section className="d-card p-7">
+      <div className="h-3 w-24 animate-pulse rounded bg-[var(--d-bg-2)]" />
+      <div className="mt-3 h-6 w-44 animate-pulse rounded bg-[var(--d-bg-2)]" />
+      <div className="mt-6 space-y-4">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i}>
+            <div className="h-3 w-full animate-pulse rounded bg-[var(--d-bg-2)]" />
+            <div className="mt-2 h-2 w-full animate-pulse rounded bg-[var(--d-bg-2)]" />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TamuSkeleton() {
+  return (
+    <section className="d-card p-6">
+      <div className="h-3 w-16 animate-pulse rounded bg-[var(--d-bg-2)]" />
+      <div className="mt-3 h-10 w-24 animate-pulse rounded bg-[var(--d-bg-2)]" />
+      <div className="mt-3 h-3 w-full animate-pulse rounded bg-[var(--d-bg-2)]" />
+    </section>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <section className="d-card p-[22px]">
+      <div className="h-4 w-32 animate-pulse rounded bg-[var(--d-bg-2)]" />
+      <div className="mt-4 space-y-3">
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-3 w-full animate-pulse rounded bg-[var(--d-bg-2)]"
+          />
+        ))}
+      </div>
     </section>
   );
 }
