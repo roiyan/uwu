@@ -108,7 +108,16 @@ async function callGeminiWithRetry(
     }
 
     if (res.status === 429) {
-      // Rate limited — exponential backoff (2s, 4s, 8s)
+      // Rate limited. Gemini's 429 body explains *which* quota was hit
+      // (per-minute RPM, per-day, per-million-tokens) under
+      // error.details[].quotaMetric — surface it to the server logs so
+      // operators can decide whether to bump tier or wait. The user
+      // still sees a generic "Sedang ramai" message.
+      const errText = await safeText(res);
+      console.error(
+        `[ai-message] 429 from gemini (attempt ${attempt + 1}/${MAX_RETRIES})`,
+        errText.slice(0, 600),
+      );
       lastError = new Error("Sedang ramai — coba lagi dalam beberapa detik.");
       await sleep(backoffMs(attempt));
       continue;
@@ -116,7 +125,10 @@ async function callGeminiWithRetry(
 
     if (!res.ok) {
       const errText = await safeText(res);
-      console.error("[ai-message] non-2xx", res.status, errText.slice(0, 400));
+      console.error(
+        `[ai-message] non-2xx ${res.status} (attempt ${attempt + 1}/${MAX_RETRIES})`,
+        errText.slice(0, 600),
+      );
       if (res.status === 403)
         throw new Error("API key belum aktif. Hubungi admin.");
       if (res.status === 400)
@@ -135,6 +147,12 @@ async function callGeminiWithRetry(
     return json;
   }
 
+  // All retries exhausted — make this loud in the logs so the silent-
+  // failure pattern doesn't return.
+  console.error(
+    "[ai-message] all retries exhausted",
+    lastError?.message ?? "unknown",
+  );
   throw (
     lastError ??
     new Error("Sedang ramai — coba lagi dalam beberapa detik.")
