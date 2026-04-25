@@ -167,8 +167,13 @@ export async function getDailyOpens(eventId: string, days = 7) {
 /**
  * Aggregate counts for the Beranda response funnel. All five tiers
  * computed in a single round-trip via `count(*) filter (where ...)`.
+ * Optional `groupId` filters the same aggregate to a single guest
+ * group — used by the Analytics funnel filter.
  */
-export async function getResponseFunnel(eventId: string) {
+export async function getResponseFunnel(eventId: string, groupId?: string) {
+  const conditions = [eq(guests.eventId, eventId), isNull(guests.deletedAt)];
+  if (groupId) conditions.push(eq(guests.groupId, groupId));
+
   const [row] = await db
     .select({
       total: sql<number>`count(*)::int`,
@@ -178,7 +183,7 @@ export async function getResponseFunnel(eventId: string) {
       attending: sql<number>`count(*) filter (where ${guests.rsvpStatus} = 'hadir')::int`,
     })
     .from(guests)
-    .where(and(eq(guests.eventId, eventId), isNull(guests.deletedAt)));
+    .where(and(...conditions));
   return {
     total: row?.total ?? 0,
     invited: row?.invited ?? 0,
@@ -186,6 +191,81 @@ export async function getResponseFunnel(eventId: string) {
     responded: row?.responded ?? 0,
     attending: row?.attending ?? 0,
   };
+}
+
+/**
+ * Per-day rollups across the four metrics tracked on the Analytics
+ * KPI strip. Buckets `created_at` (registrations), `opened_at`
+ * (opens), `rsvped_at` (rsvps) per UTC day. Returned rows include
+ * gaps — the chart fills in zero for missing days client-side.
+ */
+export async function getWeeklyTrend(eventId: string, days = 7) {
+  const sinceSql = sql`now() - (${days}::int || ' days')::interval`;
+  const rows = await db
+    .select({
+      date: sql<string>`to_char(d::date, 'YYYY-MM-DD')`,
+      registered: sql<number>`(
+        select count(*)::int from ${guests}
+        where ${guests.eventId} = ${eventId}
+          and ${guests.deletedAt} is null
+          and date_trunc('day', ${guests.createdAt}) = d
+      )`,
+      opened: sql<number>`(
+        select count(*)::int from ${guests}
+        where ${guests.eventId} = ${eventId}
+          and ${guests.deletedAt} is null
+          and date_trunc('day', ${guests.openedAt}) = d
+      )`,
+      rsvped: sql<number>`(
+        select count(*)::int from ${guests}
+        where ${guests.eventId} = ${eventId}
+          and ${guests.deletedAt} is null
+          and date_trunc('day', ${guests.rsvpedAt}) = d
+      )`,
+      attending: sql<number>`(
+        select count(*)::int from ${guests}
+        where ${guests.eventId} = ${eventId}
+          and ${guests.deletedAt} is null
+          and ${guests.rsvpStatus} = 'hadir'
+          and date_trunc('day', ${guests.rsvpedAt}) = d
+      )`,
+    })
+    .from(
+      sql`generate_series(date_trunc('day', ${sinceSql}), date_trunc('day', now()), '1 day'::interval) as d`,
+    )
+    .orderBy(sql`d asc`);
+  return rows;
+}
+
+/**
+ * Flat guest list for the Analytics response table — name, status,
+ * timestamps, last channel sent. Sorted with most-recent rsvps first
+ * so the table opens to the most relevant rows.
+ */
+export async function listGuestsWithActivity(eventId: string) {
+  return db
+    .select({
+      id: guests.id,
+      name: guests.name,
+      groupName: guestGroups.name,
+      groupColor: guestGroups.color,
+      rsvpStatus: guests.rsvpStatus,
+      rsvpAttendees: guests.rsvpAttendees,
+      sendCount: guests.sendCount,
+      openedAt: guests.openedAt,
+      rsvpedAt: guests.rsvpedAt,
+      lastSentAt: guests.lastSentAt,
+      lastSentVia: guests.lastSentVia,
+    })
+    .from(guests)
+    .leftJoin(guestGroups, eq(guestGroups.id, guests.groupId))
+    .where(and(eq(guests.eventId, eventId), isNull(guests.deletedAt)))
+    .orderBy(
+      sql`${guests.rsvpedAt} desc nulls last`,
+      sql`${guests.openedAt} desc nulls last`,
+      sql`${guests.createdAt} desc`,
+    )
+    .limit(100);
 }
 
 export async function getEventPackageLimit(eventId: string) {
