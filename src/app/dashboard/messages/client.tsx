@@ -15,6 +15,7 @@ import {
 } from "@/lib/actions/broadcast";
 import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
 import { WaFallbackSender } from "./wa-fallback-sender";
+import { AiMessageModal } from "./ai-message-modal";
 
 type RecipientSample = {
   id: string;
@@ -100,7 +101,11 @@ export function MessagesClient({
   templates: MessageTemplate[];
   groups: GroupRow[];
   history: HistoryRow[];
-  providers: { whatsappConfigured: boolean; emailConfigured: boolean };
+  providers: {
+    whatsappConfigured: boolean;
+    emailConfigured: boolean;
+    aiAvailable: boolean;
+  };
   alreadySentCount: number;
   recipientSample: RecipientSample[];
   eventContext: EventContext;
@@ -124,6 +129,25 @@ export function MessagesClient({
 
   const [body, setBody] = useState(currentTemplate.body);
   const [subject, setSubject] = useState(currentTemplate.subject ?? "");
+  // Independent email body when channel === "both" — lets user
+  // customize the email half separately from the WA body.
+  const initialEmailTpl = useMemo(() => {
+    return (
+      templates.find(
+        (x) =>
+          x.channel === "email" &&
+          x.culturalPreference === culturalPreference,
+      ) ??
+      templates.find((x) => x.channel === "email" && x.culturalPreference === "umum") ??
+      templates.find((x) => x.channel === "email")!
+    );
+  }, [templates, culturalPreference]);
+  const [emailBody, setEmailBody] = useState(initialEmailTpl.body);
+
+  // Which editor the AI modal is targeting — null = closed.
+  // "primary" = the WA-or-Email body in the main textarea.
+  // "email"   = the secondary email body shown only when "both".
+  const [aiTarget, setAiTarget] = useState<null | "primary" | "email">(null);
 
   const [audience, setAudience] = useState<Audience>({ type: "all" });
   // "new_only" = skip guests already invited at least once (default,
@@ -198,6 +222,9 @@ export function MessagesClient({
     if (!state?.ok || !state.data?.messageId) return;
     if (pairedEmailId || pairedPending) return;
 
+    // Email half — uses the user-edited emailBody + subject from the
+    // dual-editor. Template slug stays at the matching cultural-pref
+    // email template so history rendering stays consistent.
     const emailTpl =
       templates.find(
         (x) => x.channel === "email" && x.culturalPreference === culturalPreference,
@@ -211,8 +238,8 @@ export function MessagesClient({
       const fd = new FormData();
       fd.append("channel", "email");
       fd.append("templateSlug", emailTpl.slug);
-      fd.append("subject", emailTpl.subject ?? subject);
-      fd.append("body", emailTpl.body);
+      fd.append("subject", subject || emailTpl.subject || "Undangan Pernikahan");
+      fd.append("body", emailBody);
       fd.append("audience", JSON.stringify(audience));
       fd.append("resendMode", includeSent ? "include_sent" : "new_only");
       const res = await create(null, fd);
@@ -230,6 +257,7 @@ export function MessagesClient({
     templates,
     culturalPreference,
     subject,
+    emailBody,
     audience,
     includeSent,
     create,
@@ -341,9 +369,11 @@ export function MessagesClient({
           </label>
           <input type="hidden" name="templateSlug" value={templateSlug} />
 
-          {channel === "email" && (
+          {(channel === "email" || channel === "both") && (
             <label className="mt-4 block">
-              <span className="text-sm font-medium text-ink">Subject</span>
+              <span className="text-sm font-medium text-ink">
+                {channel === "both" ? "Subject Email" : "Subject"}
+              </span>
               <input
                 name="subject"
                 value={subject}
@@ -354,8 +384,25 @@ export function MessagesClient({
             </label>
           )}
 
-          <label className="mt-4 block">
-            <span className="text-sm font-medium text-ink">Isi Pesan</span>
+          <div className="mt-4">
+            <div className="mb-1 flex items-center justify-between">
+              <span className="text-sm font-medium text-ink">
+                {channel === "both"
+                  ? "📱 Isi Pesan WhatsApp"
+                  : channel === "email"
+                    ? "✉️ Isi Pesan Email"
+                    : "Isi Pesan"}
+              </span>
+              {providers.aiAvailable && (
+                <button
+                  type="button"
+                  onClick={() => setAiTarget("primary")}
+                  className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy hover:bg-surface-muted"
+                >
+                  ✨ Bantu Tulis
+                </button>
+              )}
+            </div>
             <textarea
               name="body"
               value={body}
@@ -373,7 +420,36 @@ export function MessagesClient({
               <code className="rounded bg-surface-muted px-1">{"{venue}"}</code>,{" "}
               <code className="rounded bg-surface-muted px-1">{"{link_undangan}"}</code>
             </span>
-          </label>
+          </div>
+
+          {channel === "both" && (
+            <div className="mt-4">
+              <div className="mb-1 flex items-center justify-between">
+                <span className="text-sm font-medium text-ink">
+                  ✉️ Isi Pesan Email
+                </span>
+                {providers.aiAvailable && (
+                  <button
+                    type="button"
+                    onClick={() => setAiTarget("email")}
+                    className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy hover:bg-surface-muted"
+                  >
+                    ✨ Bantu Tulis
+                  </button>
+                )}
+              </div>
+              <textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                rows={10}
+                className={`${inputClass} resize-y font-mono text-[13px] leading-relaxed`}
+              />
+              <span className="mt-1 block text-xs text-ink-hint">
+                Email pakai gaya lebih formal. Placeholder yang sama
+                berlaku.
+              </span>
+            </div>
+          )}
 
           <div className="mt-5">
             <span className="text-sm font-medium text-ink">Audiens</span>
@@ -701,6 +777,39 @@ export function MessagesClient({
               onClose={() => setWaFallbackOpen(false)}
             />
           </div>
+        )}
+
+        {/* AI assistant modal. The target tells us which textarea to
+            populate when the user clicks "Pakai Pesan Ini". The
+            channel passed to the modal is mapped from aiTarget so the
+            email assistant always renders email-style copy even when
+            the active form channel is "both". */}
+        {aiTarget && providers.aiAvailable && (
+          <AiMessageModal
+            open
+            onClose={() => setAiTarget(null)}
+            channel={
+              aiTarget === "email"
+                ? "email"
+                : channel === "email"
+                  ? "email"
+                  : "whatsapp"
+            }
+            eventContext={{
+              coupleName: eventContext.bride + " & " + eventContext.groom,
+              eventDate: eventContext.date,
+              venue: eventContext.venue,
+              slug: eventContext.slug,
+            }}
+            onUseMessage={(text) => {
+              if (aiTarget === "email") {
+                setEmailBody(text);
+              } else {
+                setBody(text);
+              }
+              setAiTarget(null);
+            }}
+          />
         )}
       </section>
 
