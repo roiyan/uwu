@@ -111,47 +111,48 @@ async function Header({ userId }: { userId: string }) {
   const groomFirst = bundle.couple?.groomName?.split(" ")[0] ?? "Pasangan";
 
   return (
-    <header className="mb-5 flex flex-wrap items-end justify-between gap-3 lg:mb-10 lg:gap-6">
+    <header className="mb-5 flex flex-col gap-3 lg:mb-10 lg:flex-row lg:flex-wrap lg:items-end lg:justify-between lg:gap-6">
       <div className="min-w-0 flex-1">
-        <div className="mb-1.5 flex items-center gap-3 lg:mb-0">
+        <div className="mb-1 flex items-center gap-2 lg:mb-0 lg:gap-3">
           <span
             aria-hidden
-            className="h-px w-8 lg:w-10"
+            className="h-px w-6 lg:w-10"
             style={{
               background:
                 "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
             }}
           />
-          <p className="d-eyebrow">Selamat datang kembali</p>
+          <p className="d-eyebrow">Selamat datang</p>
         </div>
-        {/* Mobile: 30px title; desktop: 54px. Most "{Bride} & {Groom}"
-            fits on one line at 30px in a 390px viewport. For unusually
-            long names the title wraps gracefully; we deliberately
-            don't whitespace-nowrap to avoid hiding overflow. */}
-        <h1 className="d-serif mt-2 text-[30px] font-extralight leading-[1.1] tracking-[-0.01em] text-[var(--d-ink)] lg:mt-3 lg:text-[54px] lg:leading-[1.05]">
-          {brideFirst}
-          {" "}
+        {/* Mobile: 26px title — leaves room for "Bride & Groom" on a
+            single line in a 350px content area for typical Indonesian
+            first names without wrapping. Desktop: 54px. */}
+        <h1 className="d-serif mt-1 text-[26px] font-extralight leading-[1.1] tracking-[-0.01em] text-[var(--d-ink)] lg:mt-3 lg:text-[54px] lg:leading-[1.05]">
+          {brideFirst}{" "}
           <em className="d-serif italic text-[var(--d-coral)]">&</em>{" "}
           {groomFirst}
         </h1>
         {firstSchedule && (
-          <p className="d-mono mt-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] lg:mt-3 lg:text-[11px]">
+          <p className="d-mono mt-1.5 text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] lg:mt-3 lg:text-[11px] lg:tracking-[0.22em]">
             {firstSchedule.label} · {formatDate(firstSchedule.eventDate)}
           </p>
         )}
       </div>
-      <div className="flex flex-wrap gap-2">
+      {/* Mobile: button row fills its container row, each Link grows
+          equally via flex-1. Desktop (lg+): natural widths, sit at
+          the right of the flex-row hero. */}
+      <div className="flex shrink-0 gap-2">
         <Link
           href="/preview"
           target="_blank"
           rel="noreferrer"
-          className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:px-5 lg:py-2 lg:text-[11px]"
+          className="d-mono inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--d-line-strong)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:flex-none lg:px-5 lg:py-2 lg:text-[11px]"
         >
           👁 Pratinjau
         </Link>
         <Link
           href="/dashboard/website"
-          className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-4 py-2 text-[11px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 lg:px-6 lg:py-2.5 lg:text-[12px]"
+          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-3 py-1.5 text-[10px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 lg:flex-none lg:px-6 lg:py-2.5 lg:text-[12px]"
         >
           Edit Undangan →
         </Link>
