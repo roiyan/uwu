@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 export type ChipPlaceholder = {
   /** Token rendered between curly braces — e.g. "nama" → {nama}. */
@@ -23,63 +23,63 @@ export const DEFAULT_PLACEHOLDERS: ChipPlaceholder[] = [
   { key: "link_undangan", label: "Link Undangan" },
 ];
 
-const KNOWN_KEYS = new Set(DEFAULT_PLACEHOLDERS.map((p) => p.key));
 const PLACEHOLDER_RE = /\{([a-zA-Z0-9_]+)\}/g;
 
-function labelFor(key: string): string {
-  const found = DEFAULT_PLACEHOLDERS.find((p) => p.key === key);
-  return found?.label ?? key;
+const KNOWN_CHIP_CLASS =
+  "tpl-chip mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5 " +
+  "font-sans text-[12px] font-medium select-none align-baseline " +
+  "bg-navy/10 text-navy";
+
+const UNKNOWN_CHIP_CLASS =
+  "tpl-chip mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5 " +
+  "font-sans text-[12px] font-medium select-none align-baseline " +
+  "bg-rose-50 text-rose-dark";
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function escapeAttr(text: string): string {
+  return text.replace(/"/g, "&quot;");
 }
 
 /**
- * Parse a template string into a fresh DOM fragment: plain text +
- * `<br>` for newlines + atomic `<span>` chips for each {placeholder}.
+ * Render a template string to HTML — text + <br> + atomic chip spans.
+ * Used only by the two paths that legitimately need to repaint:
+ * initial mount and external value changes (template switch, AI apply).
  */
-function valueToFragment(value: string): DocumentFragment {
-  const frag = document.createDocumentFragment();
+function toHtml(value: string, placeholders: ChipPlaceholder[]): string {
+  const labelByKey = new Map(placeholders.map((p) => [p.key, p.label]));
+  let out = "";
   let cursor = 0;
   PLACEHOLDER_RE.lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = PLACEHOLDER_RE.exec(value)) !== null) {
     const before = value.slice(cursor, match.index);
-    if (before) appendTextWithBreaks(frag, before);
-    frag.appendChild(buildChip(match[1]));
+    if (before) out += escapeHtml(before).replace(/\n/g, "<br>");
+    const key = match[1];
+    const known = labelByKey.has(key);
+    const label = labelByKey.get(key) ?? key;
+    const cls = known ? KNOWN_CHIP_CLASS : UNKNOWN_CHIP_CLASS;
+    out +=
+      `<span class="${cls}" data-key="${escapeAttr(key)}" contenteditable="false">` +
+      escapeHtml(label) +
+      `</span>`;
     cursor = match.index + match[0].length;
   }
   const tail = value.slice(cursor);
-  if (tail) appendTextWithBreaks(frag, tail);
-  return frag;
-}
-
-function appendTextWithBreaks(parent: Node, text: string) {
-  const parts = text.split("\n");
-  parts.forEach((part, i) => {
-    if (part) parent.appendChild(document.createTextNode(part));
-    if (i < parts.length - 1) parent.appendChild(document.createElement("br"));
-  });
-}
-
-function buildChip(key: string): HTMLElement {
-  const known = KNOWN_KEYS.has(key);
-  const span = document.createElement("span");
-  span.setAttribute("data-chip", key);
-  span.setAttribute("contenteditable", "false");
-  span.className = [
-    "mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5",
-    "font-sans text-[12px] font-medium select-none align-baseline",
-    known
-      ? "bg-navy/10 text-navy"
-      : "bg-rose-50 text-rose-dark",
-  ].join(" ");
-  span.textContent = labelFor(key);
-  return span;
+  if (tail) out += escapeHtml(tail).replace(/\n/g, "<br>");
+  return out;
 }
 
 /**
  * Walk the editor DOM and serialise back to a template string with
- * `{key}` tokens. Treats <br> and block boundaries as newlines.
+ * `{key}` tokens. Treats <br> and DIV/P boundaries as newlines.
  */
-function nodeToValue(root: HTMLElement): string {
+function toTemplate(editor: HTMLElement): string {
   let out = "";
   const walk = (node: Node) => {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -88,8 +88,8 @@ function nodeToValue(root: HTMLElement): string {
     }
     if (node.nodeType !== Node.ELEMENT_NODE) return;
     const el = node as HTMLElement;
-    const chipKey = el.getAttribute("data-chip");
-    if (chipKey) {
+    const chipKey = el.getAttribute("data-key");
+    if (chipKey && el.classList.contains("tpl-chip")) {
       out += `{${chipKey}}`;
       return;
     }
@@ -97,24 +97,40 @@ function nodeToValue(root: HTMLElement): string {
       out += "\n";
       return;
     }
-    // For DIV/P (browsers wrap each new line in a block), emit a
-    // newline before the inner content unless we're already at a
-    // newline boundary (start of buffer or just after a \n).
     const isBlock = el.tagName === "DIV" || el.tagName === "P";
     if (isBlock && out.length > 0 && !out.endsWith("\n")) {
       out += "\n";
     }
     el.childNodes.forEach(walk);
   };
-  root.childNodes.forEach(walk);
-  return out;
+  editor.childNodes.forEach(walk);
+  // NBSP added after chips for caret-stability becomes a regular
+  // space in the serialised template; ZWSP if any survives is dropped.
+  return out.replace(/​/g, "").replace(/ /g, " ");
+}
+
+function buildChipElement(
+  key: string,
+  placeholders: ChipPlaceholder[],
+): HTMLElement {
+  const labelByKey = new Map(placeholders.map((p) => [p.key, p.label]));
+  const known = labelByKey.has(key);
+  const label = labelByKey.get(key) ?? key;
+  const span = document.createElement("span");
+  span.className = known ? KNOWN_CHIP_CLASS : UNKNOWN_CHIP_CLASS;
+  span.setAttribute("data-key", key);
+  span.setAttribute("contenteditable", "false");
+  span.textContent = label;
+  return span;
 }
 
 /**
  * Atomic-chip template editor. Placeholders render as non-editable
  * pills — tap once to insert via the toolbar, single Backspace deletes
- * the whole chip. Falls back to a hidden <input> so the surrounding
- * form's FormData still picks up the serialised template string.
+ * the whole chip. Operates as a fully-uncontrolled contentEditable:
+ * we paint the DOM ourselves on mount and on external value changes,
+ * and we NEVER reset innerHTML in response to our own onChange — that
+ * would snap the caret to position 0 on every keystroke.
  */
 export function TemplateChipEditor({
   value,
@@ -132,17 +148,136 @@ export function TemplateChipEditor({
   ariaLabel?: string;
 }) {
   const editorRef = useRef<HTMLDivElement | null>(null);
-  // ContentEditable + React controlled component: never reset
-  // innerHTML while the user is editing — that snaps the caret to
-  // position 0. Only reset on external value changes (template
-  // switch, AI "Pakai Pesan Ini"). isInternalChangeRef is set to true
-  // before any onChange we emit ourselves; the value-sync useEffect
-  // consumes the flag and skips the DOM reset.
-  const isInternalChangeRef = useRef(false);
+  // Tracks the most recent external value (from the prop). Internal
+  // edits are tracked separately by isUserEditingRef so the value-sync
+  // effect can tell them apart from genuine outside-driven changes.
+  const lastExternalValueRef = useRef<string>(value);
+  const isUserEditingRef = useRef(false);
+
+  // Mount-only: paint the initial DOM from the prop. Empty deps are
+  // intentional — we never want this to fire again.
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    el.innerHTML = toHtml(value, placeholders);
+    lastExternalValueRef.current = value;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Value-sync: the prop has changed since we last looked. If the
+  // change came from us (user typing or chip insert), the DOM is
+  // already correct — clear the flag and exit. Otherwise (template
+  // switch, AI apply), repaint.
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    if (isUserEditingRef.current) {
+      isUserEditingRef.current = false;
+      lastExternalValueRef.current = value;
+      return;
+    }
+    if (value === lastExternalValueRef.current) return;
+    lastExternalValueRef.current = value;
+    el.innerHTML = toHtml(value, placeholders);
+  }, [value, placeholders]);
+
+  const handleInput = useCallback(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    isUserEditingRef.current = true;
+    onChange(toTemplate(el));
+  }, [onChange]);
+
+  const insertAtCaret = useCallback(
+    (key: string) => {
+      const el = editorRef.current;
+      if (!el) return;
+      el.focus();
+      const sel = window.getSelection();
+      const chip = buildChipElement(key, placeholders);
+      // NBSP after chip so the caret has a stable text node to land in
+      // and the user doesn't end up "inside" the chip's neighbour.
+      const after = document.createTextNode(" ");
+
+      if (!sel || sel.rangeCount === 0 || !el.contains(sel.anchorNode)) {
+        el.appendChild(chip);
+        el.appendChild(after);
+        const range = document.createRange();
+        range.setStart(after, 1);
+        range.collapse(true);
+        const sel2 = window.getSelection();
+        sel2?.removeAllRanges();
+        sel2?.addRange(range);
+      } else {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(after);
+        range.insertNode(chip);
+        const newRange = document.createRange();
+        newRange.setStart(after, 1);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+      }
+
+      isUserEditingRef.current = true;
+      onChange(toTemplate(el));
+    },
+    [onChange, placeholders],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key !== "Backspace") return;
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+      if (!range.collapsed) return;
+
+      // Find the node immediately before the caret. If it's a chip
+      // span, remove it as a whole — defensive: most browsers handle
+      // this for contentEditable=false already, but Safari has been
+      // historically inconsistent.
+      let nodeBefore: Node | null = null;
+      const { startContainer, startOffset } = range;
+      if (startContainer.nodeType === Node.TEXT_NODE) {
+        if (startOffset === 0) {
+          nodeBefore = startContainer.previousSibling;
+        }
+      } else if (startContainer === editorRef.current) {
+        const idx = startOffset - 1;
+        if (idx >= 0) nodeBefore = startContainer.childNodes[idx];
+      }
+
+      if (
+        nodeBefore instanceof HTMLElement &&
+        nodeBefore.classList.contains("tpl-chip")
+      ) {
+        e.preventDefault();
+        nodeBefore.remove();
+        handleInput();
+      }
+    },
+    [handleInput],
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLDivElement>) => {
+      // Strip rich-text — paste as plain text only. Auto-converting
+      // pasted "{nama}" into chips is intentionally NOT done here:
+      // the user can re-insert via the toolbar; pasting between
+      // editors should round-trip as the canonical template string.
+      e.preventDefault();
+      const text = e.clipboardData.getData("text/plain");
+      if (!text) return;
+      document.execCommand("insertText", false, text);
+      handleInput();
+    },
+    [handleInput],
+  );
 
   // Set of placeholder keys currently present in the value — drives
-  // the "used" green styling on toolbar chips. Recomputes on every
-  // value change (typing, chip delete, template switch, AI apply).
+  // the "used" green styling on toolbar chips.
   const usedKeys = useMemo(() => {
     const used = new Set<string>();
     PLACEHOLDER_RE.lastIndex = 0;
@@ -152,64 +287,6 @@ export function TemplateChipEditor({
     }
     return used;
   }, [value]);
-
-  useEffect(() => {
-    const el = editorRef.current;
-    if (!el) return;
-    if (isInternalChangeRef.current) {
-      // The user just typed or inserted a chip. The DOM is already
-      // correct — only the prop is catching up. Skip the reset so the
-      // caret stays exactly where the user left it.
-      isInternalChangeRef.current = false;
-      return;
-    }
-    // External value change (template dropdown, AI apply, initial
-    // mount): repaint the DOM from the prop.
-    el.innerHTML = "";
-    el.appendChild(valueToFragment(value));
-  }, [value]);
-
-  function commit() {
-    const el = editorRef.current;
-    if (!el) return;
-    isInternalChangeRef.current = true;
-    onChange(nodeToValue(el));
-  }
-
-  function insertAtCaret(key: string) {
-    const el = editorRef.current;
-    if (!el) return;
-    el.focus();
-    const sel = window.getSelection();
-    const chip = buildChip(key);
-    // Trailing space so the user can keep typing without ending up
-    // inside the chip's neighbour text node by accident.
-    const space = document.createTextNode(" ");
-
-    if (!sel || sel.rangeCount === 0 || !el.contains(sel.anchorNode)) {
-      el.appendChild(chip);
-      el.appendChild(space);
-      // Park the caret right after the trailing space.
-      const range = document.createRange();
-      range.setStartAfter(space);
-      range.collapse(true);
-      const sel2 = window.getSelection();
-      sel2?.removeAllRanges();
-      sel2?.addRange(range);
-    } else {
-      const range = sel.getRangeAt(0);
-      range.deleteContents();
-      range.insertNode(space);
-      range.insertNode(chip);
-      range.setStartAfter(space);
-      range.collapse(true);
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-
-    isInternalChangeRef.current = true;
-    onChange(nodeToValue(el));
-  }
 
   return (
     <div className="rounded-lg border border-[color:var(--border-medium)] bg-white">
@@ -223,14 +300,18 @@ export function TemplateChipEditor({
             <button
               key={p.key}
               type="button"
+              // CRITICAL: onMouseDown + preventDefault keeps the editor
+              // focused and the selection alive. Using onClick would
+              // blur the editor first, getSelection() returns null,
+              // and the chip lands at the wrong position (or not at
+              // all).
               onMouseDown={(e) => {
-                // Prevent the editor from losing focus before we insert.
                 e.preventDefault();
+                insertAtCaret(p.key);
               }}
-              onClick={() => insertAtCaret(p.key)}
               title={
                 isUsed
-                  ? `Sudah ada di template (klik untuk tambah lagi)`
+                  ? "Sudah ada di template (klik untuk tambah lagi)"
                   : `Sisipkan {${p.key}}`
               }
               className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors ${
@@ -253,17 +334,9 @@ export function TemplateChipEditor({
         aria-multiline="true"
         aria-label={ariaLabel}
         spellCheck={false}
-        onInput={commit}
-        onBlur={commit}
-        onKeyDown={(e) => {
-          // Browsers handle Backspace on a chip span (contenteditable
-          // false) atomically — they remove the whole element. We just
-          // need to ensure the input event fires; nothing to do here.
-          if (e.key === "Enter" && !e.shiftKey) {
-            // Default contentEditable Enter behaviour wraps in <div>
-            // which we already serialise back to \n. Allow it.
-          }
-        }}
+        onInput={handleInput}
+        onKeyDown={handleKeyDown}
+        onPaste={handlePaste}
         className="px-3 py-2.5 font-mono text-[13px] leading-relaxed outline-none focus:shadow-[var(--focus-ring-navy)]"
         style={{ minHeight, whiteSpace: "pre-wrap" }}
       />
