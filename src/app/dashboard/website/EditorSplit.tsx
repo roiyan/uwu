@@ -17,8 +17,10 @@ import type {
 } from "@/components/invitation/types";
 import { ALL_SECTIONS_ON } from "@/components/invitation/types";
 
+// Underline-only inputs to match the dashboard dark idiom. Same look
+// as the broadcast composer + onboarding form fields.
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-2.5 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "mt-2 w-full bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink)] outline-none placeholder:text-[var(--d-ink-faint)] focus:border-[var(--d-coral)] transition-colors";
 
 export type EditorDefaults = {
   event: InvitationEvent;
@@ -179,24 +181,34 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
   return (
     <div className="flex-1">
       {/* Sticky action bar */}
-      <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-[color:var(--border-ghost)] bg-surface-base/90 px-6 py-3 backdrop-blur lg:px-10">
+      <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--d-line)] bg-[var(--d-bg-0)]/90 px-5 py-4 backdrop-blur lg:px-12">
         <div className="min-w-0">
-          <h1 className="font-display text-2xl text-navy">Website Editor</h1>
-          <p className="text-xs text-ink-muted">
-            {dirty ? "Ada perubahan yang belum disimpan." : "Semua tersimpan."}
+          <p className="d-eyebrow">Website Editor</p>
+          <p className="d-mono mt-1 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+            <span
+              aria-hidden
+              className={`mr-1.5 inline-block h-1.5 w-1.5 rounded-full ${
+                dirty
+                  ? "animate-pulse bg-[var(--d-coral)]"
+                  : "bg-[var(--d-green)]"
+              }`}
+            />
+            {dirty
+              ? "Ada perubahan yang belum disimpan"
+              : "Tersimpan otomatis"}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/dashboard/website/theme"
-            className="inline-flex items-center gap-1.5 rounded-full border border-[color:var(--color-gold)] px-4 py-2 text-sm font-medium text-[color:var(--color-gold-dark)] transition-colors hover:bg-[color:var(--color-gold-50)]"
+            className="d-mono inline-flex items-center gap-2 rounded-full border border-[rgba(212,184,150,0.35)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-gold)] transition-colors hover:bg-[rgba(212,184,150,0.08)]"
           >
             <span aria-hidden>✨</span> Tema
           </Link>
           <button
             type="button"
             onClick={() => setMobilePreviewOpen(true)}
-            className="rounded-full border border-navy/30 px-4 py-2 text-sm font-medium text-navy transition-colors hover:bg-navy/5 lg:hidden"
+            className="d-mono rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:hidden"
           >
             👁 Pratinjau
           </button>
@@ -204,7 +216,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             type="button"
             onClick={handleSave}
             disabled={pending}
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-2 text-sm font-medium text-white shadow-[0_6px_20px_-6px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[12px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {pending && (
               <span
@@ -212,7 +224,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                 className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
               />
             )}
-            <span>{pending ? "Menyimpan..." : "Simpan Perubahan"}</span>
+            <span>{pending ? "Menyimpan…" : "Simpan Perubahan"}</span>
           </button>
         </div>
       </div>
@@ -316,7 +328,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             onToggle={() => toggleSection("quote")}
           >
             <label className="block">
-              <span className="text-sm font-medium text-ink">Kutipan / ayat</span>
+              <span className="text-sm font-medium text-[var(--d-ink)]">Kutipan / ayat</span>
               <textarea
                 rows={2}
                 value={couple.quote ?? ""}
@@ -335,7 +347,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             onToggle={() => toggleSection("story")}
           >
             <label className="block">
-              <span className="text-sm font-medium text-ink">Cerita singkat</span>
+              <span className="text-sm font-medium text-[var(--d-ink)]">Cerita singkat</span>
               <textarea
                 rows={5}
                 value={couple.story ?? ""}
@@ -358,17 +370,17 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
               {schedules.map((row, idx) => (
                 <div
                   key={idx}
-                  className="rounded-xl border border-[color:var(--border-ghost)] p-4"
+                  className="rounded-xl border border-[var(--d-line)] p-4"
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="font-display text-base text-ink">
+                    <h4 className="font-display text-base text-[var(--d-ink)]">
                       Acara {idx + 1}
                     </h4>
                     {schedules.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeSchedule(idx)}
-                        className="text-xs text-ink-hint hover:text-rose"
+                        className="text-xs text-[var(--d-ink-faint)] hover:text-[var(--d-coral)]"
                       >
                         Hapus
                       </button>
@@ -427,7 +439,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                 <button
                   type="button"
                   onClick={addSchedule}
-                  className="w-full rounded-xl border border-dashed border-[color:var(--border-medium)] bg-white/40 px-4 py-3 text-sm text-ink-muted transition-colors hover:text-navy"
+                  className="w-full rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[var(--d-bg-card)]/40 px-4 py-3 text-sm text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-ink)]"
                 >
                   + Tambah Acara
                 </button>
@@ -442,7 +454,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             enabled={sections.rsvp}
             onToggle={() => toggleSection("rsvp")}
           >
-            <p className="text-sm text-ink-muted">
+            <p className="text-sm text-[var(--d-ink-dim)]">
               Form RSVP otomatis aktif. Toggle di sini mengatur apakah section
               &ldquo;Konfirmasi Kehadiran&rdquo; tampil di undangan.
             </p>
@@ -464,13 +476,13 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
 
       {/* Mobile preview modal */}
       {mobilePreviewOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-surface-base lg:hidden">
-          <div className="flex items-center justify-between border-b border-[color:var(--border-ghost)] px-4 py-3">
-            <p className="text-sm font-medium text-ink">Pratinjau</p>
+        <div className="fixed inset-0 z-50 flex flex-col bg-[var(--d-bg-0)] lg:hidden">
+          <div className="flex items-center justify-between border-b border-[var(--d-line)] px-4 py-3">
+            <p className="text-sm font-medium text-[var(--d-ink)]">Pratinjau</p>
             <button
               type="button"
               onClick={() => setMobilePreviewOpen(false)}
-              className="rounded-full px-3 py-1 text-sm font-medium text-navy hover:bg-surface-muted"
+              className="rounded-full px-3 py-1 text-sm font-medium text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
             >
               ✕ Tutup
             </button>
@@ -500,7 +512,7 @@ function SectionCard({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="rounded-2xl bg-surface-card ring-1 ring-black/5 shadow-ghost-sm">
+    <section className="rounded-2xl bg-[var(--d-bg-card)] ring-1 ring-black/5 shadow-ghost-sm">
       <header className="flex items-center gap-2 px-5 py-4">
         <button
           type="button"
@@ -509,15 +521,15 @@ function SectionCard({
           aria-expanded={open}
         >
           <span
-            className="inline-block h-5 w-5 text-ink-muted transition-transform duration-200"
+            className="inline-block h-5 w-5 text-[var(--d-ink-dim)] transition-transform duration-200"
             style={{ transform: open ? "rotate(90deg)" : "rotate(0deg)" }}
             aria-hidden
           >
             ›
           </span>
           <span>
-            <span className="block font-display text-lg text-ink">{title}</span>
-            <span className="block text-xs text-ink-muted">{description}</span>
+            <span className="block font-display text-lg text-[var(--d-ink)]">{title}</span>
+            <span className="block text-xs text-[var(--d-ink-dim)]">{description}</span>
           </span>
         </button>
         {onToggle && <SectionToggle enabled={enabled} onToggle={onToggle} />}
@@ -544,11 +556,11 @@ function SectionToggle({
       aria-checked={enabled}
       aria-label="Tampilkan bagian ini di undangan"
       className={`relative h-6 w-11 rounded-full transition-colors ${
-        enabled ? "bg-navy" : "bg-surface-muted"
+        enabled ? "bg-[var(--d-bg-2)]" : "bg-[var(--d-bg-2)]"
       }`}
     >
       <span
-        className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform"
+        className="absolute top-0.5 h-5 w-5 rounded-full bg-[var(--d-bg-card)] shadow transition-transform"
         style={{ transform: enabled ? "translateX(22px)" : "translateX(2px)" }}
       />
     </button>
@@ -572,7 +584,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="text-sm font-medium text-ink">{label}</span>
+      <span className="text-sm font-medium text-[var(--d-ink)]">{label}</span>
       <input
         type={type}
         value={value}

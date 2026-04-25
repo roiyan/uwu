@@ -45,24 +45,24 @@ export default async function CheckoutSuccessPage({
 
   return (
     <main className="flex-1 px-6 py-8 lg:px-10">
-      <section className="mx-auto max-w-lg rounded-2xl bg-surface-card p-8 text-center shadow-ghost-md">
+      <section className="mx-auto max-w-lg rounded-2xl bg-[var(--d-bg-card)] p-8 text-center shadow-ghost-md">
         <div
           className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-3xl ${
-            paid ? "bg-[#E8F3EE] text-[#3B7A57]" : "bg-gold-50 text-gold-dark"
+            paid ? "bg-[#E8F3EE] text-[#3B7A57]" : "bg-[rgba(212,184,150,0.10)] text-[var(--d-gold)]"
           }`}
         >
           {paid ? "♡" : "…"}
         </div>
-        <h1 className="mt-4 font-display text-3xl text-ink">
+        <h1 className="mt-4 font-display text-3xl text-[var(--d-ink)]">
           {paid ? "Pembayaran Berhasil" : "Menunggu Pembayaran"}
         </h1>
-        <p className="mt-2 text-sm text-ink-muted">
+        <p className="mt-2 text-sm text-[var(--d-ink-dim)]">
           {paid
             ? `Paket ${row.pkg?.name} sudah aktif untuk acara Anda.`
             : "Kami akan memperbarui status secara otomatis setelah pembayaran diterima."}
         </p>
 
-        <dl className="mt-6 space-y-2 rounded-xl bg-surface-muted/60 p-4 text-left text-sm">
+        <dl className="mt-6 space-y-2 rounded-xl bg-[var(--d-bg-2)] p-4 text-left text-sm">
           <Row label="Order ID" value={row.order.orderRef} />
           <Row label="Paket" value={row.pkg?.name ?? "—"} />
           <Row label="Jumlah" value={formatIdr(row.order.amountIdr)} />
@@ -75,13 +75,13 @@ export default async function CheckoutSuccessPage({
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
           <Link
             href="/dashboard"
-            className="rounded-full bg-coral px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+            className="rounded-full bg-coral px-6 py-3 text-sm font-medium text-white transition-colors hover:opacity-90"
           >
             Kembali ke Dashboard
           </Link>
           <Link
             href="/dashboard/packages"
-            className="rounded-full border border-[color:var(--border-medium)] px-6 py-3 text-sm font-medium text-navy transition-colors hover:bg-surface-muted"
+            className="rounded-full border border-[var(--d-line-strong)] px-6 py-3 text-sm font-medium text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)]"
           >
             Lihat Riwayat Paket
           </Link>
@@ -94,8 +94,8 @@ export default async function CheckoutSuccessPage({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <dt className="text-ink-muted">{label}</dt>
-      <dd className="truncate font-medium text-ink">{value}</dd>
+      <dt className="text-[var(--d-ink-dim)]">{label}</dt>
+      <dd className="truncate font-medium text-[var(--d-ink)]">{value}</dd>
     </div>
   );
 }

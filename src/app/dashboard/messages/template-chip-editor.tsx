@@ -28,12 +28,12 @@ const PLACEHOLDER_RE = /\{([a-zA-Z0-9_]+)\}/g;
 const KNOWN_CHIP_CLASS =
   "tpl-chip mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5 " +
   "font-sans text-[12px] font-medium select-none align-baseline " +
-  "bg-navy/10 text-navy";
+  "bg-[var(--d-bg-2)]/10 text-[var(--d-ink)]";
 
 const UNKNOWN_CHIP_CLASS =
   "tpl-chip mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5 " +
   "font-sans text-[12px] font-medium select-none align-baseline " +
-  "bg-rose-50 text-rose-dark";
+  "border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]";
 
 function escapeHtml(text: string): string {
   return text
@@ -289,9 +289,9 @@ export function TemplateChipEditor({
   }, [value]);
 
   return (
-    <div className="rounded-lg border border-[color:var(--border-medium)] bg-white">
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-[color:var(--border-ghost)] bg-surface-muted/40 p-2">
-        <span className="mr-1 text-[11px] font-medium text-ink-muted">
+    <div className="rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)]">
+      <div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-2">
+        <span className="mr-1 text-[11px] font-medium text-[var(--d-ink-dim)]">
           Sisipkan:
         </span>
         {placeholders.map((p) => {
@@ -317,7 +317,7 @@ export function TemplateChipEditor({
               className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors ${
                 isUsed
                   ? "border-[#3B7A57]/30 bg-[#E8F3EE] text-[#3B7A57] hover:bg-[#D6EADC]"
-                  : "border-[color:var(--border-ghost)] bg-white text-ink-muted hover:bg-surface-muted"
+                  : "border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)]"
               }`}
             >
               <span className="text-[10px] opacity-70">{isUsed ? "✓" : "+"}</span>

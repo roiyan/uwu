@@ -63,7 +63,7 @@ export function ThemeEditor({
   return (
     <div className="space-y-10">
       <section>
-        <h2 className="font-display text-xl text-ink">Pilih Tema</h2>
+        <h2 className="font-display text-xl text-[var(--d-ink)]">Pilih Tema</h2>
         <form action={selectAction} className="mt-4 grid gap-4 md:grid-cols-3">
           {themes.map((t) => {
             const palette = defaultPalette(t.config);
@@ -71,7 +71,7 @@ export function ThemeEditor({
             return (
               <label
                 key={t.id}
-                className={`group flex cursor-pointer flex-col overflow-hidden rounded-2xl bg-surface-card text-left shadow-ghost-sm transition-transform hover:-translate-y-0.5 ${
+                className={`group flex cursor-pointer flex-col overflow-hidden rounded-2xl bg-[var(--d-bg-card)] text-left shadow-ghost-sm transition-transform hover:-translate-y-0.5 ${
                   isPicked ? "ring-2 ring-navy" : "ring-1 ring-[color:var(--border-ghost)]"
                 }`}
               >
@@ -89,7 +89,7 @@ export function ThemeEditor({
                 </div>
                 <div className="flex-1 space-y-1 p-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-display text-lg text-ink">{t.name}</h3>
+                    <h3 className="font-display text-lg text-[var(--d-ink)]">{t.name}</h3>
                     <span
                       className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide"
                       style={{ background: palette.accent, color: "#1A1A2E" }}
@@ -97,7 +97,7 @@ export function ThemeEditor({
                       {tierLabel[t.tier] ?? t.tier}
                     </span>
                   </div>
-                  <p className="text-sm text-ink-muted">{t.description}</p>
+                  <p className="text-sm text-[var(--d-ink-dim)]">{t.description}</p>
                 </div>
               </label>
             );
@@ -105,15 +105,15 @@ export function ThemeEditor({
 
           <div className="md:col-span-3 flex items-center justify-between">
             {selectState && !selectState.ok && (
-              <p className="text-sm text-rose-dark">{selectState.error}</p>
+              <p className="text-sm text-[var(--d-coral)]">{selectState.error}</p>
             )}
             {selectState && selectState.ok && (
-              <p className="text-sm text-gold-dark">Tema diperbarui.</p>
+              <p className="text-sm text-[var(--d-gold)]">Tema diperbarui.</p>
             )}
             <button
               type="submit"
               disabled={selectPending}
-              className="ml-auto rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+              className="ml-auto rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
             >
               {selectPending ? "Menyimpan..." : "Gunakan Tema"}
             </button>
@@ -122,9 +122,9 @@ export function ThemeEditor({
       </section>
 
       {selectedTheme && (
-        <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-          <h2 className="font-display text-xl text-ink">Kustomisasi Warna</h2>
-          <p className="mt-1 text-sm text-ink-muted">
+        <section className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
+          <h2 className="font-display text-xl text-[var(--d-ink)]">Kustomisasi Warna</h2>
+          <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
             Sesuaikan palet untuk tema <span className="font-medium">{selectedTheme.name}</span>.
           </p>
 
@@ -136,16 +136,16 @@ export function ThemeEditor({
               <ColorField label="Aksen" name="palette_accent" value={accent} onChange={setAccent} />
 
               {paletteState && !paletteState.ok && (
-                <p className="text-sm text-rose-dark">{paletteState.error}</p>
+                <p className="text-sm text-[var(--d-coral)]">{paletteState.error}</p>
               )}
               {paletteState && paletteState.ok && (
-                <p className="text-sm text-gold-dark">Warna tersimpan.</p>
+                <p className="text-sm text-[var(--d-gold)]">Warna tersimpan.</p>
               )}
 
               <button
                 type="submit"
                 disabled={palettePending}
-                className="rounded-full bg-navy px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+                className="rounded-full bg-[var(--d-bg-2)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
               >
                 {palettePending ? "Menyimpan..." : "Simpan Warna"}
               </button>
@@ -198,16 +198,16 @@ function ColorField({
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-14 cursor-pointer rounded-md border border-[color:var(--border-medium)]"
+        className="h-10 w-14 cursor-pointer rounded-md border border-[var(--d-line-strong)]"
       />
       <div className="flex flex-1 flex-col">
-        <span className="text-sm font-medium text-ink">{label}</span>
+        <span className="text-sm font-medium text-[var(--d-ink)]">{label}</span>
         <input
           name={name}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           pattern="^#[0-9A-Fa-f]{6}$"
-          className="mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-3 py-2 text-sm font-mono outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]"
+          className="mt-1 w-full rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-3 py-2 text-sm font-mono outline-none focus:border-[var(--d-coral)] focus:shadow-[var(--focus-ring-navy)]"
         />
       </div>
     </label>

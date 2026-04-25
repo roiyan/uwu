@@ -21,7 +21,7 @@ import { getWhatsAppShareUrl } from "@/lib/utils/share";
 type Tab = "akun" | "acara" | "budaya" | "kolaborator";
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-3 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "mt-1 w-full rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-4 py-3 text-sm outline-none focus:border-[var(--d-coral)] focus:shadow-[var(--focus-ring-navy)]";
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "akun", label: "Akun" },
@@ -68,15 +68,15 @@ export function SettingsTabs({
 }) {
   return (
     <div className="space-y-6">
-      <nav className="flex flex-wrap gap-1 rounded-full bg-surface-card p-1 shadow-ghost-sm">
+      <nav className="flex flex-wrap gap-1 rounded-full bg-[var(--d-bg-card)] p-1 shadow-ghost-sm">
         {TABS.map((tab) => (
           <Link
             key={tab.id}
             href={`/dashboard/settings?tab=${tab.id}`}
             className={`flex-1 rounded-full px-4 py-2 text-center text-sm transition-colors ${
               active === tab.id
-                ? "bg-navy text-ink-inverse"
-                : "text-ink-muted hover:text-navy"
+                ? "bg-[var(--d-bg-2)] text-white"
+                : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
             }`}
           >
             {tab.label}
@@ -114,21 +114,21 @@ function AkunTab({
   }, [state, toast]);
 
   return (
-    <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm space-y-4">
-      <h2 className="font-display text-xl text-ink">Profil Akun</h2>
+    <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm space-y-4">
+      <h2 className="font-display text-xl text-[var(--d-ink)]">Profil Akun</h2>
       <label className="block">
-        <span className="text-sm font-medium text-ink">Email</span>
+        <span className="text-sm font-medium text-[var(--d-ink)]">Email</span>
         <input
           value={profile.email}
           disabled
           className={`${inputClass} opacity-70`}
         />
-        <span className="mt-1 block text-xs text-ink-hint">
+        <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
           Email tidak dapat diubah saat ini.
         </span>
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-ink">Nama lengkap</span>
+        <span className="text-sm font-medium text-[var(--d-ink)]">Nama lengkap</span>
         <input
           name="fullName"
           required
@@ -137,7 +137,7 @@ function AkunTab({
         />
       </label>
       <label className="block">
-        <span className="text-sm font-medium text-ink">No. WhatsApp</span>
+        <span className="text-sm font-medium text-[var(--d-ink)]">No. WhatsApp</span>
         <input
           name="phone"
           defaultValue={profile.phone}
@@ -147,12 +147,12 @@ function AkunTab({
       </label>
 
       {state && !state.ok && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+        <p className="rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
           {state.error}
         </p>
       )}
       {state && state.ok && (
-        <p className="rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
+        <p className="rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
           Profil diperbarui.
         </p>
       )}
@@ -161,7 +161,7 @@ function AkunTab({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "Menyimpan..." : "Simpan"}
         </button>
@@ -190,10 +190,10 @@ function AcaraTab({
 
   return (
     <div className="space-y-6">
-      <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm space-y-4">
-        <h2 className="font-display text-xl text-ink">Detail Acara</h2>
+      <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm space-y-4">
+        <h2 className="font-display text-xl text-[var(--d-ink)]">Detail Acara</h2>
         <label className="block">
-          <span className="text-sm font-medium text-ink">Judul acara</span>
+          <span className="text-sm font-medium text-[var(--d-ink)]">Judul acara</span>
           <input
             name="title"
             required
@@ -202,9 +202,9 @@ function AcaraTab({
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-ink">URL Undangan</span>
-          <div className="mt-1 flex items-center gap-2 rounded-lg border border-[color:var(--border-medium)] bg-white px-3 py-2 text-sm focus-within:border-navy focus-within:shadow-[var(--focus-ring-navy)]">
-            <span className="text-ink-hint">uwu.id/</span>
+          <span className="text-sm font-medium text-[var(--d-ink)]">URL Undangan</span>
+          <div className="mt-1 flex items-center gap-2 rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-3 py-2 text-sm focus-within:border-[var(--d-coral)] focus-within:shadow-[var(--focus-ring-navy)]">
+            <span className="text-[var(--d-ink-faint)]">uwu.id/</span>
             <input
               name="slug"
               required
@@ -213,12 +213,12 @@ function AcaraTab({
               className="flex-1 bg-transparent outline-none"
             />
           </div>
-          <span className="mt-1 block text-xs text-ink-hint">
+          <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
             Hanya huruf kecil, angka, dan tanda minus.
           </span>
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-ink">URL musik latar</span>
+          <span className="text-sm font-medium text-[var(--d-ink)]">URL musik latar</span>
           <input
             name="musicUrl"
             type="url"
@@ -226,7 +226,7 @@ function AcaraTab({
             placeholder="https://..."
             className={inputClass}
           />
-          <span className="mt-1 block text-xs text-ink-hint">
+          <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
             Musik akan muted secara default. Tamu dapat mengaktifkan manual.
           </span>
         </label>
@@ -237,12 +237,12 @@ function AcaraTab({
         />
 
         {state && !state.ok && (
-          <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+          <p className="rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
             {state.error}
           </p>
         )}
         {state && state.ok && (
-          <p className="rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
+          <p className="rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
             Perubahan tersimpan.
           </p>
         )}
@@ -251,16 +251,16 @@ function AcaraTab({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+            className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
           >
             {pending ? "Menyimpan..." : "Simpan Detail"}
           </button>
         </div>
       </form>
 
-      <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-        <h2 className="font-display text-xl text-ink">Publikasi</h2>
-        <p className="mt-1 text-sm text-ink-muted">
+      <section className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
+        <h2 className="font-display text-xl text-[var(--d-ink)]">Publikasi</h2>
+        <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
           {isPublished
             ? "Undangan aktif dan dapat diakses publik melalui URL."
             : "Undangan masih tersembunyi. Publikasikan untuk membagikan ke tamu."}
@@ -275,7 +275,7 @@ function AcaraTab({
                   await unpublishEventAction(eventId);
                 })
               }
-              className="rounded-full border border-[color:var(--border-medium)] px-6 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
+              className="rounded-full border border-[var(--d-line-strong)] px-6 py-2 text-sm font-medium text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
             >
               {publishPending ? "Memproses..." : "Unpublish"}
             </button>
@@ -288,7 +288,7 @@ function AcaraTab({
                   await publishEventAction(eventId);
                 })
               }
-              className="rounded-full bg-navy px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+              className="rounded-full bg-[var(--d-bg-2)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
             >
               {publishPending ? "Memproses..." : "Publikasikan Undangan"}
             </button>
@@ -297,7 +297,7 @@ function AcaraTab({
             href={`/${event.slug}`}
             target="_blank"
             rel="noreferrer"
-            className="text-sm text-ink-muted hover:text-navy"
+            className="text-sm text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
           >
             Buka URL undangan →
           </Link>
@@ -345,9 +345,9 @@ function BudayaTab({
   ];
 
   return (
-    <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm space-y-4">
-      <h2 className="font-display text-xl text-ink">Preferensi Budaya</h2>
-      <p className="text-sm text-ink-muted">
+    <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm space-y-4">
+      <h2 className="font-display text-xl text-[var(--d-ink)]">Preferensi Budaya</h2>
+      <p className="text-sm text-[var(--d-ink-dim)]">
         Pengaturan ini memengaruhi template broadcast WhatsApp, label jadwal, dan tone AI copywriter.
       </p>
       <input type="hidden" name="title" value={event.title} />
@@ -358,10 +358,10 @@ function BudayaTab({
         {options.map((opt) => (
           <label
             key={opt.id}
-            className={`flex cursor-pointer items-start gap-3 rounded-2xl border bg-white p-4 transition-colors ${
+            className={`flex cursor-pointer items-start gap-3 rounded-2xl border bg-[var(--d-bg-card)] p-4 transition-colors ${
               event.culturalPreference === opt.id
-                ? "border-navy bg-navy-50"
-                : "border-[color:var(--border-ghost)] hover:border-navy"
+                ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)]"
+                : "border-[var(--d-line)] hover:border-[var(--d-coral)]"
             }`}
           >
             <input
@@ -372,20 +372,20 @@ function BudayaTab({
               className="mt-1"
             />
             <div>
-              <p className="text-sm font-medium text-ink">{opt.label}</p>
-              <p className="text-xs text-ink-muted">{opt.description}</p>
+              <p className="text-sm font-medium text-[var(--d-ink)]">{opt.label}</p>
+              <p className="text-xs text-[var(--d-ink-dim)]">{opt.description}</p>
             </div>
           </label>
         ))}
       </div>
 
       {state && !state.ok && (
-        <p className="rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+        <p className="rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
           {state.error}
         </p>
       )}
       {state && state.ok && (
-        <p className="rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
+        <p className="rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
           Preferensi tersimpan.
         </p>
       )}
@@ -394,7 +394,7 @@ function BudayaTab({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "Menyimpan..." : "Simpan Preferensi"}
         </button>
@@ -441,9 +441,9 @@ function KolaboratorTab({
 
   return (
     <div className="space-y-4">
-      <section className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-        <h2 className="font-display text-xl text-ink">Kolaborator</h2>
-        <p className="mt-1 text-sm text-ink-muted">
+      <section className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
+        <h2 className="font-display text-xl text-[var(--d-ink)]">Kolaborator</h2>
+        <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
           Undang pasangan agar bisa mengelola undangan bersama. Mereka dapat
           mengedit konten tetapi tidak bisa mengelola pembayaran atau menghapus
           acara.
@@ -472,7 +472,7 @@ function KolaboratorTab({
           ))}
 
           {!hasAny && (
-            <div className="rounded-xl border border-dashed border-[color:var(--border-ghost)] bg-surface-muted/40 p-5 text-center text-sm text-ink-muted">
+            <div className="rounded-xl border border-dashed border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-5 text-center text-sm text-[var(--d-ink-dim)]">
               Belum ada kolaborator. Undang pasangan Anda agar bisa mengelola
               undangan bersama.
             </div>
@@ -586,7 +586,7 @@ function CollaboratorCardRow({
           <button
             type="button"
             onClick={onRevoke}
-            className="rounded-full border border-rose/30 px-3 py-1 text-xs font-medium text-rose-dark transition-colors hover:border-rose hover:bg-rose-50"
+            className="rounded-full border border-rose/30 px-3 py-1 text-xs font-medium text-[var(--d-coral)] transition-colors hover:border-rose hover:border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)]"
           >
             🗑 Hapus Akses
           </button>
@@ -628,7 +628,7 @@ function CollaboratorCardRow({
               <button
                 type="button"
                 onClick={copyLink}
-                className="rounded-full border border-navy/25 px-3 py-1 text-xs font-medium text-navy transition-colors hover:bg-navy/5"
+                className="rounded-full border border-[var(--d-coral)]/25 px-3 py-1 text-xs font-medium text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)]/5"
               >
                 📋 Salin Link
               </button>
@@ -646,14 +646,14 @@ function CollaboratorCardRow({
             type="button"
             disabled={pending}
             onClick={regenerate}
-            className="rounded-full border border-navy/25 px-3 py-1 text-xs font-medium text-navy transition-colors hover:bg-navy/5 disabled:opacity-60"
+            className="rounded-full border border-[var(--d-coral)]/25 px-3 py-1 text-xs font-medium text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)]/5 disabled:opacity-60"
           >
             {pending ? "Memproses..." : "🔄 Buat Link Baru"}
           </button>
           <button
             type="button"
             onClick={onRevoke}
-            className="rounded-full border border-rose/30 px-3 py-1 text-xs font-medium text-rose-dark transition-colors hover:border-rose hover:bg-rose-50"
+            className="rounded-full border border-rose/30 px-3 py-1 text-xs font-medium text-[var(--d-coral)] transition-colors hover:border-rose hover:border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)]"
           >
             🗑 Batalkan
           </button>
@@ -683,9 +683,9 @@ function CollabCard({
   rightBadge?: string | null;
 }) {
   const avatarBg =
-    accent === "owner" ? "bg-navy text-white" : "bg-gold-50 text-gold-dark";
+    accent === "owner" ? "bg-[var(--d-bg-2)] text-white" : "bg-[rgba(212,184,150,0.10)] text-[var(--d-gold)]";
   return (
-    <article className="flex flex-col gap-3 rounded-xl border border-[color:var(--border-ghost)] bg-white p-4 md:flex-row md:items-center md:gap-4">
+    <article className="flex flex-col gap-3 rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-card)] p-4 md:flex-row md:items-center md:gap-4">
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-medium ${avatarBg}`}
         aria-hidden
@@ -694,18 +694,18 @@ function CollabCard({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2">
-          <p className="truncate font-medium text-ink">{name}</p>
+          <p className="truncate font-medium text-[var(--d-ink)]">{name}</p>
           {rightBadge && (
-            <span className="rounded-full bg-navy-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-navy">
+            <span className="rounded-full bg-[rgba(143,163,217,0.08)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--d-ink)]">
               {rightBadge}
             </span>
           )}
         </div>
-        <p className="truncate text-xs text-ink-muted">{subtitle}</p>
+        <p className="truncate text-xs text-[var(--d-ink-dim)]">{subtitle}</p>
         {status}
       </div>
       <div className="flex items-center gap-3">
-        <span className="hidden rounded-full bg-surface-muted px-3 py-1 text-xs font-medium text-ink-muted md:inline-flex">
+        <span className="hidden rounded-full bg-[var(--d-bg-2)] px-3 py-1 text-xs font-medium text-[var(--d-ink-dim)] md:inline-flex">
           {roleLabel}
         </span>
         {actions}
@@ -771,16 +771,16 @@ function InviteDialog({
       />
       <form
         onSubmit={submit}
-        className="relative w-full max-w-md rounded-2xl bg-surface-card p-6 shadow-ghost-lg"
+        className="relative w-full max-w-md rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-lg"
       >
-        <h2 className="font-display text-xl text-ink">Undang Pasangan</h2>
-        <p className="mt-1 text-sm text-ink-muted">
+        <h2 className="font-display text-xl text-[var(--d-ink)]">Undang Pasangan</h2>
+        <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
           Kirim link undangan agar pasangan Anda bisa mengelola acara bersama.
         </p>
         <div className="mt-5 space-y-4">
           <label className="block">
-            <span className="text-sm font-medium text-ink">
-              Email pasangan <span className="text-rose">*</span>
+            <span className="text-sm font-medium text-[var(--d-ink)]">
+              Email pasangan <span className="text-[var(--d-coral)]">*</span>
             </span>
             <input
               type="email"
@@ -792,7 +792,7 @@ function InviteDialog({
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-ink">Nama (opsional)</span>
+            <span className="text-sm font-medium text-[var(--d-ink)]">Nama (opsional)</span>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -806,7 +806,7 @@ function InviteDialog({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
+            className="rounded-full border border-[var(--d-line-strong)] px-5 py-2 text-sm font-medium text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
           >
             Batal
           </button>

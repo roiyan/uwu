@@ -88,7 +88,7 @@ type HistoryRow = {
 };
 
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-2.5 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "mt-1 w-full rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-4 py-2.5 text-sm outline-none focus:border-[var(--d-coral)] focus:shadow-[var(--focus-ring-navy)]";
 
 const STATUS_LABEL: Record<GuestStatus, string> = {
   baru: "Baru",
@@ -99,13 +99,13 @@ const STATUS_LABEL: Record<GuestStatus, string> = {
 };
 
 const HISTORY_STATUS_STYLE: Record<HistoryStatus, string> = {
-  draft: "bg-surface-muted text-ink-muted",
-  queued: "bg-navy-50 text-navy",
-  sending: "bg-gold-50 text-gold-dark",
+  draft: "bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]",
+  queued: "bg-[rgba(143,163,217,0.08)] text-[var(--d-ink)]",
+  sending: "bg-[rgba(212,184,150,0.10)] text-[var(--d-gold)]",
   completed: "bg-[#E8F3EE] text-[#3B7A57]",
-  failed: "bg-rose-50 text-rose-dark",
+  failed: "border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]",
   scheduled: "bg-[#EEF2FF] text-[#3949AB]",
-  cancelled: "bg-surface-muted text-ink-hint line-through",
+  cancelled: "bg-[var(--d-bg-2)] text-[var(--d-ink-faint)] line-through",
 };
 
 const HISTORY_STATUS_LABEL: Record<HistoryStatus, string> = {
@@ -385,14 +385,14 @@ export function MessagesClient({
   return (
     <>
       {!isPublished && <UnpublishedBanner />}
-      <div className="mb-6 inline-flex rounded-full border border-[color:var(--border-ghost)] bg-white p-1">
+      <div className="mb-6 inline-flex rounded-full border border-[var(--d-line)] bg-[var(--d-bg-card)] p-1">
         <button
           type="button"
           onClick={() => setActiveTab("compose")}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             activeTab === "compose"
-              ? "bg-navy text-white"
-              : "text-ink-muted hover:text-navy"
+              ? "bg-[var(--d-bg-2)] text-white"
+              : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
           }`}
         >
           Kirim Baru
@@ -402,8 +402,8 @@ export function MessagesClient({
           onClick={() => setActiveTab("history")}
           className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
             activeTab === "history"
-              ? "bg-navy text-white"
-              : "text-ink-muted hover:text-navy"
+              ? "bg-[var(--d-bg-2)] text-white"
+              : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
           }`}
         >
           Riwayat ({history.length})
@@ -429,11 +429,11 @@ export function MessagesClient({
       <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
     <div className="grid gap-6 lg:grid-cols-5">
       <section className="lg:col-span-3">
-        <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-          <h2 className="font-display text-xl text-ink">Buat Broadcast</h2>
+        <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
+          <h2 className="font-display text-xl text-[var(--d-ink)]">Buat Broadcast</h2>
 
           <div className="mt-4">
-            <span className="text-sm font-medium text-ink">Kanal</span>
+            <span className="text-sm font-medium text-[var(--d-ink)]">Kanal</span>
             <div className="mt-2 grid grid-cols-3 gap-2">
               <ChannelButton
                 active={channel === "whatsapp"}
@@ -477,7 +477,7 @@ export function MessagesClient({
           />
 
           <label className="mt-4 block">
-            <span className="text-sm font-medium text-ink">Template</span>
+            <span className="text-sm font-medium text-[var(--d-ink)]">Template</span>
             <select
               value={templateSlug}
               onChange={(e) => selectTemplate(e.target.value)}
@@ -489,7 +489,7 @@ export function MessagesClient({
                 </option>
               ))}
             </select>
-            <span className="mt-1 block text-xs text-ink-hint">
+            <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
               {currentTemplate.description}
             </span>
           </label>
@@ -497,7 +497,7 @@ export function MessagesClient({
 
           {(channel === "email" || channel === "both") && (
             <label className="mt-4 block">
-              <span className="text-sm font-medium text-ink">
+              <span className="text-sm font-medium text-[var(--d-ink)]">
                 {channel === "both" ? "Subject Email" : "Subject"}
               </span>
               <input
@@ -512,7 +512,7 @@ export function MessagesClient({
 
           <div className="mt-4">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-sm font-medium text-ink">
+              <span className="text-sm font-medium text-[var(--d-ink)]">
                 {channel === "both"
                   ? "📱 Isi Pesan WhatsApp"
                   : channel === "email"
@@ -523,7 +523,7 @@ export function MessagesClient({
                 <button
                   type="button"
                   onClick={() => setAiTarget("primary")}
-                  className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy hover:bg-surface-muted"
+                  className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
                 >
                   ✨ Bantu Tulis
                 </button>
@@ -536,7 +536,7 @@ export function MessagesClient({
               minHeight={260}
               ariaLabel="Isi pesan broadcast"
             />
-            <span className="mt-1 block text-xs text-ink-hint">
+            <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
               Tap variabel di toolbar untuk menyisipkan. Setiap variabel
               jadi blok atomik — Backspace satu kali menghapus seluruh
               variabel, tidak bisa dipotong sebagian.
@@ -546,14 +546,14 @@ export function MessagesClient({
           {channel === "both" && (
             <div className="mt-4">
               <div className="mb-1 flex items-center justify-between">
-                <span className="text-sm font-medium text-ink">
+                <span className="text-sm font-medium text-[var(--d-ink)]">
                   ✉️ Isi Pesan Email
                 </span>
                 {providers.aiAvailable && (
                   <button
                     type="button"
                     onClick={() => setAiTarget("email")}
-                    className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy hover:bg-surface-muted"
+                    className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
                   >
                     ✨ Bantu Tulis
                   </button>
@@ -565,7 +565,7 @@ export function MessagesClient({
                 minHeight={220}
                 ariaLabel="Isi pesan email broadcast"
               />
-              <span className="mt-1 block text-xs text-ink-hint">
+              <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
                 Email pakai gaya lebih formal. Variabel yang sama
                 berlaku — tap chip di toolbar untuk menyisipkan.
               </span>
@@ -573,7 +573,7 @@ export function MessagesClient({
           )}
 
           {(channel === "email" || channel === "both") && (
-            <div className="mt-5 rounded-xl border border-[color:var(--border-ghost)] bg-white p-4">
+            <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-card)] p-4">
               <label className="flex cursor-pointer items-start gap-2">
                 <input
                   type="checkbox"
@@ -582,10 +582,10 @@ export function MessagesClient({
                   className="mt-0.5"
                 />
                 <span>
-                  <span className="block text-sm font-medium text-ink">
+                  <span className="block text-sm font-medium text-[var(--d-ink)]">
                     📅 Jadwalkan pengiriman email
                   </span>
-                  <span className="block text-xs text-ink-muted">
+                  <span className="block text-xs text-[var(--d-ink-dim)]">
                     Email akan otomatis terkirim pada waktu yang Anda pilih.
                     Jika tidak dicentang, email dikirim segera setelah Anda
                     tekan tombol kirim.
@@ -594,7 +594,7 @@ export function MessagesClient({
               </label>
               {scheduleEnabled && (
                 <div className="mt-3">
-                  <label className="block text-xs font-medium text-ink-muted">
+                  <label className="block text-xs font-medium text-[var(--d-ink-dim)]">
                     Waktu kirim
                   </label>
                   <input
@@ -604,7 +604,7 @@ export function MessagesClient({
                     min={nowPlusMinutes(5)}
                     className={inputClass}
                   />
-                  <p className="mt-1 text-[11px] text-ink-hint">
+                  <p className="mt-1 text-[11px] text-[var(--d-ink-faint)]">
                     Cron menjalankan pengiriman setiap hari pukul 09:00 UTC
                     (16:00 WIB). Email akan terkirim pada cron berikutnya
                     setelah waktu yang Anda pilih lewat.
@@ -616,7 +616,7 @@ export function MessagesClient({
           <input type="hidden" name="scheduledAt" value={scheduledAtIso} />
 
           <div className="mt-5">
-            <span className="text-sm font-medium text-ink">Audiens</span>
+            <span className="text-sm font-medium text-[var(--d-ink)]">Audiens</span>
             <div className="mt-2 space-y-2">
               <AudienceRadio
                 active={audience.type === "all"}
@@ -639,7 +639,7 @@ export function MessagesClient({
                 {audience.type === "group" && (
                   <div className="mt-2 flex flex-wrap gap-2">
                     {groups.length === 0 && (
-                      <span className="text-xs text-ink-hint">
+                      <span className="text-xs text-[var(--d-ink-faint)]">
                         Belum ada grup — buat di halaman Tamu.
                       </span>
                     )}
@@ -650,8 +650,8 @@ export function MessagesClient({
                           key={g.id}
                           className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-xs ${
                             checked
-                              ? "border-navy bg-navy-50 text-navy"
-                              : "border-[color:var(--border-ghost)] text-ink-muted"
+                              ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)] text-[var(--d-ink)]"
+                              : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
                           }`}
                         >
                           <input
@@ -672,7 +672,7 @@ export function MessagesClient({
                             style={{ background: g.color ?? "var(--color-gold-50)" }}
                           />
                           {g.name}
-                          <span className="text-[10px] text-ink-hint">
+                          <span className="text-[10px] text-[var(--d-ink-faint)]">
                             ({g.liveCount})
                           </span>
                         </label>
@@ -702,8 +702,8 @@ export function MessagesClient({
                           key={s}
                           className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-xs ${
                             checked
-                              ? "border-navy bg-navy-50 text-navy"
-                              : "border-[color:var(--border-ghost)] text-ink-muted"
+                              ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)] text-[var(--d-ink)]"
+                              : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
                           }`}
                         >
                           <input
@@ -739,12 +739,12 @@ export function MessagesClient({
           {/* Per-guest preview — shows what the first/current
               filtered recipient will actually receive. Renders client-
               side using the same renderTemplate as the server. */}
-          <div className="mt-5 rounded-xl border border-[color:var(--border-ghost)] bg-surface-muted p-4">
+          <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-2)] p-4">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-ink">
+              <span className="text-sm font-medium text-[var(--d-ink)]">
                 Preview Pesan
               </span>
-              <span className="text-xs text-ink-hint">
+              <span className="text-xs text-[var(--d-ink-faint)]">
                 {filteredRecipients.length === 0
                   ? "Tidak ada tamu terpilih"
                   : `${previewIndex + 1} dari ${filteredRecipients.length}`}
@@ -752,38 +752,38 @@ export function MessagesClient({
             </div>
             {previewGuest ? (
               <>
-                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+                <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-[var(--d-ink-dim)]">
                   <span>
                     Untuk:{" "}
-                    <strong className="text-ink">{previewGuest.name}</strong>
+                    <strong className="text-[var(--d-ink)]">{previewGuest.name}</strong>
                     {previewGuest.nickname && (
-                      <span className="ml-1 text-ink-hint">
+                      <span className="ml-1 text-[var(--d-ink-faint)]">
                         ({previewGuest.nickname})
                       </span>
                     )}
                   </span>
                   {channel === "whatsapp" && previewGuest.phone && (
-                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-ink-muted">
+                    <span className="rounded-full bg-[var(--d-bg-card)] px-2 py-0.5 font-mono text-[10px] text-[var(--d-ink-dim)]">
                       {previewGuest.phone}
                     </span>
                   )}
                   {channel === "email" && previewGuest.email && (
-                    <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[10px] text-ink-muted">
+                    <span className="rounded-full bg-[var(--d-bg-card)] px-2 py-0.5 font-mono text-[10px] text-[var(--d-ink-dim)]">
                       {previewGuest.email}
                     </span>
                   )}
                   {previewGuest.sendCount > 0 && (
-                    <span className="rounded-full bg-coral-50 px-2 py-0.5 text-[10px] text-coral-dark">
+                    <span className="rounded-full bg-[rgba(240,160,156,0.12)] px-2 py-0.5 text-[10px] text-[var(--d-coral)]">
                       Kirim ulang · {previewGuest.sendCount}×
                     </span>
                   )}
                 </div>
-                <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-white p-3 font-mono text-[12px] leading-relaxed text-ink">
+                <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg bg-[var(--d-bg-card)] p-3 font-mono text-[12px] leading-relaxed text-[var(--d-ink)]">
                   {previewBody}
                 </pre>
               </>
             ) : (
-              <p className="text-xs text-ink-hint">
+              <p className="text-xs text-[var(--d-ink-faint)]">
                 Pilih audiens dan kanal untuk melihat preview pesan.
               </p>
             )}
@@ -794,7 +794,7 @@ export function MessagesClient({
                   setPreviewIndex((i) => Math.max(0, i - 1))
                 }
                 disabled={!previewGuest || previewIndex === 0}
-                className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy transition-colors hover:bg-white disabled:opacity-40"
+                className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-card)] disabled:opacity-40"
               >
                 ← Sebelumnya
               </button>
@@ -809,7 +809,7 @@ export function MessagesClient({
                   !previewGuest ||
                   previewIndex >= filteredRecipients.length - 1
                 }
-                className="rounded-full border border-[color:var(--border-medium)] px-3 py-1 text-xs text-navy transition-colors hover:bg-white disabled:opacity-40"
+                className="rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-xs text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-card)] disabled:opacity-40"
               >
                 Berikutnya →
               </button>
@@ -817,15 +817,15 @@ export function MessagesClient({
           </div>
 
           {alreadySentCount > 0 && (
-            <div className="mt-5 rounded-xl border border-[color:var(--border-ghost)] bg-surface-muted px-4 py-3">
-              <div className="flex items-center gap-2 text-sm text-ink">
+            <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-2)] px-4 py-3">
+              <div className="flex items-center gap-2 text-sm text-[var(--d-ink)]">
                 <span>⚠️</span>
                 <span>
                   <strong>{alreadySentCount}</strong> tamu sudah pernah
                   diundang.
                 </span>
               </div>
-              <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-ink-muted">
+              <label className="mt-2 flex cursor-pointer items-center gap-2 text-sm text-[var(--d-ink-dim)]">
                 <input
                   type="checkbox"
                   checked={includeSent}
@@ -835,7 +835,7 @@ export function MessagesClient({
                   Sertakan yang sudah diundang ({alreadySentCount} tamu)
                 </span>
               </label>
-              <p className="mt-1 text-xs text-ink-hint">
+              <p className="mt-1 text-xs text-[var(--d-ink-faint)]">
                 Secara default, broadcast hanya dikirim ke tamu yang
                 belum pernah diundang.
               </p>
@@ -843,12 +843,12 @@ export function MessagesClient({
           )}
 
           {state && !state.ok && (
-            <p className="mt-4 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+            <p className="mt-4 rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
               {state.error}
             </p>
           )}
           {state?.ok && state.data?.messageId && (
-            <div className="mt-4 rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
+            <div className="mt-4 rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
               {scheduledAtIso && channel === "email"
                 ? `Broadcast email terjadwal untuk ${new Date(scheduledAtIso).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}.`
                 : channel === "both"
@@ -863,10 +863,10 @@ export function MessagesClient({
             </div>
           )}
           {cancelError && (
-            <p className="mt-2 text-sm text-rose-dark">{cancelError}</p>
+            <p className="mt-2 text-sm text-[var(--d-coral)]">{cancelError}</p>
           )}
           {pairedError && (
-            <p className="mt-2 text-sm text-rose-dark">
+            <p className="mt-2 text-sm text-[var(--d-coral)]">
               Broadcast email gagal dibuat: {pairedError}
             </p>
           )}
@@ -880,7 +880,7 @@ export function MessagesClient({
                   ? "Publikasikan undangan dulu di Pengaturan."
                   : undefined
               }
-              className="rounded-full border border-[color:var(--border-medium)] px-6 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
+              className="rounded-full border border-[var(--d-line-strong)] px-6 py-2 text-sm font-medium text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
             >
               {pending ? "Menyimpan..." : "Simpan Broadcast"}
             </button>
@@ -912,7 +912,7 @@ export function MessagesClient({
                       }
                     });
                   }}
-                  className="rounded-full border border-[color:var(--border-medium)] px-6 py-2 text-sm font-medium text-rose-dark transition-colors hover:bg-rose-50 disabled:opacity-60"
+                  className="rounded-full border border-[var(--d-line-strong)] px-6 py-2 text-sm font-medium text-[var(--d-coral)] transition-colors hover:border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] disabled:opacity-60"
                 >
                   {cancelPending ? "Membatalkan..." : "Batalkan Jadwal"}
                 </button>
@@ -933,7 +933,7 @@ export function MessagesClient({
                     if (!r.ok) setRunError(r.error);
                   });
                 }}
-                className="rounded-full bg-navy px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+                className="rounded-full bg-[var(--d-bg-2)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
               >
                 ✉️ Kirim Email
               </button>
@@ -955,7 +955,7 @@ export function MessagesClient({
                         if (!r.ok) setRunError(r.error);
                       });
                     }}
-                    className="rounded-full bg-navy px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
+                    className="rounded-full bg-[var(--d-bg-2)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
                   >
                     {runPending ? "Mengirim..." : "✉️ Kirim Email Sekarang"}
                   </button>
@@ -976,7 +976,7 @@ export function MessagesClient({
                           if (!r.ok) setRunError(r.error);
                         });
                       }}
-                      className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+                      className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
                     >
                       {runPending ? "Mengirim..." : "📱 Kirim WhatsApp"}
                     </button>
@@ -984,7 +984,7 @@ export function MessagesClient({
                     <button
                       type="button"
                       onClick={() => setWaFallbackOpen(true)}
-                      className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+                      className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:opacity-90"
                     >
                       📱 Kirim WhatsApp (manual)
                     </button>
@@ -993,7 +993,7 @@ export function MessagesClient({
             )}
           </div>
           {runError && (
-            <p className="mt-3 text-sm text-rose-dark">{runError}</p>
+            <p className="mt-3 text-sm text-[var(--d-coral)]">{runError}</p>
           )}
         </form>
 
@@ -1044,21 +1044,21 @@ export function MessagesClient({
       </section>
 
       <section className="lg:col-span-2">
-        <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
+        <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
           <div className="flex items-center justify-between">
-            <h2 className="font-display text-xl text-ink">Terbaru</h2>
+            <h2 className="font-display text-xl text-[var(--d-ink)]">Terbaru</h2>
             {history.length > 0 && (
               <button
                 type="button"
                 onClick={() => setActiveTab("history")}
-                className="text-xs font-medium text-navy hover:underline"
+                className="text-xs font-medium text-[var(--d-ink)] hover:underline"
               >
                 Lihat semua →
               </button>
             )}
           </div>
           {history.length === 0 ? (
-            <p className="mt-4 text-sm text-ink-muted">
+            <p className="mt-4 text-sm text-[var(--d-ink-dim)]">
               Belum ada broadcast. Buat broadcast pertama di panel kiri.
             </p>
           ) : (
@@ -1085,10 +1085,10 @@ function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
       : 0;
 
   return (
-    <li className="rounded-xl bg-surface-muted/60 p-4">
+    <li className="rounded-xl bg-[var(--d-bg-2)] p-4">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-xs uppercase tracking-wide text-ink-hint">
+          <p className="text-xs uppercase tracking-wide text-[var(--d-ink-faint)]">
             {row.channel === "whatsapp" ? "WhatsApp" : "Email"} •{" "}
             {new Date(row.createdAt).toLocaleString("id-ID", {
               day: "numeric",
@@ -1098,7 +1098,7 @@ function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
               minute: "2-digit",
             })}
           </p>
-          <p className="text-sm font-medium text-ink">{row.templateSlug}</p>
+          <p className="text-sm font-medium text-[var(--d-ink)]">{row.templateSlug}</p>
         </div>
         <span
           className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${HISTORY_STATUS_STYLE[row.status]}`}
@@ -1107,13 +1107,13 @@ function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
         </span>
       </div>
       <div className="mt-3 flex items-center justify-between text-xs">
-        <span className="text-ink-muted">
+        <span className="text-[var(--d-ink-dim)]">
           {row.sentCount}/{row.totalRecipients} terkirim
           {row.failedCount > 0 && ` • ${row.failedCount} gagal`}
         </span>
-        <span className="text-ink-muted">{pct}%</span>
+        <span className="text-[var(--d-ink-dim)]">{pct}%</span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white">
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--d-bg-card)]">
         <div
           className="h-full rounded-full bg-[#3B7A57]"
           style={{ width: `${pct}%` }}
@@ -1129,7 +1129,7 @@ function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
                 await runBroadcastAction(eventId, row.id);
               })
             }
-            className="font-medium text-navy hover:underline disabled:opacity-60"
+            className="font-medium text-[var(--d-ink)] hover:underline disabled:opacity-60"
           >
             {pending ? "Mengirim..." : "Kirim Sekarang"}
           </button>
@@ -1143,14 +1143,14 @@ function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
                 await retryFailedDeliveriesAction(eventId, row.id);
               })
             }
-            className="font-medium text-navy hover:underline disabled:opacity-60"
+            className="font-medium text-[var(--d-ink)] hover:underline disabled:opacity-60"
           >
             {pending ? "Memproses..." : "Kirim ulang gagal"}
           </button>
         )}
         <Link
           href={`/dashboard/messages/${row.id}`}
-          className="font-medium text-ink-muted hover:text-navy"
+          className="font-medium text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
         >
           Detail →
         </Link>
@@ -1188,9 +1188,9 @@ function HistoryListPanel({
   }, [history, filter]);
 
   return (
-    <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
-      <h2 className="font-display text-xl text-ink">Riwayat Broadcast</h2>
-      <p className="mt-1 text-sm text-ink-muted">
+    <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
+      <h2 className="font-display text-xl text-[var(--d-ink)]">Riwayat Broadcast</h2>
+      <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
         Semua broadcast yang pernah dibuat di acara ini, terbaru di atas.
       </p>
 
@@ -1222,7 +1222,7 @@ function HistoryListPanel({
       </div>
 
       {visible.length === 0 ? (
-        <p className="mt-6 text-sm text-ink-muted">
+        <p className="mt-6 text-sm text-[var(--d-ink-dim)]">
           {filter === "all"
             ? "Belum ada broadcast."
             : "Tidak ada broadcast pada filter ini."}
@@ -1253,8 +1253,8 @@ function FilterChip({
       onClick={onClick}
       className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
         active
-          ? "bg-navy text-white"
-          : "border border-[color:var(--border-ghost)] bg-white text-ink-muted hover:text-navy"
+          ? "bg-[var(--d-bg-2)] text-white"
+          : "border border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
       }`}
     >
       {label}
@@ -1281,10 +1281,10 @@ function HistoryListCard({
       : 0;
 
   return (
-    <li className="rounded-xl border border-[color:var(--border-ghost)] bg-white p-4">
+    <li className="rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-card)] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-wide text-ink-hint">
+          <p className="text-xs uppercase tracking-wide text-[var(--d-ink-faint)]">
             <span aria-hidden>
               {row.channel === "whatsapp" ? "📱" : "✉️"}
             </span>{" "}
@@ -1297,10 +1297,10 @@ function HistoryListCard({
               minute: "2-digit",
             })}
           </p>
-          <p className="mt-1 truncate text-sm font-medium text-ink">
+          <p className="mt-1 truncate text-sm font-medium text-[var(--d-ink)]">
             {row.subject ?? row.templateSlug}
           </p>
-          <p className="text-xs text-ink-muted">{row.audienceLabel}</p>
+          <p className="text-xs text-[var(--d-ink-dim)]">{row.audienceLabel}</p>
           {row.scheduledAt && (
             <p className="mt-1 text-xs text-[#3949AB]">
               📅 Terjadwal:{" "}
@@ -1318,13 +1318,13 @@ function HistoryListCard({
         </span>
       </div>
       <div className="mt-3 flex items-center justify-between text-xs">
-        <span className="text-ink-muted">
+        <span className="text-[var(--d-ink-dim)]">
           {row.sentCount}/{row.totalRecipients} terkirim
           {row.failedCount > 0 && ` • ${row.failedCount} gagal`}
         </span>
-        <span className="text-ink-muted">{pct}%</span>
+        <span className="text-[var(--d-ink-dim)]">{pct}%</span>
       </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
+      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-[var(--d-bg-2)]">
         <div
           className="h-full rounded-full bg-[#3B7A57]"
           style={{ width: `${pct}%` }}
@@ -1340,7 +1340,7 @@ function HistoryListCard({
                 await runBroadcastAction(eventId, row.id);
               })
             }
-            className="font-medium text-navy hover:underline disabled:opacity-60"
+            className="font-medium text-[var(--d-ink)] hover:underline disabled:opacity-60"
           >
             {pending ? "Mengirim..." : "Kirim Sekarang"}
           </button>
@@ -1354,7 +1354,7 @@ function HistoryListCard({
                 await retryFailedDeliveriesAction(eventId, row.id);
               })
             }
-            className="font-medium text-navy hover:underline disabled:opacity-60"
+            className="font-medium text-[var(--d-ink)] hover:underline disabled:opacity-60"
           >
             {pending ? "Memproses..." : "Kirim ulang gagal"}
           </button>
@@ -1368,14 +1368,14 @@ function HistoryListCard({
                 await cancelScheduledBroadcast(eventId, row.id);
               })
             }
-            className="font-medium text-rose-dark hover:underline disabled:opacity-60"
+            className="font-medium text-[var(--d-coral)] hover:underline disabled:opacity-60"
           >
             {pending ? "Membatalkan..." : "Batalkan"}
           </button>
         )}
         <Link
           href={`/dashboard/messages/${row.id}`}
-          className="font-medium text-ink-muted hover:text-navy"
+          className="font-medium text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
         >
           Detail →
         </Link>
@@ -1392,16 +1392,16 @@ function UnpublishedBanner() {
           ⚠️
         </span>
         <div className="flex-1">
-          <p className="text-sm font-medium text-ink">
+          <p className="text-sm font-medium text-[var(--d-ink)]">
             Undangan belum dipublikasikan
           </p>
-          <p className="mt-1 text-xs text-ink-muted">
+          <p className="mt-1 text-xs text-[var(--d-ink-dim)]">
             Tamu yang menerima link undangan saat ini akan melihat halaman
             404. Publikasikan dulu di Pengaturan agar undangan bisa dibuka.
           </p>
           <Link
             href="/dashboard/settings"
-            className="mt-3 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-coral-dark"
+            className="mt-3 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90"
           >
             Buka Pengaturan untuk Publikasi →
           </Link>
@@ -1419,29 +1419,29 @@ function UpgradeWhatsAppCard() {
           ✨
         </span>
         <div className="flex-1">
-          <p className="text-sm font-medium text-ink">
+          <p className="text-sm font-medium text-[var(--d-ink)]">
             Upgrade ke WhatsApp Business API
           </p>
-          <p className="mt-1 text-xs text-ink-muted">
+          <p className="mt-1 text-xs text-[var(--d-ink-dim)]">
             Saat ini Anda mengirim WhatsApp secara manual (buka tab per
             tamu). Dengan paket Lite ke atas, undangan WA terkirim
             otomatis dari server.
           </p>
-          <ul className="mt-3 space-y-1.5 text-xs text-ink-muted">
+          <ul className="mt-3 space-y-1.5 text-xs text-[var(--d-ink-dim)]">
             <li className="flex items-start gap-2">
-              <span className="text-coral" aria-hidden>
+              <span className="text-[var(--d-coral)]" aria-hidden>
                 ✓
               </span>
               <span>Kirim ratusan WA otomatis tanpa buka tab satu-satu</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-coral" aria-hidden>
+              <span className="text-[var(--d-coral)]" aria-hidden>
                 ✓
               </span>
               <span>Jadwalkan pengiriman WhatsApp sesuai waktu Anda</span>
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-coral" aria-hidden>
+              <span className="text-[var(--d-coral)]" aria-hidden>
                 ✓
               </span>
               <span>Status delivery & read receipt per tamu</span>
@@ -1449,7 +1449,7 @@ function UpgradeWhatsAppCard() {
           </ul>
           <Link
             href="/harga"
-            className="mt-4 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-coral-dark"
+            className="mt-4 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:opacity-90"
           >
             Lihat Paket →
           </Link>
@@ -1476,12 +1476,12 @@ function ChannelButton({
       onClick={onClick}
       className={`rounded-xl px-4 py-3 text-left transition-colors ${
         active
-          ? "bg-navy text-ink-inverse"
-          : "border border-[color:var(--border-ghost)] bg-white text-ink hover:bg-surface-muted"
+          ? "bg-[var(--d-bg-2)] text-white"
+          : "border border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
       }`}
     >
       <p className="text-sm font-medium">{label}</p>
-      <p className={`text-[11px] ${active ? "text-white/80" : "text-ink-muted"}`}>
+      <p className={`text-[11px] ${active ? "text-white/80" : "text-[var(--d-ink-dim)]"}`}>
         {hint}
       </p>
     </button>
@@ -1504,7 +1504,7 @@ function AudienceRadio({
   return (
     <div
       className={`rounded-xl border p-3 transition-colors ${
-        active ? "border-navy bg-navy-50" : "border-[color:var(--border-ghost)] bg-white"
+        active ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)]" : "border-[var(--d-line)] bg-[var(--d-bg-card)]"
       }`}
     >
       <button
@@ -1514,14 +1514,14 @@ function AudienceRadio({
       >
         <span
           className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 ${
-            active ? "border-navy" : "border-ink-hint"
+            active ? "border-[var(--d-coral)]" : "border-ink-hint"
           }`}
         >
-          {active && <span className="h-2 w-2 rounded-full bg-navy" />}
+          {active && <span className="h-2 w-2 rounded-full bg-[var(--d-bg-2)]" />}
         </span>
         <span>
-          <span className="block text-sm font-medium text-ink">{label}</span>
-          <span className="block text-xs text-ink-muted">{hint}</span>
+          <span className="block text-sm font-medium text-[var(--d-ink)]">{label}</span>
+          <span className="block text-xs text-[var(--d-ink-dim)]">{hint}</span>
         </span>
       </button>
       {children}

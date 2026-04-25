@@ -122,17 +122,17 @@ export function AiMessageModal({
         className="absolute inset-0 bg-[color:var(--overlay-modal)]"
         onClick={pending ? undefined : onClose}
       />
-      <div className="relative my-auto w-full max-w-2xl rounded-2xl bg-surface-card p-6 shadow-ghost-lg">
+      <div className="relative my-auto w-full max-w-2xl rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-lg">
         <header className="mb-5 flex items-start justify-between">
           <div>
-            <h2 className="font-display text-xl text-ink">✨ Asisten Pesan</h2>
-            <p className="mt-1 text-sm text-ink-muted">
+            <h2 className="font-display text-xl text-[var(--d-ink)]">✨ Asisten Pesan</h2>
+            <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
               Untuk{" "}
               <strong>
                 {channel === "whatsapp" ? "WhatsApp" : "Email"}
               </strong>
               {" — "}
-              <span className="text-ink-hint">
+              <span className="text-[var(--d-ink-faint)]">
                 {eventContext.coupleName}
               </span>
             </p>
@@ -141,7 +141,7 @@ export function AiMessageModal({
             type="button"
             disabled={pending}
             onClick={onClose}
-            className="text-ink-hint hover:text-ink disabled:opacity-50"
+            className="text-[var(--d-ink-faint)] hover:text-[var(--d-ink)] disabled:opacity-50"
             aria-label="Tutup"
           >
             ✕
@@ -261,13 +261,13 @@ export function AiMessageModal({
             maxLength={200}
             className={inputClass + " resize-none"}
           />
-          <p className="mt-1 text-xs text-ink-hint">
+          <p className="mt-1 text-xs text-[var(--d-ink-faint)]">
             {notes.length} / 200
           </p>
         </Section>
 
         {error && (
-          <p className="mb-3 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+          <p className="mb-3 rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
             {error}
           </p>
         )}
@@ -276,24 +276,24 @@ export function AiMessageModal({
           type="button"
           onClick={generate}
           disabled={pending}
-          className="w-full rounded-full bg-coral px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+          className="w-full rounded-full bg-coral px-5 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
         >
           {pending ? "✨ Generating..." : result ? "✨ Generate Ulang" : "✨ Generate Pesan"}
         </button>
 
         {pending && !result && (
           <div className="mt-4 space-y-2">
-            <div className="h-3 w-full animate-pulse rounded bg-surface-muted" />
-            <div className="h-3 w-5/6 animate-pulse rounded bg-surface-muted" />
-            <div className="h-3 w-4/6 animate-pulse rounded bg-surface-muted" />
-            <div className="h-3 w-5/6 animate-pulse rounded bg-surface-muted" />
+            <div className="h-3 w-full animate-pulse rounded bg-[var(--d-bg-2)]" />
+            <div className="h-3 w-5/6 animate-pulse rounded bg-[var(--d-bg-2)]" />
+            <div className="h-3 w-4/6 animate-pulse rounded bg-[var(--d-bg-2)]" />
+            <div className="h-3 w-5/6 animate-pulse rounded bg-[var(--d-bg-2)]" />
           </div>
         )}
 
         {result && (
           <div className="mt-5">
-            <div className="text-sm font-medium text-ink">Hasil</div>
-            <pre className="mt-2 max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl bg-surface-muted p-3 font-mono text-[12.5px] leading-relaxed text-ink">
+            <div className="text-sm font-medium text-[var(--d-ink)]">Hasil</div>
+            <pre className="mt-2 max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl bg-[var(--d-bg-2)] p-3 font-mono text-[12.5px] leading-relaxed text-[var(--d-ink)]">
               {result}
             </pre>
             <div className="mt-3 flex flex-wrap justify-end gap-2">
@@ -301,7 +301,7 @@ export function AiMessageModal({
                 type="button"
                 onClick={generate}
                 disabled={pending}
-                className="rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm text-navy hover:bg-surface-muted disabled:opacity-60"
+                className="rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm text-[var(--d-ink)] hover:bg-[var(--d-bg-2)] disabled:opacity-60"
               >
                 ✨ Generate Ulang
               </button>
@@ -310,7 +310,7 @@ export function AiMessageModal({
                 onClick={() => {
                   onUseMessage(result);
                 }}
-                className="rounded-full bg-navy px-5 py-2 text-sm font-medium text-white hover:bg-navy-dark"
+                className="rounded-full bg-[var(--d-bg-2)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--d-bg-1)]"
               >
                 Pakai Pesan Ini
               </button>
@@ -323,7 +323,7 @@ export function AiMessageModal({
 }
 
 const inputClass =
-  "w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-3 py-2 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "w-full rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-3 py-2 text-sm outline-none focus:border-[var(--d-coral)] focus:shadow-[var(--focus-ring-navy)]";
 
 function Section({
   label,
@@ -334,7 +334,7 @@ function Section({
 }) {
   return (
     <div className="mb-4">
-      <div className="mb-1.5 text-sm font-medium text-ink">{label}</div>
+      <div className="mb-1.5 text-sm font-medium text-[var(--d-ink)]">{label}</div>
       {children}
     </div>
   );
@@ -360,8 +360,8 @@ function Pills<T extends string>({
             onClick={() => onSelect(opt.id)}
             className={`rounded-full border px-3 py-1 text-xs transition-colors ${
               active
-                ? "border-navy bg-navy text-white"
-                : "border-[color:var(--border-medium)] text-ink-muted hover:bg-surface-muted"
+                ? "border-[var(--d-coral)] bg-[var(--d-bg-2)] text-white"
+                : "border-[var(--d-line-strong)] text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)]"
             }`}
           >
             {opt.label}
@@ -385,8 +385,8 @@ function CheckboxChip({
     <label
       className={`flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1 text-xs transition-colors ${
         checked
-          ? "border-navy bg-navy-50 text-navy"
-          : "border-[color:var(--border-medium)] text-ink-muted hover:bg-surface-muted"
+          ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)] text-[var(--d-ink)]"
+          : "border-[var(--d-line-strong)] text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)]"
       }`}
     >
       <input
