@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 export type ChipPlaceholder = {
   /** Token rendered between curly braces — e.g. "nama" → {nama}. */
@@ -137,10 +137,36 @@ export function TemplateChipEditor({
   // what we've already painted — i.e. when an external callsite (AI
   // modal, template switch) replaces the body wholesale.
   const lastRenderedRef = useRef<string>("");
+  // After we mutate the DOM ourselves (insertAtCaret), the parent
+  // round-trips the new value back via the `value` prop. Without this
+  // guard, the value-sync useEffect would wipe innerHTML and snap the
+  // caret to the start of the editor.
+  const skipNextRenderRef = useRef(false);
+
+  // Set of placeholder keys currently present in the value — drives
+  // the "used" green styling on toolbar chips. Recomputes on every
+  // value change (typing, chip delete, template switch, AI apply).
+  const usedKeys = useMemo(() => {
+    const used = new Set<string>();
+    PLACEHOLDER_RE.lastIndex = 0;
+    let match: RegExpExecArray | null;
+    while ((match = PLACEHOLDER_RE.exec(value)) !== null) {
+      used.add(match[1]);
+    }
+    return used;
+  }, [value]);
 
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
+    if (skipNextRenderRef.current) {
+      // We already mutated the DOM in insertAtCaret; just sync the
+      // ref with the value we already painted and skip the reset so
+      // the caret stays put.
+      skipNextRenderRef.current = false;
+      lastRenderedRef.current = value;
+      return;
+    }
     if (value === lastRenderedRef.current) return;
     el.innerHTML = "";
     el.appendChild(valueToFragment(value));
@@ -168,18 +194,30 @@ export function TemplateChipEditor({
     if (!sel || sel.rangeCount === 0 || !el.contains(sel.anchorNode)) {
       el.appendChild(chip);
       el.appendChild(space);
+      // Park the caret right after the trailing space.
+      const range = document.createRange();
+      range.setStartAfter(space);
+      range.collapse(true);
+      const sel2 = window.getSelection();
+      sel2?.removeAllRanges();
+      sel2?.addRange(range);
     } else {
       const range = sel.getRangeAt(0);
       range.deleteContents();
       range.insertNode(space);
       range.insertNode(chip);
       range.setStartAfter(space);
-      range.setEndAfter(space);
+      range.collapse(true);
       sel.removeAllRanges();
       sel.addRange(range);
     }
 
-    commit();
+    // Skip the next value-sync useEffect pass — we already painted
+    // the chip + caret ourselves and don't want innerHTML reset.
+    skipNextRenderRef.current = true;
+    const next = nodeToValue(el);
+    lastRenderedRef.current = next;
+    onChange(next);
   }
 
   return (
@@ -188,21 +226,33 @@ export function TemplateChipEditor({
         <span className="mr-1 text-[11px] font-medium text-ink-muted">
           Sisipkan:
         </span>
-        {placeholders.map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            onMouseDown={(e) => {
-              // Prevent the editor from losing focus before we insert.
-              e.preventDefault();
-            }}
-            onClick={() => insertAtCaret(p.key)}
-            className="inline-flex items-center gap-1 rounded-md bg-navy/10 px-2 py-0.5 text-[11px] font-medium text-navy transition-colors hover:bg-navy/20"
-          >
-            <span className="text-[10px] opacity-60">+</span>
-            {p.label}
-          </button>
-        ))}
+        {placeholders.map((p) => {
+          const isUsed = usedKeys.has(p.key);
+          return (
+            <button
+              key={p.key}
+              type="button"
+              onMouseDown={(e) => {
+                // Prevent the editor from losing focus before we insert.
+                e.preventDefault();
+              }}
+              onClick={() => insertAtCaret(p.key)}
+              title={
+                isUsed
+                  ? `Sudah ada di template (klik untuk tambah lagi)`
+                  : `Sisipkan {${p.key}}`
+              }
+              className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                isUsed
+                  ? "border-[#3B7A57]/30 bg-[#E8F3EE] text-[#3B7A57] hover:bg-[#D6EADC]"
+                  : "border-[color:var(--border-ghost)] bg-white text-ink-muted hover:bg-surface-muted"
+              }`}
+            >
+              <span className="text-[10px] opacity-70">{isUsed ? "✓" : "+"}</span>
+              {p.label}
+            </button>
+          );
+        })}
       </div>
       <div
         ref={editorRef}
