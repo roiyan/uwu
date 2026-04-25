@@ -168,3 +168,113 @@ h1, h2, h3, h4, h5, h6 {
   }
   .hero-mesh { animation: none; }
 }
+
+/* ============================================================
+   Onboarding cinematic dark theme — scoped to .theme-onboarding.
+   Tokens mirror docs/onboarding-design/UWU_Onboarding.html so a
+   designer can compare side-by-side. The reskin re-tokens colors
+   and typography but never touches the existing flow/server
+   actions; see CLAUDE.md and the redesign brief.
+   ============================================================ */
+.theme-onboarding {
+  --ob-bg-0: #06060B;
+  --ob-bg-1: #0C0C15;
+  --ob-bg-2: #13141F;
+  --ob-bg-card: #0E0F18;
+  --ob-ink: #EDE8DE;
+  --ob-ink-dim: #9E9A95;
+  --ob-ink-faint: #4A4850;
+  --ob-line: rgba(237, 232, 222, 0.07);
+  --ob-line-strong: rgba(237, 232, 222, 0.16);
+  --ob-blue: #8FA3D9;
+  --ob-lilac: #B89DD4;
+  --ob-coral: #F0A09C;
+  --ob-peach: #F4B8A3;
+  --ob-gold: #D4B896;
+
+  background: var(--ob-bg-0);
+  color: var(--ob-ink);
+  font-family:
+    "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.theme-onboarding .ob-serif {
+  font-family: "Fraunces", "Playfair Display", Georgia, serif;
+  font-feature-settings: "ss01";
+}
+
+.theme-onboarding .ob-mono {
+  font-family:
+    "JetBrains Mono", "SF Mono", ui-monospace, "Cascadia Code", Menlo,
+    monospace;
+}
+
+/* Underline-only input style. Reused by every onboarding form field. */
+.theme-onboarding .ob-input {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ob-line-strong);
+  padding: 0.75rem 0;
+  color: var(--ob-ink);
+  font-family: "Fraunces", "Playfair Display", Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 300;
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+.theme-onboarding .ob-input::placeholder {
+  font-style: italic;
+  color: var(--ob-ink-faint);
+  font-weight: 300;
+}
+.theme-onboarding .ob-input:focus {
+  border-bottom-color: var(--ob-coral);
+}
+
+/* Field eyebrow label (mono, all caps, wide tracking). */
+.theme-onboarding .ob-eyebrow {
+  font-family:
+    "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ob-ink-dim);
+}
+
+/* Confetti animation used by the Selesai step. */
+@keyframes ob-conf {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  100% {
+    transform: translate(var(--cx, 0), 100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+.theme-onboarding .ob-confetti-piece {
+  position: absolute;
+  top: -10px;
+  width: 8px;
+  height: 12px;
+  border-radius: 2px;
+  animation: ob-conf 2.4s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+  pointer-events: none;
+}
+
+/* Sidebar background star field — pure CSS, no JS bloat. */
+.theme-onboarding .ob-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 60% 70%, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(1px 1px at 80% 20%, rgba(255, 255, 255, 0.3), transparent),
+    radial-gradient(1px 1px at 35% 80%, rgba(255, 255, 255, 0.2), transparent);
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-onboarding .ob-confetti-piece { animation: none; opacity: 0; }
+}

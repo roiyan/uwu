@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveMempelaiAction } from "@/lib/actions/onboarding";
 import { useToast } from "@/components/shared/Toast";
+import { writePreview } from "../components/preview-store";
 
 type OwnerRole = "bride" | "groom" | "both";
 type Side = "bride" | "groom";
@@ -17,18 +18,30 @@ type Defaults = {
   partnerEmail: string;
 };
 
-// A-2 — lifted contrast on every form control so inputs are clearly
-// distinguishable from the dark card surface underneath.
-const inputClass =
-  "mt-1 w-full rounded-xl border border-white/[0.12] bg-white/[0.07] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition-colors focus:border-[color:var(--color-brand-lavender)]/60 focus:ring-2 focus:ring-[color:var(--color-brand-lavender)]/20";
-
-const lockedClass =
-  "mt-1 flex w-full items-center gap-2 rounded-xl border border-[color:var(--color-brand-lavender)]/25 bg-[color:var(--color-brand-lavender)]/[0.08] px-4 py-3 text-sm text-white/85";
-
-const ROLE_OPTIONS: { id: OwnerRole; icon: string; label: string }[] = [
-  { id: "bride", icon: "♀", label: "Mempelai Wanita" },
-  { id: "groom", icon: "♂", label: "Mempelai Pria" },
-  { id: "both", icon: "👫", label: "Kami isi berdua" },
+const ROLE_OPTIONS: {
+  id: OwnerRole;
+  icon: string;
+  label: string;
+  hint: string;
+}[] = [
+  {
+    id: "bride",
+    icon: "♀",
+    label: "Mempelai Wanita",
+    hint: "Email terhubung ke akun wanita",
+  },
+  {
+    id: "groom",
+    icon: "♂",
+    label: "Mempelai Pria",
+    hint: "Email terhubung ke akun pria",
+  },
+  {
+    id: "both",
+    icon: "&",
+    label: "Kami isi berdua",
+    hint: "Tanpa email pasangan tambahan",
+  },
 ];
 
 export function MempelaiForm({
@@ -43,7 +56,9 @@ export function MempelaiForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ownerRole, setOwnerRole] = useState<OwnerRole>(defaults.ownerRole);
-  const [partnerEmail, setPartnerEmail] = useState<string>(defaults.partnerEmail);
+  const [partnerEmail, setPartnerEmail] = useState<string>(
+    defaults.partnerEmail,
+  );
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -76,35 +91,33 @@ export function MempelaiForm({
       });
   }
 
-  // Single source of truth for email placement.
-  //   role=bride  → locked in Wanita, partner in Pria
-  //   role=groom  → locked in Pria,   partner in Wanita
-  //   role=both   → neither
+  // role=bride  → locked in Wanita, partner in Pria
+  // role=groom  → locked in Pria,   partner in Wanita
+  // role=both   → neither
   const lockedSide: Side | null =
     ownerRole === "bride" ? "bride" : ownerRole === "groom" ? "groom" : null;
   const partnerSide: Side | null =
     ownerRole === "bride" ? "groom" : ownerRole === "groom" ? "bride" : null;
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-      {/* Saya adalah — role selector */}
-      <section className="rounded-2xl border border-white/10 bg-[color:var(--color-dark-surface)] p-6 shadow-2xl">
-        <h2 className="font-display text-lg text-white/90">Saya adalah</h2>
-        <p className="mt-1 text-xs text-white/50">
-          Pilihan ini menentukan email mana yang terhubung dengan akun Anda.
-        </p>
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
+    <form onSubmit={handleSubmit} className="mt-2 space-y-7">
+      <fieldset>
+        <legend className="ob-mono mb-4 block text-[10px] uppercase tracking-[0.22em] text-[var(--ob-ink-dim)]">
+          Saya adalah
+        </legend>
+        <div className="grid gap-3 sm:grid-cols-3">
           {ROLE_OPTIONS.map((opt) => (
             <RolePill
               key={opt.id}
               active={ownerRole === opt.id}
               icon={opt.icon}
               label={opt.label}
+              hint={opt.hint}
               onClick={() => setOwnerRole(opt.id)}
             />
           ))}
         </div>
-      </section>
+      </fieldset>
 
       <CoupleSection
         side="bride"
@@ -139,16 +152,23 @@ export function MempelaiForm({
       />
 
       {error && (
-        <p className="rounded-md border border-red-400/20 bg-red-400/10 px-3 py-2 text-sm text-red-300">
+        <p className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-2 text-sm text-red-300">
           {error}
         </p>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[var(--ob-line)] pt-6">
+        <span className="ob-mono inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[var(--ob-ink-faint)]">
+          <span
+            aria-hidden
+            className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--ob-coral)]"
+          />
+          Tersimpan otomatis
+        </span>
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex items-center gap-2 rounded-xl bg-gradient-brand px-8 py-3 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-7 py-3 text-[13px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending && (
             <span
@@ -181,37 +201,71 @@ function CoupleSection(props: {
   const showLocked = props.lockedSide === props.side;
   const showPartner = props.partnerSide === props.side;
 
+  // Local state mirrors the inputs so we can push to the preview
+  // store without making the inputs fully controlled (defaultValue
+  // remains the source of truth on submit). This keeps the existing
+  // form-data flow intact while giving the sidebar a live preview.
+  const [name, setName] = useState(props.defaultName);
+  const [nickname, setNickname] = useState(props.defaultNickname ?? "");
+
   return (
-    <section className="rounded-2xl border border-white/10 bg-[color:var(--color-dark-surface)] p-6 shadow-2xl">
-      <h2 className="font-display text-lg text-white/90">{props.title}</h2>
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+    <section className="rounded-[18px] border border-[var(--ob-line)] bg-[var(--ob-bg-card)] p-6 md:p-8">
+      <header className="mb-6 flex items-baseline justify-between">
+        <h3 className="ob-serif text-[22px] font-light text-[var(--ob-ink)]">
+          {props.title}
+        </h3>
+        <span className="ob-mono text-[10px] uppercase tracking-[0.22em] text-[var(--ob-ink-faint)]">
+          {props.side === "bride" ? "Wanita" : "Pria"}
+        </span>
+      </header>
+      <div className="grid gap-6 md:grid-cols-2">
         <label className="block">
-          <span className="text-sm font-medium text-white/70">Nama lengkap</span>
+          <span className="ob-eyebrow block">Nama lengkap</span>
           <input
             name={props.nameName}
             required
             defaultValue={props.defaultName}
             placeholder={props.namePlaceholder}
-            className={inputClass}
+            className="ob-input"
+            onChange={(e) => {
+              setName(e.target.value);
+              writePreview(
+                props.side === "bride"
+                  ? { brideName: e.target.value }
+                  : { groomName: e.target.value },
+              );
+            }}
+            value={name}
           />
         </label>
         <label className="block">
-          <span className="text-sm font-medium text-white/70">Nama panggilan</span>
+          <span className="ob-eyebrow block">Nama panggilan</span>
           <input
             name={props.nicknameName}
             defaultValue={props.defaultNickname ?? ""}
             placeholder={props.nicknamePlaceholder}
-            className={inputClass}
+            className="ob-input"
+            onChange={(e) => {
+              setNickname(e.target.value);
+              writePreview(
+                props.side === "bride"
+                  ? { brideNickname: e.target.value }
+                  : { groomNickname: e.target.value },
+              );
+            }}
+            value={nickname}
           />
         </label>
 
         {showLocked && (
           <div className="md:col-span-2">
-            <span className="text-sm font-medium text-white/70">Email</span>
-            <div className={lockedClass}>
+            <span className="ob-eyebrow block">Email</span>
+            <div className="mt-2 flex items-center gap-3 rounded-md border border-[var(--ob-line-strong)] bg-[rgba(240,160,156,0.04)] px-4 py-3 text-sm text-[var(--ob-ink)]">
               <span aria-hidden>📧</span>
-              <span className="truncate">{props.accountEmail || "—"}</span>
-              <span className="ml-auto flex items-center gap-1 text-xs text-white/60">
+              <span className="truncate font-mono text-[12px]">
+                {props.accountEmail || "—"}
+              </span>
+              <span className="ob-mono ml-auto flex items-center gap-1 text-[10px] uppercase tracking-[0.22em] text-[var(--ob-ink-dim)]">
                 Akun Anda <span aria-hidden>🔒</span>
               </span>
             </div>
@@ -220,19 +274,19 @@ function CoupleSection(props: {
 
         {showPartner && (
           <label className="block md:col-span-2">
-            <span className="text-sm font-medium text-white/70">
+            <span className="ob-eyebrow block">
               Email pasangan (opsional)
             </span>
             <input
               type="email"
               value={props.partnerEmail}
               onChange={(e) => props.setPartnerEmail(e.target.value)}
-              placeholder="Masukkan email pasangan Anda"
-              className={inputClass}
+              placeholder="email@pasangan.com"
+              className="ob-input"
             />
-            <span className="mt-1 block text-xs text-white/50">
-              Jika diisi, pasangan bisa ikut mengelola undangan dari akun mereka
-              sendiri.
+            <span className="mt-2 block text-[12px] text-[var(--ob-ink-dim)]">
+              Jika diisi, pasangan bisa ikut mengelola undangan dari akun
+              mereka sendiri.
             </span>
           </label>
         )}
@@ -245,36 +299,36 @@ function RolePill({
   active,
   icon,
   label,
+  hint,
   onClick,
 }: {
   active: boolean;
   icon: string;
   label: string;
+  hint: string;
   onClick: () => void;
 }) {
-  // A-3 — prominent active state: brand-lavender 2px border + soft outer glow.
-  const activeStyle: React.CSSProperties | undefined = active
-    ? {
-        borderColor: "var(--color-brand-lavender)",
-        boxShadow:
-          "0 0 0 1px rgba(184,160,208,0.35), 0 0 24px -4px rgba(184,160,208,0.25)",
-      }
-    : undefined;
-
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`flex cursor-pointer items-center gap-2 rounded-xl border-2 px-6 py-3 text-sm transition-all ${
+      className={`flex flex-col items-start gap-1 rounded-[14px] border p-5 text-left transition-all ${
         active
-          ? "bg-white/[0.08] text-white"
-          : "border-white/[0.1] bg-white/[0.03] text-white/70 hover:border-white/[0.15] hover:bg-white/[0.05] hover:text-white"
+          ? "border-[var(--ob-coral)] bg-[rgba(240,160,156,0.05)] shadow-[0_0_0_1px_var(--ob-coral)_inset,0_10px_40px_rgba(240,160,156,0.12)]"
+          : "border-[var(--ob-line)] bg-[var(--ob-bg-card)] hover:border-[var(--ob-line-strong)] hover:bg-[var(--ob-bg-2)]"
       }`}
-      style={activeStyle}
     >
-      <span className="text-base">{icon}</span>
-      {label}
+      <span
+        className="ob-serif text-[26px] italic"
+        style={{ color: active ? "var(--ob-coral)" : "var(--ob-ink-dim)" }}
+      >
+        {icon}
+      </span>
+      <span className="ob-serif mt-1 text-[15px] text-[var(--ob-ink)]">
+        {label}
+      </span>
+      <span className="text-[11px] text-[var(--ob-ink-dim)]">{hint}</span>
     </button>
   );
 }
