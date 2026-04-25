@@ -190,9 +190,12 @@ export function GuestsClient({
       byGroupId.get(k)!.push(g);
     }
     const out: GroupSection[] = [];
+    // Always include every group from the prop — even ones with zero
+    // guests. Empty groups still render (with a dashed-border drop
+    // zone) so the operator can see the group exists and drag a guest
+    // into it.
     for (const grp of groups) {
-      const rows = byGroupId.get(grp.id);
-      if (!rows || rows.length === 0) continue;
+      const rows = byGroupId.get(grp.id) ?? [];
       out.push({ key: grp.id, group: grp, rows });
     }
     const ungrouped = byGroupId.get(null);
@@ -342,6 +345,72 @@ export function GuestsClient({
   >(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
+  // Per-group collapse state. Default = all expanded (empty Set). The
+  // Set holds the section key (group id, or "__ungrouped") of any
+  // section the operator has chosen to collapse.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const isCollapsed = (key: string) => collapsedGroups.has(key);
+  const toggleCollapsed = (key: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+  // Used by the auto-expand-on-hover affordance: when a guest is being
+  // dragged over a collapsed header for ≥800ms, the section opens so
+  // the operator can drop into it. Cleared on dragEnd / drop / leave.
+  const expandGroup = (key: string) => {
+    setCollapsedGroups((prev) => {
+      if (!prev.has(key)) return prev;
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  };
+  const autoExpandTimerRef = useRef<{
+    key: string;
+    timer: ReturnType<typeof setTimeout>;
+  } | null>(null);
+  function scheduleAutoExpand(key: string) {
+    if (autoExpandTimerRef.current?.key === key) return;
+    cancelAutoExpand();
+    if (!isCollapsed(key)) return;
+    const timer = setTimeout(() => {
+      expandGroup(key);
+      autoExpandTimerRef.current = null;
+    }, 800);
+    autoExpandTimerRef.current = { key, timer };
+  }
+  function cancelAutoExpand() {
+    if (autoExpandTimerRef.current) {
+      clearTimeout(autoExpandTimerRef.current.timer);
+      autoExpandTimerRef.current = null;
+    }
+  }
+  // Cancel any pending auto-expand if the component unmounts mid-drag.
+  useEffect(() => {
+    return () => cancelAutoExpand();
+  }, []);
+
+  // Touch-primary devices fire HTML5 drag events unreliably and don't
+  // give the operator a way to start a drag with one finger. We mirror
+  // CSS `(hover: hover)` so genuine pointer-equipped devices (laptops
+  // with touchscreens included) keep DnD, while phones/tablets opt
+  // out — those users move guests via the edit drawer instead.
+  const [dndEnabled, setDndEnabled] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(hover: hover) and (pointer: fine)");
+    setDndEnabled(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setDndEnabled(e.matches);
+    mq.addEventListener?.("change", handler);
+    return () => mq.removeEventListener?.("change", handler);
+  }, []);
+
   function handleRowDragStart(g: GuestRow, e: React.DragEvent) {
     setDraggingId(g.id);
     setDraggingFromGroupId(g.groupId);
@@ -354,6 +423,7 @@ export function GuestsClient({
     setDraggingId(null);
     setDraggingFromGroupId(null);
     setDragOverKey(null);
+    cancelAutoExpand();
   }
 
   async function handleHeaderDrop(targetKey: string, targetGroupId: string | null) {
@@ -362,6 +432,7 @@ export function GuestsClient({
     setDragOverKey(null);
     setDraggingId(null);
     setDraggingFromGroupId(null);
+    cancelAutoExpand();
     if (!guestId) return;
     // Same group → silent no-op so the operator doesn't see a toast for
     // accidentally dropping back where they started.
@@ -670,42 +741,92 @@ export function GuestsClient({
                 </thead>
                 <tbody>
                   {groupedView
-                    ? sections.flatMap((s, sIdx) => [
-                        <GroupHeaderRow
-                          key={`gh-${s.key}`}
-                          section={s}
-                          isFirst={sIdx === 0}
-                          onAdd={() => {
-                            setAddPresetGroup(s.group?.id ?? null);
-                            setAddOpen(true);
-                          }}
-                          isDropTarget={draggingId !== null}
-                          isDragOver={dragOverKey === s.key}
-                          onDragEnter={() => setDragOverKey(s.key)}
-                          onDragLeave={() => {
-                            setDragOverKey((cur) =>
-                              cur === s.key ? null : cur,
-                            );
-                          }}
-                          onDrop={() =>
-                            handleHeaderDrop(s.key, s.group?.id ?? null)
-                          }
-                        />,
-                        ...s.rows.map((g, i) =>
-                          renderDesktopRow(g, i, {
-                            selectedIds,
-                            copied,
-                            setDrawerGuest,
-                            setEditGuest,
-                            setDeleteGuest,
-                            toggleSelect,
-                            copyInviteLink,
-                            draggingId,
-                            onRowDragStart: handleRowDragStart,
-                            onRowDragEnd: handleRowDragEnd,
-                          }),
-                        ),
-                      ])
+                    ? sections.flatMap((s, sIdx) => {
+                        const isOpen = !isCollapsed(s.key);
+                        const headerEl = (
+                          <GroupHeaderRow
+                            key={`gh-${s.key}`}
+                            section={s}
+                            isFirst={sIdx === 0}
+                            collapsed={!isOpen}
+                            onToggleCollapsed={() => toggleCollapsed(s.key)}
+                            onAdd={() => {
+                              setAddPresetGroup(s.group?.id ?? null);
+                              setAddOpen(true);
+                            }}
+                            isDropTarget={
+                              draggingId !== null && dndEnabled
+                            }
+                            isDragOver={dragOverKey === s.key}
+                            onDragEnter={() => {
+                              setDragOverKey(s.key);
+                              // Auto-expand a collapsed section when
+                              // the operator hovers a dragged guest
+                              // over its header for ≥800ms.
+                              if (!isOpen) scheduleAutoExpand(s.key);
+                            }}
+                            onDragLeave={() => {
+                              setDragOverKey((cur) =>
+                                cur === s.key ? null : cur,
+                              );
+                              if (
+                                autoExpandTimerRef.current?.key === s.key
+                              ) {
+                                cancelAutoExpand();
+                              }
+                            }}
+                            onDrop={() =>
+                              handleHeaderDrop(s.key, s.group?.id ?? null)
+                            }
+                          />
+                        );
+                        if (!isOpen) return [headerEl];
+                        if (s.rows.length === 0) {
+                          return [
+                            headerEl,
+                            <EmptyGroupRowDesktop
+                              key={`empty-${s.key}`}
+                              isDropTarget={
+                                draggingId !== null && dndEnabled
+                              }
+                              isDragOver={dragOverKey === s.key}
+                              onDragEnter={() => setDragOverKey(s.key)}
+                              onDragLeave={() => {
+                                setDragOverKey((cur) =>
+                                  cur === s.key ? null : cur,
+                                );
+                              }}
+                              onDrop={() =>
+                                handleHeaderDrop(
+                                  s.key,
+                                  s.group?.id ?? null,
+                                )
+                              }
+                            />,
+                          ];
+                        }
+                        return [
+                          headerEl,
+                          ...s.rows.map((g, i) =>
+                            renderDesktopRow(g, i, {
+                              selectedIds,
+                              copied,
+                              setDrawerGuest,
+                              setEditGuest,
+                              setDeleteGuest,
+                              toggleSelect,
+                              copyInviteLink,
+                              draggingId,
+                              onRowDragStart: dndEnabled
+                                ? handleRowDragStart
+                                : undefined,
+                              onRowDragEnd: dndEnabled
+                                ? handleRowDragEnd
+                                : undefined,
+                            }),
+                          ),
+                        ];
+                      })
                     : guests.map((g, i) =>
                         renderDesktopRow(g, i, {
                           selectedIds,
@@ -725,28 +846,39 @@ export function GuestsClient({
           {/* Mobile view — grouped sections OR flat list */}
           {groupedView ? (
             <div className="space-y-6 md:hidden">
-              {sections.map((s) => (
-                <section key={`m-${s.key}`}>
-                  <GroupHeaderMobile
-                    section={s}
-                    onAdd={() => {
-                      setAddPresetGroup(s.group?.id ?? null);
-                      setAddOpen(true);
-                    }}
-                  />
-                  <div className="mt-3 space-y-3">
-                    {s.rows.map((g, i) =>
-                      renderMobileCard(g, i, {
-                        copied,
-                        setDrawerGuest,
-                        setEditGuest,
-                        setDeleteGuest,
-                        copyInviteLink,
-                      }),
+              {sections.map((s) => {
+                const isOpen = !isCollapsed(s.key);
+                return (
+                  <section key={`m-${s.key}`}>
+                    <GroupHeaderMobile
+                      section={s}
+                      collapsed={!isOpen}
+                      onToggleCollapsed={() => toggleCollapsed(s.key)}
+                      onAdd={() => {
+                        setAddPresetGroup(s.group?.id ?? null);
+                        setAddOpen(true);
+                      }}
+                    />
+                    {isOpen && (
+                      <div className="mt-3 space-y-3">
+                        {s.rows.length === 0 ? (
+                          <EmptyGroupCardMobile />
+                        ) : (
+                          s.rows.map((g, i) =>
+                            renderMobileCard(g, i, {
+                              copied,
+                              setDrawerGuest,
+                              setEditGuest,
+                              setDeleteGuest,
+                              copyInviteLink,
+                            }),
+                          )
+                        )}
+                      </div>
                     )}
-                  </div>
-                </section>
-              ))}
+                  </section>
+                );
+              })}
             </div>
           ) : (
             <div className="space-y-3 md:hidden">
@@ -1511,6 +1643,8 @@ function renderMobileCard(g: GuestRow, i: number, h: CardHandlers) {
 function GroupHeaderRow({
   section,
   isFirst,
+  collapsed,
+  onToggleCollapsed,
   onAdd,
   isDropTarget,
   isDragOver,
@@ -1520,6 +1654,8 @@ function GroupHeaderRow({
 }: {
   section: { group: GuestGroupRow | null; rows: GuestRow[]; key: string };
   isFirst: boolean;
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
   onAdd: () => void;
   isDropTarget?: boolean;
   isDragOver?: boolean;
@@ -1563,7 +1699,41 @@ function GroupHeaderRow({
       }`}
     >
       <td colSpan={7} className="px-6 py-3.5">
-        <div className="flex flex-wrap items-center gap-3">
+        <div
+          className="flex flex-wrap items-center gap-3"
+          onClick={(e) => {
+            // Toggle collapse when the operator clicks anywhere on the
+            // header chrome — except inside the action buttons or any
+            // other interactive child (those stop their own bubbling
+            // via stopPropagation below).
+            const target = e.target as HTMLElement;
+            if (target.closest("button,a,input,select,label")) return;
+            onToggleCollapsed();
+          }}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCollapsed();
+            }}
+            aria-label={collapsed ? `Expand ${name}` : `Collapse ${name}`}
+            aria-expanded={!collapsed}
+            className="-ml-1 flex h-6 w-6 items-center justify-center rounded text-[var(--d-ink-faint)] transition-colors hover:bg-[rgba(255,255,255,0.04)] hover:text-[var(--d-ink)]"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                collapsed ? "-rotate-90" : "rotate-0"
+              }`}
+              aria-hidden
+            >
+              <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
           <span
             aria-hidden
             className="h-2 w-2 rounded-full"
@@ -1614,9 +1784,13 @@ function GroupHeaderRow({
 
 function GroupHeaderMobile({
   section,
+  collapsed,
+  onToggleCollapsed,
   onAdd,
 }: {
   section: { group: GuestGroupRow | null; rows: GuestRow[]; key: string };
+  collapsed: boolean;
+  onToggleCollapsed: () => void;
   onAdd: () => void;
 }) {
   const name = section.group?.name ?? "Tanpa Grup";
@@ -1626,14 +1800,32 @@ function GroupHeaderMobile({
     : "/dashboard/messages";
   return (
     <div className="rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] px-4 py-3">
-      <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={onToggleCollapsed}
+        aria-label={collapsed ? `Expand ${name}` : `Collapse ${name}`}
+        aria-expanded={!collapsed}
+        className="flex w-full flex-wrap items-center gap-2 text-left"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className={`h-3.5 w-3.5 text-[var(--d-ink-faint)] transition-transform duration-200 ${
+            collapsed ? "-rotate-90" : "rotate-0"
+          }`}
+          aria-hidden
+        >
+          <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
         <span
           aria-hidden
           className="h-2 w-2 rounded-full"
           style={{ background: color, boxShadow: `0 0 6px ${color}` }}
         />
         <h3 className="d-serif text-[15px] text-[var(--d-ink)]">{name}</h3>
-      </div>
+      </button>
       <p className="d-mono mt-1 text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
         {summarizeSection(section.rows)}
       </p>
@@ -1654,6 +1846,76 @@ function GroupHeaderMobile({
           </Link>
         )}
       </div>
+    </div>
+  );
+}
+
+// Renders inside the desktop guest <table> as a single full-width row
+// when a section has zero guests. Doubles as a drop target for the
+// drag-and-drop reassign affordance — drops here use the same
+// `handleHeaderDrop` path as drops on the group header above.
+function EmptyGroupRowDesktop({
+  isDropTarget,
+  isDragOver,
+  onDragEnter,
+  onDragLeave,
+  onDrop,
+}: {
+  isDropTarget?: boolean;
+  isDragOver?: boolean;
+  onDragEnter?: () => void;
+  onDragLeave?: () => void;
+  onDrop?: () => void;
+}) {
+  return (
+    <tr>
+      <td colSpan={7} className="px-6 pb-3 pt-1">
+        <div
+          onDragOver={
+            isDropTarget
+              ? (e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                }
+              : undefined
+          }
+          onDragEnter={isDropTarget ? onDragEnter : undefined}
+          onDragLeave={isDropTarget ? onDragLeave : undefined}
+          onDrop={
+            isDropTarget
+              ? (e) => {
+                  e.preventDefault();
+                  onDrop?.();
+                }
+              : undefined
+          }
+          className={`d-serif rounded-xl border border-dashed px-4 py-7 text-center text-[13px] italic leading-relaxed transition-colors ${
+            isDragOver
+              ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
+              : "border-[var(--d-line-strong)] bg-[var(--d-bg-card)] text-[var(--d-ink-faint)]"
+          }`}
+        >
+          Belum ada tamu di grup ini.
+          <br />
+          <span className="d-mono mt-1.5 inline-block text-[10px] not-italic uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+            Drag tamu ke sini, atau klik + Tambah.
+          </span>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+// Mobile counterpart — no DnD (touch devices opt out via dndEnabled),
+// just a static empty placeholder.
+function EmptyGroupCardMobile() {
+  return (
+    <div className="d-serif rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-4 py-7 text-center text-[13px] italic leading-relaxed text-[var(--d-ink-faint)]">
+      Belum ada tamu di grup ini.
+      <br />
+      <span className="d-mono mt-1.5 inline-block text-[10px] not-italic uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+        Klik + Tambah untuk menambahkan.
+      </span>
     </div>
   );
 }
