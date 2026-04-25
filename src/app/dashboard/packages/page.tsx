@@ -15,6 +15,27 @@ const PACKAGE_ORDER: Record<string, number> = {
   ultimate: 4,
 };
 
+// Visual tier the design ref calls "Silk / Velvet / Couture" — mapped
+// to the actual DB tiers so we never rename anything underneath.
+type TierKind = "free" | "standard" | "recommended" | "premium" | "elite";
+
+function tierKind(tier: string): TierKind {
+  switch (tier) {
+    case "starter":
+      return "free";
+    case "lite":
+      return "standard";
+    case "pro":
+      return "recommended";
+    case "premium":
+      return "premium";
+    case "ultimate":
+      return "elite";
+    default:
+      return "standard";
+  }
+}
+
 function formatIdr(value: number) {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -38,6 +59,7 @@ export default async function PackagesPage() {
     (a, b) => (PACKAGE_ORDER[a.tier] ?? 99) - (PACKAGE_ORDER[b.tier] ?? 99),
   );
   const currentPackageId = bundle.event.packageId;
+  const currentPackage = sorted.find((p) => p.id === currentPackageId) ?? null;
 
   const ORDER_STATUS_LABEL: Record<string, string> = {
     pending: "Menunggu Pembayaran",
@@ -48,10 +70,11 @@ export default async function PackagesPage() {
   };
   const ORDER_STATUS_STYLE: Record<string, string> = {
     pending: "bg-[rgba(212,184,150,0.10)] text-[var(--d-gold)]",
-    paid: "bg-[#E8F3EE] text-[#3B7A57]",
+    paid: "bg-[rgba(126,211,164,0.12)] text-[var(--d-green)]",
     expired: "bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]",
     canceled: "bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]",
-    failed: "border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]",
+    failed:
+      "border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]",
   };
 
   return (
@@ -68,137 +91,286 @@ export default async function PackagesPage() {
           />
           <p className="d-eyebrow">Paket</p>
         </div>
-        <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px]">
-          Pilih paket yang{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">tepat</em>.
+        <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[54px]">
+          Investasi untuk hari
+          <br />
+          yang{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">tak terulang</em>.
         </h1>
-        <p className="mt-3 max-w-[60ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-          Setiap paket terhubung dengan kapasitas tamu, akses tema, dan fitur
-          broadcast yang berbeda.
+        <p className="mt-4 max-w-[58ch] text-[15px] leading-relaxed text-[var(--d-ink-dim)]">
+          Pilih paket yang sesuai dengan kebutuhan acara kalian.
         </p>
+
+        {currentPackage && (
+          <div
+            className="mt-6 inline-flex items-center gap-4 rounded-[14px] border border-[rgba(240,160,156,0.4)] bg-[var(--d-bg-card)] px-5 py-3"
+            style={{
+              boxShadow: "0 0 0 1px rgba(240,160,156,0.10) inset",
+            }}
+          >
+            <span
+              aria-hidden
+              className="h-2 w-2 animate-pulse rounded-full bg-[var(--d-coral)]"
+              style={{ boxShadow: "0 0 12px rgba(240,160,156,0.6)" }}
+            />
+            <div>
+              <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-ink-dim)]">
+                Paket Anda Saat Ini
+              </p>
+              <p className="d-serif mt-1 text-[18px] font-light text-[var(--d-ink)]">
+                {currentPackage.name}{" "}
+                <span className="text-[var(--d-ink-dim)]">·</span>{" "}
+                <span className="text-[var(--d-coral)]">
+                  {currentPackage.priceIdr === 0
+                    ? "Gratis"
+                    : formatIdr(currentPackage.priceIdr)}
+                </span>
+              </p>
+            </div>
+          </div>
+        )}
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {sorted.map((pkg) => {
           const isCurrent = pkg.id === currentPackageId;
-          const isRecommended = pkg.tier === "pro";
+          const kind = tierKind(pkg.tier);
           return (
-            <article
+            <PackageCard
               key={pkg.id}
-              className={`flex flex-col rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm ring-1 ${
-                isRecommended
-                  ? "ring-2 ring-coral"
-                  : "ring-[color:var(--border-ghost)]"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <h2 className="font-display text-xl text-[var(--d-ink)]">{pkg.name}</h2>
-                {isRecommended && (
-                  <span className="rounded-full bg-coral-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--d-coral)]">
-                    Populer
-                  </span>
-                )}
-                {isCurrent && (
-                  <span className="rounded-full bg-[rgba(143,163,217,0.08)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[var(--d-ink)]">
-                    Paket Aktif
-                  </span>
-                )}
-              </div>
-              <p className="mt-3 font-display text-2xl text-[var(--d-ink)]">
-                {pkg.priceIdr === 0 ? "Gratis" : formatIdr(pkg.priceIdr)}
-              </p>
-              <p className="text-xs text-[var(--d-ink-faint)]">
-                {pkg.guestLimit} tamu • {pkg.whatsappEnabled ? "WA aktif" : "Tanpa WA"}
-              </p>
-              <ul className="mt-4 flex-1 space-y-1.5 text-sm text-[var(--d-ink-dim)]">
-                {pkg.features.map((f) => (
-                  <li key={f} className="flex gap-2">
-                    <span className="text-[var(--d-gold)]">♡</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-              {isCurrent ? (
-                <button
-                  type="button"
-                  disabled
-                  className="mt-5 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm font-medium text-[var(--d-ink-dim)]"
-                >
-                  Paket Aktif
-                </button>
-              ) : pkg.priceIdr === 0 ? (
-                <button
-                  type="button"
-                  disabled
-                  className="mt-5 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm font-medium text-[var(--d-ink-faint)]"
-                >
-                  Paket Gratis
-                </button>
-              ) : (
-                <Link
-                  href={`/dashboard/checkout?tier=${pkg.tier}`}
-                  className="mt-5 rounded-full bg-coral px-4 py-2 text-center text-sm font-medium text-white transition-colors hover:opacity-90"
-                >
-                  Upgrade ke {pkg.name}
-                </Link>
-              )}
-            </article>
+              kind={kind}
+              isCurrent={isCurrent}
+              name={pkg.name}
+              price={pkg.priceIdr}
+              priceLabel={
+                pkg.priceIdr === 0 ? "Gratis" : formatIdr(pkg.priceIdr)
+              }
+              guestLimit={pkg.guestLimit}
+              whatsappEnabled={pkg.whatsappEnabled}
+              features={pkg.features as string[]}
+              upgradeHref={`/dashboard/checkout?tier=${pkg.tier}`}
+            />
           );
         })}
       </div>
 
-      <section className="mt-10">
-        <h2 className="font-display text-xl text-[var(--d-ink)]">Riwayat Pembayaran</h2>
+      <section className="mt-12">
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className="h-px w-8"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
+            }}
+          />
+          <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
+            Riwayat Pembayaran
+          </p>
+        </div>
         {orders.length === 0 ? (
-          <p className="mt-2 text-sm text-[var(--d-ink-dim)]">Belum ada pembayaran.</p>
+          <p className="mt-5 text-[13px] text-[var(--d-ink-dim)]">
+            Belum ada pembayaran.
+          </p>
         ) : (
-          <div className="mt-4 overflow-hidden rounded-2xl bg-[var(--d-bg-card)] shadow-ghost-sm">
-            <table className="w-full text-sm">
-              <thead className="text-left text-xs uppercase tracking-wide text-[var(--d-ink-faint)]">
-                <tr className="border-b border-[var(--d-line)]">
-                  <th className="px-4 py-3">Order ID</th>
-                  <th className="px-4 py-3">Paket</th>
-                  <th className="px-4 py-3">Jumlah</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Tanggal</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map(({ order, pkg }) => (
-                  <tr
-                    key={order.id}
-                    className="border-b border-[var(--d-line)] last:border-0"
-                  >
-                    <td className="px-4 py-3 font-mono text-[11px] text-[var(--d-ink)]">
-                      {order.orderRef}
-                    </td>
-                    <td className="px-4 py-3 text-[var(--d-ink)]">{pkg?.name ?? "—"}</td>
-                    <td className="px-4 py-3 text-[var(--d-ink)]">
-                      {formatIdr(order.amountIdr)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                          ORDER_STATUS_STYLE[order.status] ?? ""
-                        }`}
-                      >
-                        {ORDER_STATUS_LABEL[order.status] ?? order.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-[var(--d-ink-dim)]">
-                      {new Date(order.createdAt).toLocaleString("id-ID", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </td>
+          <div className="mt-5 d-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--d-line)]">
+                    <Th>Order ID</Th>
+                    <Th>Paket</Th>
+                    <Th>Jumlah</Th>
+                    <Th>Status</Th>
+                    <Th>Tanggal</Th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {orders.map(({ order, pkg }) => (
+                    <tr
+                      key={order.id}
+                      className="border-b border-[var(--d-line)] transition-colors last:border-0 hover:bg-[rgba(237,232,222,0.025)]"
+                    >
+                      <td className="d-mono px-4 py-3 text-[11px] text-[var(--d-ink)]">
+                        {order.orderRef}
+                      </td>
+                      <td className="px-4 py-3 text-[var(--d-ink)]">
+                        {pkg?.name ?? "—"}
+                      </td>
+                      <td className="px-4 py-3 text-[var(--d-ink)]">
+                        {formatIdr(order.amountIdr)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`d-mono inline-flex rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] ${
+                            ORDER_STATUS_STYLE[order.status] ?? ""
+                          }`}
+                        >
+                          {ORDER_STATUS_LABEL[order.status] ?? order.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[12px] text-[var(--d-ink-dim)]">
+                        {new Date(order.createdAt).toLocaleString("id-ID", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </section>
     </main>
+  );
+}
+
+function PackageCard({
+  kind,
+  isCurrent,
+  name,
+  price,
+  priceLabel,
+  guestLimit,
+  whatsappEnabled,
+  features,
+  upgradeHref,
+}: {
+  kind: TierKind;
+  isCurrent: boolean;
+  name: string;
+  price: number;
+  priceLabel: string;
+  guestLimit: number;
+  whatsappEnabled: boolean;
+  features: string[];
+  upgradeHref: string;
+}) {
+  // Visual styling per tier intent — recommended (pro) gets coral
+  // glow, premium tiers get gold accent, free is subdued. Current
+  // plan always wins the highlight regardless of tier.
+  const isRecommended = kind === "recommended";
+  const isElite = kind === "elite" || kind === "premium";
+
+  const cardClass = isCurrent
+    ? "border-[var(--d-coral)] shadow-[0_0_0_1px_var(--d-coral)_inset,0_24px_60px_rgba(240,160,156,0.16)]"
+    : isRecommended
+      ? "border-[rgba(240,160,156,0.32)] shadow-[0_24px_60px_rgba(240,160,156,0.10)]"
+      : isElite
+        ? "border-[rgba(212,184,150,0.28)] shadow-[0_24px_60px_rgba(212,184,150,0.08)]"
+        : "border-[var(--d-line)]";
+
+  const cardBg = isRecommended
+    ? "linear-gradient(180deg, rgba(240,160,156,0.06) 0%, var(--d-bg-card) 60%)"
+    : isElite
+      ? "linear-gradient(180deg, rgba(212,184,150,0.05) 0%, var(--d-bg-card) 60%)"
+      : "var(--d-bg-card)";
+
+  const priceColor = isElite
+    ? "var(--d-gold)"
+    : isRecommended
+      ? "var(--d-coral)"
+      : "var(--d-ink)";
+
+  return (
+    <article
+      className={`relative flex flex-col rounded-[18px] border p-6 ${cardClass}`}
+      style={{ background: cardBg }}
+    >
+      {isRecommended && !isCurrent && (
+        <span className="d-mono absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-[var(--d-coral)] px-3 py-1 text-[9px] font-medium uppercase tracking-[0.32em] text-[var(--d-bg-0)] shadow-[0_8px_20px_rgba(240,160,156,0.4)]">
+          ✦ Populer ✦
+        </span>
+      )}
+      {isElite && !isRecommended && !isCurrent && (
+        <span className="d-mono absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center rounded-full bg-[var(--d-gold)] px-3 py-1 text-[9px] font-medium uppercase tracking-[0.32em] text-[var(--d-bg-0)]">
+          Premium
+        </span>
+      )}
+      {isCurrent && (
+        <span className="d-mono absolute -top-3 left-1/2 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-[var(--d-coral)] px-3 py-1 text-[9px] font-medium uppercase tracking-[0.32em] text-[var(--d-bg-0)] shadow-[0_8px_20px_rgba(240,160,156,0.4)]">
+          <span aria-hidden className="h-1 w-1 rounded-full bg-[var(--d-bg-0)]" />
+          Aktif
+        </span>
+      )}
+
+      <header className="text-center">
+        <h2 className="d-mono text-[10px] uppercase tracking-[0.36em] text-[var(--d-ink-dim)]">
+          {name}
+        </h2>
+        <p
+          className="d-serif mt-4 text-[42px] font-extralight leading-none"
+          style={{ color: priceColor }}
+        >
+          {price === 0 ? "Gratis" : priceLabel}
+        </p>
+        {price > 0 && (
+          <p className="d-mono mt-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+            sekali bayar
+          </p>
+        )}
+      </header>
+
+      <p className="d-mono mt-6 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+        {guestLimit} tamu · {whatsappEnabled ? "WA aktif" : "WA manual"}
+      </p>
+
+      <ul className="mt-5 flex-1 space-y-2.5 text-[12.5px] leading-relaxed text-[var(--d-ink-dim)]">
+        {features.map((f) => (
+          <li key={f} className="flex items-start gap-2">
+            <span
+              aria-hidden
+              className="mt-0.5 inline-block text-[12px]"
+              style={{ color: "var(--d-green)" }}
+            >
+              ✓
+            </span>
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+
+      <div className="mt-6 border-t border-[var(--d-line)] pt-5">
+        {isCurrent ? (
+          <button
+            type="button"
+            disabled
+            className="d-mono w-full rounded-full border border-[var(--d-line-strong)] px-4 py-2.5 text-center text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]"
+          >
+            Paket Anda
+          </button>
+        ) : price === 0 ? (
+          <button
+            type="button"
+            disabled
+            className="d-mono w-full rounded-full border border-[var(--d-line)] px-4 py-2.5 text-center text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]"
+          >
+            Paket Gratis
+          </button>
+        ) : (
+          <Link
+            href={upgradeHref}
+            className={
+              isElite
+                ? "d-mono inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#D4B896_0%,#F4B8A3_100%)] px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-[var(--d-bg-0)] shadow-[0_18px_40px_-18px_rgba(212,184,150,0.6)] transition-opacity hover:opacity-90"
+                : "d-mono inline-flex w-full items-center justify-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-4 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90"
+            }
+          >
+            Pilih {name} →
+          </Link>
+        )}
+      </div>
+    </article>
+  );
+}
+
+function Th({ children }: { children: React.ReactNode }) {
+  return (
+    <th className="d-mono px-4 py-3 text-left text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+      {children}
+    </th>
   );
 }

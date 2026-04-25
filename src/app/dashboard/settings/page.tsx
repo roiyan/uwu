@@ -67,16 +67,14 @@ export default async function SettingsPage({
           />
           <p className="d-eyebrow">Pengaturan</p>
         </div>
-        <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px]">
-          Atur{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">
-            preferensi
-          </em>{" "}
-          akun Anda.
+        <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[54px]">
+          Ruang kendali,
+          <br />
+          sepenuhnya milik{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">kalian</em>.
         </h1>
-        <p className="mt-3 max-w-[60ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-          Kelola akun Anda dan pengaturan acara — profil, kolaborator,
-          publikasi, dan preferensi tampilan undangan.
+        <p className="mt-4 max-w-[58ch] text-[15px] leading-relaxed text-[var(--d-ink-dim)]">
+          Kelola profil, preferensi, dan pengaturan acara kalian.
         </p>
       </header>
 
