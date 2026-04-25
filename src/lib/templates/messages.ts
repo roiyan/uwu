@@ -10,7 +10,9 @@ export type MessageTemplate = {
   description: string;
 };
 
-// Placeholder keys supported: {name}, {bride}, {groom}, {date}, {venue}, {link}
+// Placeholder keys (canonical): {nama}, {panggilan}, {bride}, {groom},
+// {date}, {venue}, {link_undangan}. {name} + {link} are backward-compat
+// aliases handled in renderTemplate for historical broadcast bodies.
 export const MESSAGE_TEMPLATES: MessageTemplate[] = [
   {
     slug: "wa-umum-formal",
@@ -21,13 +23,13 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
       "Nada formal netral. Cocok untuk undangan resmi tanpa tone keagamaan.",
     body:
       `Dengan hormat,\n\n` +
-      `Bersama ini kami mengundang Bapak/Ibu/Saudara/i *{name}* untuk menghadiri ` +
+      `Bersama ini kami mengundang Bapak/Ibu/Saudara/i *{nama}* untuk menghadiri ` +
       `acara pernikahan kami:\n\n` +
       `*{bride} & {groom}*\n` +
       `📅 {date}\n` +
       `📍 {venue}\n\n` +
       `Detail lengkap dan konfirmasi kehadiran dapat diakses melalui tautan berikut:\n` +
-      `{link}\n\n` +
+      `{link_undangan}\n\n` +
       `Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.\n\n` +
       `Hormat kami,\n{bride} & {groom}`,
   },
@@ -41,13 +43,13 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     body:
       `Assalamu'alaikum Warahmatullahi Wabarakatuh,\n\n` +
       `Dengan memohon rahmat dan ridha Allah SWT, ` +
-      `kami mengundang Bapak/Ibu/Saudara/i *{name}* ` +
+      `kami mengundang Bapak/Ibu/Saudara/i *{nama}* ` +
       `untuk turut hadir pada akad nikah dan resepsi pernikahan kami:\n\n` +
       `*{bride} & {groom}*\n` +
       `📅 {date}\n` +
       `📍 {venue}\n\n` +
       `Informasi lengkap dan konfirmasi kehadiran pada tautan berikut:\n` +
-      `{link}\n\n` +
+      `{link_undangan}\n\n` +
       `Merupakan suatu kehormatan dan kebahagiaan bagi kami ` +
       `atas kehadiran serta doa restu dari Bapak/Ibu/Saudara/i.\n\n` +
       `Wassalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
@@ -60,12 +62,12 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     culturalPreference: "custom",
     description: "Nada hangat dan personal. Untuk sahabat dekat.",
     body:
-      `Hi {name}! 💌\n\n` +
+      `Hi {nama}! 💌\n\n` +
       `Tanpa terasa hari bahagia kami tiba juga. ` +
       `Kami ingin kamu jadi bagian dari momen spesial *{bride} & {groom}*.\n\n` +
       `📅 {date}\n` +
       `📍 {venue}\n\n` +
-      `Yuk konfirmasi kehadiran di sini:\n{link}\n\n` +
+      `Yuk konfirmasi kehadiran di sini:\n{link_undangan}\n\n` +
       `Ditunggu ya! ♡`,
   },
   {
@@ -77,12 +79,12 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     description: "Versi email dari template formal umum.",
     body:
       `Dengan hormat,\n\n` +
-      `Bersama ini kami mengundang Bapak/Ibu/Saudara/i {name} untuk menghadiri ` +
+      `Bersama ini kami mengundang Bapak/Ibu/Saudara/i {nama} untuk menghadiri ` +
       `acara pernikahan kami:\n\n` +
       `{bride} & {groom}\n` +
       `Tanggal: {date}\n` +
       `Lokasi: {venue}\n\n` +
-      `Detail lengkap dan konfirmasi kehadiran: {link}\n\n` +
+      `Detail lengkap dan konfirmasi kehadiran: {link_undangan}\n\n` +
       `Hormat kami,\n{bride} & {groom}`,
   },
   {
@@ -95,12 +97,12 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     body:
       `Assalamu'alaikum Warahmatullahi Wabarakatuh,\n\n` +
       `Dengan memohon rahmat dan ridha Allah SWT, ` +
-      `kami mengundang Bapak/Ibu/Saudara/i {name} ` +
+      `kami mengundang Bapak/Ibu/Saudara/i {nama} ` +
       `untuk turut hadir pada walimatul 'urs kami:\n\n` +
       `{bride} & {groom}\n` +
       `Tanggal: {date}\n` +
       `Lokasi: {venue}\n\n` +
-      `Informasi lengkap dan konfirmasi kehadiran: {link}\n\n` +
+      `Informasi lengkap dan konfirmasi kehadiran: {link_undangan}\n\n` +
       `Wassalamu'alaikum Warahmatullahi Wabarakatuh.\n\n` +
       `Kami yang berbahagia,\n{bride} & {groom}`,
   },
@@ -124,7 +126,7 @@ export function renderTemplate(
     data.nickname && data.nickname.trim().length > 0
       ? data.nickname.trim()
       : data.name;
-  // English keys ({name}, {link}) kept for the 5 shipped templates;
+  // English keys ({nama}, {link_undangan}) kept for the 5 shipped templates;
   // Indonesian aliases ({nama}, {panggilan}, {link_undangan}) added
   // for the Sprint A brief. {panggilan} falls back to {nama} when
   // the guest has no nickname on file.
