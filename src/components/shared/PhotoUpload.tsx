@@ -71,14 +71,16 @@ export function PhotoUpload({
 
   return (
     <div>
-      <span className="text-sm font-medium text-ink">{label}</span>
+      <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+        {label}
+      </span>
       <div
-        className={`mt-1 flex items-center gap-4 rounded-lg border border-dashed border-[color:var(--border-medium)] bg-white p-3 ${
+        className={`mt-2 flex items-center gap-4 rounded-[14px] border border-dashed border-[var(--d-line-strong)] bg-[var(--d-bg-2)] p-4 ${
           aspect === "wide" ? "flex-col md:flex-row" : ""
         }`}
       >
         <div
-          className={`flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-surface-muted ${
+          className={`flex shrink-0 items-center justify-center overflow-hidden rounded-[10px] border border-[var(--d-line)] bg-[var(--d-bg-1)] ${
             aspect === "wide" ? "h-24 w-full md:w-36" : "h-20 w-20"
           }`}
         >
@@ -90,7 +92,7 @@ export function PhotoUpload({
               className="h-full w-full object-cover"
             />
           ) : (
-            <span className="text-2xl text-ink-hint">♡</span>
+            <span className="text-2xl text-[var(--d-ink-faint)]">♡</span>
           )}
         </div>
         <div className="flex-1 space-y-2">
@@ -99,16 +101,20 @@ export function PhotoUpload({
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="rounded-full border border-[color:var(--border-medium)] px-4 py-1.5 text-xs font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
+              className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-4 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-50"
             >
-              {uploading ? "Mengunggah..." : hasImage ? "Ganti Foto" : "Unggah Foto"}
+              {uploading
+                ? "Mengunggah…"
+                : hasImage
+                  ? "Ganti Foto"
+                  : "Unggah Foto"}
             </button>
             {hasImage && (
               <button
                 type="button"
                 onClick={() => onChange("")}
                 disabled={uploading}
-                className="rounded-full px-4 py-1.5 text-xs font-medium text-ink-muted hover:text-rose"
+                className="d-mono rounded-full px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-coral)]"
               >
                 Hapus
               </button>
@@ -130,12 +136,14 @@ export function PhotoUpload({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Atau tempel URL gambar"
-            className="w-full rounded-md border border-[color:var(--border-ghost)] bg-white px-3 py-1.5 text-[11px] font-mono outline-none focus:border-navy"
+            className="w-full bg-transparent border-0 border-b border-[var(--d-line)] px-0 py-1.5 text-[11.5px] text-[var(--d-ink)] outline-none placeholder:italic placeholder:text-[var(--d-ink-faint)] focus:border-[var(--d-coral)] transition-colors"
           />
-          <p className="text-[11px] text-ink-hint">
-            JPG/PNG/WebP • max {MAX_MB} MB
+          <p className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+            JPG/PNG/WebP · max {MAX_MB} MB
           </p>
-          {error && <p className="text-xs text-rose-dark">{error}</p>}
+          {error && (
+            <p className="text-[12px] text-[var(--d-coral)]">{error}</p>
+          )}
         </div>
       </div>
     </div>

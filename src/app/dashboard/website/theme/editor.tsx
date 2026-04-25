@@ -72,7 +72,9 @@ export function ThemeEditor({
               <label
                 key={t.id}
                 className={`group flex cursor-pointer flex-col overflow-hidden rounded-2xl bg-[var(--d-bg-card)] text-left shadow-ghost-sm transition-transform hover:-translate-y-0.5 ${
-                  isPicked ? "ring-2 ring-navy" : "ring-1 ring-[color:var(--border-ghost)]"
+                  isPicked
+                    ? "ring-2 ring-[var(--d-coral)]"
+                    : "ring-1 ring-[var(--d-line)]"
                 }`}
               >
                 <input type="radio" name="themeId" value={t.id} defaultChecked={isPicked} className="sr-only" />

@@ -327,7 +327,7 @@ async function ProgressBlock({ userId }: { userId: string }) {
       id: "publish",
       label: "Publikasikan undangan",
       description: "Aktifkan undangan agar dapat dibagikan ke tamu.",
-      href: "/dashboard/settings",
+      href: "/dashboard/settings?tab=acara",
       done: bundle.event.isPublished,
     },
   ];
@@ -440,7 +440,7 @@ async function PublishStatCard({ userId }: { userId: string }) {
           : "Undangan masih tersembunyi dari publik."}
       </p>
       <Link
-        href="/dashboard/settings"
+        href="/dashboard/settings?tab=acara"
         className="d-mono mt-4 inline-block text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)]"
       >
         Pengaturan publikasi →
