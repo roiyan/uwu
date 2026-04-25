@@ -475,11 +475,9 @@ export function MessagesClient({
         />
       </div>
       <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
-    {/* Two-column compose layout — main form + 360px right rail. The
-        rail collapses below the form on <lg breakpoints, and stays
-        sticky so the operator can keep an eye on the recent broadcasts
-        feed while composing on long pages. */}
-    <div className="grid gap-6 lg:grid-cols-[1fr_360px] lg:gap-7">
+    {/* Single-column compose layout. Riwayat lives on its own tab now,
+        so the right rail (recent broadcasts + tips) was retired. */}
+    <div className="mx-auto max-w-4xl">
       <section className="min-w-0">
         <form
           action={formAction}
@@ -966,7 +964,39 @@ export function MessagesClient({
             </p>
           )}
 
-          <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
+          <div
+            className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-[14px] border border-[var(--d-line-strong)] px-5 py-4 lg:px-6 lg:py-[18px]"
+            style={{
+              background:
+                "linear-gradient(115deg, rgba(143,163,217,0.06), rgba(240,160,156,0.06))",
+            }}
+          >
+            <div className="min-w-0 flex-1">
+              <p className="d-serif text-[15px] text-[var(--d-ink)]">
+                Siap kirim ke{" "}
+                <em className="d-serif italic text-[var(--d-coral)] not-italic">
+                  {filteredRecipients.length} tamu
+                </em>{" "}
+                via{" "}
+                {channel === "email"
+                  ? "Email"
+                  : channel === "both"
+                    ? "Email + WhatsApp"
+                    : providers.whatsappConfigured
+                      ? "WhatsApp otomatis"
+                      : "WhatsApp manual"}
+              </p>
+              <p className="d-serif mt-0.5 text-[11.5px] italic text-[var(--d-ink-dim)]">
+                {channel === "email"
+                  ? scheduledAtIso
+                    ? `Terjadwal · ${new Date(scheduledAtIso).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}`
+                    : "Email dikirim segera setelah disimpan"
+                  : providers.whatsappConfigured
+                    ? "Server kami akan mengirim satu per satu dengan jeda aman"
+                    : `Estimasi ±${Math.max(1, Math.round((filteredRecipients.length * 90) / 60))} menit · ~90 detik per tamu`}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2.5">
             <button
               type="submit"
               disabled={pending || !isPublished}
@@ -1086,6 +1116,7 @@ export function MessagesClient({
                   ))}
               </>
             )}
+            </div>
           </div>
           {runError && (
             <p className="mt-3 text-sm text-[var(--d-coral)]">{runError}</p>
@@ -1139,16 +1170,6 @@ export function MessagesClient({
           />
         )}
       </section>
-
-      <aside className="lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto lg:scrollbar-hide">
-        <RecentBroadcastsCard
-          history={history}
-          onShowAll={() => setActiveTab("history")}
-        />
-        <div className="mt-5">
-          <TipsCard />
-        </div>
-      </aside>
     </div>
       </div>
     </>
@@ -1589,220 +1610,6 @@ function AiTemplatesPanel({
             tersedia di sini untuk dipakai ulang kapan saja.
           </p>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// Right-rail recent-broadcasts card. Surfaces the latest 4 entries
-// from the same `history` prop the Riwayat tab consumes — kept slim
-// (channel badge, date+time, template name, progress, status) so the
-// operator can glance at delivery status without leaving the compose
-// flow. "Lihat semua" jumps to the Riwayat tab via the parent's
-// onShowAll prop (passed in so we don't grab setActiveTab through
-// state lift).
-function RecentBroadcastsCard({
-  history,
-  onShowAll,
-}: {
-  history: HistoryRow[];
-  onShowAll: () => void;
-}) {
-  const recent = history.slice(0, 4);
-  return (
-    <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-5">
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 className="d-serif text-[16px] font-light text-[var(--d-ink)]">
-          Riwayat{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">terbaru</em>
-        </h2>
-        {history.length > 0 && (
-          <button
-            type="button"
-            onClick={onShowAll}
-            className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-coral)]"
-          >
-            Lihat semua →
-          </button>
-        )}
-      </div>
-      {recent.length === 0 ? (
-        <p className="d-serif mt-4 text-[13px] italic text-[var(--d-ink-faint)]">
-          Belum ada broadcast. Buat yang pertama di panel kiri.
-        </p>
-      ) : (
-        <ul className="mt-4 space-y-3">
-          {recent.map((h) => (
-            <RecentBroadcastItem key={h.id} row={h} />
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function RecentBroadcastItem({ row }: { row: HistoryRow }) {
-  const isWa = row.channel === "whatsapp";
-  const pct =
-    row.totalRecipients > 0
-      ? Math.min(100, Math.round((row.sentCount / row.totalRecipients) * 100))
-      : 0;
-  // Status pill style matches the dashboard's elsewhere — Selesai green,
-  // Berlangsung peach, Draft/queued ink-dim, Gagal red.
-  const stateStyle = stateBadgeStyle(row.status);
-  // Bar fill: green when complete, peach while in flight.
-  const isInFlight = row.status === "sending" || row.status === "queued";
-  const barColor = isInFlight ? "var(--d-peach)" : "var(--d-green)";
-  const dt = new Date(row.createdAt);
-  const dateLabel = dt
-    .toLocaleString("id-ID", {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-    .toUpperCase();
-
-  return (
-    <li className="rounded-[14px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.018)] p-3.5 transition-colors hover:border-[var(--d-line-strong)]">
-      <div className="flex items-center justify-between gap-2">
-        <div className="d-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-          <span
-            className={`d-mono inline-flex items-center justify-center rounded-[4px] px-1.5 py-0.5 text-[9px] tracking-[0.16em] ${
-              isWa
-                ? "bg-[rgba(126,211,164,0.12)] text-[var(--d-green)]"
-                : "bg-[rgba(143,163,217,0.14)] text-[var(--d-blue)]"
-            }`}
-          >
-            {isWa ? "WA" : "EM"}
-          </span>
-          {dateLabel}
-        </div>
-        <span
-          className={`d-mono inline-flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 text-[9px] uppercase tracking-[0.16em] ${stateStyle}`}
-        >
-          {HISTORY_STATUS_LABEL[row.status]}
-        </span>
-      </div>
-      <p className="d-mono mt-2 truncate text-[12px] text-[var(--d-ink)]">
-        {row.templateSlug}
-      </p>
-      <div className="mt-2 flex items-center gap-2">
-        <span className="d-mono shrink-0 text-[10px] tracking-[0.04em] text-[var(--d-ink-dim)]">
-          {row.sentCount}/{row.totalRecipients}
-        </span>
-        <div className="h-1 flex-1 overflow-hidden rounded-full bg-[rgba(255,255,255,0.06)]">
-          <div
-            className="h-full rounded-full transition-[width]"
-            style={{ width: `${pct}%`, background: barColor }}
-          />
-        </div>
-        <span className="d-mono shrink-0 text-[10px] tracking-[0.04em] text-[var(--d-ink-dim)]">
-          {pct}%
-        </span>
-      </div>
-      <div className="mt-2 flex items-center justify-between gap-2 text-[11px]">
-        <span className="truncate text-[var(--d-ink-dim)]">
-          {row.audienceLabel}
-        </span>
-        <Link
-          href={`/dashboard/messages/${row.id}`}
-          className="d-mono shrink-0 text-[10px] uppercase tracking-[0.18em] text-[var(--d-coral)] transition-colors hover:underline"
-        >
-          {row.status === "queued" || row.status === "sending"
-            ? "Lanjutkan →"
-            : "Detail →"}
-        </Link>
-      </div>
-    </li>
-  );
-}
-
-function stateBadgeStyle(status: HistoryStatus): string {
-  switch (status) {
-    case "completed":
-      return "bg-[rgba(126,211,164,0.12)] text-[var(--d-green)]";
-    case "sending":
-    case "queued":
-      return "bg-[rgba(244,184,163,0.14)] text-[var(--d-peach)]";
-    case "scheduled":
-      return "bg-[rgba(143,163,217,0.14)] text-[var(--d-blue)]";
-    case "failed":
-      return "bg-[rgba(224,138,138,0.14)] text-[var(--d-coral)]";
-    case "cancelled":
-      return "bg-[rgba(255,255,255,0.04)] text-[var(--d-ink-dim)]";
-    case "draft":
-    default:
-      return "bg-[rgba(255,255,255,0.05)] text-[var(--d-ink-faint)]";
-  }
-}
-
-// Static tips card — no data dependency, keeps the right rail visually
-// balanced when history is short. Copy lifted verbatim from the design
-// reference; matches the dashboard's editorial voice.
-function TipsCard() {
-  return (
-    <div
-      className="relative overflow-hidden rounded-[18px] border border-[var(--d-line-strong)] p-5"
-      style={{
-        background:
-          "linear-gradient(135deg, rgba(184,157,212,0.10), rgba(143,163,217,0.06) 60%, rgba(143,163,217,0.10))",
-      }}
-    >
-      <span
-        aria-hidden
-        className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full opacity-50 blur-[40px]"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(184,157,212,0.20), transparent 70%)",
-        }}
-      />
-      <div className="relative">
-        <p className="d-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-lilac)]">
-          <span
-            aria-hidden
-            className="h-1.5 w-1.5 rounded-full bg-[var(--d-lilac)] shadow-[0_0_6px_var(--d-lilac)]"
-          />
-          Tips · UWU Studio
-        </p>
-        <h3 className="d-serif mt-3 text-[18px] font-light leading-tight text-[var(--d-ink)]">
-          Kirim sore,{" "}
-          <em className="d-serif italic text-[var(--d-lilac)]">jangan</em>{" "}
-          tengah malam.
-        </h3>
-        <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-[var(--d-ink-dim)]">
-          <li className="flex gap-2">
-            <span aria-hidden className="text-[var(--d-ink-faint)]">
-              —
-            </span>
-            <span>
-              Engagement tertinggi pukul{" "}
-              <em className="d-serif italic text-[var(--d-coral)]">
-                19.00–21.00
-              </em>{" "}
-              waktu lokal tamu.
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span aria-hidden className="text-[var(--d-ink-faint)]">
-              —
-            </span>
-            <span>
-              Personalisasi nama panggilan menaikkan response rate{" "}
-              <em className="d-serif italic text-[var(--d-coral)]">+34%</em>.
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span aria-hidden className="text-[var(--d-ink-faint)]">
-              —
-            </span>
-            <span>
-              Untuk yang belum buka, kirim reminder paling cepat{" "}
-              <em className="d-serif italic text-[var(--d-coral)]">48 jam</em>{" "}
-              kemudian.
-            </span>
-          </li>
-        </ul>
       </div>
     </div>
   );
