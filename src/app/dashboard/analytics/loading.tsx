@@ -1,19 +1,33 @@
 export default function AnalyticsLoading() {
   return (
-    <main className="flex-1 px-6 py-8 lg:px-10">
-      <div className="mb-8 space-y-2">
-        <div className="h-10 w-48 animate-pulse rounded-md bg-surface-muted" />
-        <div className="h-4 w-64 animate-pulse rounded-md bg-surface-muted" />
+    <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
+      <div className="space-y-3">
+        <div className="h-3 w-32 animate-pulse rounded bg-[var(--d-bg-2)]" />
+        <div className="h-12 w-72 animate-pulse rounded bg-[var(--d-bg-2)]" />
+        <div className="h-3 w-80 animate-pulse rounded bg-[var(--d-bg-2)]" />
       </div>
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
           <div
             key={i}
-            className="h-28 animate-pulse rounded-2xl bg-surface-card/60"
+            className="d-card h-[112px] animate-pulse"
+            style={{ background: "var(--d-bg-2)" }}
           />
         ))}
       </div>
-      <div className="mt-8 h-80 animate-pulse rounded-2xl bg-surface-card/60" />
+      <div
+        className="mt-8 d-card h-[300px] animate-pulse"
+        style={{ background: "var(--d-bg-2)" }}
+      />
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {[0, 1].map((i) => (
+          <div
+            key={i}
+            className="d-card h-[260px] animate-pulse"
+            style={{ background: "var(--d-bg-2)" }}
+          />
+        ))}
+      </div>
     </main>
   );
 }

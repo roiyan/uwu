@@ -60,49 +60,59 @@ export function GuestImportModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      className="theme-dashboard fixed inset-0 z-50 flex items-center justify-center px-4"
     >
       <div
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
         onClick={pending ? undefined : onClose}
       />
-      <div className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
-        <div className="mb-4 flex items-start justify-between gap-4">
+      <div className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]">
+        <div className="mb-5 flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-display text-xl text-navy">Preview Import</h2>
-            <p className="mt-1 text-sm text-ink-muted">{fileName}</p>
+            <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+              Import Excel
+            </p>
+            <h2 className="d-serif mt-2 text-[24px] font-extralight text-[var(--d-ink)]">
+              Preview Import
+            </h2>
+            <p className="d-mono mt-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+              {fileName}
+            </p>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="text-ink-muted transition-colors hover:text-navy disabled:opacity-50"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-[var(--d-line-strong)] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)] disabled:opacity-50"
             aria-label="Tutup"
           >
             ✕
           </button>
         </div>
 
-        <div className="mb-4 space-y-3">
-          <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            <span className="text-lg">✅</span>
+        <div className="mb-5 space-y-3">
+          <div className="flex items-center gap-2 rounded-md border border-[rgba(126,211,164,0.25)] bg-[rgba(126,211,164,0.08)] px-4 py-3 text-[13px] text-[var(--d-green)]">
+            <span className="text-base">✅</span>
             <span>
-              <strong>{result.valid.length}</strong> tamu valid siap diimport
+              <strong className="text-[var(--d-ink)]">
+                {result.valid.length}
+              </strong>{" "}
+              tamu valid siap diimport
               {result.totalRead > result.valid.length &&
                 ` dari ${result.totalRead} baris terdeteksi`}
             </span>
           </div>
 
           {result.warnings.length > 0 && (
-            <div className="rounded-xl bg-amber-50 p-4">
-              <div className="mb-2 flex items-center gap-2 text-sm font-medium text-amber-900">
+            <div className="rounded-md border border-[rgba(212,184,150,0.25)] bg-[rgba(212,184,150,0.06)] p-4">
+              <div className="mb-2 flex items-center gap-2 text-[13px] font-medium text-[var(--d-gold)]">
                 <span>⚠️</span>
                 <span>
                   {result.warnings.length} perlu perhatian (tetap diimport bila
                   kolom wajib terisi)
                 </span>
               </div>
-              <ul className="max-h-32 space-y-1 overflow-y-auto text-xs text-amber-800">
+              <ul className="max-h-32 space-y-1 overflow-y-auto text-[11px] text-[var(--d-ink-dim)]">
                 {result.warnings.slice(0, 20).map((w, i) => (
                   <li key={i}>
                     Baris {w.row} · {fieldLabel(w.field)} · {w.message}
@@ -110,7 +120,7 @@ export function GuestImportModal({
                 ))}
                 {result.warnings.length > 20 && (
                   <li className="italic opacity-70">
-                    ... +{result.warnings.length - 20} peringatan lainnya
+                    … +{result.warnings.length - 20} peringatan lainnya
                   </li>
                 )}
               </ul>
@@ -118,15 +128,17 @@ export function GuestImportModal({
           )}
 
           {result.newGroups.length > 0 && (
-            <div className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-900">
+            <div className="rounded-md border border-[rgba(143,163,217,0.25)] bg-[rgba(143,163,217,0.06)] px-4 py-3 text-[13px] text-[var(--d-blue)]">
               <div className="flex items-center gap-2">
                 <span>🆕</span>
                 <span>
-                  <strong>{result.newGroups.length} grup baru</strong> akan
-                  dibuat otomatis:
+                  <strong className="text-[var(--d-ink)]">
+                    {result.newGroups.length} grup baru
+                  </strong>{" "}
+                  akan dibuat otomatis:
                 </span>
               </div>
-              <div className="mt-1 ml-6 text-xs">
+              <div className="mt-1 ml-6 text-[11px] text-[var(--d-ink-dim)]">
                 {result.newGroups.join(", ")}
               </div>
             </div>
@@ -134,12 +146,12 @@ export function GuestImportModal({
         </div>
 
         {preview.length > 0 && (
-          <div className="mb-4 overflow-hidden rounded-xl border border-[color:var(--border-medium)]">
-            <div className="bg-surface-muted px-3 py-2 text-xs uppercase tracking-wide text-ink-muted">
+          <div className="mb-5 overflow-hidden rounded-md border border-[var(--d-line)]">
+            <div className="d-mono bg-[var(--d-bg-2)] px-3 py-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
               Preview {preview.length} tamu pertama
             </div>
-            <table className="w-full text-xs">
-              <thead className="bg-surface-muted/50 text-left text-ink-hint">
+            <table className="w-full text-[12px]">
+              <thead className="bg-[var(--d-bg-2)]/50 text-left text-[var(--d-ink-faint)]">
                 <tr>
                   <th className="px-3 py-2">Nama</th>
                   <th className="px-3 py-2">No. WhatsApp</th>
@@ -148,19 +160,19 @@ export function GuestImportModal({
               </thead>
               <tbody>
                 {preview.map((g, i) => (
-                  <tr key={i} className="border-t border-[color:var(--border-ghost)]">
-                    <td className="px-3 py-2 font-medium text-navy">
+                  <tr key={i} className="border-t border-[var(--d-line)]">
+                    <td className="px-3 py-2 font-medium text-[var(--d-ink)]">
                       {g.name}
                       {g.nickname && (
-                        <span className="ml-1 text-ink-muted">
+                        <span className="ml-1 text-[var(--d-ink-dim)]">
                           · {g.nickname}
                         </span>
                       )}
                     </td>
-                    <td className="px-3 py-2 text-ink-muted">
+                    <td className="px-3 py-2 text-[var(--d-ink-dim)]">
                       {g.phone ?? "—"}
                     </td>
-                    <td className="px-3 py-2 text-ink-muted">
+                    <td className="px-3 py-2 text-[var(--d-ink-dim)]">
                       {g.groupName ?? "—"}
                     </td>
                   </tr>
@@ -171,7 +183,7 @@ export function GuestImportModal({
         )}
 
         {serverError && (
-          <p className="mb-4 rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+          <p className="mb-5 rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-[13px] text-[var(--d-coral)]">
             {serverError}
           </p>
         )}
@@ -181,7 +193,7 @@ export function GuestImportModal({
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="rounded-full px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-50"
+            className="d-mono rounded-full border border-[var(--d-line-strong)] px-5 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)] disabled:opacity-50"
           >
             Batal
           </button>
@@ -189,7 +201,7 @@ export function GuestImportModal({
             type="button"
             onClick={runImport}
             disabled={pending || result.valid.length === 0}
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-2 text-sm font-medium text-white shadow-[0_8px_24px_-8px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02] disabled:opacity-60"
+            className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {pending && (
               <span
@@ -199,7 +211,7 @@ export function GuestImportModal({
             )}
             <span>
               {pending
-                ? "Mengimport..."
+                ? "Mengimport…"
                 : `Import ${result.valid.length} Tamu`}
             </span>
           </button>

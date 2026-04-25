@@ -4,8 +4,13 @@ import { useActionState, useEffect } from "react";
 import { createGuestAction, updateGuestAction } from "@/lib/actions/guest";
 import type { GuestGroupRow, GuestRow } from "./client";
 
+// Underline-only inputs to match the dashboard dark idiom — same
+// look as the broadcast composer's chip editor.
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[color:var(--border-medium)] bg-white px-4 py-2.5 text-sm outline-none focus:border-navy focus:shadow-[var(--focus-ring-navy)]";
+  "mt-2 w-full bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink)] outline-none placeholder:text-[var(--d-ink-faint)] focus:border-[var(--d-coral)] transition-colors";
+
+const labelClass =
+  "d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]";
 
 export function GuestFormDialog({
   open,
@@ -53,32 +58,42 @@ export function GuestFormDialog({
   const state = isEdit ? updateState : createState;
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-[color:var(--overlay-modal)]" onClick={pending ? undefined : onClose} />
+    <div
+      role="dialog"
+      aria-modal="true"
+      className="theme-dashboard fixed inset-0 z-50 flex items-center justify-center px-4"
+    >
+      <div
+        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={pending ? undefined : onClose}
+      />
       <form
         action={formAction}
-        className="relative w-full max-w-lg rounded-2xl bg-surface-card p-6 shadow-ghost-lg"
+        className="relative w-full max-w-lg rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.7)]"
       >
         <button
           type="button"
           onClick={onClose}
           disabled={pending}
           aria-label="Tutup"
-          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-ink-hint transition-colors hover:bg-surface-muted hover:text-ink disabled:opacity-40"
+          className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full border border-[var(--d-line-strong)] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)] disabled:opacity-40"
         >
           ✕
         </button>
-        <h2 className="font-display text-xl text-ink">
+        <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+          Tamu
+        </p>
+        <h2 className="d-serif mt-2 text-[26px] font-extralight text-[var(--d-ink)]">
           {isEdit ? "Edit Tamu" : "Tambah Tamu"}
         </h2>
-        <p className="mt-1 text-sm text-ink-muted">
+        <p className="mt-2 text-[13px] text-[var(--d-ink-dim)]">
           Nama dan nomor WhatsApp akan digunakan untuk mengirim undangan.
         </p>
 
-        <div className="mt-5 space-y-4">
+        <div className="mt-6 space-y-5">
           <label className="block">
-            <span className="text-sm font-medium text-ink">
-              Nama <span className="text-rose">*</span>
+            <span className={labelClass}>
+              Nama <span className="text-[var(--d-coral)]">*</span>
             </span>
             <input
               name="name"
@@ -89,7 +104,7 @@ export function GuestFormDialog({
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-ink">No. WhatsApp</span>
+            <span className={labelClass}>No. WhatsApp</span>
             <input
               name="phone"
               defaultValue={editing?.phone ?? ""}
@@ -98,7 +113,7 @@ export function GuestFormDialog({
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-ink">Email</span>
+            <span className={labelClass}>Email</span>
             <input
               name="email"
               type="email"
@@ -108,11 +123,11 @@ export function GuestFormDialog({
             />
           </label>
           <label className="block">
-            <span className="text-sm font-medium text-ink">Grup</span>
+            <span className={labelClass}>Grup</span>
             <select
               name="groupId"
               defaultValue={editing?.groupId ?? ""}
-              className={inputClass}
+              className={`${inputClass} bg-[var(--d-bg-2)]`}
             >
               <option value="">Tanpa grup</option>
               {groups.map((g) => (
@@ -125,26 +140,26 @@ export function GuestFormDialog({
         </div>
 
         {state && !state.ok && (
-          <p className="mt-4 rounded-md bg-rose-50 px-3 py-2 text-sm text-rose-dark">
+          <p className="mt-5 rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
             {state.error}
           </p>
         )}
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-7 flex justify-end gap-3">
           <button
             type="button"
             onClick={onClose}
             disabled={pending}
-            className="rounded-full border border-[color:var(--border-medium)] px-5 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
+            className="d-mono rounded-full border border-[var(--d-line-strong)] px-5 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)] disabled:opacity-50"
           >
             Batal
           </button>
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+            className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Menyimpan..." : isEdit ? "Simpan" : "Tambah"}
+            {pending ? "Menyimpan…" : isEdit ? "Simpan" : "Tambah"}
           </button>
         </div>
       </form>
