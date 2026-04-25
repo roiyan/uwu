@@ -13,9 +13,17 @@ import {
   retryFailedDeliveriesAction,
   runBroadcastAction,
 } from "@/lib/actions/broadcast";
+import dynamic from "next/dynamic";
 import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
 import { WaFallbackSender } from "./wa-fallback-sender";
-import { AiMessageModal } from "./ai-message-modal";
+
+// AI assistant modal lives behind a click and brings ~25 kB of
+// preset arrays + form chrome with it. Lazy-load so the messages
+// page first-load only pays for it when the user opens it.
+const AiMessageModal = dynamic(
+  () => import("./ai-message-modal").then((m) => m.AiMessageModal),
+  { ssr: false, loading: () => null },
+);
 
 type RecipientSample = {
   id: string;
