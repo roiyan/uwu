@@ -163,7 +163,7 @@ export function MempelaiForm({
             aria-hidden
             className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--ob-coral)]"
           />
-          Tersimpan otomatis
+          Tersimpan
         </span>
         <button
           type="submit"

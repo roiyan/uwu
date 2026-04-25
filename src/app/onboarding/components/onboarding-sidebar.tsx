@@ -93,7 +93,7 @@ export function OnboardingSidebar() {
             aria-hidden
             className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--ob-coral)]"
           />
-          <span className="ob-mono uppercase">Tersimpan otomatis</span>
+          <span className="ob-mono uppercase">Tersimpan</span>
         </div>
       </div>
     </aside>
