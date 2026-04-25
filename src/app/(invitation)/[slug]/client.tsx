@@ -49,7 +49,13 @@ type Schedule = {
 // editor preview and the public invitation stay in lockstep.
 
 export function InvitationClient(props: {
-  event: { id: string; title: string; slug: string; musicUrl: string | null };
+  event: {
+    id: string;
+    title: string;
+    slug: string;
+    musicUrl: string | null;
+    checkinEnabled: boolean;
+  };
   palette: Palette;
   couple: Couple | null;
   schedules: Schedule[];
@@ -84,7 +90,13 @@ function InvitationInner({
   couple,
   schedules,
 }: {
-  event: { id: string; title: string; slug: string; musicUrl: string | null };
+  event: {
+    id: string;
+    title: string;
+    slug: string;
+    musicUrl: string | null;
+    checkinEnabled: boolean;
+  };
   palette: Palette;
   couple: Couple | null;
   schedules: Schedule[];
