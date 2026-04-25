@@ -1,7 +1,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Sparkline } from "@/components/dashboard/Sparkline";
+import { KpiCards, type KpiCardData } from "@/components/analytics/KpiCards";
+import {
+  TimeSeriesChart,
+  type TimeSeriesPoint,
+} from "@/components/analytics/TimeSeriesChart";
+import {
+  BreakdownCards,
+  type GroupEngagementRow,
+  type SourceData,
+} from "@/components/analytics/BreakdownCards";
+import { FunnelChart } from "@/components/analytics/FunnelChart";
+import { StatusDonut } from "@/components/analytics/StatusDonut";
+import {
+  ActivityHeatmap,
+  type HeatmapBucket,
+} from "@/components/analytics/ActivityHeatmap";
+import {
+  TopOpeners,
+  type TopOpenerRow,
+} from "@/components/analytics/TopOpeners";
+import { ExportSection } from "@/components/analytics/ExportSection";
 
 export type GuestStatus =
   | "baru"
@@ -74,14 +94,6 @@ function fmtTimestamp(d: Date | null): string {
   });
 }
 
-function todayLabel(): string {
-  return new Date().toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 export function AnalyticsClient({
   total,
   guestLimit,
@@ -91,6 +103,10 @@ export function AnalyticsClient({
   responses,
   groups,
   confirmedAttendees,
+  trafficSource,
+  groupEngagement,
+  heatmapBuckets,
+  topOpeners,
 }: {
   total: number;
   guestLimit: number;
@@ -106,6 +122,10 @@ export function AnalyticsClient({
   responses: AnalyticsResponseRow[];
   groups: AnalyticsGroup[];
   confirmedAttendees: number;
+  trafficSource: SourceData;
+  groupEngagement: GroupEngagementRow[];
+  heatmapBuckets: HeatmapBucket[];
+  topOpeners: TopOpenerRow[];
 }) {
   const [range, setRange] = useState<Range>("7h");
   const [groupFilter, setGroupFilter] = useState<string>("");
@@ -126,10 +146,10 @@ export function AnalyticsClient({
   const sparkRsvped = trend.map((r) => r.rsvped);
   const sparkAttending = trend.map((r) => r.attending);
 
-  // Week-over-week deltas for the trend badges. Compares the latest
-  // bucket to the first; positive = up, zero = neutral, negative =
-  // down. Falls back to the full sum when the series is shorter
-  // than 2 buckets.
+  // Week-over-week deltas for the trend badges. Compares the latter
+  // half of the window to the former; positive = up, zero = neutral,
+  // negative = down. Falls back to the full sum when the series is
+  // shorter than 2 buckets.
   function deltaOf(values: number[]): number {
     if (values.length < 2) return values[0] ?? 0;
     const half = Math.floor(values.length / 2);
@@ -138,10 +158,8 @@ export function AnalyticsClient({
     return recent - prior;
   }
 
-  const dRegistered = deltaOf(sparkRegistered);
-  const dOpened = deltaOf(sparkOpened);
-  const dRsvped = deltaOf(sparkRsvped);
-  const dAttending = deltaOf(sparkAttending);
+  const fnPct = (v: number, denom: number) =>
+    denom > 0 ? Math.round((v / denom) * 100) : 0;
 
   // Funnel rebuild client-side when group filter changes. We compute
   // from `responses` instead of round-tripping to keep the dropdown
@@ -149,11 +167,8 @@ export function AnalyticsClient({
   // so empty-on-first-load still works.
   const filteredFunnel = useMemo(() => {
     if (!groupFilter) return funnel;
-    const rows = responses.filter((r) =>
-      groups.find((g) => g.id === groupFilter)
-        ? r.groupName === groups.find((g) => g.id === groupFilter)?.name
-        : true,
-    );
+    const target = groups.find((g) => g.id === groupFilter)?.name;
+    const rows = responses.filter((r) => r.groupName === target);
     return {
       total: rows.length,
       invited: rows.filter((r) => r.sendCount > 0).length,
@@ -165,58 +180,101 @@ export function AnalyticsClient({
     };
   }, [groupFilter, funnel, responses, groups]);
 
-  const fnPct = (v: number, denom: number) =>
-    denom > 0 ? Math.round((v / denom) * 100) : 0;
-
-  // Two breakdown cards — derived in-memory.
-  const distribusi = [
+  const kpiCards: KpiCardData[] = [
     {
-      key: "hadir" as const,
-      label: "Hadir",
-      value: responses.filter((r) => r.rsvpStatus === "hadir").length,
-      color: "var(--d-green)",
+      dot: "var(--d-coral)",
+      color: "#F0A09C",
+      label: "Total Tamu",
+      value: total,
+      suffix: `/${guestLimit}`,
+      delta: deltaOf(sparkRegistered),
+      compare: "vs pekan lalu",
+      spark: sparkRegistered,
     },
     {
-      key: "tidak_hadir" as const,
-      label: "Tidak Hadir",
-      value: responses.filter((r) => r.rsvpStatus === "tidak_hadir").length,
-      color: "var(--d-coral)",
-    },
-    {
-      key: "menunggu" as const,
-      label: "Menunggu",
-      value: responses.filter(
-        (r) =>
-          r.rsvpStatus === "baru" ||
-          r.rsvpStatus === "diundang" ||
-          r.rsvpStatus === "dibuka",
-      ).length,
-      color: "var(--d-ink-faint)",
-    },
-  ];
-
-  const status = [
-    {
-      label: "Diundang",
-      value: funnel.invited,
-      color: "var(--d-blue)",
-    },
-    {
+      dot: "var(--d-blue)",
+      color: "#8FA3D9",
       label: "Dibuka",
       value: funnel.opened,
-      color: "var(--d-lilac)",
+      suffix: `·${fnPct(funnel.opened, Math.max(funnel.invited, 1))}%`,
+      delta: deltaOf(sparkOpened),
+      compare: "rata industri 42%",
+      spark: sparkOpened,
     },
     {
-      label: "Merespons",
+      dot: "var(--d-lilac)",
+      color: "#B89DD4",
+      label: "RSVP",
       value: funnel.responded,
-      color: "var(--d-gold)",
+      suffix: `·${fnPct(funnel.responded, Math.max(funnel.opened, 1))}%`,
+      delta: deltaOf(sparkRsvped),
+      compare: "dari yang membuka",
+      spark: sparkRsvped,
     },
     {
-      label: "Belum buka",
-      value: total - funnel.opened,
-      color: "var(--d-ink-faint)",
+      dot: "var(--d-green)",
+      color: "#7ED3A4",
+      label: "Hadir",
+      value: funnel.attending,
+      suffix: `· ${confirmedAttendees} pax`,
+      delta: deltaOf(sparkAttending),
+      deltaUnit: "pax",
+      compare: `paket ${packageName}`,
+      spark: sparkAttending,
     },
   ];
+
+  // Time-series for the dual-line chart: maps trend.opened + trend.rsvped
+  // — already gap-free from generate_series().
+  const series: TimeSeriesPoint[] = trend.map((t) => ({
+    date: t.date,
+    opened: t.opened,
+    rsvped: t.rsvped,
+  }));
+
+  // Donut slices for the status distribution chart.
+  const statusCounts: Record<GuestStatus, number> = {
+    baru: 0,
+    diundang: 0,
+    dibuka: 0,
+    hadir: 0,
+    tidak_hadir: 0,
+  };
+  for (const r of responses) statusCounts[r.rsvpStatus]++;
+  const donutSlices = [
+    {
+      key: "hadir",
+      label: "Hadir",
+      value: statusCounts.hadir,
+      color: "#7ED3A4",
+    },
+    {
+      key: "dibuka",
+      label: "Dibuka",
+      value: statusCounts.dibuka,
+      color: "#B89DD4",
+    },
+    {
+      key: "diundang",
+      label: "Diundang",
+      value: statusCounts.diundang,
+      color: "#8FA3D9",
+    },
+    {
+      key: "baru",
+      label: "Baru",
+      value: statusCounts.baru,
+      color: "#9E9A95",
+    },
+    {
+      key: "tidak_hadir",
+      label: "Tidak Hadir",
+      value: statusCounts.tidak_hadir,
+      color: "#F0A09C",
+    },
+  ];
+
+  const engagementPct = fnPct(funnel.opened, Math.max(funnel.invited, 1));
 
   return (
     <main className="flex-1 overflow-x-hidden px-5 py-8 lg:px-12 lg:py-12">
@@ -224,133 +282,57 @@ export function AnalyticsClient({
         range={range}
         onRangeChange={setRange}
         syncSec={syncSec}
-        engagementPct={fnPct(funnel.opened, Math.max(funnel.invited, 1))}
+        engagementPct={engagementPct}
       />
 
-      {/* 4 KPI cards */}
-      <section className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          dot="var(--d-coral)"
-          label="Total Tamu"
-          value={total}
-          suffix={`/${guestLimit}`}
-          delta={dRegistered}
-          deltaUnit=""
-          compare="vs pekan lalu"
-          spark={sparkRegistered}
-          color="#F0A09C"
-        />
-        <KpiCard
-          dot="var(--d-blue)"
-          label="Dibuka"
-          value={funnel.opened}
-          suffix={`·${fnPct(funnel.opened, Math.max(funnel.invited, 1))}%`}
-          delta={dOpened}
-          deltaUnit=""
-          compare="rata-rata industri 42%"
-          spark={sparkOpened}
-          color="#8FA3D9"
-        />
-        <KpiCard
-          dot="var(--d-lilac)"
-          label="RSVP"
-          value={funnel.responded}
-          suffix={`·${fnPct(funnel.responded, Math.max(funnel.opened, 1))}%`}
-          delta={dRsvped}
-          deltaUnit=""
-          compare="dari yang membuka"
-          spark={sparkRsvped}
-          color="#B89DD4"
-        />
-        <KpiCard
-          dot="var(--d-green)"
-          label="Hadir"
-          value={funnel.attending}
-          suffix={`pax · ${confirmedAttendees}`}
-          delta={dAttending}
-          deltaUnit="pax"
-          compare={`paket ${packageName}`}
-          spark={sparkAttending}
-          color="#7ED3A4"
-        />
-      </section>
+      {/* 1. KPI strip */}
+      <div className="mt-7">
+        <KpiCards cards={kpiCards} />
+      </div>
 
-      {/* Funnel with group filter */}
-      <section className="mt-6 rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7">
-        <header className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
-              Funnel Respons · {todayLabel()}
-            </p>
-            <h2 className="d-serif mt-2 text-[26px] font-extralight leading-tight text-[var(--d-ink)]">
-              Perjalanan tamu dari undangan hingga{" "}
-              <em className="d-serif italic text-[var(--d-coral)]">
-                konfirmasi kehadiran.
-              </em>
-            </h2>
-          </div>
-          <select
-            value={groupFilter}
-            onChange={(e) => setGroupFilter(e.target.value)}
-            className="d-mono rounded-md border border-[var(--d-line-strong)] bg-[var(--d-bg-2)] px-4 py-2.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] outline-none transition-colors focus:border-[var(--d-coral)]"
-          >
-            <option value="">Semua Grup</option>
-            {groups.map((g) => (
-              <option key={g.id} value={g.id}>
-                {g.name}
-              </option>
-            ))}
-          </select>
-        </header>
+      {/* 2. Time-series chart */}
+      <div className="mt-6">
+        <TimeSeriesChart series={series} />
+      </div>
 
-        <FunnelRows data={filteredFunnel} />
-      </section>
-
-      {/* Distribusi + Status — 2 columns */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
-        <BreakdownCard
-          eyebrow="Distribusi Respons"
-          title={
-            <>
-              Hadir, tidak hadir, atau{" "}
-              <em className="d-serif italic text-[var(--d-coral)]">
-                menunggu
-              </em>
-              .
-            </>
-          }
-          rows={distribusi.map((r) => ({
-            label: r.label,
-            value: r.value,
-            pct: fnPct(r.value, Math.max(total, 1)),
-            color: r.color,
-          }))}
-        />
-        <BreakdownCard
-          eyebrow="Status Tamu"
-          title={
-            <>
-              Sebaran{" "}
-              <em className="d-serif italic text-[var(--d-coral)]">status</em>{" "}
-              keseluruhan.
-            </>
-          }
-          rows={status.map((r) => ({
-            label: r.label,
-            value: r.value,
-            pct: fnPct(r.value, Math.max(total, 1)),
-            color: r.color,
-          }))}
+      {/* 3. 3-column breakdowns */}
+      <div className="mt-6">
+        <BreakdownCards
+          source={trafficSource}
+          groups={groupEngagement}
+          totalGuests={total}
         />
       </div>
 
-      {/* Response table */}
-      <section className="mt-6 rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)]">
-        <header className="border-b border-[var(--d-line)] p-6">
-          <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
+      {/* 4. Funnel + Donut */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+        <FunnelChart
+          data={filteredFunnel}
+          groups={groups}
+          groupFilter={groupFilter}
+          onGroupChange={setGroupFilter}
+        />
+        <StatusDonut slices={donutSlices} total={total} />
+      </div>
+
+      {/* 5. Heatmap + Top openers */}
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+        <ActivityHeatmap buckets={heatmapBuckets} />
+        <TopOpeners rows={topOpeners} />
+      </div>
+
+      {/* 6. Export */}
+      <div className="mt-6">
+        <ExportSection />
+      </div>
+
+      {/* 7. Response table */}
+      <section className="mt-6 overflow-hidden rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)]">
+        <header className="border-b border-[var(--d-line)] px-7 py-5">
+          <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
             Daftar Respons
           </p>
-          <h2 className="d-serif mt-2 text-[22px] font-extralight text-[var(--d-ink)]">
+          <h2 className="d-serif mt-2 text-[22px] font-light tracking-[-0.015em] text-[var(--d-ink)]">
             {responses.length} tamu, diurutkan dari respons{" "}
             <em className="d-serif italic text-[var(--d-coral)]">terbaru</em>.
           </h2>
@@ -358,7 +340,7 @@ export function AnalyticsClient({
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-[13px]">
             <thead>
-              <tr className="border-b border-[var(--d-line)]">
+              <tr className="border-b border-[var(--d-line)] bg-[rgba(255,255,255,0.015)]">
                 <Th>Nama</Th>
                 <Th>Status</Th>
                 <Th>Dibuka</Th>
@@ -371,7 +353,7 @@ export function AnalyticsClient({
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-4 py-8 text-center text-[13px] text-[var(--d-ink-dim)]"
+                    className="d-serif px-6 py-10 text-center text-[13px] italic text-[var(--d-ink-dim)]"
                   >
                     Belum ada tamu. Tambahkan tamu lalu kirim undangan untuk
                     mulai melihat data respons di sini.
@@ -381,10 +363,10 @@ export function AnalyticsClient({
                 responses.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-[var(--d-line)] last:border-0 hover:bg-[rgba(237,232,222,0.025)]"
+                    className="border-b border-[var(--d-line)] last:border-0 hover:bg-[rgba(255,255,255,0.018)]"
                   >
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-[var(--d-ink)]">
+                    <td className="px-6 py-3.5">
+                      <p className="text-[14px] text-[var(--d-ink)]">
                         {r.name}
                       </p>
                       {r.groupName && (
@@ -393,9 +375,9 @@ export function AnalyticsClient({
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-6 py-3.5">
                       <span
-                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] ${STATUS_PILL[r.rsvpStatus]}`}
+                        className={`d-mono inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.16em] ${STATUS_PILL[r.rsvpStatus]}`}
                       >
                         <span
                           aria-hidden
@@ -405,13 +387,13 @@ export function AnalyticsClient({
                         {STATUS_LABEL[r.rsvpStatus]}
                       </span>
                     </td>
-                    <td className="d-mono px-4 py-3 text-[11px] text-[var(--d-ink-dim)]">
+                    <td className="d-mono px-6 py-3.5 text-[11px] tracking-[0.04em] text-[var(--d-ink-dim)]">
                       {fmtTimestamp(r.openedAt)}
                     </td>
-                    <td className="d-mono px-4 py-3 text-[11px] text-[var(--d-ink-dim)]">
+                    <td className="d-mono px-6 py-3.5 text-[11px] tracking-[0.04em] text-[var(--d-ink-dim)]">
                       {fmtTimestamp(r.rsvpedAt)}
                     </td>
-                    <td className="d-mono px-4 py-3 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+                    <td className="d-mono px-6 py-3.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
                       {r.lastSentVia ?? "—"}
                     </td>
                   </tr>
@@ -444,286 +426,89 @@ function Header({
   ];
 
   return (
-    <header>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3">
+    <header className="flex flex-wrap items-end justify-between gap-6">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
+          <p className="d-eyebrow">Analytics · 7 Hari Terakhir</p>
+        </div>
+        <h1 className="d-serif mt-3.5 text-[clamp(36px,4.5vw,54px)] font-extralight leading-[1] tracking-[-0.025em] text-[var(--d-ink)]">
+          Bagaimana tamu{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">menanggapi</em>?
+        </h1>
+        <div className="mt-3.5 flex flex-wrap items-center gap-3">
+          <span className="d-mono inline-flex items-center gap-2 text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
             <span
               aria-hidden
-              className="h-px w-10"
-              style={{
-                background:
-                  "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
-              }}
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-green)] shadow-[0_0_8px_var(--d-green)]"
             />
-            <p className="d-eyebrow">Analytics</p>
-          </div>
-          <h1 className="d-serif mt-3 text-[32px] font-extralight leading-[1.1] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px] md:leading-[1.05]">
-            Bagaimana tamu{" "}
-            <em className="d-serif italic text-[var(--d-coral)]">
-              menanggapi
-            </em>
-            ?
-          </h1>
-          <div className="mt-3 flex flex-wrap items-center gap-3 text-[12px] text-[var(--d-ink-dim)]">
-            <span className="d-mono inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em]">
-              <span
-                aria-hidden
-                className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-green)]"
-              />
-              Update real-time · sinkron {syncSec} detik lalu
+            Update real-time · sinkron {syncSec} detik lalu
+          </span>
+          {engagementPct > 0 && (
+            <span className="d-serif text-[14px] italic text-[var(--d-green)]">
+              — engagement {engagementPct}% dari yang diundang
             </span>
-            {engagementPct > 0 && (
-              <span className="d-serif italic text-[var(--d-coral)]">
-                — engagement {engagementPct}% dari yang diundang
-              </span>
-            )}
-          </div>
+          )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Date range pills — visual chrome that matches the design
-              ref. Active state is local; data behind the pills is
-              the full event window today. Wiring per-range queries
-              is a follow-up. */}
-          <div
-            className="d-mono inline-flex gap-1 rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1 text-[10px] uppercase tracking-[0.22em]"
-            role="tablist"
-            aria-label="Rentang waktu"
-          >
-            {ranges.map((r) => {
-              const active = r.id === range;
-              return (
-                <button
-                  key={r.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => onRangeChange(r.id)}
-                  className={`rounded-full px-3 py-1 transition-colors ${
-                    active
-                      ? "bg-[var(--d-bg-1)] text-[var(--d-ink)]"
-                      : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
-                  }`}
-                >
-                  {r.label}
-                </button>
-              );
-            })}
-          </div>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)]"
-          >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-            </svg>
-            Ekspor
-          </button>
+      </div>
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div
+          className="d-mono inline-flex gap-0.5 rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-[3px] text-[10px] uppercase tracking-[0.14em]"
+          role="tablist"
+          aria-label="Rentang waktu"
+        >
+          {ranges.map((r) => {
+            const active = r.id === range;
+            return (
+              <button
+                key={r.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => onRangeChange(r.id)}
+                className={`rounded-full px-3 py-1.5 transition-colors ${
+                  active
+                    ? "bg-[var(--d-coral)] text-[#0B0B15]"
+                    : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
+                }`}
+              >
+                {r.label}
+              </button>
+            );
+          })}
         </div>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="inline-flex items-center gap-2 rounded-full border border-transparent px-[18px] py-[11px] text-[13px] font-medium text-[#0B0B15] transition-transform hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(240,160,156,0.24)]"
+          style={{
+            background:
+              "linear-gradient(115deg, var(--d-blue), var(--d-lilac) 50%, var(--d-coral))",
+          }}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+          </svg>
+          Ekspor Laporan
+        </button>
       </div>
     </header>
   );
 }
 
-function KpiCard({
-  dot,
-  label,
-  value,
-  suffix,
-  delta,
-  deltaUnit,
-  compare,
-  spark,
-  color,
-}: {
-  dot: string;
-  label: string;
-  value: number;
-  suffix: string;
-  delta: number;
-  deltaUnit: string;
-  compare: string;
-  spark: number[];
-  color: string;
-}) {
-  const positive = delta > 0;
-  const neutral = delta === 0;
-  return (
-    <div className="d-card flex flex-col gap-3 p-5">
-      <div className="d-mono flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-        <span
-          aria-hidden
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ background: dot, boxShadow: `0 0 10px ${dot}` }}
-        />
-        {label}
-      </div>
-      <div className="flex items-baseline gap-1.5">
-        <p className="d-serif text-[42px] font-extralight leading-none text-[var(--d-ink)]">
-          {value}
-        </p>
-        <span className="d-serif text-[16px] text-[var(--d-ink-dim)]">
-          {suffix}
-        </span>
-      </div>
-      <div className="flex items-center gap-2 text-[11px] text-[var(--d-ink-dim)]">
-        <span
-          className={`d-mono inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] ${
-            positive
-              ? "bg-[rgba(126,211,164,0.12)] text-[var(--d-green)]"
-              : neutral
-                ? "bg-[var(--d-bg-2)] text-[var(--d-ink-dim)]"
-                : "bg-[rgba(240,160,156,0.12)] text-[var(--d-coral)]"
-          }`}
-        >
-          {positive ? "↑" : neutral ? "·" : "↓"}{" "}
-          {Math.abs(delta)}
-          {deltaUnit ? ` ${deltaUnit}` : ""}
-        </span>
-        <span>{compare}</span>
-      </div>
-      <Sparkline values={spark} color={color} className="-mx-1" />
-    </div>
-  );
-}
-
-function FunnelRows({
-  data,
-}: {
-  data: {
-    total: number;
-    invited: number;
-    opened: number;
-    responded: number;
-    attending: number;
-  };
-}) {
-  const denom = Math.max(data.total, 1);
-  const rows: { key: string; label: string; value: number; color: string }[] =
-    [
-      { key: "total", label: "Total Tamu", value: data.total, color: "var(--d-blue)" },
-      { key: "invited", label: "Diundang", value: data.invited, color: "var(--d-coral)" },
-      { key: "opened", label: "Dibuka", value: data.opened, color: "var(--d-gold)" },
-      {
-        key: "responded",
-        label: "Merespons",
-        value: data.responded,
-        color: "var(--d-lilac)",
-      },
-      {
-        key: "attending",
-        label: "Hadir",
-        value: data.attending,
-        color: "var(--d-green)",
-      },
-    ];
-
-  return (
-    <ul className="mt-7 space-y-5">
-      {rows.map((row) => {
-        const pct = Math.round((row.value / denom) * 100);
-        return (
-          <li key={row.key}>
-            <div className="flex items-center justify-between text-[13px]">
-              <span className="flex items-center gap-2 text-[var(--d-ink)]">
-                <span
-                  aria-hidden
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: row.color }}
-                />
-                {row.label}
-              </span>
-              <span className="flex items-baseline gap-2">
-                <span className="d-serif text-[18px] font-light text-[var(--d-ink)]">
-                  {row.value}
-                </span>
-                <span className="d-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-                  · {pct}%
-                </span>
-              </span>
-            </div>
-            <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[var(--d-bg-2)]">
-              <div
-                className="d-bar-fill h-full rounded-full"
-                style={{
-                  width: `${pct}%`,
-                  background: row.color,
-                  boxShadow: `0 0 12px ${row.color}`,
-                  transformOrigin: "left center",
-                  transform: `scaleX(${pct / 100})`,
-                }}
-              />
-            </div>
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-function BreakdownCard({
-  eyebrow,
-  title,
-  rows,
-}: {
-  eyebrow: string;
-  title: React.ReactNode;
-  rows: { label: string; value: number; pct: number; color: string }[];
-}) {
-  return (
-    <section className="d-card p-7">
-      <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
-        {eyebrow}
-      </p>
-      <h2 className="d-serif mt-2 text-[22px] font-extralight text-[var(--d-ink)]">
-        {title}
-      </h2>
-      <ul className="mt-5 space-y-4">
-        {rows.map((row) => (
-          <li key={row.label}>
-            <div className="flex items-center justify-between text-[12px]">
-              <span className="flex items-center gap-2 text-[var(--d-ink-dim)]">
-                <span
-                  aria-hidden
-                  className="h-1.5 w-1.5 rounded-full"
-                  style={{ background: row.color }}
-                />
-                {row.label}
-              </span>
-              <span className="d-mono uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-                {row.value} · {row.pct}%
-              </span>
-            </div>
-            <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[var(--d-bg-2)]">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${row.pct}%`,
-                  background: row.color,
-                }}
-              />
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 function Th({ children }: { children: React.ReactNode }) {
   return (
-    <th className="d-mono px-4 py-3 text-left text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+    <th className="d-mono px-6 py-3.5 text-left text-[9.5px] font-normal uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
       {children}
     </th>
   );
