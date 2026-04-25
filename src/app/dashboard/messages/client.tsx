@@ -27,6 +27,13 @@ const AiMessageModal = dynamic(
   { ssr: false, loading: () => null },
 );
 
+// Inline UWU Studio rendered on the "Template AI" tab. Lazy-loaded
+// since most users land on Kirim Baru first and never visit the AI tab.
+const AiStudioInline = dynamic(
+  () => import("./ai-studio-inline").then((m) => m.AiStudioInline),
+  { ssr: false, loading: () => null },
+);
+
 type RecipientSample = {
   id: string;
   name: string;
@@ -380,39 +387,54 @@ export function MessagesClient({
     setSubject(t.subject ?? "");
   }
 
-  // Tab toggle between the compose form and the full history list. The
-  // side panel on the compose tab still shows recent broadcasts, so
-  // Riwayat is the "see everything in detail" view.
-  const [activeTab, setActiveTab] = useState<"compose" | "history">(
-    "compose",
+  // 4-tab layout matching the design template:
+  //   compose       — Kirim Baru (broadcast form + sidebar)
+  //   history       — Riwayat (full history list)
+  //   manual_queue  — Antrian Manual (in-progress WA manual sends)
+  //   ai_templates  — Template AI (inline UWU Studio)
+  const [activeTab, setActiveTab] = useState<
+    "compose" | "history" | "manual_queue" | "ai_templates"
+  >("compose");
+
+  // Manual queue = WA broadcasts that are queued or actively sending.
+  // These are the rows that the user is currently working through with
+  // the manual fallback sender, or that paused mid-run.
+  const manualQueue = useMemo(
+    () =>
+      history.filter(
+        (h) =>
+          h.channel === "whatsapp" &&
+          (h.status === "queued" || h.status === "sending"),
+      ),
+    [history],
   );
 
   return (
     <>
       {!isPublished && <UnpublishedBanner />}
-      <div className="mb-7 inline-flex rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1">
-        <button
-          type="button"
+      <div className="mb-7 inline-flex flex-wrap rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1">
+        <TabButton
+          active={activeTab === "compose"}
           onClick={() => setActiveTab("compose")}
-          className={`d-mono rounded-full px-5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
-            activeTab === "compose"
-              ? "bg-[var(--d-coral)] text-[#0B0B15]"
-              : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
-          }`}
-        >
-          Kirim Baru
-        </button>
-        <button
-          type="button"
+          label="Kirim Baru"
+        />
+        <TabButton
+          active={activeTab === "history"}
           onClick={() => setActiveTab("history")}
-          className={`d-mono rounded-full px-5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
-            activeTab === "history"
-              ? "bg-[var(--d-coral)] text-[#0B0B15]"
-              : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
-          }`}
-        >
-          Riwayat <span className="ml-1 opacity-60">({history.length})</span>
-        </button>
+          label="Riwayat"
+          count={history.length}
+        />
+        <TabButton
+          active={activeTab === "manual_queue"}
+          onClick={() => setActiveTab("manual_queue")}
+          label="Antrian Manual"
+          count={manualQueue.length}
+        />
+        <TabButton
+          active={activeTab === "ai_templates"}
+          onClick={() => setActiveTab("ai_templates")}
+          label="Template AI"
+        />
       </div>
 
       {/* Render both panels and toggle visibility instead of swapping
@@ -430,6 +452,27 @@ export function MessagesClient({
           layout-only and lets the form's submit click propagate. */}
       <div style={{ display: activeTab === "history" ? undefined : "none" }}>
         <HistoryListPanel history={history} eventId={eventId} />
+      </div>
+      <div
+        style={{
+          display: activeTab === "manual_queue" ? undefined : "none",
+        }}
+      >
+        <ManualQueuePanel queue={manualQueue} eventId={eventId} />
+      </div>
+      <div
+        style={{
+          display: activeTab === "ai_templates" ? undefined : "none",
+        }}
+      >
+        <AiTemplatesPanel
+          eventContext={eventContext}
+          aiAvailable={providers.aiAvailable}
+          onUseMessage={(text) => {
+            setBody(text);
+            setActiveTab("compose");
+          }}
+        />
       </div>
       <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
     <div className="grid gap-6 lg:grid-cols-5">
@@ -1486,6 +1529,161 @@ function HistoryListCard({
         </Link>
       </div>
     </li>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  label,
+  count,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  count?: number;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`d-mono inline-flex items-center gap-2 rounded-full px-5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
+        active
+          ? "bg-[var(--d-coral)] text-[#0B0B15]"
+          : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
+      }`}
+    >
+      {label}
+      {typeof count === "number" && (
+        <span
+          className={`d-mono rounded-[3px] px-1.5 py-px text-[9.5px] tracking-[0.06em] ${
+            active
+              ? "bg-[rgba(11,11,21,0.18)] text-[#0B0B15]"
+              : "bg-[rgba(255,255,255,0.05)] text-[var(--d-ink-faint)]"
+          }`}
+        >
+          {String(count).padStart(2, "0")}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ManualQueuePanel({
+  queue,
+  eventId,
+}: {
+  queue: HistoryRow[];
+  eventId: string;
+}) {
+  return (
+    <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6 lg:p-7">
+      <div className="flex items-center gap-3">
+        <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
+        <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+          Antrian Manual
+        </p>
+      </div>
+      <h2 className="d-serif mt-3 text-[24px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
+        Broadcast WhatsApp yang sedang{" "}
+        <em className="d-serif italic text-[var(--d-coral)]">berjalan</em>.
+      </h2>
+      <p className="d-serif mt-2 text-[13px] italic text-[var(--d-ink-dim)]">
+        Daftar broadcast yang dikirim secara manual — buka detail untuk
+        melanjutkan pengiriman ke tamu berikutnya.
+      </p>
+
+      {queue.length === 0 ? (
+        <div className="mt-7 rounded-2xl border border-dashed border-[var(--d-line)] bg-[rgba(255,255,255,0.015)] p-8 text-center">
+          <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
+            Belum ada antrian manual.
+          </p>
+          <p className="d-serif mt-2 text-[12.5px] italic text-[var(--d-ink-faint)]">
+            Saat kalian mulai mengirim broadcast WhatsApp manual, daftar
+            tamu yang sedang diproses akan muncul di sini.
+          </p>
+        </div>
+      ) : (
+        <ul className="mt-6 space-y-3">
+          {queue.map((h) => (
+            <HistoryListCard key={h.id} row={h} eventId={eventId} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function AiTemplatesPanel({
+  eventContext,
+  aiAvailable,
+  onUseMessage,
+}: {
+  eventContext: EventContext;
+  aiAvailable: boolean;
+  onUseMessage: (text: string) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      {aiAvailable ? (
+        <AiStudioInline
+          channel="whatsapp"
+          eventContext={{
+            coupleName: `${eventContext.bride} & ${eventContext.groom}`,
+            brideName: eventContext.bride,
+            groomName: eventContext.groom,
+            eventDate: eventContext.date,
+            venue: eventContext.venue,
+            slug: eventContext.slug,
+          }}
+          onUseMessage={onUseMessage}
+        />
+      ) : (
+        <div
+          className="relative overflow-hidden rounded-[18px] border border-[rgba(184,157,212,0.2)] p-7"
+          style={{
+            background:
+              "linear-gradient(135deg, #0F1024 0%, #150F1E 50%, #0F1020 100%)",
+          }}
+        >
+          <p className="d-mono text-[10.5px] uppercase tracking-[0.26em] text-[var(--d-lilac)]">
+            UWU Studio · Powered by AI
+          </p>
+          <h3 className="d-serif mt-3 text-[22px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
+            Sedang kami{" "}
+            <em className="d-serif italic text-[var(--d-lilac)]">rangkai</em>{" "}
+            untuk kalian.
+          </h3>
+          <p className="d-serif mt-2 text-[13px] italic text-[var(--d-ink-dim)]">
+            Asisten AI belum aktif di akun ini. Hubungi admin untuk
+            mengaktifkan UWU Studio.
+          </p>
+        </div>
+      )}
+
+      <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6 lg:p-7">
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
+          <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+            Template Tersimpan
+          </p>
+        </div>
+        <h2 className="d-serif mt-3 text-[22px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
+          Cerita yang pernah{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">kalian tulis</em>.
+        </h2>
+        <div className="mt-5 rounded-2xl border border-dashed border-[var(--d-line)] bg-[rgba(255,255,255,0.015)] p-8 text-center">
+          <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
+            Belum ada template tersimpan.
+          </p>
+          <p className="d-serif mt-2 text-[12.5px] italic text-[var(--d-ink-faint)]">
+            Setelah kalian generate pesan dan menyimpannya, template akan
+            tersedia di sini untuk dipakai ulang kapan saja.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 

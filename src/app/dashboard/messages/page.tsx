@@ -129,8 +129,9 @@ export default async function MessagesPage({
             kalian.
           </h1>
           <p className="d-serif mt-3.5 max-w-[60ch] text-[14px] italic leading-relaxed text-[var(--d-ink-dim)]">
-            Kirim undangan via WhatsApp atau Email — template otomatis
-            disesuaikan dengan preferensi budaya acara Anda.
+            Kirim via WhatsApp atau Email — manual satu-per-satu, atau
+            otomatis lewat WhatsApp Business API. Setiap pesan
+            dipersonalisasi otomatis.
           </p>
         </div>
         <Link
