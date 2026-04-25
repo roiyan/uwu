@@ -9,6 +9,7 @@ import {
 } from "react";
 import Link from "next/link";
 import {
+  cancelScheduledBroadcast,
   createBroadcastAction,
   retryFailedDeliveriesAction,
   runBroadcastAction,
@@ -62,15 +63,25 @@ type GroupRow = {
   liveCount: number;
 };
 
+type HistoryStatus =
+  | "draft"
+  | "queued"
+  | "sending"
+  | "completed"
+  | "failed"
+  | "scheduled"
+  | "cancelled";
+
 type HistoryRow = {
   id: string;
   channel: Channel;
   templateSlug: string;
-  status: "draft" | "queued" | "sending" | "completed" | "failed";
+  status: HistoryStatus;
   totalRecipients: number;
   sentCount: number;
   failedCount: number;
   createdAt: string;
+  scheduledAt: string | null;
   subject: string | null;
 };
 
@@ -85,13 +96,37 @@ const STATUS_LABEL: Record<GuestStatus, string> = {
   tidak_hadir: "Tidak Hadir",
 };
 
-const HISTORY_STATUS_STYLE: Record<HistoryRow["status"], string> = {
+const HISTORY_STATUS_STYLE: Record<HistoryStatus, string> = {
   draft: "bg-surface-muted text-ink-muted",
   queued: "bg-navy-50 text-navy",
   sending: "bg-gold-50 text-gold-dark",
   completed: "bg-[#E8F3EE] text-[#3B7A57]",
   failed: "bg-rose-50 text-rose-dark",
+  scheduled: "bg-[#EEF2FF] text-[#3949AB]",
+  cancelled: "bg-surface-muted text-ink-hint line-through",
 };
+
+const HISTORY_STATUS_LABEL: Record<HistoryStatus, string> = {
+  draft: "Draft",
+  queued: "Antri",
+  sending: "Mengirim",
+  completed: "Selesai",
+  failed: "Gagal",
+  scheduled: "Terjadwal",
+  cancelled: "Dibatalkan",
+};
+
+/**
+ * Default value for the schedule picker. Returns ISO-like local time
+ * truncated to minutes — what `<input type="datetime-local" />` wants.
+ * Empty string means "send immediately".
+ */
+function nowPlusMinutes(mins: number): string {
+  const d = new Date(Date.now() + mins * 60_000);
+  // YYYY-MM-DDTHH:mm in local time (datetime-local has no timezone).
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
 
 export function MessagesClient({
   eventId,
@@ -162,6 +197,24 @@ export function MessagesClient({
   // safer). User opts in to resend via the checkbox.
   const [includeSent, setIncludeSent] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
+
+  // Schedule controls — only used when channel is email or both. WA
+  // broadcasts are user-paced (manual fallback or live API), so the
+  // picker is hidden then. Empty string = send immediately.
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduledLocal, setScheduledLocal] = useState(() =>
+    nowPlusMinutes(60),
+  );
+  // Convert the local datetime-local string to an ISO string with
+  // offset, which is what the Zod schema expects. Empty when disabled.
+  const scheduledAtIso =
+    scheduleEnabled && scheduledLocal && (channel === "email" || channel === "both")
+      ? new Date(scheduledLocal).toISOString()
+      : "";
+
+  const [cancelPending, startCancel] = useTransition();
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelledIds, setCancelledIds] = useState<Set<string>>(() => new Set());
 
   // Filter the recipient sample client-side the same way the server
   // will filter at send time — channel availability, audience, resend
@@ -250,6 +303,7 @@ export function MessagesClient({
       fd.append("body", emailBody);
       fd.append("audience", JSON.stringify(audience));
       fd.append("resendMode", includeSent ? "include_sent" : "new_only");
+      fd.append("scheduledAt", scheduledAtIso);
       const res = await create(null, fd);
       if (res.ok && res.data?.messageId) {
         setPairedEmailId(res.data.messageId);
@@ -268,6 +322,7 @@ export function MessagesClient({
     emailBody,
     audience,
     includeSent,
+    scheduledAtIso,
     create,
   ]);
 
@@ -458,6 +513,48 @@ export function MessagesClient({
               </span>
             </div>
           )}
+
+          {(channel === "email" || channel === "both") && (
+            <div className="mt-5 rounded-xl border border-[color:var(--border-ghost)] bg-white p-4">
+              <label className="flex cursor-pointer items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={scheduleEnabled}
+                  onChange={(e) => setScheduleEnabled(e.target.checked)}
+                  className="mt-0.5"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-ink">
+                    📅 Jadwalkan pengiriman email
+                  </span>
+                  <span className="block text-xs text-ink-muted">
+                    Email akan otomatis terkirim pada waktu yang Anda pilih.
+                    Jika tidak dicentang, email dikirim segera setelah Anda
+                    tekan tombol kirim.
+                  </span>
+                </span>
+              </label>
+              {scheduleEnabled && (
+                <div className="mt-3">
+                  <label className="block text-xs font-medium text-ink-muted">
+                    Waktu kirim
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={scheduledLocal}
+                    onChange={(e) => setScheduledLocal(e.target.value)}
+                    min={nowPlusMinutes(5)}
+                    className={inputClass}
+                  />
+                  <p className="mt-1 text-[11px] text-ink-hint">
+                    Cron menjalankan pengiriman setiap 5 menit, jadi waktu
+                    aktual bisa terlambat hingga 5 menit dari pilihan Anda.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <input type="hidden" name="scheduledAt" value={scheduledAtIso} />
 
           <div className="mt-5">
             <span className="text-sm font-medium text-ink">Audiens</span>
@@ -693,14 +790,21 @@ export function MessagesClient({
           )}
           {state?.ok && state.data?.messageId && (
             <div className="mt-4 rounded-md bg-gold-50 px-3 py-2 text-sm text-gold-dark">
-              {channel === "both"
-                ? pairedEmailId
-                  ? "Dua broadcast dibuat (Email + WA). Kirim masing-masing di bawah."
-                  : pairedPending
-                    ? "Broadcast WA dibuat. Membuat broadcast Email…"
-                    : "Broadcast dibuat. Tekan tombol kirim di bawah."
-                : "Broadcast dibuat. Tekan \"Kirim Sekarang\" di bawah."}
+              {scheduledAtIso && channel === "email"
+                ? `Broadcast email terjadwal untuk ${new Date(scheduledAtIso).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}.`
+                : channel === "both"
+                  ? pairedEmailId
+                    ? scheduledAtIso
+                      ? `WA: kirim manual di bawah. Email terjadwal untuk ${new Date(scheduledAtIso).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}.`
+                      : "Dua broadcast dibuat (Email + WA). Kirim masing-masing di bawah."
+                    : pairedPending
+                      ? "Broadcast WA dibuat. Membuat broadcast Email…"
+                      : "Broadcast dibuat. Tekan tombol kirim di bawah."
+                  : "Broadcast dibuat. Tekan \"Kirim Sekarang\" di bawah."}
             </div>
+          )}
+          {cancelError && (
+            <p className="mt-2 text-sm text-rose-dark">{cancelError}</p>
           )}
           {pairedError && (
             <p className="mt-2 text-sm text-rose-dark">
@@ -717,10 +821,44 @@ export function MessagesClient({
               {pending ? "Menyimpan..." : "Simpan Broadcast"}
             </button>
 
+            {/* Cancel button for the scheduled email half. The cron
+                handler skips broadcasts in 'cancelled' status. */}
+            {scheduledAtIso &&
+              (channel === "email" || channel === "both") &&
+              ((channel === "email" && state?.ok && state.data?.messageId) ||
+                (channel === "both" && pairedEmailId)) && (
+                <button
+                  type="button"
+                  disabled={cancelPending}
+                  onClick={() => {
+                    const id =
+                      channel === "both"
+                        ? pairedEmailId
+                        : state?.ok
+                          ? state.data?.messageId
+                          : null;
+                    if (!id) return;
+                    setCancelError(null);
+                    startCancel(async () => {
+                      const r = await cancelScheduledBroadcast(eventId, id);
+                      if (!r.ok) {
+                        setCancelError(r.error);
+                      } else {
+                        setCancelledIds((prev) => new Set(prev).add(id));
+                      }
+                    });
+                  }}
+                  className="rounded-full border border-[color:var(--border-medium)] px-6 py-2 text-sm font-medium text-rose-dark transition-colors hover:bg-rose-50 disabled:opacity-60"
+                >
+                  {cancelPending ? "Membatalkan..." : "Batalkan Jadwal"}
+                </button>
+              )}
+
             {/* Paired Email broadcast (only shown when channel ===
-                "both"). Kept first so the user sends email before
-                opening WA tabs. */}
-            {pairedEmailId && (
+                "both", and never for scheduled — those fire via cron).
+                Kept first so the user sends email before opening WA
+                tabs. */}
+            {pairedEmailId && !scheduledAtIso && !cancelledIds.has(pairedEmailId) && (
               <button
                 type="button"
                 disabled={runPending}
@@ -739,10 +877,9 @@ export function MessagesClient({
 
             {state?.ok && state.data?.messageId && (
               <>
-                {/* The active WA broadcast — server-side run when the
-                    Cloud API is configured, client-side fallback
-                    otherwise. */}
-                {providers.whatsappConfigured ? (
+                {/* For scheduled email broadcasts, no immediate-send
+                    button — cron picks it up. */}
+                {channel === "email" && scheduledAtIso ? null : channel === "email" ? (
                   <button
                     type="button"
                     disabled={runPending}
@@ -754,19 +891,40 @@ export function MessagesClient({
                         if (!r.ok) setRunError(r.error);
                       });
                     }}
-                    className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+                    className="rounded-full bg-navy px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-navy-dark disabled:opacity-60"
                   >
-                    {runPending ? "Mengirim..." : "📱 Kirim WhatsApp"}
+                    {runPending ? "Mengirim..." : "✉️ Kirim Email Sekarang"}
                   </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setWaFallbackOpen(true)}
-                    className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
-                  >
-                    📱 Kirim WhatsApp (manual)
-                  </button>
-                )}
+                ) : null}
+                {/* The active WA broadcast — server-side run when the
+                    Cloud API is configured, client-side fallback
+                    otherwise. Only shown when the WA half exists. */}
+                {channel !== "email" &&
+                  (providers.whatsappConfigured ? (
+                    <button
+                      type="button"
+                      disabled={runPending}
+                      onClick={() => {
+                        const id = state.data!.messageId;
+                        setRunError(null);
+                        startRun(async () => {
+                          const r = await runBroadcastAction(eventId, id);
+                          if (!r.ok) setRunError(r.error);
+                        });
+                      }}
+                      className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark disabled:opacity-60"
+                    >
+                      {runPending ? "Mengirim..." : "📱 Kirim WhatsApp"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setWaFallbackOpen(true)}
+                      className="rounded-full bg-coral px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-coral-dark"
+                    >
+                      📱 Kirim WhatsApp (manual)
+                    </button>
+                  ))}
               </>
             )}
           </div>
@@ -868,7 +1026,7 @@ function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
         <span
           className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${HISTORY_STATUS_STYLE[row.status]}`}
         >
-          {row.status}
+          {HISTORY_STATUS_LABEL[row.status]}
         </span>
       </div>
       <div className="mt-3 flex items-center justify-between text-xs">

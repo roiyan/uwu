@@ -71,6 +71,13 @@
       "when": 1777048880667,
       "tag": "0009_premium_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1777076654355,
+      "tag": "0010_far_red_skull",
+      "breakpoints": true
     }
   ]
 }

@@ -145,6 +145,7 @@ export default async function MessagesPage() {
           sentCount: h.sentCount,
           failedCount: h.failedCount,
           createdAt: h.createdAt.toISOString(),
+          scheduledAt: h.scheduledAt ? h.scheduledAt.toISOString() : null,
           subject: h.subject,
         }))}
         providers={{

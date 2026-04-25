@@ -37,6 +37,13 @@ export const broadcastInputSchema = z
       .max(4096, "Pesan terlalu panjang"),
     audience: audienceSchema,
     resendMode: resendModeSchema.default("new_only"),
+    // ISO datetime string when the user wants to schedule an email
+    // broadcast for later. Empty/undefined = send immediately.
+    scheduledAt: z
+      .string()
+      .datetime({ offset: true })
+      .optional()
+      .or(z.literal("")),
   })
   .refine(
     (v) => v.channel !== "email" || !!v.subject,

@@ -66,6 +66,10 @@ export const messageStatusEnum = pgEnum("message_status", [
   "sending",
   "completed",
   "failed",
+  // Sprint B: scheduled email broadcasts wait in this state until the
+  // Vercel Cron handler picks them up at scheduled_at.
+  "scheduled",
+  "cancelled",
 ]);
 
 export const deliveryStatusEnum = pgEnum("delivery_status", [
@@ -374,6 +378,9 @@ export const messages = pgTable("messages", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   startedAt: timestamp("started_at", { withTimezone: true }),
   completedAt: timestamp("completed_at", { withTimezone: true }),
+  // Sprint B: when set, broadcast is parked in status='scheduled' and the
+  // /api/cron/send-scheduled handler picks it up at or after this timestamp.
+  scheduledAt: timestamp("scheduled_at", { withTimezone: true }),
 });
 
 // ---------- message_deliveries (per-recipient ledger) ----------
