@@ -15,18 +15,37 @@ export type GroupEngagementRow = {
   opened: number;
 };
 
+export type WishRow = {
+  id: string;
+  name: string;
+  message: string | null;
+  groupName: string | null;
+  groupColor: string | null;
+  rsvpedAt: Date | null;
+};
+
 export function BreakdownCards({
   source,
   groups,
   totalGuests,
+  wishes,
+  wishesTotal,
+  wishesGuestTotal,
 }: {
   source: SourceData;
   groups: GroupEngagementRow[];
   totalGuests: number;
+  wishes: WishRow[];
+  wishesTotal: number;
+  wishesGuestTotal: number;
 }) {
   return (
     <section className="grid gap-4 lg:grid-cols-3">
-      <DeviceCard />
+      <WishesCard
+        wishes={wishes}
+        total={wishesTotal}
+        guestTotal={wishesGuestTotal}
+      />
       <SourceCard source={source} totalGuests={totalGuests} />
       <GroupCard groups={groups} />
     </section>
@@ -107,17 +126,96 @@ function BrkRow({
   );
 }
 
-function DeviceCard() {
+function WishesCard({
+  wishes,
+  total,
+  guestTotal,
+}: {
+  wishes: WishRow[];
+  total: number;
+  guestTotal: number;
+}) {
   return (
-    <CardShell eyebrow="Perangkat Tamu" title="Device breakdown">
-      <p className="d-serif rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.025)] p-5 text-[13px] italic leading-relaxed text-[var(--d-ink-dim)]">
-        Data perangkat akan tersedia setelah kami mulai mencatat user-agent
-        di setiap bukaan undangan.
+    <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
+      <p className="d-mono text-[10px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+        Ucapan Tamu
       </p>
-      <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-        Segera hadir
+      <h3 className="d-serif mt-2 text-[18px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
+        Kata-kata{" "}
+        <em className="d-serif italic text-[var(--d-coral)]">terindah</em> dari
+        mereka yang mendoakan.
+      </h3>
+
+      {wishes.length === 0 ? (
+        <div className="mt-5 rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.02)] px-4 py-8 text-center">
+          <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
+            Belum ada ucapan.
+          </p>
+          <p className="d-serif mx-auto mt-2 max-w-[28ch] text-[12.5px] italic leading-relaxed text-[var(--d-ink-faint)]">
+            Saat tamu mengonfirmasi kehadiran dan meninggalkan pesan, kata-kata
+            mereka akan muncul di sini.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="mt-5 flex flex-col gap-3">
+            {wishes.map((w) => (
+              <WishCard key={w.id} wish={w} />
+            ))}
+          </div>
+          <p className="d-mono mt-5 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)]">
+            <span className="text-[var(--d-ink)]">{total}</span> ucapan dari{" "}
+            <span className="text-[var(--d-ink)]">{guestTotal}</span> tamu
+          </p>
+        </>
+      )}
+    </section>
+  );
+}
+
+function WishCard({ wish }: { wish: WishRow }) {
+  const dateLabel = wish.rsvpedAt
+    ? new Date(wish.rsvpedAt).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+      })
+    : null;
+  return (
+    <article className="relative rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-1)] p-4 pl-5">
+      <span
+        aria-hidden
+        className="d-serif pointer-events-none absolute left-2 top-1.5 text-[36px] italic leading-none text-[var(--d-coral)]/30"
+      >
+        &ldquo;
+      </span>
+      <p className="d-serif relative text-[14px] italic leading-relaxed text-[var(--d-ink)]">
+        {wish.message}
       </p>
-    </CardShell>
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <p className="text-[13px] font-medium text-[var(--d-ink)]">
+          <span aria-hidden className="text-[var(--d-ink-faint)]">
+            —{" "}
+          </span>
+          {wish.name}
+        </p>
+        <p className="d-mono flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+          {wish.groupName && (
+            <>
+              <span
+                aria-hidden
+                className="h-1 w-1 rounded-full"
+                style={{
+                  background: wish.groupColor ?? "var(--d-gold)",
+                }}
+              />
+              {wish.groupName}
+            </>
+          )}
+          {wish.groupName && dateLabel && <span aria-hidden>·</span>}
+          {dateLabel && <span>{dateLabel}</span>}
+        </p>
+      </div>
+    </article>
   );
 }
 

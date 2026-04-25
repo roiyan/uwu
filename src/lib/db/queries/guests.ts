@@ -395,6 +395,56 @@ export async function listTopOpeners(eventId: string, limit = 5) {
     .limit(limit);
 }
 
+/**
+ * RSVP messages with sender + group context for the Analytics "Ucapan
+ * Tamu" card. Filtered to non-empty messages so the card only renders
+ * actual wishes; ordered newest-first. Caller decides the limit (3 in
+ * the analytics card today, full list in any future modal).
+ */
+export async function listGuestWishes(eventId: string, limit = 3) {
+  return db
+    .select({
+      id: guests.id,
+      name: guests.name,
+      message: guests.rsvpMessage,
+      groupName: guestGroups.name,
+      groupColor: guestGroups.color,
+      rsvpedAt: guests.rsvpedAt,
+      attendees: guests.rsvpAttendees,
+    })
+    .from(guests)
+    .leftJoin(guestGroups, eq(guestGroups.id, guests.groupId))
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        isNull(guests.deletedAt),
+        sql`${guests.rsvpMessage} is not null`,
+        sql`length(trim(${guests.rsvpMessage})) > 0`,
+      ),
+    )
+    .orderBy(sql`${guests.rsvpedAt} desc nulls last`)
+    .limit(limit);
+}
+
+/**
+ * Total count of guests who left an RSVP message — used for the
+ * "X ucapan dari Y tamu" footer line on the wishes card.
+ */
+export async function countGuestWishes(eventId: string) {
+  const [row] = await db
+    .select({ total: sql<number>`count(*)::int` })
+    .from(guests)
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        isNull(guests.deletedAt),
+        sql`${guests.rsvpMessage} is not null`,
+        sql`length(trim(${guests.rsvpMessage})) > 0`,
+      ),
+    );
+  return row?.total ?? 0;
+}
+
 export async function getEventPackageLimit(eventId: string) {
   const [row] = await db
     .select({ guestLimit: packages.guestLimit, packageName: packages.name })
