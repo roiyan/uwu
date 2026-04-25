@@ -39,7 +39,7 @@ export function OnboardingNavBar({
             className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--ob-coral)]"
           />
           <span className="ob-mono text-[10px] uppercase tracking-[0.22em] text-[var(--ob-ink-faint)]">
-            {hint ?? "Tersimpan otomatis"}
+            {hint ?? "Tersimpan"}
           </span>
         </span>
       </div>

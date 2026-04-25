@@ -213,7 +213,7 @@ function AkunTab({
             aria-hidden
             className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-coral)]"
           />
-          Tersimpan otomatis
+          Tersimpan
         </span>
         <button
           type="submit"
@@ -323,7 +323,7 @@ function AcaraTab({
               aria-hidden
               className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-coral)]"
             />
-            Tersimpan otomatis
+            Tersimpan
           </span>
           <button
             type="submit"

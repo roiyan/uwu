@@ -633,7 +633,7 @@ function SaveIndicator({
           ? "Belum disimpan"
           : savedAt
             ? `Tersimpan · ${relativeTime(savedAt)}`
-            : "Tersimpan otomatis"}
+            : "Tersimpan"}
       </span>
     </div>
   );
