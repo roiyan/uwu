@@ -11,12 +11,16 @@ const inputLight =
 const inputDark =
   "mt-1 w-full bg-transparent border-0 border-b border-[var(--ob-line-strong)] px-0 py-3 text-[var(--ob-ink)] font-serif text-base font-light outline-none placeholder:italic placeholder:text-[var(--ob-ink-faint)] focus:border-[var(--ob-coral)]";
 
-function buildSearchUrl(venueName: string, venueAddress: string) {
+function buildSearchUrl(venueName: string, venueAddress: string): string {
   const q = [venueName, venueAddress]
     .map((s) => s.trim())
     .filter(Boolean)
     .join(" ");
-  if (!q) return null;
+  // Always returns a usable URL — when the venue fields are empty
+  // we send the user to plain Google Maps so they can search there
+  // and copy a link back. Avoids the previous "disabled button with
+  // no explanation" UX trap.
+  if (!q) return "https://www.google.com/maps";
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
 }
 
@@ -66,7 +70,13 @@ export function VenueMapField({
 }) {
   const toast = useToast();
   const searchUrl = buildSearchUrl(venueName, venueAddress);
-  const hasSearchables = searchUrl !== null;
+  // The button is now always enabled — when venueName/Address are
+  // empty, searchUrl is plain Google Maps; the user can search there
+  // and copy a link back. Tracked separately so the tooltip text can
+  // explain what each click will do.
+  const hasSearchables = Boolean(
+    [venueName, venueAddress].map((s) => s.trim()).filter(Boolean).length,
+  );
   const valid = isValidGoogleMapsUrl(value);
   const embedSrc = buildEmbedSrc(venueName, venueAddress);
   const isDark = tone === "dark";
@@ -77,13 +87,9 @@ export function VenueMapField({
   const helpClass = isDark
     ? "text-[11px] text-[var(--ob-ink-dim)]"
     : "text-xs text-ink-hint";
-  const ctaClass = hasSearchables
-    ? isDark
-      ? "border-[var(--ob-line-strong)] text-[var(--ob-ink)] hover:bg-[var(--ob-bg-2)]"
-      : "border-[color:var(--border-medium)] text-navy hover:bg-surface-muted"
-    : isDark
-      ? "border-[var(--ob-line)] text-[var(--ob-ink-faint)] cursor-not-allowed"
-      : "border-[color:var(--border-ghost)] text-ink-hint cursor-not-allowed";
+  const ctaClass = isDark
+    ? "border-[var(--ob-line-strong)] text-[var(--ob-ink)] hover:bg-[var(--ob-bg-2)]"
+    : "border-[color:var(--border-medium)] text-navy hover:bg-surface-muted";
   const iframeBorder = isDark
     ? "border border-[var(--ob-line-strong)]"
     : "border border-[color:var(--border-ghost)]";
@@ -114,18 +120,14 @@ export function VenueMapField({
             className={inputClass}
           />
           <a
-            href={searchUrl ?? "#"}
+            href={searchUrl}
             target="_blank"
             rel="noreferrer"
-            aria-disabled={!hasSearchables}
-            onClick={(e) => {
-              if (!hasSearchables) e.preventDefault();
-            }}
             className={`mt-1 inline-flex items-center justify-center whitespace-nowrap rounded-lg border px-4 py-3 text-sm font-medium transition-colors md:mt-1 ${ctaClass}`}
             title={
               hasSearchables
                 ? "Buka Google Maps dengan pencarian otomatis"
-                : "Isi Nama tempat atau Alamat dulu"
+                : "Buka Google Maps untuk mencari lokasi"
             }
           >
             🔍 Cari di Maps ↗
@@ -134,8 +136,10 @@ export function VenueMapField({
       </label>
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <span className={helpClass}>
-          Klik &ldquo;Cari di Maps&rdquo; → temukan lokasi → salin link dari address bar → tempel di sini.
+        <span className={`${helpClass} ${isDark ? "italic" : ""}`}>
+          {hasSearchables
+            ? "Klik “Cari di Maps” → temukan lokasi → klik “Share” → salin link → tempel di sini."
+            : "Buka Maps → cari lokasi → klik “Share” → salin link → tempel di sini."}
         </span>
         {value.trim() !== "" && valid && (
           <span
