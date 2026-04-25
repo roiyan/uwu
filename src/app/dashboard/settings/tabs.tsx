@@ -20,14 +20,18 @@ import { getWhatsAppShareUrl } from "@/lib/utils/share";
 
 type Tab = "akun" | "acara" | "budaya" | "kolaborator";
 
+// Underline-only inputs to match the dashboard dark idiom.
 const inputClass =
-  "mt-1 w-full rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-4 py-3 text-sm outline-none focus:border-[var(--d-coral)] focus:shadow-[var(--focus-ring-navy)]";
+  "mt-2 w-full bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[15px] text-[var(--d-ink)] outline-none placeholder:text-[var(--d-ink-faint)] focus:border-[var(--d-coral)] transition-colors";
 
-const TABS: { id: Tab; label: string }[] = [
-  { id: "akun", label: "Akun" },
-  { id: "acara", label: "Acara" },
-  { id: "budaya", label: "Budaya" },
-  { id: "kolaborator", label: "Kolaborator" },
+const labelClass =
+  "d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]";
+
+const TABS: { id: Tab; label: string; numero: string }[] = [
+  { id: "akun", label: "Profil", numero: "N° 01" },
+  { id: "acara", label: "Acara", numero: "N° 02" },
+  { id: "budaya", label: "Preferensi", numero: "N° 03" },
+  { id: "kolaborator", label: "Kolaborasi", numero: "N° 04" },
 ];
 
 export type CollaboratorRow = {
@@ -66,16 +70,20 @@ export function SettingsTabs({
   collaborators: CollaboratorRow[];
   origin: string;
 }) {
+  const activeTab = TABS.find((t) => t.id === active);
   return (
-    <div className="space-y-6">
-      <nav className="flex flex-wrap gap-1 rounded-full bg-[var(--d-bg-card)] p-1 shadow-ghost-sm">
+    <div className="space-y-8">
+      <nav
+        className="flex w-fit gap-1 overflow-x-auto rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-1"
+        aria-label="Pengaturan tabs"
+      >
         {TABS.map((tab) => (
           <Link
             key={tab.id}
             href={`/dashboard/settings?tab=${tab.id}`}
-            className={`flex-1 rounded-full px-4 py-2 text-center text-sm transition-colors ${
+            className={`d-mono whitespace-nowrap rounded-full px-5 py-2 text-[11px] uppercase tracking-[0.22em] transition-colors ${
               active === tab.id
-                ? "bg-[var(--d-bg-2)] text-white"
+                ? "bg-[var(--d-bg-1)] text-[var(--d-ink)] shadow-[0_4px_14px_rgba(0,0,0,0.4)]"
                 : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
             }`}
           >
@@ -83,6 +91,22 @@ export function SettingsTabs({
           </Link>
         ))}
       </nav>
+
+      {activeTab && (
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden
+            className="h-px w-8"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
+            }}
+          />
+          <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
+            {activeTab.numero} — {activeTab.label}
+          </p>
+        </div>
+      )}
 
       {active === "akun" && <AkunTab profile={profile} />}
       {active === "acara" && (
@@ -114,37 +138,53 @@ function AkunTab({
   }, [state, toast]);
 
   return (
-    <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm space-y-4">
-      <h2 className="font-display text-xl text-[var(--d-ink)]">Profil Akun</h2>
-      <label className="block">
-        <span className="text-sm font-medium text-[var(--d-ink)]">Email</span>
-        <input
-          value={profile.email}
-          disabled
-          className={`${inputClass} opacity-70`}
-        />
-        <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
-          Email tidak dapat diubah saat ini.
-        </span>
-      </label>
-      <label className="block">
-        <span className="text-sm font-medium text-[var(--d-ink)]">Nama lengkap</span>
-        <input
-          name="fullName"
-          required
-          defaultValue={profile.fullName}
-          className={inputClass}
-        />
-      </label>
-      <label className="block">
-        <span className="text-sm font-medium text-[var(--d-ink)]">No. WhatsApp</span>
-        <input
-          name="phone"
-          defaultValue={profile.phone}
-          placeholder="+62 812 3456 7890"
-          className={inputClass}
-        />
-      </label>
+    <form
+      action={formAction}
+      className="d-card space-y-7 p-7 md:p-9"
+    >
+      <header>
+        <h2 className="d-serif text-[26px] font-extralight text-[var(--d-ink)]">
+          Profil <em className="d-serif italic text-[var(--d-coral)]">Akun</em>
+        </h2>
+        <p className="mt-2 text-[13px] text-[var(--d-ink-dim)]">
+          Identitas pengguna ini terhubung ke akun login Anda. Email tidak
+          dapat diubah saat ini.
+        </p>
+      </header>
+
+      <div className="grid gap-7 md:grid-cols-2">
+        <label className="block md:col-span-2">
+          <span className={labelClass}>
+            Email <span className="ml-2 text-[var(--d-ink-faint)]">🔒</span>
+          </span>
+          <input
+            value={profile.email}
+            disabled
+            className={`${inputClass} opacity-60`}
+          />
+          <span className="mt-2 block text-[11px] text-[var(--d-ink-faint)]">
+            Email tidak dapat diubah saat ini.
+          </span>
+        </label>
+        <label className="block">
+          <span className={labelClass}>Nama lengkap</span>
+          <input
+            name="fullName"
+            required
+            defaultValue={profile.fullName}
+            className={inputClass}
+          />
+        </label>
+        <label className="block">
+          <span className={labelClass}>No. WhatsApp</span>
+          <input
+            name="phone"
+            defaultValue={profile.phone}
+            placeholder="+62 812 3456 7890"
+            className={inputClass}
+          />
+        </label>
+      </div>
 
       {state && !state.ok && (
         <p className="rounded-md border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-sm text-[var(--d-coral)]">
@@ -152,18 +192,25 @@ function AkunTab({
         </p>
       )}
       {state && state.ok && (
-        <p className="rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
+        <p className="rounded-md border border-[rgba(126,211,164,0.25)] bg-[rgba(126,211,164,0.08)] px-3 py-2 text-sm text-[var(--d-green)]">
           Profil diperbarui.
         </p>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--d-line)] pt-6">
+        <span className="d-mono inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+          <span
+            aria-hidden
+            className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-coral)]"
+          />
+          Tersimpan otomatis
+        </span>
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
+          className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-7 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Menyimpan..." : "Simpan"}
+          {pending ? "Menyimpan…" : "Simpan"}
         </button>
       </div>
     </form>
@@ -190,46 +237,59 @@ function AcaraTab({
 
   return (
     <div className="space-y-6">
-      <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm space-y-4">
-        <h2 className="font-display text-xl text-[var(--d-ink)]">Detail Acara</h2>
-        <label className="block">
-          <span className="text-sm font-medium text-[var(--d-ink)]">Judul acara</span>
-          <input
-            name="title"
-            required
-            defaultValue={event.title}
-            className={inputClass}
-          />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-[var(--d-ink)]">URL Undangan</span>
-          <div className="mt-1 flex items-center gap-2 rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-3 py-2 text-sm focus-within:border-[var(--d-coral)] focus-within:shadow-[var(--focus-ring-navy)]">
-            <span className="text-[var(--d-ink-faint)]">uwu.id/</span>
+      <form action={formAction} className="d-card space-y-7 p-7 md:p-9">
+        <header>
+          <h2 className="d-serif text-[26px] font-extralight text-[var(--d-ink)]">
+            Detail{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">Acara</em>
+          </h2>
+          <p className="mt-2 text-[13px] text-[var(--d-ink-dim)]">
+            Judul, URL undangan, dan musik latar.
+          </p>
+        </header>
+
+        <div className="grid gap-7 md:grid-cols-2">
+          <label className="block md:col-span-2">
+            <span className={labelClass}>Judul acara</span>
             <input
-              name="slug"
+              name="title"
               required
-              defaultValue={event.slug}
-              pattern="[a-z0-9\-]+"
-              className="flex-1 bg-transparent outline-none"
+              defaultValue={event.title}
+              className={inputClass}
             />
-          </div>
-          <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
-            Hanya huruf kecil, angka, dan tanda minus.
-          </span>
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-[var(--d-ink)]">URL musik latar</span>
-          <input
-            name="musicUrl"
-            type="url"
-            defaultValue={event.musicUrl}
-            placeholder="https://..."
-            className={inputClass}
-          />
-          <span className="mt-1 block text-xs text-[var(--d-ink-faint)]">
-            Musik akan muted secara default. Tamu dapat mengaktifkan manual.
-          </span>
-        </label>
+          </label>
+          <label className="block md:col-span-2">
+            <span className={labelClass}>URL undangan</span>
+            <div className="mt-2 flex items-center border-b border-[var(--d-line-strong)] py-2.5 focus-within:border-[var(--d-coral)]">
+              <span className="d-mono mr-2 text-[12px] text-[var(--d-ink-faint)]">
+                uwu.id/
+              </span>
+              <input
+                name="slug"
+                required
+                defaultValue={event.slug}
+                pattern="[a-z0-9\-]+"
+                className="flex-1 bg-transparent text-[15px] text-[var(--d-ink)] outline-none placeholder:text-[var(--d-ink-faint)]"
+              />
+            </div>
+            <span className="mt-2 block text-[11px] text-[var(--d-ink-faint)]">
+              Hanya huruf kecil, angka, dan tanda minus.
+            </span>
+          </label>
+          <label className="block md:col-span-2">
+            <span className={labelClass}>URL musik latar</span>
+            <input
+              name="musicUrl"
+              type="url"
+              defaultValue={event.musicUrl}
+              placeholder="https://…"
+              className={inputClass}
+            />
+            <span className="mt-2 block text-[11px] text-[var(--d-ink-faint)]">
+              Musik akan muted secara default. Tamu dapat mengaktifkan manual.
+            </span>
+          </label>
+        </div>
         <input
           type="hidden"
           name="culturalPreference"
@@ -242,30 +302,53 @@ function AcaraTab({
           </p>
         )}
         {state && state.ok && (
-          <p className="rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
+          <p className="rounded-md border border-[rgba(126,211,164,0.25)] bg-[rgba(126,211,164,0.08)] px-3 py-2 text-sm text-[var(--d-green)]">
             Perubahan tersimpan.
           </p>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--d-line)] pt-6">
+          <span className="d-mono inline-flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+            <span
+              aria-hidden
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-coral)]"
+            />
+            Tersimpan otomatis
+          </span>
           <button
             type="submit"
             disabled={pending}
-            className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
+            className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-7 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Menyimpan..." : "Simpan Detail"}
+            {pending ? "Menyimpan…" : "Simpan Detail"}
           </button>
         </div>
       </form>
 
-      <section className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-        <h2 className="font-display text-xl text-[var(--d-ink)]">Publikasi</h2>
-        <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
-          {isPublished
-            ? "Undangan aktif dan dapat diakses publik melalui URL."
-            : "Undangan masih tersembunyi. Publikasikan untuk membagikan ke tamu."}
-        </p>
-        <div className="mt-4 flex items-center gap-3">
+      <section className="d-card p-7 md:p-9">
+        <header>
+          <h2 className="d-serif text-[24px] font-extralight text-[var(--d-ink)]">
+            Publikasi
+          </h2>
+          <p className="mt-2 flex items-center gap-2 text-[13px] text-[var(--d-ink-dim)]">
+            <span
+              aria-hidden
+              className="h-2 w-2 rounded-full"
+              style={{
+                background: isPublished
+                  ? "var(--d-green)"
+                  : "var(--d-ink-faint)",
+                boxShadow: isPublished
+                  ? "0 0 12px rgba(126,211,164,0.6)"
+                  : undefined,
+              }}
+            />
+            {isPublished
+              ? "Undangan aktif dan dapat diakses publik melalui URL."
+              : "Undangan masih tersembunyi. Publikasikan untuk membagikan ke tamu."}
+          </p>
+        </header>
+        <div className="mt-5 flex flex-wrap items-center gap-3">
           {isPublished ? (
             <button
               type="button"
@@ -275,9 +358,9 @@ function AcaraTab({
                   await unpublishEventAction(eventId);
                 })
               }
-              className="rounded-full border border-[var(--d-line-strong)] px-6 py-2 text-sm font-medium text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
+              className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-6 py-2.5 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-50"
             >
-              {publishPending ? "Memproses..." : "Unpublish"}
+              {publishPending ? "Memproses…" : "Unpublish"}
             </button>
           ) : (
             <button
@@ -288,16 +371,16 @@ function AcaraTab({
                   await publishEventAction(eventId);
                 })
               }
-              className="rounded-full bg-[var(--d-bg-2)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
+              className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {publishPending ? "Memproses..." : "Publikasikan Undangan"}
+              {publishPending ? "Memproses…" : "Publikasikan Undangan"}
             </button>
           )}
           <Link
             href={`/${event.slug}`}
             target="_blank"
             rel="noreferrer"
-            className="text-sm text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
+            className="d-mono text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-coral)]"
           >
             Buka URL undangan →
           </Link>
@@ -345,38 +428,63 @@ function BudayaTab({
   ];
 
   return (
-    <form action={formAction} className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm space-y-4">
-      <h2 className="font-display text-xl text-[var(--d-ink)]">Preferensi Budaya</h2>
-      <p className="text-sm text-[var(--d-ink-dim)]">
-        Pengaturan ini memengaruhi template broadcast WhatsApp, label jadwal, dan tone AI copywriter.
-      </p>
+    <form action={formAction} className="d-card space-y-7 p-7 md:p-9">
+      <header>
+        <h2 className="d-serif text-[26px] font-extralight text-[var(--d-ink)]">
+          Preferensi{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">Budaya</em>
+        </h2>
+        <p className="mt-2 max-w-[58ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
+          Pengaturan ini memengaruhi template broadcast WhatsApp, label
+          jadwal, dan tone AI copywriter.
+        </p>
+      </header>
       <input type="hidden" name="title" value={event.title} />
       <input type="hidden" name="slug" value={event.slug} />
       <input type="hidden" name="musicUrl" value={event.musicUrl} />
 
-      <div className="space-y-3">
-        {options.map((opt) => (
-          <label
-            key={opt.id}
-            className={`flex cursor-pointer items-start gap-3 rounded-2xl border bg-[var(--d-bg-card)] p-4 transition-colors ${
-              event.culturalPreference === opt.id
-                ? "border-[var(--d-coral)] bg-[rgba(143,163,217,0.08)]"
-                : "border-[var(--d-line)] hover:border-[var(--d-coral)]"
-            }`}
-          >
-            <input
-              type="radio"
-              name="culturalPreference"
-              value={opt.id}
-              defaultChecked={event.culturalPreference === opt.id}
-              className="mt-1"
-            />
-            <div>
-              <p className="text-sm font-medium text-[var(--d-ink)]">{opt.label}</p>
-              <p className="text-xs text-[var(--d-ink-dim)]">{opt.description}</p>
-            </div>
-          </label>
-        ))}
+      <div className="grid gap-3">
+        {options.map((opt) => {
+          const checked = event.culturalPreference === opt.id;
+          return (
+            <label
+              key={opt.id}
+              className={`relative flex cursor-pointer items-start gap-4 rounded-[14px] border p-5 transition-all ${
+                checked
+                  ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.05)] shadow-[0_0_0_1px_var(--d-coral)_inset]"
+                  : "border-[var(--d-line)] bg-[var(--d-bg-card)] hover:border-[var(--d-line-strong)] hover:bg-[var(--d-bg-2)]"
+              }`}
+            >
+              <input
+                type="radio"
+                name="culturalPreference"
+                value={opt.id}
+                defaultChecked={checked}
+                className="sr-only"
+              />
+              <span
+                aria-hidden
+                className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                  checked
+                    ? "border-[var(--d-coral)] bg-[var(--d-coral)]"
+                    : "border-[var(--d-line-strong)]"
+                }`}
+              >
+                {checked && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                )}
+              </span>
+              <span className="min-w-0">
+                <span className="d-serif block text-[18px] font-light text-[var(--d-ink)]">
+                  {opt.label}
+                </span>
+                <span className="mt-1 block text-[12px] leading-relaxed text-[var(--d-ink-dim)]">
+                  {opt.description}
+                </span>
+              </span>
+            </label>
+          );
+        })}
       </div>
 
       {state && !state.ok && (
@@ -385,18 +493,27 @@ function BudayaTab({
         </p>
       )}
       {state && state.ok && (
-        <p className="rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
+        <p className="rounded-md border border-[rgba(126,211,164,0.25)] bg-[rgba(126,211,164,0.08)] px-3 py-2 text-sm text-[var(--d-green)]">
           Preferensi tersimpan.
         </p>
       )}
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--d-line)] pt-6">
+        <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+          Untuk preferensi tampilan & tema, buka{" "}
+          <Link
+            href="/dashboard/website/theme"
+            className="text-[var(--d-coral)] hover:text-[var(--d-peach)]"
+          >
+            Tema Undangan →
+          </Link>
+        </p>
         <button
           type="submit"
           disabled={pending}
-          className="rounded-full bg-coral px-8 py-3 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-60"
+          className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-7 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {pending ? "Menyimpan..." : "Simpan Preferensi"}
+          {pending ? "Menyimpan…" : "Simpan Preferensi"}
         </button>
       </div>
     </form>
@@ -440,16 +557,32 @@ function KolaboratorTab({
   }
 
   return (
-    <div className="space-y-4">
-      <section className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-        <h2 className="font-display text-xl text-[var(--d-ink)]">Kolaborator</h2>
-        <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
-          Undang pasangan agar bisa mengelola undangan bersama. Mereka dapat
-          mengedit konten tetapi tidak bisa mengelola pembayaran atau menghapus
-          acara.
-        </p>
+    <div className="space-y-6">
+      <section className="d-card p-7 md:p-9">
+        <header className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 className="d-serif text-[26px] font-extralight text-[var(--d-ink)]">
+              Kelola{" "}
+              <em className="d-serif italic text-[var(--d-coral)]">
+                bersama
+              </em>
+            </h2>
+            <p className="mt-2 max-w-[58ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
+              Undang pasangan agar bisa mengedit undangan bersama. Mereka
+              dapat mengedit konten tetapi tidak bisa mengelola pembayaran
+              atau menghapus acara.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setInviteOpen(true)}
+            className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90"
+          >
+            + Undang Pasangan
+          </button>
+        </header>
 
-        <div className="mt-6 space-y-3">
+        <div className="mt-7 space-y-3">
           {/* Owner — always shown */}
           <CollabCard
             avatarInitials={initials(owner.fullName ?? owner.email)}
@@ -472,21 +605,11 @@ function KolaboratorTab({
           ))}
 
           {!hasAny && (
-            <div className="rounded-xl border border-dashed border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-5 text-center text-sm text-[var(--d-ink-dim)]">
-              Belum ada kolaborator. Undang pasangan Anda agar bisa mengelola
-              undangan bersama.
+            <div className="rounded-[14px] border border-dashed border-[var(--d-line-strong)] bg-transparent p-6 text-center text-[13px] text-[var(--d-ink-dim)]">
+              Belum ada kolaborator. Undang pasangan Anda agar bisa
+              mengelola undangan bersama.
             </div>
           )}
-        </div>
-
-        <div className="mt-5">
-          <button
-            type="button"
-            onClick={() => setInviteOpen(true)}
-            className="rounded-full bg-gradient-brand px-5 py-2.5 text-sm font-medium text-white shadow-[0_6px_20px_-6px_rgba(232,160,160,0.55)] transition-transform hover:scale-[1.02]"
-          >
-            + Undang Pasangan
-          </button>
         </div>
       </section>
 
