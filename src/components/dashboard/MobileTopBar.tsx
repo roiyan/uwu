@@ -13,11 +13,13 @@ export function MobileTopBar({
   themeLabel,
   packageLabel,
   previewHref,
+  tamuCount,
 }: {
   coupleLabel?: string | null;
   themeLabel?: string | null;
   packageLabel?: string | null;
   previewHref?: string;
+  tamuCount?: number | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -80,6 +82,7 @@ export function MobileTopBar({
               themeLabel={themeLabel}
               packageLabel={packageLabel}
               previewHref={previewHref}
+              tamuCount={tamuCount}
               responsive={false}
               onCloseMobile={() => setOpen(false)}
             />
