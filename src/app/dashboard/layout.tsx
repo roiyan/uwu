@@ -112,7 +112,7 @@ async function MobileTopBarHost() {
 function SidebarSkeleton() {
   return (
     <aside
-      className="hidden w-[280px] flex-col px-5 py-6 lg:flex"
+      className="hidden w-[280px] flex-col overflow-hidden px-5 py-6 lg:sticky lg:top-0 lg:flex lg:h-screen"
       style={{ background: "var(--d-bg-1)" }}
     >
       <div className="h-9 w-20 animate-pulse rounded bg-[var(--d-bg-2)]" />
