@@ -13,7 +13,7 @@ export const dashboardNav: DashboardNavItem[] = [
   { href: "/dashboard/guests",    label: "Tamu",             icon: "👥", primary: true },
   { href: "/dashboard/messages",  label: "Kirim Undangan",   icon: "📨", primary: true },
   { href: "/dashboard/analytics", label: "Analytics",        icon: "📊" },
-  { href: "/dashboard/checkin",   label: "Check-in",         icon: "✅", disabled: true, badge: "Segera Hadir" },
+  { href: "/dashboard/checkin",   label: "Check-in",         icon: "✅" },
   { href: "/dashboard/gifts",     label: "Amplop & Hadiah",  icon: "🎁", disabled: true, badge: "Segera Hadir" },
   { href: "/dashboard/settings",  label: "Pengaturan",       icon: "⚙️" },
   { href: "/dashboard/packages",  label: "Paket",            icon: "📦" },
