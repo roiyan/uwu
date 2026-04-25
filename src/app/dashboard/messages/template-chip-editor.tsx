@@ -132,16 +132,13 @@ export function TemplateChipEditor({
   ariaLabel?: string;
 }) {
   const editorRef = useRef<HTMLDivElement | null>(null);
-  // Tracks the last value we rendered into the DOM. We only re-render
-  // (which blows away the caret) when the prop value drifts away from
-  // what we've already painted — i.e. when an external callsite (AI
-  // modal, template switch) replaces the body wholesale.
-  const lastRenderedRef = useRef<string>("");
-  // After we mutate the DOM ourselves (insertAtCaret), the parent
-  // round-trips the new value back via the `value` prop. Without this
-  // guard, the value-sync useEffect would wipe innerHTML and snap the
-  // caret to the start of the editor.
-  const skipNextRenderRef = useRef(false);
+  // ContentEditable + React controlled component: never reset
+  // innerHTML while the user is editing — that snaps the caret to
+  // position 0. Only reset on external value changes (template
+  // switch, AI "Pakai Pesan Ini"). isInternalChangeRef is set to true
+  // before any onChange we emit ourselves; the value-sync useEffect
+  // consumes the flag and skips the DOM reset.
+  const isInternalChangeRef = useRef(false);
 
   // Set of placeholder keys currently present in the value — drives
   // the "used" green styling on toolbar chips. Recomputes on every
@@ -159,26 +156,24 @@ export function TemplateChipEditor({
   useEffect(() => {
     const el = editorRef.current;
     if (!el) return;
-    if (skipNextRenderRef.current) {
-      // We already mutated the DOM in insertAtCaret; just sync the
-      // ref with the value we already painted and skip the reset so
-      // the caret stays put.
-      skipNextRenderRef.current = false;
-      lastRenderedRef.current = value;
+    if (isInternalChangeRef.current) {
+      // The user just typed or inserted a chip. The DOM is already
+      // correct — only the prop is catching up. Skip the reset so the
+      // caret stays exactly where the user left it.
+      isInternalChangeRef.current = false;
       return;
     }
-    if (value === lastRenderedRef.current) return;
+    // External value change (template dropdown, AI apply, initial
+    // mount): repaint the DOM from the prop.
     el.innerHTML = "";
     el.appendChild(valueToFragment(value));
-    lastRenderedRef.current = value;
   }, [value]);
 
   function commit() {
     const el = editorRef.current;
     if (!el) return;
-    const next = nodeToValue(el);
-    lastRenderedRef.current = next;
-    onChange(next);
+    isInternalChangeRef.current = true;
+    onChange(nodeToValue(el));
   }
 
   function insertAtCaret(key: string) {
@@ -212,12 +207,8 @@ export function TemplateChipEditor({
       sel.addRange(range);
     }
 
-    // Skip the next value-sync useEffect pass — we already painted
-    // the chip + caret ourselves and don't want innerHTML reset.
-    skipNextRenderRef.current = true;
-    const next = nodeToValue(el);
-    lastRenderedRef.current = next;
-    onChange(next);
+    isInternalChangeRef.current = true;
+    onChange(nodeToValue(el));
   }
 
   return (
