@@ -13,16 +13,55 @@ export const mempelaiSchema = z.object({
     .or(z.literal("")),
 });
 
-export const scheduleInputSchema = z.object({
-  label: z.string().min(2, "Label acara wajib diisi").max(60),
-  eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal tidak valid"),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Jam tidak valid").optional().or(z.literal("")),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Jam tidak valid").optional().or(z.literal("")),
-  timezone: z.string().default("Asia/Jakarta"),
-  venueName: z.string().max(120).optional().or(z.literal("")),
-  venueAddress: z.string().max(400).optional().or(z.literal("")),
-  venueMapUrl: z.string().url("URL peta tidak valid").optional().or(z.literal("")),
-});
+// HH:MM 24-hour format check. Bare regex only ensures the digit/colon
+// shape; we still need the value-range refinement below for "is the
+// hour 0–23 and the minute 0–59?".
+const TIME_RE = /^\d{2}:\d{2}$/;
+
+function isHHMMValid(s: string): boolean {
+  if (!TIME_RE.test(s)) return false;
+  const [h, m] = s.split(":").map((n) => parseInt(n, 10));
+  return h >= 0 && h <= 23 && m >= 0 && m <= 59;
+}
+
+export const scheduleInputSchema = z
+  .object({
+    label: z.string().min(2, "Label acara wajib diisi").max(60),
+    eventDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Tanggal tidak valid"),
+    startTime: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine(
+        (v) => !v || isHHMMValid(v),
+        "Format jam mulai: HH:MM (contoh 08:00)",
+      ),
+    endTime: z
+      .string()
+      .optional()
+      .or(z.literal(""))
+      .refine(
+        (v) => !v || isHHMMValid(v),
+        "Format jam selesai: HH:MM (contoh 10:00)",
+      ),
+    timezone: z.string().default("Asia/Jakarta"),
+    venueName: z.string().max(120).optional().or(z.literal("")),
+    venueAddress: z.string().max(400).optional().or(z.literal("")),
+    venueMapUrl: z.string().url("URL peta tidak valid").optional().or(z.literal("")),
+  })
+  // Cross-field check: end time must come after start. Skipped when
+  // either field is blank (both are optional individually).
+  .refine(
+    (v) => {
+      if (!v.startTime || !v.endTime) return true;
+      if (!isHHMMValid(v.startTime) || !isHHMMValid(v.endTime)) return true;
+      return v.endTime > v.startTime;
+    },
+    {
+      message: "Jam selesai harus setelah jam mulai",
+      path: ["endTime"],
+    },
+  );
 
 export const schedulesSchema = z
   .array(scheduleInputSchema)

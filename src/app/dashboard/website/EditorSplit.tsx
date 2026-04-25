@@ -321,13 +321,9 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                   def={s}
                   active={activeSection === s.id}
                   enabled={s.flag ? sections[s.flag] : true}
-                  onSelect={() => {
-                    if (!s.comingSoon) setActiveSection(s.id);
-                  }}
+                  onSelect={() => setActiveSection(s.id)}
                   onToggle={
-                    s.flag && !s.comingSoon
-                      ? () => toggleSection(s.flag!)
-                      : undefined
+                    s.flag ? () => toggleSection(s.flag!) : undefined
                   }
                 />
               ))}
@@ -343,13 +339,12 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
               <button
                 key={s.id}
                 type="button"
-                onClick={() => !s.comingSoon && setActiveSection(s.id)}
-                disabled={s.comingSoon}
+                onClick={() => setActiveSection(s.id)}
                 className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-colors ${
                   isActive
                     ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
                     : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
-                } disabled:cursor-not-allowed disabled:opacity-40`}
+                }`}
               >
                 <span>{s.number}</span>
                 <span>{s.title}</span>
@@ -420,10 +415,8 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                 />
               )}
               {activeSection === "rsvp" && <RsvpForm />}
-              {activeSection === "galeri" && <ComingSoonForm name="Galeri" />}
-              {activeSection === "amplop" && (
-                <ComingSoonForm name="Amplop Digital" />
-              )}
+              {activeSection === "galeri" && <GaleriForm />}
+              {activeSection === "amplop" && <AmplopForm />}
             </div>
           </div>
 
@@ -432,7 +425,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
               type="button"
               onClick={() => {
                 const prev = SECTIONS[Math.max(0, activeIdx - 1)];
-                if (!prev.comingSoon) setActiveSection(prev.id);
+                setActiveSection(prev.id);
               }}
               disabled={activeIdx === 0}
               className="d-mono uppercase tracking-[0.22em] text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-ink)] disabled:opacity-40"
@@ -442,8 +435,9 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             <button
               type="button"
               onClick={() => {
-                const next = SECTIONS[Math.min(SECTIONS.length - 1, activeIdx + 1)];
-                if (!next.comingSoon) setActiveSection(next.id);
+                const next =
+                  SECTIONS[Math.min(SECTIONS.length - 1, activeIdx + 1)];
+                setActiveSection(next.id);
               }}
               disabled={activeIdx >= SECTIONS.length - 1}
               className="d-mono uppercase tracking-[0.22em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)] disabled:opacity-40"
@@ -656,11 +650,9 @@ function SectionListItem({
   return (
     <li
       className={`relative flex items-start gap-3 px-5 py-3 transition-colors ${
-        def.comingSoon
-          ? "cursor-not-allowed opacity-50"
-          : active
-            ? "cursor-pointer"
-            : "cursor-pointer hover:bg-[var(--d-bg-2)]/40"
+        active
+          ? "cursor-pointer"
+          : "cursor-pointer hover:bg-[var(--d-bg-2)]/40"
       }`}
       style={baseStyle}
       onClick={onSelect}
@@ -669,11 +661,7 @@ function SectionListItem({
         {def.number}
       </span>
       <div className="min-w-0 flex-1">
-        <p
-          className={`d-serif text-[15px] leading-tight ${
-            active ? "text-[var(--d-ink)]" : "text-[var(--d-ink)]"
-          }`}
-        >
+        <p className="d-serif text-[15px] leading-tight text-[var(--d-ink)]">
           {def.title}
         </p>
         <p className="d-mono mt-1 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
@@ -681,8 +669,11 @@ function SectionListItem({
         </p>
       </div>
       {def.comingSoon ? (
-        <span className="d-mono shrink-0 self-start rounded bg-white/5 px-2 py-0.5 text-[8.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-          Segera
+        // Section is unlocked but not yet wired to a save action —
+        // the BETA pill signals that to the user; clicking the row
+        // still opens the placeholder UI.
+        <span className="d-mono shrink-0 self-start rounded bg-[rgba(184,157,212,0.12)] px-2 py-0.5 text-[8.5px] uppercase tracking-[0.18em] text-[var(--d-lilac)]">
+          Beta
         </span>
       ) : onToggle ? (
         <Toggle
@@ -1059,6 +1050,29 @@ function CeritaForm({
   );
 }
 
+// HH:MM 24-hour validator mirrored from src/lib/schemas/event.ts so
+// the inline UI can show the same messages the server would return.
+function validateTimes(start: string, end: string): {
+  startError?: string;
+  endError?: string;
+} {
+  const re = /^\d{2}:\d{2}$/;
+  const checkShape = (v: string): string | undefined => {
+    if (!v) return undefined;
+    if (!re.test(v)) return "Format jam: HH:MM (contoh 08:00)";
+    const [h, m] = v.split(":").map((n) => parseInt(n, 10));
+    if (h < 0 || h > 23) return "Jam harus 00–23";
+    if (m < 0 || m > 59) return "Menit harus 00–59";
+    return undefined;
+  };
+  const startError = checkShape(start);
+  const endError = checkShape(end);
+  if (!startError && !endError && start && end && end <= start) {
+    return { endError: "Jam selesai harus setelah jam mulai" };
+  }
+  return { startError, endError };
+}
+
 function AcaraForm({
   rows,
   update,
@@ -1072,7 +1086,12 @@ function AcaraForm({
 }) {
   return (
     <div className="space-y-5">
-      {rows.map((row, idx) => (
+      {rows.map((row, idx) => {
+        const { startError, endError } = validateTimes(
+          row.startTime,
+          row.endTime,
+        );
+        return (
         <div
           key={idx}
           className="rounded-[14px] border border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-5"
@@ -1110,12 +1129,14 @@ function AcaraForm({
               type="time"
               value={row.startTime}
               onChange={(v) => update(idx, { startTime: v })}
+              error={startError}
             />
             <Field
               label="Selesai"
               type="time"
               value={row.endTime}
               onChange={(v) => update(idx, { endTime: v })}
+              error={endError}
             />
             <div className="md:col-span-2">
               <Field
@@ -1140,7 +1161,8 @@ function AcaraForm({
             />
           </div>
         </div>
-      ))}
+        );
+      })}
       {rows.length < 6 && (
         <button
           type="button"
@@ -1172,19 +1194,152 @@ function RsvpForm() {
   );
 }
 
-function ComingSoonForm({ name }: { name: string }) {
+// ============================================================================
+// Galeri (placeholder UI — visual only, no save wired yet)
+// ============================================================================
+
+function GaleriForm() {
+  // Six fixed slots that mirror the planned final layout. Buttons are
+  // disabled because the gallery_images column doesn't exist yet; the
+  // notice at the top makes the state clear without locking the row
+  // out of the section list.
+  const slots = Array.from({ length: 6 });
   return (
-    <div className="rounded-[14px] border border-dashed border-[var(--d-line-strong)] p-8 text-center">
-      <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
-        Segera Hadir
+    <div className="space-y-6">
+      <BetaNotice
+        message="Upload galeri masih dalam pengembangan. Tampilan di bawah adalah pratinjau struktur yang akan segera tersedia — Anda tidak perlu upgrade paket."
+      />
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        {slots.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            disabled
+            className="group relative flex aspect-square cursor-not-allowed items-center justify-center rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[var(--d-bg-2)] text-[var(--d-ink-faint)] transition-colors"
+            aria-label={`Slot foto ${i + 1}`}
+          >
+            <span className="d-mono flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.18em]">
+              <span aria-hidden className="text-[20px]">
+                📷
+              </span>
+              Foto {i + 1}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      <p className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+        Maksimal 6 foto · JPG / PNG / WebP · 5 MB per foto
       </p>
-      <h4 className="d-serif mt-3 text-[24px] font-light text-[var(--d-ink)]">
-        {name}
-      </h4>
-      <p className="mt-3 max-w-[42ch] mx-auto text-[13px] text-[var(--d-ink-dim)]">
-        Bagian ini sedang dipersiapkan. Anda akan dapat mengaksesnya begitu
-        fitur tersedia — tanpa upgrade tambahan.
-      </p>
+    </div>
+  );
+}
+
+// ============================================================================
+// Amplop Digital (placeholder UI)
+// ============================================================================
+
+const BANK_OPTIONS = [
+  "BCA",
+  "BNI",
+  "BRI",
+  "Mandiri",
+  "BSI",
+  "CIMB Niaga",
+  "Permata",
+  "Bank Jago",
+  "Jenius / BTPN",
+  "GoPay",
+  "OVO",
+  "DANA",
+  "ShopeePay",
+  "LinkAja",
+];
+
+function AmplopForm() {
+  return (
+    <div className="space-y-6">
+      <BetaNotice
+        message="Form rekening masih dalam pengembangan. Tampilan di bawah adalah pratinjau struktur final — Anda akan dapat menambah rekening begitu fitur tersedia."
+      />
+
+      <div className="rounded-[14px] border border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-5">
+        <div className="flex items-center justify-between">
+          <h4 className="d-serif text-[18px] font-light text-[var(--d-ink)]">
+            Rekening 1
+          </h4>
+          <span className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+            Pratinjau
+          </span>
+        </div>
+        <div className="mt-4 grid gap-6 md:grid-cols-2">
+          <label className="block">
+            <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+              Bank / E-Wallet
+            </span>
+            <select
+              disabled
+              defaultValue="BCA"
+              className="mt-2 w-full cursor-not-allowed rounded-md border border-[var(--d-line-strong)] bg-[var(--d-bg-2)] px-3 py-2.5 text-[14px] text-[var(--d-ink-dim)] opacity-70 outline-none"
+            >
+              {BANK_OPTIONS.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+              Nomor rekening
+            </span>
+            <input
+              type="text"
+              disabled
+              placeholder="1234567890"
+              className="mt-2 w-full cursor-not-allowed bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink-dim)] outline-none placeholder:italic placeholder:text-[var(--d-ink-faint)]"
+            />
+          </label>
+          <label className="block md:col-span-2">
+            <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+              Atas nama
+            </span>
+            <input
+              type="text"
+              disabled
+              placeholder="Vivi Anggraini"
+              className="mt-2 w-full cursor-not-allowed bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink-dim)] outline-none placeholder:italic placeholder:text-[var(--d-ink-faint)]"
+            />
+          </label>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        disabled
+        className="d-mono w-full cursor-not-allowed rounded-[14px] border border-dashed border-[var(--d-line-strong)] bg-transparent px-4 py-4 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]"
+      >
+        + Tambah Rekening
+      </button>
+    </div>
+  );
+}
+
+function BetaNotice({ message }: { message: string }) {
+  return (
+    <div className="flex items-start gap-3 rounded-[14px] border border-[rgba(184,157,212,0.30)] bg-[rgba(184,157,212,0.06)] p-4">
+      <span aria-hidden className="text-[14px]">
+        ✨
+      </span>
+      <div>
+        <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-lilac)]">
+          Beta · Segera Hadir
+        </p>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
+          {message}
+        </p>
+      </div>
     </div>
   );
 }
@@ -1196,6 +1351,7 @@ function Field({
   type = "text",
   required,
   placeholder,
+  error,
 }: {
   label: string;
   value: string;
@@ -1203,6 +1359,7 @@ function Field({
   type?: string;
   required?: boolean;
   placeholder?: string;
+  error?: string;
 }) {
   return (
     <label className="block">
@@ -1218,8 +1375,13 @@ function Field({
         placeholder={placeholder}
         className={`${inputClass} ${
           type === "date" || type === "time" ? "[color-scheme:dark]" : ""
-        }`}
+        } ${error ? "border-[var(--d-coral)]" : ""}`}
       />
+      {error && (
+        <p className="d-mono mt-1 text-[10px] uppercase tracking-[0.18em] text-[var(--d-coral)]">
+          {error}
+        </p>
+      )}
     </label>
   );
 }
