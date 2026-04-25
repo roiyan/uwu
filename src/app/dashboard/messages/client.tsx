@@ -16,6 +16,7 @@ import {
 } from "@/lib/actions/broadcast";
 import dynamic from "next/dynamic";
 import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
+import { TemplateChipEditor } from "./template-chip-editor";
 import { WaFallbackSender } from "./wa-fallback-sender";
 
 // AI assistant modal lives behind a click and brings ~25 kB of
@@ -523,22 +524,17 @@ export function MessagesClient({
                 </button>
               )}
             </div>
-            <textarea
+            <TemplateChipEditor
               name="body"
               value={body}
-              onChange={(e) => setBody(e.target.value)}
-              rows={12}
-              className={`${inputClass} resize-y font-mono text-[13px] leading-relaxed`}
-              required
+              onChange={setBody}
+              minHeight={260}
+              ariaLabel="Isi pesan broadcast"
             />
             <span className="mt-1 block text-xs text-ink-hint">
-              Placeholder: <code className="rounded bg-surface-muted px-1">{"{nama}"}</code>,{" "}
-              <code className="rounded bg-surface-muted px-1">{"{panggilan}"}</code>,{" "}
-              <code className="rounded bg-surface-muted px-1">{"{bride}"}</code>,{" "}
-              <code className="rounded bg-surface-muted px-1">{"{groom}"}</code>,{" "}
-              <code className="rounded bg-surface-muted px-1">{"{date}"}</code>,{" "}
-              <code className="rounded bg-surface-muted px-1">{"{venue}"}</code>,{" "}
-              <code className="rounded bg-surface-muted px-1">{"{link_undangan}"}</code>
+              Tap variabel di toolbar untuk menyisipkan. Setiap variabel
+              jadi blok atomik — Backspace satu kali menghapus seluruh
+              variabel, tidak bisa dipotong sebagian.
             </span>
           </div>
 
@@ -558,15 +554,15 @@ export function MessagesClient({
                   </button>
                 )}
               </div>
-              <textarea
+              <TemplateChipEditor
                 value={emailBody}
-                onChange={(e) => setEmailBody(e.target.value)}
-                rows={10}
-                className={`${inputClass} resize-y font-mono text-[13px] leading-relaxed`}
+                onChange={setEmailBody}
+                minHeight={220}
+                ariaLabel="Isi pesan email broadcast"
               />
               <span className="mt-1 block text-xs text-ink-hint">
-                Email pakai gaya lebih formal. Placeholder yang sama
-                berlaku.
+                Email pakai gaya lebih formal. Variabel yang sama
+                berlaku — tap chip di toolbar untuk menyisipkan.
               </span>
             </div>
           )}
