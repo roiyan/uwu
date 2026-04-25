@@ -7,19 +7,22 @@ import {
   type AiMessageInput,
 } from "@/lib/schemas/ai-message";
 
-const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-4-20250514";
+// Gemini 2.0 Flash — generous free tier (15 RPM) and ~30× cheaper than
+// Claude Sonnet for paid usage. The system prompt below is model-
+// agnostic; only the transport differs from the prior Anthropic call.
+const MODEL = "gemini-2.0-flash";
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 export type GenerateResult =
   | { ok: true; message: string }
   | { ok: false; error: string };
 
 /**
- * Generate a personalised broadcast invitation body via the Claude
- * API. The user-facing text comes back already formatted for the
- * target channel (WhatsApp = emojis OK; Email = formal, no emojis).
+ * Generate a personalised broadcast invitation body via Google's
+ * Gemini API. The user-facing text comes back already formatted for
+ * the target channel (WhatsApp = emojis OK; Email = formal, no emojis).
  *
- * The action is hidden in the UI when ANTHROPIC_API_KEY is unset, so
+ * The action is hidden in the UI when GEMINI_API_KEY is unset, so
  * normal callers won't hit the "AI belum dikonfigurasi" path. The
  * guard is here for defense-in-depth in case the key is wiped after a
  * page render.
@@ -39,7 +42,7 @@ export async function generateBroadcastMessage(
   }
   const input = parsed.data;
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     return {
       ok: false,
@@ -52,19 +55,21 @@ export async function generateBroadcastMessage(
 
   let res: Response;
   try {
-    res = await fetch(ANTHROPIC_URL, {
+    // API key passed via x-goog-api-key header rather than the
+    // ?key= query string — keeps it out of access logs.
+    res = await fetch(GEMINI_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        "x-goog-api-key": apiKey,
       },
       body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 600,
-        temperature: 0.7,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+        generationConfig: {
+          maxOutputTokens: 600,
+          temperature: 0.7,
+        },
       }),
     });
   } catch (err) {
@@ -82,9 +87,29 @@ export async function generateBroadcastMessage(
   }
 
   const body = (await res.json().catch(() => null)) as
-    | { content?: Array<{ type?: string; text?: string }> }
+    | {
+        candidates?: Array<{
+          content?: { parts?: Array<{ text?: string }> };
+          finishReason?: string;
+        }>;
+        promptFeedback?: { blockReason?: string };
+      }
     | null;
-  const text = body?.content?.find((b) => b.type === "text")?.text?.trim();
+
+  // Gemini may block the response upstream (safety filters etc.) —
+  // surface that as a clear error rather than a generic "empty".
+  if (body?.promptFeedback?.blockReason) {
+    console.error(
+      "[ai-message] prompt blocked",
+      body.promptFeedback.blockReason,
+    );
+    return { ok: false, error: "Pesan diblokir filter AI. Ubah preferensi." };
+  }
+
+  const text = body?.candidates?.[0]?.content?.parts
+    ?.map((p) => p.text ?? "")
+    .join("")
+    .trim();
   if (!text) {
     console.error("[ai-message] empty response", body);
     return { ok: false, error: "Pesan kosong dari AI. Coba lagi." };
