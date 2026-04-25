@@ -16,18 +16,29 @@ export async function exportAnalyticsInfographic(
     throw new Error(`Element #${elementId} tidak ditemukan.`);
   }
   const html2canvas = (await import("html2canvas")).default;
+  const { buildOnClone } = await import("./html2canvas-onclone");
+
+  if (typeof document !== "undefined" && document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+  // Allow one paint frame so newly-mounted templates settle into their
+  // computed styles before we walk them.
+  await new Promise((r) => requestAnimationFrame(() => r(null)));
 
   const canvas = await html2canvas(element, {
     // 1200×1500 at 2× scale = 2400×3000 source PNG, sharp enough for
     // sharing on Instagram Story or as a wallpaper-like keepsake.
+    // We let height auto-size from the element so a long template
+    // (e.g. expanded guest table) doesn't get cropped.
     scale: 2,
     useCORS: true,
     backgroundColor: "#06060B",
     width: 1200,
-    height: 1500,
+    height: element.scrollHeight,
     windowWidth: 1200,
-    windowHeight: 1500,
+    windowHeight: Math.max(1500, element.scrollHeight),
     logging: false,
+    onclone: buildOnClone(element),
   });
 
   const dataUrl = canvas.toDataURL("image/png");
