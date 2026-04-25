@@ -601,8 +601,9 @@ export function MessagesClient({
                     className={inputClass}
                   />
                   <p className="mt-1 text-[11px] text-ink-hint">
-                    Cron menjalankan pengiriman setiap 5 menit, jadi waktu
-                    aktual bisa terlambat hingga 5 menit dari pilihan Anda.
+                    Cron menjalankan pengiriman setiap hari pukul 09:00 UTC
+                    (16:00 WIB). Email akan terkirim pada cron berikutnya
+                    setelah waktu yang Anda pilih lewat.
                   </p>
                 </div>
               )}
