@@ -16,6 +16,8 @@ type Length = "singkat" | "sedang" | "lengkap";
 
 type EventContext = {
   coupleName: string;
+  brideName?: string;
+  groomName?: string;
   eventDate?: string;
   venue?: string;
   slug: string;

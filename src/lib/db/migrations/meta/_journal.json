@@ -78,6 +78,13 @@
       "when": 1777076654355,
       "tag": "0010_far_red_skull",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1777680000000,
+      "tag": "0011_fancy_virginia_dare",
+      "breakpoints": true
     }
   ]
 }
