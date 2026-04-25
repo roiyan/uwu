@@ -5,6 +5,7 @@ import { getEventBundle } from "@/lib/db/queries/events";
 import {
   countLiveGuests,
   getEventPackageLimit,
+  getOpenHeatmap,
   getResponseFunnel,
   listGuestsForEvent,
   sumAttendees,
@@ -56,6 +57,10 @@ export type AnalyticsExportData = {
     via: string | null;
     message: string | null;
   }>;
+  // 7×24 day-of-week × hour buckets of opens. Same shape as the
+  // ActivityHeatmap component consumes — the infographic flattens
+  // it into a compact 7×8 grid (3-hour blocks) for readability.
+  heatmap: Array<{ day: number; hour: number; count: number }>;
 };
 
 const RSVP_LABEL: Record<string, string> = {
@@ -82,15 +87,23 @@ export async function getAnalyticsExportData(
   eventId: string,
 ): Promise<ActionResult<AnalyticsExportData>> {
   return withAuth(eventId, "viewer", async () => {
-    const [bundle, total, confirmedAttendees, funnel, guests, packageInfo] =
-      await Promise.all([
-        getEventBundle(eventId),
-        countLiveGuests(eventId),
-        sumAttendees(eventId),
-        getResponseFunnel(eventId),
-        listGuestsForEvent(eventId),
-        getEventPackageLimit(eventId),
-      ]);
+    const [
+      bundle,
+      total,
+      confirmedAttendees,
+      funnel,
+      guests,
+      packageInfo,
+      heatmap,
+    ] = await Promise.all([
+      getEventBundle(eventId),
+      countLiveGuests(eventId),
+      sumAttendees(eventId),
+      getResponseFunnel(eventId),
+      listGuestsForEvent(eventId),
+      getEventPackageLimit(eventId),
+      getOpenHeatmap(eventId),
+    ]);
 
     if (!bundle) {
       throw new Error("Acara tidak ditemukan.");
@@ -140,6 +153,7 @@ export async function getAnalyticsExportData(
         via: g.lastSentVia,
         message: g.rsvpMessage,
       })),
+      heatmap,
     };
   });
 }
