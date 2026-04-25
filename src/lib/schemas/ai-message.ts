@@ -64,6 +64,8 @@ export const aiMessageInputSchema = z.object({
   channel: z.enum(["whatsapp", "email"]),
   eventContext: z.object({
     coupleName: z.string(),
+    brideName: z.string().optional(),
+    groomName: z.string().optional(),
     eventDate: z.string().optional(),
     venue: z.string().optional(),
     slug: z.string(),

@@ -1075,6 +1075,8 @@ export function MessagesClient({
             }
             eventContext={{
               coupleName: eventContext.bride + " & " + eventContext.groom,
+              brideName: eventContext.bride,
+              groomName: eventContext.groom,
               eventDate: eventContext.date,
               venue: eventContext.venue,
               slug: eventContext.slug,
