@@ -125,6 +125,7 @@ export default async function MessagesPage() {
 
       <MessagesClient
         eventId={bundle.event.id}
+        isPublished={bundle.event.isPublished}
         culturalPreference={cp}
         templates={MESSAGE_TEMPLATES}
         groups={groups.map((g) => ({

@@ -131,6 +131,7 @@ function nowPlusMinutes(mins: number): string {
 
 export function MessagesClient({
   eventId,
+  isPublished,
   culturalPreference,
   templates,
   groups,
@@ -141,6 +142,7 @@ export function MessagesClient({
   eventContext,
 }: {
   eventId: string;
+  isPublished: boolean;
   culturalPreference: "islami" | "umum" | "custom";
   templates: MessageTemplate[];
   groups: GroupRow[];
@@ -381,6 +383,7 @@ export function MessagesClient({
 
   return (
     <>
+      {!isPublished && <UnpublishedBanner />}
       <div className="mb-6 inline-flex rounded-full border border-[color:var(--border-ghost)] bg-white p-1">
         <button
           type="button"
@@ -870,7 +873,12 @@ export function MessagesClient({
           <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
             <button
               type="submit"
-              disabled={pending}
+              disabled={pending || !isPublished}
+              title={
+                !isPublished
+                  ? "Publikasikan undangan dulu di Pengaturan."
+                  : undefined
+              }
               className="rounded-full border border-[color:var(--border-medium)] px-6 py-2 text-sm font-medium text-navy transition-colors hover:bg-surface-muted disabled:opacity-60"
             >
               {pending ? "Menyimpan..." : "Simpan Broadcast"}
@@ -1371,6 +1379,33 @@ function HistoryListCard({
         </Link>
       </div>
     </li>
+  );
+}
+
+function UnpublishedBanner() {
+  return (
+    <div className="mb-6 rounded-2xl border border-coral/30 bg-coral/5 p-4">
+      <div className="flex items-start gap-3">
+        <span className="text-xl" aria-hidden>
+          ⚠️
+        </span>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-ink">
+            Undangan belum dipublikasikan
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">
+            Tamu yang menerima link undangan saat ini akan melihat halaman
+            404. Publikasikan dulu di Pengaturan agar undangan bisa dibuka.
+          </p>
+          <Link
+            href="/dashboard/settings"
+            className="mt-3 inline-flex items-center gap-1 rounded-full bg-coral px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-coral-dark"
+          >
+            Buka Pengaturan untuk Publikasi →
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
 

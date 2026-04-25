@@ -18,7 +18,13 @@ type LogEntry = {
   reason?: string;
 };
 
-type Phase = "loading" | "sending" | "paused" | "completed" | "stopped";
+type Phase =
+  | "loading"
+  | "ready"
+  | "sending"
+  | "paused"
+  | "completed"
+  | "stopped";
 
 const COUNTDOWN_SECONDS = 3;
 
@@ -62,7 +68,11 @@ export function WaFallbackSender({
         // Only iterate ones still pending — completed/failed are skipped.
         const pending = rows.filter((r) => r.status === "pending");
         setDeliveries(pending);
-        setPhase(pending.length === 0 ? "completed" : "sending");
+        // Stop in "ready" so the user can confirm the audience before
+        // we start opening WA tabs. Sending always starts at index 0
+        // and walks every pending delivery — broadcast = kirim ke
+        // semua, bukan hanya yang di-preview di compose form.
+        setPhase(pending.length === 0 ? "completed" : "ready");
       })
       .catch((err) => {
         if (cancelled) return;
@@ -214,6 +224,58 @@ export function WaFallbackSender({
     );
   }
 
+  if (phase === "ready") {
+    const first = deliveries[0];
+    const sample = deliveries.slice(0, 5);
+    return (
+      <div className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
+        <h3 className="font-display text-lg text-ink">📤 Siap Kirim WhatsApp</h3>
+        <p className="mt-2 text-sm text-ink-muted">
+          Akan mengirim ke{" "}
+          <strong className="text-ink">{deliveries.length} tamu</strong>,
+          mulai dari{" "}
+          <strong className="text-ink">
+            {first?.recipientName ?? "tamu pertama"}
+          </strong>
+          . Setiap tamu menerima pesan yang sudah dipersonalisasi.
+        </p>
+        <div className="mt-4 rounded-xl bg-surface-muted/60 p-3 text-xs text-ink-muted">
+          <p className="font-medium text-ink">Urutan kirim:</p>
+          <ol className="mt-1 list-decimal pl-5">
+            {sample.map((d) => (
+              <li key={d.id}>{d.recipientName ?? "Tamu"}</li>
+            ))}
+          </ol>
+          {deliveries.length > sample.length && (
+            <p className="mt-1 text-ink-hint">
+              … dan {deliveries.length - sample.length} tamu lainnya
+            </p>
+          )}
+        </div>
+        <p className="mt-3 text-xs text-ink-hint">
+          ℹ️ Preview di form compose hanya untuk cek template. Broadcast
+          tetap dikirim ke seluruh audiens terpilih.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setPhase("sending")}
+            className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white hover:bg-coral-dark"
+          >
+            Mulai Kirim →
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-full border border-[color:var(--border-medium)] px-4 py-2 text-sm text-navy hover:bg-surface-muted"
+          >
+            Batal
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const sentCount = log.filter((l) => l.kind === "sent").length;
   const skippedCount = log.filter((l) => l.kind === "skipped").length;
   const total = deliveries.length;
@@ -323,7 +385,7 @@ export function WaFallbackSender({
           >
             ⏸ Jeda
           </button>
-        ) : (
+        ) : phase === "paused" ? (
           <button
             type="button"
             onClick={resume}
@@ -331,7 +393,7 @@ export function WaFallbackSender({
           >
             ▶ Lanjutkan
           </button>
-        )}
+        ) : null}
         <button
           type="button"
           onClick={stop}
