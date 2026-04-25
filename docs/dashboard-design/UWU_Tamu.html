@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>UWU — Tamu · Vivi &amp; Roiyan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..700,30..100;1,9..144,200..700,30..100&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#06060B;--bg-1:#0C0C15;--bg-2:#13141F;--bg-card:#0E0F18;
+  --ink:#EDE8DE;--ink-dim:#9E9A95;--ink-faint:#4A4850;
+  --line:rgba(237,232,222,.07);--line-strong:rgba(237,232,222,.16);
+  --blue:#8FA3D9;--lilac:#B89DD4;--coral:#F0A09C;--peach:#F4B8A3;--gold:#D4B896;--green:#7ED3A4;
+  --red:#E08A8A;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg-0);color:var(--ink);font-family:'Inter',sans-serif;font-weight:300;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+em{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;color:inherit;background:transparent;border:none;outline:none}
+
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* ============ SIDEBAR ============ */
+.side{position:sticky;top:0;height:100vh;background:var(--bg-1);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:24px 18px;overflow:hidden;z-index:30}
+.side-bg{position:absolute;inset:0;pointer-events:none}
+.side-glow{position:absolute;width:300px;height:300px;border-radius:50%;filter:blur(110px);opacity:.1;background:var(--coral);top:-80px;left:-80px}
+.side-inner{position:relative;z-index:2;display:flex;flex-direction:column;height:100%}
+.brand{padding:8px 12px 20px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand-logo{height:30px;width:auto;display:block;margin-bottom:12px}
+.brand-couple{font-family:'Fraunces',serif;font-size:16px;font-weight:300;line-height:1.1;letter-spacing:-.01em}
+.brand-couple em{color:var(--coral)}
+.brand-pkg{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-top:6px;display:flex;align-items:center;gap:8px}
+.brand-pkg::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+.nav::-webkit-scrollbar{display:none}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink-dim);font-size:13px;transition:all .25s var(--ease);position:relative}
+.nav-item:hover{color:var(--ink);background:rgba(255,255,255,.025)}
+.nav-item.active{color:var(--ink);background:linear-gradient(90deg,rgba(240,160,156,.12),rgba(240,160,156,0));border-left:2px solid var(--coral);padding-left:12px}
+.nav-item .ico{width:17px;height:17px;flex-shrink:0;opacity:.7}
+.nav-item.active .ico{opacity:1;color:var(--coral)}
+.nav-item .lbl{flex:1}
+.nav-item .badge{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--ink-faint)}
+.nav-item.active .badge{background:rgba(240,160,156,.16);color:var(--coral)}
+.nav-item .badge.warn{background:rgba(244,184,163,.12);color:var(--peach)}
+.nav-item.locked{opacity:.55}
+.nav-sep{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;padding:18px 14px 8px}
+.side-foot{padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.preview-cta{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);color:var(--ink);font-size:12.5px;transition:all .25s}
+.preview-cta:hover{background:rgba(255,255,255,.08);border-color:var(--ink-dim)}
+.logout{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;padding:8px}
+.logout:hover{color:var(--coral)}
+.side-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:29;display:none;pointer-events:none}
+
+/* ============ MAIN ============ */
+.main{padding:36px 44px 64px;position:relative;min-width:0}
+.main-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.main-bg .mg{position:absolute;border-radius:50%;filter:blur(130px);opacity:.06}
+.main-bg .mg1{width:520px;height:520px;background:var(--lilac);top:-120px;right:-100px}
+.main-bg .mg2{width:380px;height:380px;background:var(--peach);bottom:-100px;left:30%}
+.main-inner{position:relative;z-index:1}
+
+/* Top bar */
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:32px;flex-wrap:wrap}
+.tb-l{flex:1;min-width:280px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.28em;color:var(--coral);text-transform:uppercase;display:inline-flex;align-items:center;gap:14px}
+.eyebrow::before{content:'';width:28px;height:1px;background:var(--coral)}
+.page-title{font-family:'Fraunces',serif;font-weight:200;font-size:clamp(38px,4vw,54px);line-height:1;letter-spacing:-.025em;margin-top:14px;font-variation-settings:"opsz" 144,"SOFT" 30}
+.page-title em{color:var(--coral);font-variation-settings:"opsz" 144,"SOFT" 100}
+.page-meta{margin-top:14px;display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-dim);font-size:13.5px}
+.page-meta>span{display:flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-size:14px}
+.page-meta .dot{width:5px;height:5px;border-radius:50%;background:var(--coral);box-shadow:0 0 8px var(--coral)}
+.page-meta .quota{color:var(--gold);font-style:italic}
+
+.actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;font-size:13px;font-family:inherit;border:1px solid var(--line-strong);background:transparent;color:var(--ink);transition:all .3s}
+.btn:hover{border-color:var(--ink-dim);background:rgba(255,255,255,.03)}
+.btn-primary{background:linear-gradient(115deg,var(--blue),var(--lilac) 50%,var(--coral));color:#0B0B15;border-color:transparent;font-weight:500}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(240,160,156,.24)}
+.btn svg{width:14px;height:14px}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#0F1020 0%,#0E0F18 100%);overflow:hidden;margin-bottom:28px;position:relative}
+.kpi-strip::after{content:'';position:absolute;top:-100px;right:-100px;width:300px;height:300px;background:radial-gradient(circle,rgba(240,160,156,.18),transparent 70%);filter:blur(40px);pointer-events:none}
+.kpi{padding:22px 24px;border-right:1px solid var(--line);position:relative}
+.kpi:last-child{border-right:none}
+.kpi-lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.24em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.kpi-lbl .d{width:6px;height:6px;border-radius:50%}
+.kpi-num{font-family:'Fraunces',serif;font-weight:200;font-size:34px;line-height:1;letter-spacing:-.02em}
+.kpi-num em{color:var(--coral)}
+.kpi-num .of{font-size:14px;color:var(--ink-dim);margin-left:4px}
+.kpi-foot{margin-top:6px;font-size:11.5px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace;letter-spacing:.06em}
+
+/* Group chips */
+.groups{display:flex;gap:10px;overflow-x:auto;padding:4px 0 16px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.groups::-webkit-scrollbar{height:3px}.groups::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:2px}
+.gchip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.025);border:1px solid var(--line);font-size:12.5px;color:var(--ink-dim);white-space:nowrap;transition:all .25s;cursor:pointer;flex-shrink:0}
+.gchip:hover{color:var(--ink);border-color:var(--ink-dim)}
+.gchip.active{background:rgba(240,160,156,.1);border-color:var(--coral);color:var(--ink)}
+.gchip .gd{width:7px;height:7px;border-radius:50%}
+.gchip .gn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;color:var(--ink-faint);padding:1px 6px;background:rgba(255,255,255,.05);border-radius:3px}
+.gchip.active .gn{background:rgba(240,160,156,.18);color:var(--coral)}
+.gchip-add{padding:8px 14px;border:1px dashed var(--line-strong);color:var(--ink-faint);border-radius:999px;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;transition:all .25s}
+.gchip-add:hover{color:var(--coral);border-color:var(--coral)}
+.gchip-add svg{width:12px;height:12px}
+
+/* Toolbar */
+.toolbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.search{flex:1;min-width:240px;display:flex;align-items:center;gap:10px;padding:11px 16px;background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:999px;transition:all .25s}
+.search:focus-within{border-color:var(--coral);background:rgba(240,160,156,.04)}
+.search svg{width:14px;height:14px;color:var(--ink-faint);flex-shrink:0}
+.search input{font-size:13px;flex:1}
+.search input::placeholder{color:var(--ink-faint);font-style:italic;font-family:'Fraunces',serif}
+.search .kbd{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;color:var(--ink-faint);padding:2px 7px;border:1px solid var(--line-strong);border-radius:4px}
+.tb-select{position:relative}
+.tb-select select{padding:11px 36px 11px 14px;background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:999px;font-size:12.5px;color:var(--ink);appearance:none;cursor:pointer;font-family:inherit}
+.tb-select::after{content:'';position:absolute;right:14px;top:50%;width:8px;height:8px;border-right:1.5px solid var(--ink-dim);border-bottom:1.5px solid var(--ink-dim);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+
+/* Bulk action bar */
+.bulk{display:none;align-items:center;gap:14px;padding:12px 18px;background:linear-gradient(115deg,rgba(143,163,217,.1),rgba(184,157,212,.1) 50%,rgba(240,160,156,.12));border:1px solid rgba(240,160,156,.3);border-radius:14px;margin-bottom:14px}
+.bulk.show{display:flex}
+.bulk-count{font-family:'Fraunces',serif;font-size:15px;color:var(--ink)}
+.bulk-count em{color:var(--coral)}
+.bulk-actions{display:flex;gap:8px;margin-left:auto}
+.bulk-btn{padding:7px 14px;border-radius:999px;background:rgba(0,0,0,.2);border:1px solid var(--line-strong);font-size:11.5px;color:var(--ink);transition:all .25s;display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.bulk-btn:hover{background:rgba(0,0,0,.4);border-color:var(--ink-dim)}
+.bulk-btn svg{width:12px;height:12px}
+.bulk-btn.danger{color:var(--red);border-color:rgba(224,138,138,.3)}
+
+/* Table card */
+.tbl-card{background:var(--bg-card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.tbl-head{display:grid;grid-template-columns:36px 56px 1.4fr 1fr 1fr 1fr .9fr 80px;gap:14px;padding:14px 24px;background:rgba(255,255,255,.015);border-bottom:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;align-items:center}
+.tbl-head .th{display:flex;align-items:center;gap:6px;cursor:pointer;transition:color .25s}
+.tbl-head .th:hover{color:var(--ink-dim)}
+.tbl-head .th.sorted{color:var(--coral)}
+.tbl-head .th svg{width:10px;height:10px;opacity:.5}
+.tbl-head .th.sorted svg{opacity:1}
+
+/* Group header row */
+.row-group{display:flex;align-items:center;gap:14px;padding:14px 24px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:2}
+.row-group .gname{font-family:'Fraunces',serif;font-size:15px;letter-spacing:-.005em;display:flex;align-items:center;gap:10px}
+.row-group .gname em{color:var(--coral)}
+.row-group .gd{width:8px;height:8px;border-radius:50%}
+.row-group .gcount{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--ink-faint);text-transform:uppercase}
+.row-group .gactions{margin-left:auto;display:flex;gap:8px}
+.row-group .gactions button{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--ink-faint);text-transform:uppercase;padding:4px 10px;border-radius:5px;border:1px solid var(--line-strong);transition:all .25s}
+.row-group .gactions button:hover{color:var(--coral);border-color:var(--coral)}
+
+/* Guest row */
+.row{display:grid;grid-template-columns:36px 56px 1.4fr 1fr 1fr 1fr .9fr 80px;gap:14px;padding:16px 24px;border-bottom:1px solid var(--line);align-items:center;transition:background .2s;position:relative;cursor:pointer}
+.row:last-child{border-bottom:none}
+.row:hover{background:rgba(255,255,255,.018)}
+.row.selected{background:rgba(240,160,156,.06)}
+.row.selected::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--coral)}
+.cell-check{display:flex;justify-content:center}
+.checkbox{width:16px;height:16px;border:1.5px solid var(--line-strong);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.checkbox:hover{border-color:var(--ink-dim)}
+.checkbox.on{background:var(--coral);border-color:var(--coral)}
+.checkbox.on::after{content:'';width:8px;height:5px;border-left:2px solid #0B0B15;border-bottom:2px solid #0B0B15;transform:rotate(-45deg) translate(1px,-1px)}
+
+.av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:#0B0B15;flex-shrink:0;letter-spacing:-.01em}
+.av.coral{background:linear-gradient(135deg,var(--coral),var(--peach))}
+.av.lilac{background:linear-gradient(135deg,var(--lilac),var(--blue))}
+.av.gold{background:linear-gradient(135deg,var(--gold),var(--peach))}
+.av.green{background:linear-gradient(135deg,var(--green),var(--blue))}
+
+.cell-name .nm{font-size:14px;color:var(--ink);font-weight:400;display:flex;align-items:center;gap:8px}
+.cell-name .nm .vip{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.18em;color:var(--gold);padding:1px 6px;border:1px solid rgba(212,184,150,.3);border-radius:3px;text-transform:uppercase}
+.cell-name .meta{font-size:11.5px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;margin-top:3px}
+
+.gp-tag{display:inline-flex;align-items:center;gap:7px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-size:11.5px;color:var(--ink-dim)}
+.gp-tag .gd{width:6px;height:6px;border-radius:50%}
+
+.contact{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-dim);letter-spacing:.02em}
+.contact .ch{display:flex;align-items:center;gap:8px}
+.contact svg{width:11px;height:11px;opacity:.6;flex-shrink:0}
+
+.status-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.status-pill .sd{width:6px;height:6px;border-radius:50%}
+.status-pill.baru{background:rgba(255,255,255,.04);color:var(--ink-dim)}.status-pill.baru .sd{background:var(--ink-dim)}
+.status-pill.diundang{background:rgba(143,163,217,.08);color:var(--blue)}.status-pill.diundang .sd{background:var(--blue);box-shadow:0 0 6px var(--blue)}
+.status-pill.dibuka{background:rgba(184,157,212,.08);color:var(--lilac)}.status-pill.dibuka .sd{background:var(--lilac);box-shadow:0 0 6px var(--lilac)}
+.status-pill.hadir{background:rgba(126,211,164,.1);color:var(--green)}.status-pill.hadir .sd{background:var(--green);box-shadow:0 0 6px var(--green)}
+.status-pill.tidak{background:rgba(224,138,138,.08);color:var(--red)}.status-pill.tidak .sd{background:var(--red)}
+
+.attend{font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--ink-dim)}
+.attend.yes{color:var(--green)}
+.attend.no{color:var(--red)}
+.attend .pax{font-family:'JetBrains Mono',monospace;font-style:normal;font-size:9.5px;letter-spacing:.16em;color:var(--ink-faint);margin-left:6px;text-transform:uppercase}
+
+.cell-act{display:flex;justify-content:flex-end;gap:4px;opacity:0;transition:opacity .25s}
+.row:hover .cell-act{opacity:1}
+.cell-act button{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--ink-faint);transition:all .2s;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.cell-act button:hover{color:var(--coral);border-color:var(--coral);background:rgba(240,160,156,.06)}
+.cell-act svg{width:13px;height:13px}
+
+/* Pagination */
+.pag{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:rgba(255,255,255,.015);border-top:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.14em;color:var(--ink-faint);text-transform:uppercase}
+.pag .quota-text em{color:var(--coral);font-style:normal}
+.pag-pages{display:flex;gap:4px}
+.pag-pages button{width:30px;height:30px;border-radius:6px;border:1px solid var(--line);font-family:inherit;font-size:11px;color:var(--ink-dim);transition:all .2s;display:flex;align-items:center;justify-content:center}
+.pag-pages button:hover{color:var(--ink);border-color:var(--ink-dim)}
+.pag-pages button.active{background:var(--coral);color:#0B0B15;border-color:var(--coral);font-weight:600}
+
+/* Empty state for empty groups */
+.row-empty{padding:14px 24px 14px 86px;font-size:12px;color:var(--ink-faint);font-style:italic;font-family:'Fraunces',serif;border-bottom:1px solid var(--line)}
+
+/* ============ SIDE DRAWER (guest detail) ============ */
+.drawer{position:fixed;top:0;right:0;height:100vh;width:480px;max-width:100vw;background:var(--bg-1);border-left:1px solid var(--line-strong);transform:translateX(100%);transition:transform .35s var(--ease);z-index:50;display:flex;flex-direction:column;overflow:hidden;box-shadow:-30px 0 80px rgba(0,0,0,.5)}
+.drawer.open{transform:translateX(0)}
+.drawer-bg{position:absolute;top:-150px;right:-150px;width:400px;height:400px;background:radial-gradient(circle,rgba(240,160,156,.12),transparent 70%);filter:blur(60px);pointer-events:none;z-index:0}
+.dr-h{padding:20px 28px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.dr-h-l{display:flex;flex-direction:column;gap:2px}
+.dr-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.26em;color:var(--coral);text-transform:uppercase}
+.dr-h-ttl{font-family:'Fraunces',serif;font-size:18px;font-weight:300;letter-spacing:-.01em}
+.dr-close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .25s}
+.dr-close:hover{color:var(--coral);border-color:var(--coral)}
+.dr-body{flex:1;overflow-y:auto;padding:28px;position:relative;z-index:1}
+.dr-body::-webkit-scrollbar{width:5px}.dr-body::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:3px}
+.dr-hero{display:flex;align-items:center;gap:18px;margin-bottom:28px}
+.dr-hero .av{width:64px;height:64px;font-size:24px}
+.dr-hero h2{font-family:'Fraunces',serif;font-weight:300;font-size:26px;letter-spacing:-.018em;line-height:1.1}
+.dr-hero h2 em{color:var(--coral)}
+.dr-hero .sub{font-size:12px;color:var(--ink-dim);margin-top:6px;display:flex;align-items:center;gap:10px}
+
+.dr-section{margin-bottom:28px}
+.dr-section h3{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.dr-row{display:flex;justify-content:space-between;padding:9px 0;font-size:13px;align-items:center;gap:14px}
+.dr-row .l{color:var(--ink-dim);flex-shrink:0}
+.dr-row .r{font-family:'Fraunces',serif;color:var(--ink);text-align:right}
+.dr-row .r.mono{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.04em}
+
+.dr-link-card{padding:18px;background:linear-gradient(115deg,rgba(143,163,217,.06),rgba(184,157,212,.06) 50%,rgba(240,160,156,.08));border:1px solid var(--line-strong);border-radius:12px;margin-bottom:14px}
+.dr-link-card .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.22em;color:var(--coral);text-transform:uppercase;margin-bottom:10px}
+.dr-link-card .url{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink);word-break:break-all;background:rgba(0,0,0,.3);padding:10px 12px;border-radius:8px;border:1px solid var(--line);margin-bottom:12px}
+.dr-link-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dr-link-actions button{padding:8px 14px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);font-size:11.5px;color:var(--ink);transition:all .25s;display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.dr-link-actions button:hover{background:rgba(255,255,255,.08);border-color:var(--ink-dim)}
+.dr-link-actions button.primary{background:var(--coral);color:#0B0B15;border-color:var(--coral)}
+.dr-link-actions button svg{width:12px;height:12px}
+
+.timeline{position:relative;padding-left:18px}
+.timeline::before{content:'';position:absolute;left:5px;top:8px;bottom:8px;width:1px;background:var(--line-strong)}
+.tl-row{position:relative;padding:8px 0 8px 0;font-size:12.5px}
+.tl-row::before{content:'';position:absolute;left:-17px;top:14px;width:11px;height:11px;border-radius:50%;background:var(--bg-1);border:2px solid var(--line-strong)}
+.tl-row.done::before{background:var(--coral);border-color:var(--coral)}
+.tl-row .tl-time{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:2px}
+.tl-row .tl-text{color:var(--ink-dim)}
+.tl-row .tl-text em{color:var(--coral)}
+.tl-row.done .tl-text strong{color:var(--ink);font-weight:500}
+
+.dr-foot{padding:18px 28px;border-top:1px solid var(--line);display:flex;gap:10px;position:relative;z-index:1}
+.dr-foot .btn{flex:1;justify-content:center;padding:12px}
+
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;opacity:0;pointer-events:none;transition:opacity .3s}
+.drawer.open ~ .drawer-overlay,.drawer-overlay.show{opacity:1;pointer-events:auto}
+
+/* Mobile menu */
+.menu-btn{display:none;position:fixed;top:18px;left:18px;z-index:60;width:42px;height:42px;border-radius:10px;border:1px solid var(--line-strong);background:var(--bg-1);color:var(--ink);align-items:center;justify-content:center}
+
+@media (max-width:1280px){
+  .tbl-head,.row{grid-template-columns:36px 56px 1.4fr 1fr 1fr .9fr 80px}
+  .tbl-head .th-contact,.row .cell-contact{display:none}
+}
+@media (max-width:1080px){
+  .kpi-strip{grid-template-columns:repeat(3,1fr)}
+  .kpi:nth-child(4),.kpi:nth-child(5){border-top:1px solid var(--line)}
+  .kpi:nth-child(3){border-right:none}
+  .kpi:nth-child(5){border-right:none}
+}
+@media (max-width:920px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0;height:100vh;width:280px;transform:translateX(-100%);transition:transform .3s var(--ease)}
+  .side.open{transform:translateX(0)}
+  .side.open ~ .side-overlay{display:block;pointer-events:auto}
+  .menu-btn{display:flex}
+  .main{padding:80px 20px 40px}
+  .kpi-strip{grid-template-columns:repeat(2,1fr)}
+  .kpi{border-right:none;border-bottom:1px solid var(--line)}
+  .tbl-head{display:none}
+  .row{grid-template-columns:36px 1fr 80px;padding:14px 18px}
+  .row .cell-av,.row .cell-group,.row .cell-contact,.row .cell-attend{display:none}
+  .drawer{width:100%}
+}
+</style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" aria-label="Menu">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+</button>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side" id="side">
+    <div class="side-bg"><div class="side-glow"></div></div>
+    <div class="side-inner">
+      <div class="brand">
+        <img src="assets/uwu-logo.svg" alt="UWU" class="brand-logo"/>
+        <div class="brand-couple">Vivi <em>&amp; Roiyan</em></div>
+        <div class="brand-pkg">Rose Gold · Lite</div>
+      </div>
+      <nav class="nav">
+        <a href="UWU Dashboard.html" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V9.5z"/></svg>
+          <span class="lbl">Beranda</span>
+        </a>
+        <a href="UWU Website Editor.html" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg>
+          <span class="lbl">Website Editor</span>
+        </a>
+        <a href="#" class="nav-item active">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0M16 11a3 3 0 100-6M21 20a6 6 0 00-4-5.66"/></svg>
+          <span class="lbl">Tamu</span>
+          <span class="badge">12</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9 6 9-6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7a2 2 0 012-2h14a2 2 0 012 2"/></svg>
+          <span class="lbl">Kirim Undangan</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 20h18M6 20V10M11 20V4M16 20v-7M21 20v-4"/></svg>
+          <span class="lbl">Analytics</span>
+        </a>
+        <div class="nav-sep">Hari H</div>
+        <a href="#" class="nav-item locked">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3 8-8M3 7l9 9 9-9"/></svg>
+          <span class="lbl">Check-in</span>
+          <span class="badge">Segera</span>
+        </a>
+        <a href="#" class="nav-item locked">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 8l9-5 9 5M12 13v8M3 14h18"/></svg>
+          <span class="lbl">Amplop &amp; Hadiah</span>
+          <span class="badge">Segera</span>
+        </a>
+        <div class="nav-sep">Akun</div>
+        <a href="#" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3h.1a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8v.1a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+          <span class="lbl">Pengaturan</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+          <span class="lbl">Paket</span>
+          <span class="badge warn">Upgrade</span>
+        </a>
+      </nav>
+      <div class="side-foot">
+        <a href="#" class="preview-cta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Pratinjau Situs
+        </a>
+        <a href="#" class="logout">Logout</a>
+      </div>
+    </div>
+  </aside>
+  <div class="side-overlay" id="sideOverlay"></div>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="main-bg"><div class="mg mg1"></div><div class="mg mg2"></div></div>
+    <div class="main-inner">
+
+      <!-- Top -->
+      <div class="topbar">
+        <div class="tb-l">
+          <div class="eyebrow">Daftar tamu</div>
+          <h1 class="page-title">Siapa yang akan <em>hadir</em>?</h1>
+          <div class="page-meta">
+            <span><span class="dot"></span>12 dari 100 kuota terisi</span>
+            <span class="quota">— masih 88 kursi tersedia</span>
+            <span>Terakhir diupdate · 5 menit lalu</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 11v6M9 14l3 3 3-3M5 21h14a2 2 0 002-2V8l-6-6H5a2 2 0 00-2 2v15a2 2 0 002 2zM14 2v6h6"/></svg>
+            Template
+          </button>
+          <button class="btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Import Excel
+          </button>
+          <button class="btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+            Kelola Grup
+          </button>
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Tamu
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI strip -->
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--coral);box-shadow:0 0 6px var(--coral)"></span>Total tamu</div>
+          <div class="kpi-num">12<span class="of">/100</span></div>
+          <div class="kpi-foot">paket Lite · 88 sisa</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--blue)"></span>Diundang</div>
+          <div class="kpi-num">10</div>
+          <div class="kpi-foot">via WhatsApp · 2 belum</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--lilac)"></span>Dibuka</div>
+          <div class="kpi-num">7<span class="of">·70%</span></div>
+          <div class="kpi-foot">rata 18 jam setelah dikirim</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--green)"></span>Hadir <em>(RSVP)</em></div>
+          <div class="kpi-num"><em>4</em></div>
+          <div class="kpi-foot">+ 2 plus one · total 6 pax</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--red)"></span>Tidak hadir</div>
+          <div class="kpi-num">1</div>
+          <div class="kpi-foot">2 belum merespons</div>
+        </div>
+      </div>
+
+      <!-- Group chips -->
+      <div class="groups">
+        <div class="gchip active">
+          <span class="gd" style="background:var(--ink-faint)"></span>
+          Semua
+          <span class="gn">12</span>
+        </div>
+        <div class="gchip">
+          <span class="gd" style="background:var(--coral)"></span>
+          Keluarga Inti
+          <span class="gn">04</span>
+        </div>
+        <div class="gchip">
+          <span class="gd" style="background:var(--peach)"></span>
+          Keluarga Besar
+          <span class="gn">02</span>
+        </div>
+        <div class="gchip">
+          <span class="gd" style="background:var(--lilac)"></span>
+          Teman Sekolah
+          <span class="gn">02</span>
+        </div>
+        <div class="gchip">
+          <span class="gd" style="background:var(--blue)"></span>
+          Kantor
+          <span class="gn">02</span>
+        </div>
+        <div class="gchip">
+          <span class="gd" style="background:var(--gold)"></span>
+          Kenalan
+          <span class="gn">01</span>
+        </div>
+        <div class="gchip">
+          <span class="gd" style="background:var(--green)"></span>
+          VIP
+          <span class="gn">01</span>
+        </div>
+        <button class="gchip-add">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          Buat grup baru
+        </button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input placeholder="Cari nama, nomor HP, atau email..."/>
+          <span class="kbd">⌘K</span>
+        </div>
+        <div class="tb-select">
+          <select><option>Semua Status</option><option>Baru</option><option>Diundang</option><option>Dibuka</option><option>Hadir</option><option>Tidak Hadir</option></select>
+        </div>
+        <div class="tb-select">
+          <select><option>Urutkan: Terbaru</option><option>Nama A→Z</option><option>Status</option><option>Grup</option></select>
+        </div>
+        <div class="tb-select">
+          <select><option>Tampilan: Tabel</option><option>Tampilan: Kartu</option><option>Tampilan: Grup</option></select>
+        </div>
+      </div>
+
+      <!-- Bulk -->
+      <div class="bulk" id="bulk">
+        <div class="bulk-count"><em id="bulkN">2</em> tamu dipilih</div>
+        <div class="bulk-actions">
+          <button class="bulk-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7l9 6 9-6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7"/></svg>Kirim Undangan</button>
+          <button class="bulk-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Salin Link</button>
+          <button class="bulk-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>Pindah Grup</button>
+          <button class="bulk-btn danger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>Hapus</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="tbl-card">
+        <div class="tbl-head">
+          <div></div>
+          <div></div>
+          <div class="th sorted">Nama <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 14l5-5 5 5"/></svg></div>
+          <div class="th">Grup</div>
+          <div class="th th-contact">Kontak</div>
+          <div class="th">Status</div>
+          <div class="th">Hadir</div>
+          <div></div>
+        </div>
+
+        <!-- Group: Keluarga Inti -->
+        <div class="row-group">
+          <div class="gname"><span class="gd" style="background:var(--coral)"></span>Keluarga <em>Inti</em></div>
+          <div class="gcount">04 tamu · 4 hadir</div>
+          <div class="gactions"><button>+ Tambah</button><button>Kirim Grup</button></div>
+        </div>
+
+        <div class="row" data-row="1">
+          <div class="cell-check"><div class="checkbox"></div></div>
+          <div class="cell-av"><div class="av coral">VA</div></div>
+          <div class="cell-name">
+            <div class="nm">Vivi Anggraini <span class="vip">VIP</span></div>
+            <div class="meta">vivi.anggraini@gmail.com</div>
+          </div>
+          <div class="cell-group"><span class="gp-tag"><span class="gd" style="background:var(--coral)"></span>Keluarga Inti</span></div>
+          <div class="cell-contact contact"><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>+62 812-3567-0421</div></div>
+          <div class="cell-status"><span class="status-pill hadir"><span class="sd"></span>Hadir</span></div>
+          <div class="cell-attend"><span class="attend yes">Hadir<span class="pax">2 pax</span></span></div>
+          <div class="cell-act">
+            <button title="Kirim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+            <button title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4z"/></svg></button>
+            <button title="Hapus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+          </div>
+        </div>
+
+        <div class="row" data-row="2">
+          <div class="cell-check"><div class="checkbox"></div></div>
+          <div class="cell-av"><div class="av lilac">RP</div></div>
+          <div class="cell-name">
+            <div class="nm">Roiyan Pratama <span class="vip">VIP</span></div>
+            <div class="meta">roiyan.id@gmail.com</div>
+          </div>
+          <div class="cell-group"><span class="gp-tag"><span class="gd" style="background:var(--coral)"></span>Keluarga Inti</span></div>
+          <div class="cell-contact contact"><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>+62 822-3328-0206</div></div>
+          <div class="cell-status"><span class="status-pill hadir"><span class="sd"></span>Hadir</span></div>
+          <div class="cell-attend"><span class="attend yes">Hadir<span class="pax">2 pax</span></span></div>
+          <div class="cell-act">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Group: Teman Sekolah -->
+        <div class="row-group">
+          <div class="gname"><span class="gd" style="background:var(--lilac)"></span>Teman <em>Sekolah</em></div>
+          <div class="gcount">02 tamu · 1 hadir · 1 menunggu</div>
+          <div class="gactions"><button>+ Tambah</button><button>Kirim Grup</button></div>
+        </div>
+
+        <div class="row" data-row="3">
+          <div class="cell-check"><div class="checkbox"></div></div>
+          <div class="cell-av"><div class="av gold">SA</div></div>
+          <div class="cell-name">
+            <div class="nm">Sandra Apriliani</div>
+            <div class="meta">sandra.apr@gmail.com</div>
+          </div>
+          <div class="cell-group"><span class="gp-tag"><span class="gd" style="background:var(--lilac)"></span>Teman Sekolah</span></div>
+          <div class="cell-contact contact"><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>+62 813-2299-1144</div></div>
+          <div class="cell-status"><span class="status-pill hadir"><span class="sd"></span>Hadir</span></div>
+          <div class="cell-attend"><span class="attend yes">Hadir<span class="pax">1 pax</span></span></div>
+          <div class="cell-act">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+          </div>
+        </div>
+
+        <div class="row" data-row="4">
+          <div class="cell-check"><div class="checkbox"></div></div>
+          <div class="cell-av"><div class="av green">DM</div></div>
+          <div class="cell-name">
+            <div class="nm">Dimas Mahendra</div>
+            <div class="meta">dimas.mhd@yahoo.com</div>
+          </div>
+          <div class="cell-group"><span class="gp-tag"><span class="gd" style="background:var(--lilac)"></span>Teman Sekolah</span></div>
+          <div class="cell-contact contact"><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>+62 858-1043-7790</div></div>
+          <div class="cell-status"><span class="status-pill dibuka"><span class="sd"></span>Dibuka</span></div>
+          <div class="cell-attend"><span class="attend">Belum jawab</span></div>
+          <div class="cell-act">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Group: Kantor -->
+        <div class="row-group">
+          <div class="gname"><span class="gd" style="background:var(--blue)"></span>Kantor <em>&amp; Kolega</em></div>
+          <div class="gcount">02 tamu · 1 belum merespons</div>
+          <div class="gactions"><button>+ Tambah</button><button>Kirim Grup</button></div>
+        </div>
+
+        <div class="row" data-row="5">
+          <div class="cell-check"><div class="checkbox"></div></div>
+          <div class="cell-av"><div class="av lilac">AN</div></div>
+          <div class="cell-name">
+            <div class="nm">Andi Nugraha</div>
+            <div class="meta">andi.n@company.id</div>
+          </div>
+          <div class="cell-group"><span class="gp-tag"><span class="gd" style="background:var(--blue)"></span>Kantor</span></div>
+          <div class="cell-contact contact"><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>+62 819-3401-2244</div></div>
+          <div class="cell-status"><span class="status-pill diundang"><span class="sd"></span>Diundang</span></div>
+          <div class="cell-attend"><span class="attend">Menunggu</span></div>
+          <div class="cell-act">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+          </div>
+        </div>
+
+        <div class="row" data-row="6">
+          <div class="cell-check"><div class="checkbox"></div></div>
+          <div class="cell-av"><div class="av coral">RF</div></div>
+          <div class="cell-name">
+            <div class="nm">Rizki Firmansyah</div>
+            <div class="meta">rizki.f@company.id</div>
+          </div>
+          <div class="cell-group"><span class="gp-tag"><span class="gd" style="background:var(--blue)"></span>Kantor</span></div>
+          <div class="cell-contact contact"><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>+62 877-9821-5566</div></div>
+          <div class="cell-status"><span class="status-pill tidak"><span class="sd"></span>Tidak Hadir</span></div>
+          <div class="cell-attend"><span class="attend no">Tidak hadir</span></div>
+          <div class="cell-act">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Group: Kenalan -->
+        <div class="row-group">
+          <div class="gname"><span class="gd" style="background:var(--gold)"></span>Kenalan</div>
+          <div class="gcount">01 tamu · belum diundang</div>
+          <div class="gactions"><button>+ Tambah</button><button>Kirim Grup</button></div>
+        </div>
+
+        <div class="row" data-row="7">
+          <div class="cell-check"><div class="checkbox"></div></div>
+          <div class="cell-av"><div class="av gold">FA</div></div>
+          <div class="cell-name">
+            <div class="nm">Farida Khairunnisa</div>
+            <div class="meta">farida.k@gmail.com</div>
+          </div>
+          <div class="cell-group"><span class="gp-tag"><span class="gd" style="background:var(--gold)"></span>Kenalan</span></div>
+          <div class="cell-contact contact"><div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>—</div></div>
+          <div class="cell-status"><span class="status-pill baru"><span class="sd"></span>Baru</span></div>
+          <div class="cell-attend"><span class="attend">—</span></div>
+          <div class="cell-act">
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 113 3L7 19l-4 1 1-4z"/></svg></button>
+            <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pag">
+          <div class="quota-text">Menampilkan <em>7</em> dari <em>12</em> tamu · paket Lite (100 tamu)</div>
+          <div class="pag-pages">
+            <button>‹</button>
+            <button class="active">1</button>
+            <button>2</button>
+            <button>›</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============ DRAWER (Guest detail) ============ -->
+<aside class="drawer" id="drawer">
+  <div class="drawer-bg"></div>
+  <div class="dr-h">
+    <div class="dr-h-l">
+      <div class="dr-eyebrow">Detail Tamu · #00342</div>
+      <div class="dr-h-ttl">Profil <em>tamu</em></div>
+    </div>
+    <button class="dr-close" id="drClose">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="dr-body">
+    <div class="dr-hero">
+      <div class="av coral">SA</div>
+      <div>
+        <h2>Sandra <em>Apriliani</em></h2>
+        <div class="sub"><span class="status-pill hadir"><span class="sd"></span>Hadir</span><span style="color:var(--ink-faint)">·</span><span style="color:var(--ink-dim);font-size:11.5px;font-family:'JetBrains Mono',monospace;letter-spacing:.06em">1 PAX</span></div>
+      </div>
+    </div>
+
+    <div class="dr-section">
+      <h3>Kontak</h3>
+      <div class="dr-row"><span class="l">Nomor HP</span><span class="r mono">+62 813-2299-1144</span></div>
+      <div class="dr-row"><span class="l">Email</span><span class="r mono">sandra.apr@gmail.com</span></div>
+      <div class="dr-row"><span class="l">Grup</span><span class="r"><span class="gp-tag"><span class="gd" style="background:var(--lilac)"></span>Teman Sekolah</span></span></div>
+      <div class="dr-row"><span class="l">Panggilan</span><span class="r">Sandra</span></div>
+    </div>
+
+    <div class="dr-section">
+      <h3>Link Undangan</h3>
+      <div class="dr-link-card">
+        <div class="lbl">Link Personal · Trackable</div>
+        <div class="url">vivi-roiyan.uwu.id/?to=sandra-apr-x9k2</div>
+        <div class="dr-link-actions">
+          <button class="primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>Salin Link</button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>WhatsApp</button>
+          <button><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 5L2 7"/></svg>Email</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="dr-section">
+      <h3>Aktivitas</h3>
+      <div class="timeline">
+        <div class="tl-row done">
+          <div class="tl-time">25 Apr · 09:14</div>
+          <div class="tl-text"><strong>RSVP</strong> dikirim — <em>Hadir untuk 1 orang</em>. Pesan: "Tidak sabar lihat kalian bahagia ❤"</div>
+        </div>
+        <div class="tl-row done">
+          <div class="tl-time">24 Apr · 22:08</div>
+          <div class="tl-text">Undangan <strong>dibuka</strong> — <em>3 kali</em> · device iPhone</div>
+        </div>
+        <div class="tl-row done">
+          <div class="tl-time">24 Apr · 19:31</div>
+          <div class="tl-text">Pesan WhatsApp <strong>terkirim</strong> · template <em>"Formal Umum"</em></div>
+        </div>
+        <div class="tl-row done">
+          <div class="tl-time">24 Apr · 19:30</div>
+          <div class="tl-text">Ditambahkan ke grup <em>Teman Sekolah</em></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dr-section">
+      <h3>Catatan Pribadi</h3>
+      <div style="padding:14px;background:rgba(255,255,255,.02);border:1px dashed var(--line-strong);border-radius:10px;font-style:italic;font-family:'Fraunces',serif;font-size:13.5px;color:var(--ink-dim);line-height:1.5">Sandra adalah sahabat Vivi sejak SMA. Tolong tempatkan di meja keluarga inti, dia akan datang sendiri dari Bandung pagi hari. Tidak makan seafood.</div>
+    </div>
+  </div>
+  <div class="dr-foot">
+    <button class="btn">Edit Detail</button>
+    <button class="btn btn-primary" style="flex:1.4">Kirim Ulang Undangan</button>
+  </div>
+</aside>
+<div class="drawer-overlay" id="drOverlay"></div>
+
+<script>
+// Selection state
+const checks=document.querySelectorAll('.checkbox');
+const bulk=document.getElementById('bulk'),bulkN=document.getElementById('bulkN');
+function updateBulk(){
+  const n=document.querySelectorAll('.checkbox.on').length;
+  bulkN.textContent=n;
+  bulk.classList.toggle('show',n>0);
+  document.querySelectorAll('.row').forEach(r=>{
+    const c=r.querySelector('.checkbox');
+    r.classList.toggle('selected',c&&c.classList.contains('on'));
+  });
+}
+checks.forEach(c=>c.addEventListener('click',e=>{
+  e.stopPropagation();
+  c.classList.toggle('on');
+  updateBulk();
+}));
+
+// Group chips
+document.querySelectorAll('.gchip').forEach(g=>g.addEventListener('click',()=>{
+  document.querySelectorAll('.gchip').forEach(x=>x.classList.remove('active'));
+  g.classList.add('active');
+}));
+
+// Open drawer on row click
+const drawer=document.getElementById('drawer'),drOverlay=document.getElementById('drOverlay');
+document.querySelectorAll('.row').forEach(r=>{
+  r.addEventListener('click',e=>{
+    if(e.target.closest('.checkbox')||e.target.closest('.cell-act'))return;
+    drawer.classList.add('open');
+    drOverlay.classList.add('show');
+  });
+});
+document.getElementById('drClose').addEventListener('click',()=>{drawer.classList.remove('open');drOverlay.classList.remove('show')});
+drOverlay.addEventListener('click',()=>{drawer.classList.remove('open');drOverlay.classList.remove('show')});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){drawer.classList.remove('open');drOverlay.classList.remove('show')}});
+
+// Mobile menu
+const side=document.getElementById('side');
+document.getElementById('menuBtn').addEventListener('click',()=>side.classList.toggle('open'));
+document.getElementById('sideOverlay').addEventListener('click',()=>side.classList.remove('open'));
+</script>
+</body>
+</html>

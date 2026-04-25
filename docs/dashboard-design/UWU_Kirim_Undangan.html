@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>UWU — Kirim Undangan · Vivi &amp; Roiyan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..700,30..100;1,9..144,200..700,30..100&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#06060B;--bg-1:#0C0C15;--bg-2:#13141F;--bg-card:#0E0F18;
+  --ink:#EDE8DE;--ink-dim:#9E9A95;--ink-faint:#4A4850;
+  --line:rgba(237,232,222,.07);--line-strong:rgba(237,232,222,.16);
+  --blue:#8FA3D9;--lilac:#B89DD4;--coral:#F0A09C;--peach:#F4B8A3;--gold:#D4B896;--green:#7ED3A4;
+  --wa:#25D366;--red:#E08A8A;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%}
+body{background:var(--bg-0);color:var(--ink);font-family:'Inter',sans-serif;font-weight:300;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+em{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100}
+a{color:inherit;text-decoration:none}button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font-family:inherit;color:inherit;background:transparent;border:none;outline:none}
+
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* SIDEBAR */
+.side{position:sticky;top:0;height:100vh;background:var(--bg-1);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:24px 18px;overflow:hidden;z-index:30}
+.side-glow{position:absolute;width:300px;height:300px;border-radius:50%;filter:blur(110px);opacity:.1;background:var(--coral);top:-80px;left:-80px}
+.side-inner{position:relative;z-index:2;display:flex;flex-direction:column;height:100%}
+.brand{padding:8px 12px 20px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand-logo{height:30px;width:auto;display:block;margin-bottom:12px}
+.brand-couple{font-family:'Fraunces',serif;font-size:16px;font-weight:300;line-height:1.1;letter-spacing:-.01em}
+.brand-couple em{color:var(--coral)}
+.brand-pkg{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-top:6px;display:flex;align-items:center;gap:8px}
+.brand-pkg::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+.nav::-webkit-scrollbar{display:none}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink-dim);font-size:13px;transition:all .25s var(--ease);position:relative}
+.nav-item:hover{color:var(--ink);background:rgba(255,255,255,.025)}
+.nav-item.active{color:var(--ink);background:linear-gradient(90deg,rgba(240,160,156,.12),rgba(240,160,156,0));border-left:2px solid var(--coral);padding-left:12px}
+.nav-item .ico{width:17px;height:17px;flex-shrink:0;opacity:.7}
+.nav-item.active .ico{opacity:1;color:var(--coral)}
+.nav-item .lbl{flex:1}
+.nav-item .badge{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--ink-faint)}
+.nav-item.active .badge{background:rgba(240,160,156,.16);color:var(--coral)}
+.nav-item .badge.warn{background:rgba(244,184,163,.12);color:var(--peach)}
+.nav-item.locked{opacity:.55}
+.nav-sep{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;padding:18px 14px 8px}
+.side-foot{padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.preview-cta{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);color:var(--ink);font-size:12.5px;transition:all .25s}
+.preview-cta:hover{background:rgba(255,255,255,.08)}
+.logout{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;padding:8px}
+.side-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:29;display:none;pointer-events:none}
+
+/* MAIN */
+.main{padding:36px 44px 64px;position:relative;min-width:0}
+.main-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.main-bg .mg{position:absolute;border-radius:50%;filter:blur(130px);opacity:.06}
+.main-bg .mg1{width:520px;height:520px;background:var(--lilac);top:-120px;right:-100px}
+.main-bg .mg2{width:380px;height:380px;background:var(--peach);bottom:-100px;left:30%}
+.main-inner{position:relative;z-index:1}
+
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:28px;flex-wrap:wrap}
+.tb-l{flex:1;min-width:280px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.28em;color:var(--coral);text-transform:uppercase;display:inline-flex;align-items:center;gap:14px}
+.eyebrow::before{content:'';width:28px;height:1px;background:var(--coral)}
+.page-title{font-family:'Fraunces',serif;font-weight:200;font-size:clamp(38px,4vw,54px);line-height:1;letter-spacing:-.025em;margin-top:14px;font-variation-settings:"opsz" 144,"SOFT" 30}
+.page-title em{color:var(--coral);font-variation-settings:"opsz" 144,"SOFT" 100}
+.page-meta{margin-top:14px;color:var(--ink-dim);font-size:13.5px;font-family:'Fraunces',serif;font-style:italic;max-width:680px;line-height:1.55}
+
+.actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;font-size:13px;font-family:inherit;border:1px solid var(--line-strong);background:transparent;color:var(--ink);transition:all .3s}
+.btn:hover{border-color:var(--ink-dim);background:rgba(255,255,255,.03)}
+.btn-primary{background:linear-gradient(115deg,var(--blue),var(--lilac) 50%,var(--coral));color:#0B0B15;border-color:transparent;font-weight:500}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(240,160,156,.24)}
+.btn-wa{background:var(--wa);color:#fff;border-color:var(--wa);font-weight:500}
+.btn-wa:hover{background:#1eb957;box-shadow:0 10px 30px rgba(37,211,102,.3)}
+.btn svg{width:14px;height:14px}
+
+/* Publish warning */
+.publish-warn{display:flex;align-items:center;gap:18px;padding:18px 22px;background:linear-gradient(115deg,rgba(244,184,163,.08),rgba(240,160,156,.08));border:1px solid rgba(244,184,163,.25);border-radius:14px;margin-bottom:24px}
+.publish-warn .icn{width:40px;height:40px;border-radius:50%;background:rgba(244,184,163,.12);display:flex;align-items:center;justify-content:center;color:var(--peach);flex-shrink:0}
+.publish-warn .icn svg{width:18px;height:18px}
+.publish-warn .txt{flex:1}
+.publish-warn .ttl{font-family:'Fraunces',serif;font-size:16px;color:var(--ink)}
+.publish-warn .sub{font-size:12.5px;color:var(--ink-dim);margin-top:3px}
+
+/* Tabs */
+.tabs{display:flex;gap:4px;padding:4px;background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:999px;width:fit-content;margin-bottom:24px}
+.tab{padding:9px 22px;border-radius:999px;font-size:12.5px;color:var(--ink-dim);transition:all .25s;display:inline-flex;align-items:center;gap:8px}
+.tab:hover{color:var(--ink)}
+.tab.active{background:#0B0B15;color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.tab .cnt{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--ink-faint)}
+.tab.active .cnt{background:rgba(240,160,156,.16);color:var(--coral)}
+
+/* Layout grid */
+.layout{display:grid;grid-template-columns:1fr 360px;gap:28px}
+
+/* Card base */
+.card{background:var(--bg-card);border:1px solid var(--line);border-radius:18px;padding:26px;position:relative;overflow:hidden}
+.card-h{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:22px;flex-wrap:wrap}
+.card-h .tl{font-family:'Fraunces',serif;font-size:22px;font-weight:300;letter-spacing:-.01em}
+.card-h .tl em{color:var(--coral)}
+.card-h .sub{font-size:12px;color:var(--ink-dim);margin-top:4px;font-family:'Fraunces',serif;font-style:italic}
+.card-num{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.card-num::before{content:'';width:24px;height:1px;background:var(--coral)}
+
+/* AI generator card */
+.ai-card{background:linear-gradient(135deg,#0F1024 0%,#150F1E 50%,#0F1020 100%);border:1px solid rgba(184,157,212,.2);border-radius:18px;padding:26px;margin-bottom:24px;position:relative;overflow:hidden}
+.ai-glow{position:absolute;top:-100px;right:-100px;width:340px;height:340px;background:radial-gradient(circle,rgba(184,157,212,.18),transparent 70%);filter:blur(40px);pointer-events:none}
+.ai-glow2{position:absolute;bottom:-100px;left:-100px;width:280px;height:280px;background:radial-gradient(circle,rgba(143,163,217,.15),transparent 70%);filter:blur(40px);pointer-events:none}
+.ai-inner{position:relative;z-index:1}
+.ai-h{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:8px;flex-wrap:wrap}
+.ai-h-l{display:flex;align-items:center;gap:14px}
+.ai-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--lilac),var(--blue));display:flex;align-items:center;justify-content:center;color:#0B0B15;position:relative}
+.ai-icon::after{content:'';position:absolute;inset:-3px;border-radius:14px;border:1px solid rgba(184,157,212,.3);animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(1)}50%{opacity:.7;transform:scale(1.05)}}
+.ai-icon svg{width:20px;height:20px}
+.ai-eb{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.26em;color:var(--lilac);text-transform:uppercase;margin-bottom:3px}
+.ai-ttl{font-family:'Fraunces',serif;font-size:22px;font-weight:300;letter-spacing:-.01em;line-height:1.1}
+.ai-ttl em{color:var(--lilac)}
+.ai-sub{font-size:12.5px;color:var(--ink-dim);margin-top:6px;font-family:'Fraunces',serif;font-style:italic}
+.ai-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:rgba(184,157,212,.1);border:1px solid rgba(184,157,212,.25);font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;color:var(--lilac);text-transform:uppercase}
+.ai-chip .d{width:5px;height:5px;border-radius:50%;background:var(--lilac);box-shadow:0 0 6px var(--lilac);animation:pulse 1.6s infinite}
+
+.ai-controls{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:22px}
+.ai-field{display:flex;flex-direction:column;gap:8px}
+.ai-field label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase}
+.ai-pills{display:flex;flex-wrap:wrap;gap:6px}
+.ai-pill{padding:6px 11px;border-radius:999px;background:rgba(255,255,255,.025);border:1px solid var(--line);font-size:11.5px;color:var(--ink-dim);transition:all .2s;cursor:pointer}
+.ai-pill:hover{color:var(--ink);border-color:var(--ink-dim)}
+.ai-pill.on{background:rgba(184,157,212,.12);border-color:var(--lilac);color:var(--lilac)}
+.ai-prompt{margin-top:18px;padding:14px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:12px}
+.ai-prompt input{flex:1;font-size:13px;font-family:'Fraunces',serif;font-style:italic;color:var(--ink)}
+.ai-prompt input::placeholder{color:var(--ink-faint)}
+.ai-gen{padding:10px 20px;border-radius:999px;background:linear-gradient(115deg,var(--lilac),var(--blue));color:#0B0B15;font-size:12px;font-weight:500;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;transition:all .25s}
+.ai-gen:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(184,157,212,.3)}
+.ai-gen svg{width:13px;height:13px}
+
+/* Channel selector */
+.channels{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px}
+.ch-card{padding:16px 18px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:14px;cursor:pointer;transition:all .25s;position:relative}
+.ch-card:hover{border-color:var(--ink-dim);background:rgba(255,255,255,.04)}
+.ch-card.on{background:linear-gradient(115deg,rgba(143,163,217,.08),rgba(240,160,156,.08));border-color:var(--coral);box-shadow:0 0 0 1px var(--coral)}
+.ch-card.on::after{content:'';position:absolute;top:14px;right:14px;width:14px;height:14px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 4px rgba(240,160,156,.2)}
+.ch-icn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;margin-bottom:8px}
+.ch-icn.wa{background:rgba(37,211,102,.1);color:var(--wa)}
+.ch-icn.em{background:rgba(143,163,217,.1);color:var(--blue)}
+.ch-icn.bo{background:linear-gradient(135deg,rgba(37,211,102,.12),rgba(143,163,217,.12));color:var(--lilac)}
+.ch-icn svg{width:18px;height:18px}
+.ch-ttl{font-size:14px;color:var(--ink);margin-bottom:2px}
+.ch-mode{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--ink-faint);text-transform:uppercase}
+
+/* WA Business upgrade banner */
+.upgrade{display:flex;gap:18px;padding:20px 22px;background:linear-gradient(115deg,rgba(212,184,150,.06),rgba(244,184,163,.08) 60%,rgba(240,160,156,.06));border:1px solid rgba(212,184,150,.22);border-radius:14px;margin-bottom:22px;position:relative;overflow:hidden}
+.upgrade::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(212,184,150,.15),transparent 70%);filter:blur(30px)}
+.upgrade .uic{position:relative;z-index:1;width:42px;height:42px;border-radius:10px;background:rgba(212,184,150,.14);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0}
+.upgrade .uic svg{width:20px;height:20px}
+.upgrade .uc{position:relative;z-index:1;flex:1}
+.upgrade .uc-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.upgrade .uc-ttl{font-family:'Fraunces',serif;font-size:17px;color:var(--ink);font-weight:300}
+.upgrade .uc-ttl em{color:var(--gold)}
+.upgrade .uc-tag{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.22em;padding:2px 8px;border-radius:4px;background:rgba(212,184,150,.14);color:var(--gold);text-transform:uppercase;border:1px solid rgba(212,184,150,.3)}
+.upgrade .uc-sub{font-size:12.5px;color:var(--ink-dim);margin-bottom:14px;line-height:1.6}
+.upgrade .uc-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-bottom:14px}
+.upgrade .uc-list .li{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink-dim)}
+.upgrade .uc-list .li svg{width:13px;height:13px;color:var(--green);flex-shrink:0;margin-top:2px}
+.upgrade .uc-cta{display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:999px;background:linear-gradient(115deg,var(--gold),var(--peach));color:#0B0B15;font-size:12px;font-weight:500;transition:all .25s}
+.upgrade .uc-cta:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(212,184,150,.3)}
+
+/* Form fields */
+.field{margin-bottom:22px}
+.field-label{display:flex;align-items:center;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:10px}
+.field-label .hint{color:var(--ink-faint);font-family:'Fraunces',serif;font-style:italic;font-size:11px;letter-spacing:0;text-transform:none}
+
+/* Template select */
+.tpl-select{position:relative}
+.tpl-row{display:flex;align-items:center;gap:14px;padding:14px 18px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:all .25s}
+.tpl-row:hover{border-color:var(--ink-dim)}
+.tpl-row.open{border-color:var(--coral)}
+.tpl-icon{width:32px;height:32px;border-radius:8px;background:rgba(37,211,102,.1);color:var(--wa);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tpl-icon svg{width:16px;height:16px}
+.tpl-info{flex:1;min-width:0}
+.tpl-name{font-size:14px;color:var(--ink)}
+.tpl-name .pre{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink-faint);letter-spacing:.06em;margin-right:8px}
+.tpl-desc{font-size:11.5px;color:var(--ink-dim);margin-top:3px;font-family:'Fraunces',serif;font-style:italic}
+.tpl-arr{color:var(--ink-faint);transition:transform .25s}
+.tpl-row.open .tpl-arr{transform:rotate(180deg)}
+.tpl-list{margin-top:8px;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:12px;padding:8px;display:none;max-height:340px;overflow-y:auto}
+.tpl-list.show{display:block}
+.tpl-opt{display:flex;align-items:flex-start;gap:12px;padding:11px 12px;border-radius:8px;cursor:pointer;transition:background .2s}
+.tpl-opt:hover{background:rgba(255,255,255,.03)}
+.tpl-opt.on{background:rgba(240,160,156,.08)}
+.tpl-opt-icn{width:26px;height:26px;border-radius:7px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink-dim);font-family:'JetBrains Mono',monospace;font-size:10px}
+.tpl-opt-icn.wa{background:rgba(37,211,102,.1);color:var(--wa)}
+.tpl-opt-icn.em{background:rgba(143,163,217,.1);color:var(--blue)}
+.tpl-opt-info .nm{font-size:13px;color:var(--ink)}
+.tpl-opt-info .desc{font-size:11px;color:var(--ink-dim);margin-top:2px}
+.tpl-opt-tag{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;padding:2px 7px;border-radius:4px;text-transform:uppercase;flex-shrink:0;align-self:center}
+.tpl-opt-tag.ai{background:rgba(184,157,212,.12);color:var(--lilac)}
+.tpl-opt-tag.fav{background:rgba(244,184,163,.12);color:var(--peach)}
+
+/* Placeholder toolbar */
+.ph-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:10px 10px 0 0;border-bottom:none;flex-wrap:wrap}
+.ph-toolbar .lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;margin-right:6px}
+.ph-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;background:rgba(143,163,217,.08);border:1px solid rgba(143,163,217,.25);font-size:11px;color:var(--blue);transition:all .2s;cursor:pointer}
+.ph-chip:hover{background:rgba(143,163,217,.16)}
+.ph-chip svg{width:11px;height:11px}
+.ph-chip.coral{background:rgba(240,160,156,.08);border-color:rgba(240,160,156,.25);color:var(--coral)}
+.ph-chip.coral:hover{background:rgba(240,160,156,.16)}
+.ph-chip.lilac{background:rgba(184,157,212,.08);border-color:rgba(184,157,212,.25);color:var(--lilac)}
+.ph-chip.gold{background:rgba(212,184,150,.08);border-color:rgba(212,184,150,.25);color:var(--gold)}
+.ph-chip.green{background:rgba(126,211,164,.08);border-color:rgba(126,211,164,.25);color:var(--green)}
+
+/* Composer */
+.composer{padding:18px 16px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:0 0 10px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.7;color:var(--ink-dim);min-height:260px;white-space:pre-wrap;word-break:break-word;overflow-x:auto}
+.composer .var{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:6px;background:rgba(143,163,217,.12);color:var(--blue);font-family:'Inter',sans-serif;font-size:11.5px;font-weight:500;margin:0 1px;letter-spacing:0;border:1px solid rgba(143,163,217,.2)}
+.composer .var.coral{background:rgba(240,160,156,.12);color:var(--coral);border-color:rgba(240,160,156,.2)}
+.composer .var.lilac{background:rgba(184,157,212,.12);color:var(--lilac);border-color:rgba(184,157,212,.2)}
+.composer .var.gold{background:rgba(212,184,150,.12);color:var(--gold);border-color:rgba(212,184,150,.2)}
+.composer .var.green{background:rgba(126,211,164,.12);color:var(--green);border-color:rgba(126,211,164,.2)}
+.composer .var::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.7}
+.composer .lnk{display:inline-block;padding:2px 9px;border-radius:6px;background:rgba(143,163,217,.15);color:var(--blue);font-family:'Inter',sans-serif;font-size:11.5px;letter-spacing:0;border:1px solid rgba(143,163,217,.25)}
+.composer-foot{font-size:11px;color:var(--ink-faint);font-family:'Fraunces',serif;font-style:italic;margin-top:8px;padding-left:4px}
+.composer-foot em{color:var(--peach)}
+.composer-status{display:flex;justify-content:flex-end;margin-top:6px}
+.wa-bubble{width:30px;height:30px;border-radius:50%;background:var(--wa);display:flex;align-items:center;justify-content:center;color:#fff}
+.wa-bubble svg{width:14px;height:14px}
+
+/* Audience */
+.aud-list{display:flex;flex-direction:column;gap:10px}
+.aud-row{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:all .25s}
+.aud-row:hover{border-color:var(--ink-dim)}
+.aud-row.on{border-color:var(--coral);background:rgba(240,160,156,.04)}
+.aud-radio{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line-strong);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.aud-row.on .aud-radio{border-color:var(--coral)}
+.aud-row.on .aud-radio::after{content:'';width:9px;height:9px;border-radius:50%;background:var(--coral)}
+.aud-info{flex:1}
+.aud-nm{font-size:13.5px;color:var(--ink)}
+.aud-desc{font-size:11.5px;color:var(--ink-dim);margin-top:3px;font-family:'Fraunces',serif;font-style:italic}
+.aud-count{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase;flex-shrink:0;margin-top:3px}
+.aud-count em{color:var(--coral);font-style:normal}
+
+.aud-sub{margin-top:12px;padding:14px 16px;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:10px;display:none}
+.aud-sub.show{display:block}
+.aud-sub-grid{display:flex;flex-wrap:wrap;gap:8px}
+.aud-sub-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.025);border:1px solid var(--line);font-size:11.5px;color:var(--ink-dim);cursor:pointer;transition:all .2s}
+.aud-sub-chip:hover{color:var(--ink)}
+.aud-sub-chip.on{background:rgba(240,160,156,.08);border-color:var(--coral);color:var(--coral)}
+.aud-sub-chip .gd{width:6px;height:6px;border-radius:50%}
+.aud-sub-chip .gn{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.06em;background:rgba(255,255,255,.05);padding:1px 5px;border-radius:3px;color:var(--ink-faint)}
+
+/* Preview pesan */
+.preview-card{background:linear-gradient(135deg,#0F1024 0%,#0E0F18 100%);border:1px solid var(--line-strong);border-radius:16px;padding:20px;margin-top:18px}
+.preview-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:12px}
+.preview-l{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.preview-l .av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--coral),var(--peach));color:#0B0B15;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-size:13px}
+.preview-l .nm{font-size:13px;color:var(--ink)}
+.preview-l .nm em{color:var(--coral)}
+.preview-l .ph{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-faint);letter-spacing:.04em}
+.preview-l .stat{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.preview-l .stat.warn{background:rgba(240,160,156,.12);color:var(--coral)}
+.preview-l .stat.new{background:rgba(126,211,164,.12);color:var(--green)}
+.preview-r{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.preview-r em{color:var(--coral);font-style:normal}
+.preview-body{padding:16px;background:rgba(7,7,11,.6);border:1px solid var(--line);border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.65;color:var(--ink-dim);max-height:240px;overflow-y:auto;white-space:pre-wrap}
+.preview-body::-webkit-scrollbar{width:4px}.preview-body::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:2px}
+.preview-body strong{color:var(--ink);font-weight:400}
+.preview-body em{color:var(--coral)}
+.preview-nav{display:flex;align-items:center;justify-content:space-between;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
+.preview-nav button{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);transition:all .2s}
+.preview-nav button:hover{color:var(--ink);border-color:var(--ink-dim)}
+.preview-nav button:disabled{opacity:.4;cursor:not-allowed}
+
+/* Conflict warn */
+.conflict{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:rgba(244,184,163,.05);border:1px solid rgba(244,184,163,.22);border-radius:12px;margin-top:18px}
+.conflict .icn{width:30px;height:30px;border-radius:8px;background:rgba(244,184,163,.12);display:flex;align-items:center;justify-content:center;color:var(--peach);flex-shrink:0}
+.conflict .icn svg{width:14px;height:14px}
+.conflict .ct{flex:1}
+.conflict .ct-l{font-size:13px;color:var(--ink);font-family:'Fraunces',serif}
+.conflict .ct-l em{color:var(--peach)}
+.conflict .opt{margin-top:10px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.conflict .opt-cb{width:16px;height:16px;border:1.5px solid var(--peach);border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.conflict .opt-cb.on{background:var(--peach);border-color:var(--peach)}
+.conflict .opt-cb.on::after{content:'';width:8px;height:5px;border-left:2px solid #0B0B15;border-bottom:2px solid #0B0B15;transform:rotate(-45deg) translate(1px,-1px)}
+.conflict .opt-l{flex:1}
+.conflict .opt-t{font-size:12.5px;color:var(--ink)}
+.conflict .opt-d{font-size:11px;color:var(--ink-dim);margin-top:2px;font-family:'Fraunces',serif;font-style:italic}
+
+/* Submit bar */
+.submit-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:24px;padding:18px 22px;background:linear-gradient(115deg,rgba(143,163,217,.06),rgba(240,160,156,.06));border:1px solid var(--line-strong);border-radius:14px;flex-wrap:wrap}
+.submit-l .sb-h{font-family:'Fraunces',serif;font-size:15px;color:var(--ink)}
+.submit-l .sb-h em{color:var(--coral)}
+.submit-l .sb-s{font-size:11.5px;color:var(--ink-dim);margin-top:3px;font-family:'Fraunces',serif;font-style:italic}
+.submit-act{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Right column: Riwayat */
+.right-col{display:flex;flex-direction:column;gap:18px;position:sticky;top:36px;align-self:flex-start;max-height:calc(100vh - 72px);overflow-y:auto}
+.right-col::-webkit-scrollbar{width:4px}.right-col::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+.rt-card{background:var(--bg-card);border:1px solid var(--line);border-radius:16px;padding:20px}
+.rt-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.rt-h .ttl{font-family:'Fraunces',serif;font-size:17px;font-weight:300}
+.rt-h .ttl em{color:var(--coral)}
+.rt-h .all{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.18em;color:var(--ink-faint);text-transform:uppercase;display:inline-flex;align-items:center;gap:4px;transition:color .2s}
+.rt-h .all:hover{color:var(--coral)}
+.rt-list{display:flex;flex-direction:column;gap:10px}
+.rt-item{padding:14px;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:all .25s}
+.rt-item:hover{border-color:var(--ink-dim);background:rgba(255,255,255,.04)}
+.rt-item-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.rt-meta{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--ink-faint);text-transform:uppercase}
+.rt-meta .ch{display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:4px;background:rgba(37,211,102,.12);color:var(--wa)}
+.rt-meta .ch.em{background:rgba(143,163,217,.12);color:var(--blue)}
+.rt-state{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.18em;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.rt-state.done{background:rgba(126,211,164,.12);color:var(--green)}
+.rt-state.prog{background:rgba(244,184,163,.12);color:var(--peach)}
+.rt-state.draft{background:rgba(255,255,255,.05);color:var(--ink-faint)}
+.rt-name{font-size:13px;color:var(--ink);margin-bottom:6px}
+.rt-bar-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.rt-bar{flex:1;height:3px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden}
+.rt-fill{height:100%;background:var(--green);border-radius:2px}
+.rt-fill.peach{background:linear-gradient(90deg,var(--peach),var(--gold))}
+.rt-foot{display:flex;justify-content:space-between;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
+.rt-foot .det{color:var(--coral)}
+
+/* Tips */
+.tips-card{background:linear-gradient(135deg,rgba(184,157,212,.06),rgba(143,163,217,.06));border:1px solid rgba(184,157,212,.18);border-radius:16px;padding:20px}
+.tips-h{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.26em;color:var(--lilac);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tips-h::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--lilac);box-shadow:0 0 8px var(--lilac)}
+.tips-ttl{font-family:'Fraunces',serif;font-size:18px;font-weight:300;letter-spacing:-.01em;line-height:1.2;margin-bottom:10px}
+.tips-ttl em{color:var(--lilac)}
+.tips-li{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink-dim);padding:6px 0;font-family:'Fraunces',serif;line-height:1.5}
+.tips-li::before{content:'—';color:var(--lilac);flex-shrink:0}
+
+/* ============ MANUAL SEND DRAWER ============ */
+.send-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:60;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(8px)}
+.send-overlay.show{opacity:1;pointer-events:auto}
+.send-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);width:min(720px,92vw);max-height:92vh;background:var(--bg-1);border:1px solid var(--line-strong);border-radius:24px;z-index:61;display:flex;flex-direction:column;overflow:hidden;opacity:0;pointer-events:none;transition:all .35s var(--ease);box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.send-modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.send-modal-bg{position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(37,211,102,.1),transparent 70%);filter:blur(40px);pointer-events:none;z-index:0}
+
+.send-h{padding:22px 28px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.send-h-l{display:flex;flex-direction:column;gap:2px}
+.send-eb{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.26em;color:var(--coral);text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.send-eb .live{width:6px;height:6px;border-radius:50%;background:var(--wa);box-shadow:0 0 8px var(--wa);animation:pulse 1.6s infinite}
+.send-h-ttl{font-family:'Fraunces',serif;font-size:22px;font-weight:300;letter-spacing:-.01em}
+.send-h-ttl em{color:var(--coral)}
+.send-close{width:36px;height:36px;border-radius:50%;border:1px solid var(--line-strong);display:flex;align-items:center;justify-content:center;color:var(--ink-dim);transition:all .25s}
+.send-close:hover{color:var(--coral);border-color:var(--coral)}
+
+/* Progress strip */
+.send-progress{padding:14px 28px;background:rgba(0,0,0,.25);border-bottom:1px solid var(--line);position:relative;z-index:1}
+.send-progress-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.send-progress-c{font-family:'Fraunces',serif;font-size:14px;color:var(--ink)}
+.send-progress-c em{color:var(--coral);font-size:18px;font-weight:300}
+.send-progress-meta{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
+.send-progress-meta .it{display:flex;align-items:center;gap:5px}
+.send-progress-meta .d{width:5px;height:5px;border-radius:50%}
+.send-bar{height:5px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;display:flex}
+.send-bar .seg{height:100%;transition:all .3s}
+.send-bar .seg.done{background:linear-gradient(90deg,var(--green),var(--wa))}
+.send-bar .seg.now{background:var(--coral);box-shadow:0 0 12px rgba(240,160,156,.5)}
+.send-bar .seg.skip{background:var(--peach)}
+
+/* Body */
+.send-body{padding:24px 28px;flex:1;overflow-y:auto;position:relative;z-index:1}
+.send-body::-webkit-scrollbar{width:5px}.send-body::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:3px}
+
+.guest-card{padding:22px;background:rgba(255,255,255,.025);border:1px solid var(--line-strong);border-radius:16px;margin-bottom:18px;position:relative}
+.guest-card::before{content:'';position:absolute;top:0;left:24px;right:24px;height:1px;background:linear-gradient(90deg,transparent,var(--coral),transparent)}
+.guest-row{display:flex;align-items:flex-start;gap:18px;margin-bottom:18px}
+.guest-av{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--coral),var(--peach));color:#0B0B15;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-size:24px;flex-shrink:0}
+.guest-info .nm{font-family:'Fraunces',serif;font-size:22px;font-weight:300;letter-spacing:-.01em;line-height:1.1;display:flex;align-items:center;gap:10px}
+.guest-info .nm em{color:var(--coral)}
+.guest-info .vip{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.18em;color:var(--gold);padding:1px 6px;border:1px solid rgba(212,184,150,.3);border-radius:3px;text-transform:uppercase}
+.guest-info .meta{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.guest-info .meta .it{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);letter-spacing:.04em}
+.guest-info .meta .it svg{width:11px;height:11px;opacity:.7}
+.guest-info .meta .gp{padding:3px 9px;border-radius:999px;background:rgba(184,157,212,.08);border:1px solid rgba(184,157,212,.2);color:var(--lilac);font-size:10.5px;font-family:'Inter',sans-serif;letter-spacing:0;display:inline-flex;align-items:center;gap:6px}
+.guest-info .meta .gp .gd{width:5px;height:5px;border-radius:50%;background:var(--lilac)}
+
+.send-history{padding:14px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;font-size:11.5px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.send-history .l{display:flex;align-items:center;gap:8px}
+.send-history .l svg{width:13px;height:13px;color:var(--peach)}
+.send-history .l em{color:var(--peach);font-style:normal}
+.send-history .last{color:var(--ink-faint)}
+
+/* Message preview block */
+.send-msg{padding:18px;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:14px;margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:var(--ink-dim);max-height:200px;overflow-y:auto;white-space:pre-wrap}
+.send-msg::-webkit-scrollbar{width:4px}.send-msg::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:2px}
+.send-msg strong{color:var(--ink);font-weight:400}
+.send-msg em{color:var(--coral)}
+
+/* Quick actions */
+.send-qa{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.qa{padding:14px 16px;border-radius:12px;border:1px solid var(--line-strong);background:rgba(255,255,255,.02);display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink);transition:all .25s}
+.qa:hover{background:rgba(255,255,255,.05);border-color:var(--ink-dim);transform:translateY(-1px)}
+.qa svg{width:14px;height:14px;flex-shrink:0}
+.qa.wa{background:var(--wa);color:#fff;border-color:var(--wa);font-weight:500}
+.qa.wa:hover{background:#1eb957;box-shadow:0 10px 24px rgba(37,211,102,.3)}
+.qa-l{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.qa-l .qm{font-size:11px;opacity:.85;font-family:'Fraunces',serif;font-style:italic}
+.qa.copy{color:var(--blue)}
+.qa.email{color:var(--blue)}
+
+/* Note */
+.send-note{margin-bottom:16px}
+.send-note label{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:8px}
+.send-note textarea{width:100%;padding:12px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:10px;font-size:12.5px;color:var(--ink);resize:none;min-height:60px;font-family:'Fraunces',serif;font-style:italic}
+.send-note textarea::placeholder{color:var(--ink-faint)}
+.send-note textarea:focus{border-color:var(--coral)}
+
+/* Footer */
+.send-foot{padding:18px 28px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;position:relative;z-index:1;background:rgba(0,0,0,.3)}
+.send-foot-l{display:flex;gap:8px}
+.send-foot-l .btn{padding:9px 16px;font-size:11.5px}
+.send-foot-r{display:flex;gap:10px;align-items:center}
+.send-mark-skip{padding:9px 16px;border-radius:999px;background:transparent;border:1px solid var(--line-strong);font-size:11.5px;color:var(--ink-dim);transition:all .25s;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.send-mark-skip:hover{color:var(--peach);border-color:var(--peach)}
+.send-mark-done{padding:11px 20px;border-radius:999px;background:linear-gradient(115deg,var(--green),var(--wa));color:#fff;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:8px;border:none;transition:all .25s}
+.send-mark-done:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(37,211,102,.3)}
+.send-mark-done svg{width:13px;height:13px}
+
+.send-keys{display:flex;gap:14px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
+.send-keys .k{display:inline-flex;align-items:center;gap:4px}
+.send-keys .kbd{font-size:9px;padding:1px 5px;border:1px solid var(--line-strong);border-radius:3px;color:var(--ink-dim)}
+
+.menu-btn{display:none;position:fixed;top:18px;left:18px;z-index:60;width:42px;height:42px;border-radius:10px;border:1px solid var(--line-strong);background:var(--bg-1);color:var(--ink);align-items:center;justify-content:center}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);padding:14px 22px;background:var(--bg-1);border:1px solid var(--green);border-radius:999px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink);z-index:80;opacity:0;transition:all .3s var(--ease);box-shadow:0 20px 40px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:16px;height:16px;color:var(--green)}
+
+@media (max-width:1280px){
+  .layout{grid-template-columns:1fr}
+  .right-col{position:static;max-height:none}
+}
+@media (max-width:1080px){
+  .ai-controls{grid-template-columns:repeat(2,1fr)}
+  .upgrade .uc-list{grid-template-columns:1fr}
+  .channels{grid-template-columns:1fr}
+  .send-qa{grid-template-columns:1fr}
+}
+@media (max-width:920px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0;height:100vh;width:280px;transform:translateX(-100%);transition:transform .3s var(--ease)}
+  .side.open{transform:translateX(0)}
+  .side.open ~ .side-overlay{display:block;pointer-events:auto}
+  .menu-btn{display:flex}
+  .main{padding:80px 20px 40px}
+}
+</style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" aria-label="Menu">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+</button>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="side" id="side">
+    <div class="side-bg"><div class="side-glow"></div></div>
+    <div class="side-inner">
+      <div class="brand">
+        <img src="assets/uwu-logo.svg" alt="UWU" class="brand-logo"/>
+        <div class="brand-couple">Vivi <em>&amp; Roiyan</em></div>
+        <div class="brand-pkg">Rose Gold · Lite</div>
+      </div>
+      <nav class="nav">
+        <a href="UWU Dashboard.html" class="nav-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V9.5z"/></svg><span class="lbl">Beranda</span></a>
+        <a href="UWU Website Editor.html" class="nav-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg><span class="lbl">Website Editor</span></a>
+        <a href="UWU Tamu.html" class="nav-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0M16 11a3 3 0 100-6M21 20a6 6 0 00-4-5.66"/></svg><span class="lbl">Tamu</span><span class="badge">12</span></a>
+        <a href="#" class="nav-item active"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9 6 9-6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7a2 2 0 012-2h14a2 2 0 012 2"/></svg><span class="lbl">Kirim Undangan</span></a>
+        <a href="UWU Analytics.html" class="nav-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 20h18M6 20V10M11 20V4M16 20v-7M21 20v-4"/></svg><span class="lbl">Analytics</span></a>
+        <div class="nav-sep">Hari H</div>
+        <a href="#" class="nav-item locked"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3 8-8M3 7l9 9 9-9"/></svg><span class="lbl">Check-in</span><span class="badge">Segera</span></a>
+        <a href="#" class="nav-item locked"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 8l9-5 9 5M12 13v8M3 14h18"/></svg><span class="lbl">Amplop &amp; Hadiah</span><span class="badge">Segera</span></a>
+        <div class="nav-sep">Akun</div>
+        <a href="#" class="nav-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3h.1a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8v.1a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg><span class="lbl">Pengaturan</span></a>
+        <a href="#" class="nav-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg><span class="lbl">Paket</span><span class="badge warn">Upgrade</span></a>
+      </nav>
+      <div class="side-foot">
+        <a href="#" class="preview-cta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>Pratinjau Situs</a>
+        <a href="#" class="logout">Logout</a>
+      </div>
+    </div>
+  </aside>
+  <div class="side-overlay" id="sideOverlay"></div>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-bg"><div class="mg mg1"></div><div class="mg mg2"></div></div>
+    <div class="main-inner">
+
+      <!-- Top -->
+      <div class="topbar">
+        <div class="tb-l">
+          <div class="eyebrow">Broadcast · Personal &amp; Massal</div>
+          <h1 class="page-title">Sampaikan kabar <em>bahagia</em> kalian.</h1>
+          <div class="page-meta">Kirim via WhatsApp atau Email — manual satu-per-satu, atau otomatis lewat WhatsApp Business API. Setiap pesan dipersonalisasi otomatis.</div>
+        </div>
+        <div class="actions">
+          <button class="btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg>Kelola Tamu</button>
+        </div>
+      </div>
+
+      <!-- Publish warning -->
+      <div class="publish-warn">
+        <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div>
+        <div class="txt">
+          <div class="ttl">Undangan belum dipublikasikan</div>
+          <div class="sub">Tamu yang menerima link akan melihat halaman 404. Publikasikan dulu di <em>Pengaturan</em> agar undangan bisa dibuka.</div>
+        </div>
+        <button class="btn btn-primary" style="font-size:12px;padding:9px 16px">Buka Pengaturan →</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active">Kirim Baru</button>
+        <button class="tab">Riwayat <span class="cnt">8</span></button>
+        <button class="tab">Antrian Manual <span class="cnt">3</span></button>
+        <button class="tab">Template AI <span class="cnt">12</span></button>
+      </div>
+
+      <div class="layout">
+
+        <!-- LEFT COLUMN -->
+        <div>
+
+          <!-- AI generator -->
+          <div class="ai-card">
+            <div class="ai-glow"></div><div class="ai-glow2"></div>
+            <div class="ai-inner">
+              <div class="ai-h">
+                <div class="ai-h-l">
+                  <div class="ai-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg>
+                  </div>
+                  <div>
+                    <div class="ai-eb">UWU Studio · Powered by AI</div>
+                    <div class="ai-ttl">Tulis pesan <em>otomatis</em> dari preferensi kalian.</div>
+                  </div>
+                </div>
+                <div class="ai-chip"><span class="d"></span>Beta · Gratis 5×/hari</div>
+              </div>
+              <div class="ai-sub">Pilih nada, gaya bahasa, dan budaya — UWU akan menyusun pesan undangan yang terasa personal, tanpa template kaku.</div>
+
+              <div class="ai-controls">
+                <div class="ai-field">
+                  <label>Nada</label>
+                  <div class="ai-pills">
+                    <span class="ai-pill on">Formal</span>
+                    <span class="ai-pill">Hangat</span>
+                    <span class="ai-pill">Santai</span>
+                    <span class="ai-pill">Puitis</span>
+                  </div>
+                </div>
+                <div class="ai-field">
+                  <label>Bahasa</label>
+                  <div class="ai-pills">
+                    <span class="ai-pill on">Indonesia</span>
+                    <span class="ai-pill">Jawa Halus</span>
+                    <span class="ai-pill">Sunda</span>
+                    <span class="ai-pill">English</span>
+                  </div>
+                </div>
+                <div class="ai-field">
+                  <label>Budaya / Acara</label>
+                  <div class="ai-pills">
+                    <span class="ai-pill on">Islami</span>
+                    <span class="ai-pill">Jawa</span>
+                    <span class="ai-pill">Umum</span>
+                    <span class="ai-pill">Kristiani</span>
+                  </div>
+                </div>
+                <div class="ai-field">
+                  <label>Panjang</label>
+                  <div class="ai-pills">
+                    <span class="ai-pill">Singkat</span>
+                    <span class="ai-pill on">Sedang</span>
+                    <span class="ai-pill">Panjang</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ai-prompt">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--lilac);flex-shrink:0"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/></svg>
+                <input placeholder="Tambahan instruksi, mis: 'singgung kebersamaan saat SMA'..." value="Tambahkan kalimat doa ringkas di akhir, panggil tamu dengan 'Bapak/Ibu/Saudara/i'."/>
+                <button class="ai-gen">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+                  Generate
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compose card -->
+          <div class="card">
+            <div class="card-h">
+              <div>
+                <div class="card-num">N° 01 — Buat broadcast</div>
+                <div class="tl">Pilih kanal &amp; <em>susun pesan</em></div>
+              </div>
+            </div>
+
+            <!-- Channel -->
+            <div class="field">
+              <div class="field-label"><span>Kanal pengiriman</span><span class="hint">Bisa pilih satu atau gabungan</span></div>
+              <div class="channels">
+                <div class="ch-card on">
+                  <div class="ch-icn wa"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.7.1-.9-.4-1.7-.9-2.4-1.6-.6-.6-1.1-1.3-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.5-.4-.5-.6-.5h-.6c-.2 0-.5.2-.7.4-.7.7-1.1 1.6-1.1 2.6 0 .8.3 1.6.7 2.3 1.4 2 3.1 3.6 5.2 4.6.5.2.9.4 1.4.5.6.2 1.2.2 1.8.1.7-.1 1.4-.6 1.8-1.2.2-.4.2-.7.1-.8 0-.1-.2-.2-.5-.3M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.9L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2"/></svg></div>
+                  <div class="ch-ttl">WhatsApp</div>
+                  <div class="ch-mode">Mode Manual</div>
+                </div>
+                <div class="ch-card">
+                  <div class="ch-icn em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 5L2 7"/></svg></div>
+                  <div class="ch-ttl">Email</div>
+                  <div class="ch-mode">Mode Otomatis</div>
+                </div>
+                <div class="ch-card">
+                  <div class="ch-icn bo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 4a2 2 0 100 4 2 2 0 000-4z"/></svg></div>
+                  <div class="ch-ttl">Keduanya</div>
+                  <div class="ch-mode">Email + WA</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upgrade banner -->
+            <div class="upgrade">
+              <div class="uic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L4 7v6c0 5 3.5 9 8 9s8-4 8-9V7l-8-5z"/><path d="M9 12l2 2 4-4"/></svg>
+              </div>
+              <div class="uc">
+                <div class="uc-h">
+                  <div class="uc-ttl">Upgrade ke <em>WhatsApp Business API</em></div>
+                  <div class="uc-tag">Rekomendasi</div>
+                </div>
+                <div class="uc-sub">Saat ini Anda mengirim WhatsApp manual — buka tab WA per tamu satu-per-satu. Upgrade ke paket Lite ke atas, undangan terkirim otomatis dari server kami, dengan tracking delivery &amp; read receipt.</div>
+                <div class="uc-list">
+                  <div class="li"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>Kirim ratusan WA tanpa buka tab satu-satu</div>
+                  <div class="li"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>Jadwalkan pengiriman sesuai waktu Anda</div>
+                  <div class="li"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>Status delivery &amp; read receipt per tamu</div>
+                  <div class="li"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L20 7"/></svg>Auto-retry kalau nomor offline</div>
+                </div>
+                <button class="uc-cta">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+                  Lihat Paket — mulai Rp 79K
+                </button>
+              </div>
+            </div>
+
+            <!-- Template select -->
+            <div class="field">
+              <div class="field-label"><span>Template pesan</span><span class="hint">12 template tersedia · 4 dari AI Studio</span></div>
+              <div class="tpl-select">
+                <div class="tpl-row open" id="tplToggle">
+                  <div class="tpl-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.7.1-.9-.4-1.7-.9-2.4-1.6-.6-.6-1.1-1.3-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.5-.4-.5-.6-.5h-.6c-.2 0-.5.2-.7.4-.7.7-1.1 1.6-1.1 2.6 0 .8.3 1.6.7 2.3 1.4 2 3.1 3.6 5.2 4.6.5.2.9.4 1.4.5.6.2 1.2.2 1.8.1.7-.1 1.4-.6 1.8-1.2.2-.4.2-.7.1-.8 0-.1-.2-.2-.5-.3M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.9L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2"/></svg></div>
+                  <div class="tpl-info">
+                    <div class="tpl-name"><span class="pre">WA</span>Formal — Umum</div>
+                    <div class="tpl-desc">Nada formal netral. Cocok untuk undangan resmi tanpa tone keagamaan.</div>
+                  </div>
+                  <div class="tpl-arr"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+                </div>
+                <div class="tpl-list show">
+                  <div class="tpl-opt on"><div class="tpl-opt-icn wa">WA</div><div class="tpl-opt-info"><div class="nm">Formal — Umum</div><div class="desc">Nada netral untuk semua kalangan</div></div><div class="tpl-opt-tag fav">Default</div></div>
+                  <div class="tpl-opt"><div class="tpl-opt-icn wa">WA</div><div class="tpl-opt-info"><div class="nm">Formal — Islami</div><div class="desc">Dengan salam &amp; doa</div></div></div>
+                  <div class="tpl-opt"><div class="tpl-opt-icn wa">WA</div><div class="tpl-opt-info"><div class="nm">Formal — Jawa Halus</div><div class="desc">Krama inggil, untuk sesepuh</div></div></div>
+                  <div class="tpl-opt"><div class="tpl-opt-icn wa">WA</div><div class="tpl-opt-info"><div class="nm">Hangat — Teman Dekat</div><div class="desc">Lebih casual, sapaan akrab</div></div></div>
+                  <div class="tpl-opt"><div class="tpl-opt-icn wa">WA</div><div class="tpl-opt-info"><div class="nm">Singkat — Reminder H-3</div><div class="desc">Untuk pengingat sebelum hari H</div></div><div class="tpl-opt-tag ai">AI</div></div>
+                  <div class="tpl-opt"><div class="tpl-opt-icn em">EM</div><div class="tpl-opt-info"><div class="nm">Email — Formal Eksklusif</div><div class="desc">Untuk kolega &amp; rekan kerja</div></div></div>
+                  <div class="tpl-opt"><div class="tpl-opt-icn em">EM</div><div class="tpl-opt-info"><div class="nm">Email — Save the Date</div><div class="desc">Pemberitahuan awal sebelum undangan resmi</div></div><div class="tpl-opt-tag ai">AI</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Compose -->
+            <div class="field">
+              <div class="field-label"><span>Isi Pesan</span><span class="hint">Variabel akan diisi otomatis per tamu</span></div>
+
+              <div class="ph-toolbar">
+                <span class="lbl">Sisipkan:</span>
+                <span class="ph-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Nama Tamu</span>
+                <span class="ph-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Panggilan</span>
+                <span class="ph-chip coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Mempelai Wanita</span>
+                <span class="ph-chip coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Mempelai Pria</span>
+                <span class="ph-chip lilac"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Tanggal</span>
+                <span class="ph-chip gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Lokasi</span>
+                <span class="ph-chip green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Link Undangan</span>
+              </div>
+
+              <div class="composer">
+Dengan hormat,
+
+Bersama ini kami mengundang Bapak/Ibu/Saudara/i <span class="var">Nama Tamu</span> untuk menghadiri acara pernikahan kami:
+
+<span class="var coral">Mempelai Wanita</span>  &amp;  <span class="var coral">Mempelai Pria</span>
+
+🗓  <span class="var lilac">Tanggal</span>
+📍  <span class="var gold">Lokasi</span>
+
+Detail lengkap dan konfirmasi kehadiran dapat diakses melalui tautan berikut:
+<span class="lnk">Link Undangan</span>
+
+Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.
+
+Hormat kami,
+<span class="var coral">Mempelai Wanita</span>  &amp;  <span class="var coral">Mempelai Pria</span>
+              </div>
+              <div class="composer-status"><div class="wa-bubble"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.7.1-.9-.4-1.7-.9-2.4-1.6-.6-.6-1.1-1.3-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.5-.4-.5-.6-.5h-.6c-.2 0-.5.2-.7.4-.7.7-1.1 1.6-1.1 2.6 0 .8.3 1.6.7 2.3 1.4 2 3.1 3.6 5.2 4.6.5.2.9.4 1.4.5.6.2 1.2.2 1.8.1.7-.1 1.4-.6 1.8-1.2.2-.4.2-.7.1-.8 0-.1-.2-.2-.5-.3M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.9L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2"/></svg></div></div>
+              <div class="composer-foot">Tap variabel di toolbar untuk menyisipkan. Setiap variabel jadi atomik — <em>Backspace satu kali menghapus seluruh variabel</em>, tidak dipotong sebagian.</div>
+            </div>
+
+            <!-- Audience -->
+            <div class="field">
+              <div class="field-label"><span>Audiens · Pilih penerima</span><span class="hint">Total 12 tamu memiliki kontak</span></div>
+              <div class="aud-list">
+                <div class="aud-row on" data-aud="all">
+                  <div class="aud-radio"></div>
+                  <div class="aud-info">
+                    <div class="aud-nm">Semua tamu</div>
+                    <div class="aud-desc">Kirim ke seluruh daftar tamu yang memiliki kontak</div>
+                  </div>
+                  <div class="aud-count"><em>12</em> tamu</div>
+                </div>
+                <div class="aud-row" data-aud="group">
+                  <div class="aud-radio"></div>
+                  <div class="aud-info">
+                    <div class="aud-nm">Berdasarkan grup</div>
+                    <div class="aud-desc">Pilih grup tamu tertentu — Keluarga, Teman, Kantor, dst.</div>
+                  </div>
+                  <div class="aud-count">PILIH GRUP</div>
+                </div>
+                <div class="aud-row" data-aud="status">
+                  <div class="aud-radio"></div>
+                  <div class="aud-info">
+                    <div class="aud-nm">Berdasarkan status RSVP</div>
+                    <div class="aud-desc">Misal kirim ulang ke tamu yang belum buka, atau reminder ke yang belum RSVP</div>
+                  </div>
+                  <div class="aud-count">PILIH STATUS</div>
+                </div>
+              </div>
+
+              <div class="aud-sub" id="audSubGroup">
+                <div class="aud-sub-grid">
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--coral)"></span>Keluarga Inti<span class="gn">04</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--peach)"></span>Keluarga Besar<span class="gn">02</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--lilac)"></span>Teman Sekolah<span class="gn">02</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--blue)"></span>Kantor<span class="gn">02</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--gold)"></span>Kenalan<span class="gn">01</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--green)"></span>VIP<span class="gn">01</span></span>
+                </div>
+              </div>
+              <div class="aud-sub" id="audSubStatus">
+                <div class="aud-sub-grid">
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--ink-faint)"></span>Belum diundang<span class="gn">02</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--blue)"></span>Sudah diundang, belum buka<span class="gn">02</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--lilac)"></span>Dibuka, belum RSVP<span class="gn">03</span></span>
+                  <span class="aud-sub-chip"><span class="gd" style="background:var(--green)"></span>Sudah RSVP Hadir<span class="gn">04</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Preview pesan -->
+            <div class="field">
+              <div class="field-label"><span>Preview pesan</span><span class="hint">Lihat isi pesan untuk tamu tertentu</span></div>
+              <div class="preview-card">
+                <div class="preview-h">
+                  <div class="preview-l">
+                    <div class="av">R</div>
+                    <div>
+                      <div class="nm">Untuk: <em>Roiyan</em> <span style="color:var(--ink-dim);font-size:11.5px">(Roiyan &amp; Adlen)</span></div>
+                      <div class="ph">+62 822-3328-0206</div>
+                    </div>
+                    <div class="stat warn">Pernah dikirim 2×</div>
+                  </div>
+                  <div class="preview-r"><em>2</em> dari <em>12</em></div>
+                </div>
+                <div class="preview-body">Dengan hormat,
+
+Bersama ini kami mengundang Bapak/Ibu/Saudara/i <strong>Roiyan Pratama</strong> untuk menghadiri acara pernikahan kami:
+
+<strong>Vivi Anggraini  &amp;  Roiyan Pratama</strong>
+
+🗓  <strong>Sabtu, 25 April 2026</strong>
+📍  <strong>Gedung Cendana, Yogyakarta</strong>
+
+Detail lengkap dan konfirmasi kehadiran dapat diakses melalui tautan berikut:
+https://uwu-beta.vercel.app/vivi-roiyan-tnod7x?to=4571b30e-4782-498c-9e0c-848534432706
+
+Merupakan suatu kehormatan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir.
+
+Hormat kami,
+<strong>Vivi  &amp;  Roiyan</strong></div>
+                <div class="preview-nav">
+                  <button>← Sebelumnya</button>
+                  <span><em style="color:var(--coral);font-style:normal">2</em>/12 — Roiyan Pratama</span>
+                  <button>Berikutnya →</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Conflict warn -->
+            <div class="conflict">
+              <div class="icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg></div>
+              <div class="ct">
+                <div class="ct-l"><em>2 tamu</em> sudah pernah diundang sebelumnya.</div>
+                <div class="opt">
+                  <div class="opt-cb on"></div>
+                  <div class="opt-l">
+                    <div class="opt-t">Sertakan yang sudah diundang (2 tamu)</div>
+                    <div class="opt-d">Secara default, broadcast hanya dikirim ke tamu yang belum pernah diundang.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit bar -->
+            <div class="submit-bar">
+              <div class="submit-l">
+                <div class="sb-h">Siap kirim ke <em>12 tamu</em> via WhatsApp manual</div>
+                <div class="sb-s">Estimasi waktu ±18 menit · ~90 detik per tamu</div>
+              </div>
+              <div class="submit-act">
+                <button class="btn">Simpan Draft</button>
+                <button class="btn">Jadwalkan</button>
+                <button class="btn btn-wa" id="startSendBtn">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.7.1-.9-.4-1.7-.9-2.4-1.6-.6-.6-1.1-1.3-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.5-.4-.5-.6-.5h-.6c-.2 0-.5.2-.7.4-.7.7-1.1 1.6-1.1 2.6 0 .8.3 1.6.7 2.3 1.4 2 3.1 3.6 5.2 4.6.5.2.9.4 1.4.5.6.2 1.2.2 1.8.1.7-.1 1.4-.6 1.8-1.2.2-.4.2-.7.1-.8 0-.1-.2-.2-.5-.3M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.9L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2"/></svg>
+                  Mulai Kirim WhatsApp →
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="right-col">
+
+          <!-- Riwayat -->
+          <div class="rt-card">
+            <div class="rt-h">
+              <div class="ttl">Riwayat <em>terbaru</em></div>
+              <a href="#" class="all">Lihat semua →</a>
+            </div>
+            <div class="rt-list">
+              <div class="rt-item">
+                <div class="rt-item-h">
+                  <div class="rt-meta"><span class="ch">WA</span>25 APR · 09.30</div>
+                  <div class="rt-state done">Selesai</div>
+                </div>
+                <div class="rt-name">wa-umum-formal</div>
+                <div class="rt-bar-row">2/2 terkirim<div class="rt-bar"><div class="rt-fill" style="width:100%"></div></div>100%</div>
+                <div class="rt-foot"><span>Reminder H-3 · Keluarga Inti</span><span class="det">Detail →</span></div>
+              </div>
+              <div class="rt-item">
+                <div class="rt-item-h">
+                  <div class="rt-meta"><span class="ch">WA</span>25 APR · 08.26</div>
+                  <div class="rt-state done">Selesai</div>
+                </div>
+                <div class="rt-name">wa-umum-formal</div>
+                <div class="rt-bar-row">2/2 terkirim<div class="rt-bar"><div class="rt-fill" style="width:100%"></div></div>100%</div>
+                <div class="rt-foot"><span>Manual · Teman Sekolah</span><span class="det">Detail →</span></div>
+              </div>
+              <div class="rt-item">
+                <div class="rt-item-h">
+                  <div class="rt-meta"><span class="ch">WA</span>25 APR · 08.18</div>
+                  <div class="rt-state prog">Berlangsung</div>
+                </div>
+                <div class="rt-name">wa-islami-formal</div>
+                <div class="rt-bar-row">3/8 terkirim<div class="rt-bar"><div class="rt-fill peach" style="width:38%"></div></div>38%</div>
+                <div class="rt-foot"><span>Manual · Keluarga Besar</span><span class="det">Lanjutkan →</span></div>
+              </div>
+              <div class="rt-item">
+                <div class="rt-item-h">
+                  <div class="rt-meta"><span class="ch em">EM</span>25 APR · 08.16</div>
+                  <div class="rt-state done">Selesai</div>
+                </div>
+                <div class="rt-name">email-formal-eksklusif</div>
+                <div class="rt-bar-row">2/2 terkirim<div class="rt-bar"><div class="rt-fill" style="width:100%"></div></div>100%</div>
+                <div class="rt-foot"><span>Auto · Kantor</span><span class="det">Detail →</span></div>
+              </div>
+              <div class="rt-item">
+                <div class="rt-item-h">
+                  <div class="rt-meta"><span class="ch">WA</span>25 APR · 08.14</div>
+                  <div class="rt-state draft">Draft</div>
+                </div>
+                <div class="rt-name">save-the-date-ai</div>
+                <div class="rt-bar-row">0/12 terkirim<div class="rt-bar"><div class="rt-fill" style="width:0%"></div></div>—</div>
+                <div class="rt-foot"><span>Belum dimulai</span><span class="det">Edit →</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips -->
+          <div class="tips-card">
+            <div class="tips-h">Tips · UWU Studio</div>
+            <div class="tips-ttl">Kirim sore, <em>jangan</em> tengah malam.</div>
+            <div class="tips-li">Engagement tertinggi pukul <em>19.00–21.00</em> waktu lokal tamu.</div>
+            <div class="tips-li">Personalisasi nama panggilan menaikkan response rate <em>+34%</em>.</div>
+            <div class="tips-li">Untuk yang belum buka, kirim reminder paling cepat <em>48 jam</em> kemudian.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============ MANUAL SEND MODAL ============ -->
+<div class="send-overlay" id="sendOverlay"></div>
+<div class="send-modal" id="sendModal">
+  <div class="send-modal-bg"></div>
+  <div class="send-h">
+    <div class="send-h-l">
+      <div class="send-eb"><span class="live"></span>Mode Manual · Kirim WhatsApp Berurutan</div>
+      <div class="send-h-ttl">Tamu ke-<em>3</em> dari 12</div>
+    </div>
+    <button class="send-close" id="sendClose">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <!-- Progress -->
+  <div class="send-progress">
+    <div class="send-progress-h">
+      <div class="send-progress-c"><em>3</em>/12 sedang berjalan</div>
+      <div class="send-progress-meta">
+        <span class="it"><span class="d" style="background:var(--green)"></span>2 selesai</span>
+        <span class="it"><span class="d" style="background:var(--peach)"></span>0 dilewati</span>
+        <span class="it"><span class="d" style="background:var(--coral)"></span>1 sekarang</span>
+        <span class="it"><span class="d" style="background:var(--ink-faint)"></span>9 menunggu</span>
+      </div>
+    </div>
+    <div class="send-bar">
+      <div class="seg done" style="width:16.6%"></div>
+      <div class="seg now" style="width:8.3%"></div>
+      <div class="seg" style="width:75%;background:rgba(255,255,255,.05)"></div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="send-body">
+    <div class="guest-card">
+      <div class="guest-row">
+        <div class="guest-av">SA</div>
+        <div class="guest-info">
+          <div class="nm">Sandra <em>Apriliani</em><span class="vip">VIP</span></div>
+          <div class="meta">
+            <span class="it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>+62 813-2299-1144</span>
+            <span class="gp"><span class="gd"></span>Teman Sekolah</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="send-history">
+        <div class="l">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1015 0 9 9 0 00-9-9V0M3 12L0 9M3 12l3-3"/></svg>
+          Sudah pernah dikirim <em>2×</em> sebelumnya
+        </div>
+        <div class="last">Terakhir: 24 Apr 19.31 · template "Formal Umum"</div>
+      </div>
+    </div>
+
+    <!-- Personalized message -->
+    <div class="send-msg">Dengan hormat,
+
+Bersama ini kami mengundang Bapak/Ibu/Saudara/i <strong>Sandra Apriliani</strong> untuk menghadiri acara pernikahan kami:
+
+<strong>Vivi Anggraini  &amp;  Roiyan Pratama</strong>
+
+🗓  <strong>Sabtu, 25 April 2026</strong>
+📍  <strong>Gedung Cendana, Yogyakarta</strong>
+
+Detail lengkap dan konfirmasi kehadiran dapat diakses melalui tautan berikut:
+https://uwu-beta.vercel.app/vivi-roiyan?to=sandra-apr-x9k2
+
+Hormat kami,
+<strong>Vivi  &amp;  Roiyan</strong></div>
+
+    <!-- Quick actions -->
+    <div class="send-qa">
+      <button class="qa wa" id="qaWA">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.7.1-.9-.4-1.7-.9-2.4-1.6-.6-.6-1.1-1.3-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.5-.4-.5-.6-.5h-.6c-.2 0-.5.2-.7.4-.7.7-1.1 1.6-1.1 2.6 0 .8.3 1.6.7 2.3 1.4 2 3.1 3.6 5.2 4.6.5.2.9.4 1.4.5.6.2 1.2.2 1.8.1.7-.1 1.4-.6 1.8-1.2.2-.4.2-.7.1-.8 0-.1-.2-.2-.5-.3M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.9L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2"/></svg>
+        <div class="qa-l">
+          <span>Buka WhatsApp</span>
+          <span class="qm">tab baru · pesan sudah disiapkan</span>
+        </div>
+      </button>
+      <button class="qa copy" id="qaCopy">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Salin Pesan
+      </button>
+      <button class="qa email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 5L2 7"/></svg>
+        Kirim Email
+      </button>
+    </div>
+
+    <!-- Note -->
+    <div class="send-note">
+      <label>Catatan internal · opsional</label>
+      <textarea placeholder="Misal: konfirmasi via telepon dulu, sandra sedang ke luar kota..."></textarea>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="send-foot">
+    <div class="send-foot-l">
+      <button class="btn">← Tamu sebelumnya</button>
+    </div>
+    <div class="send-keys">
+      <span class="k"><span class="kbd">⌘</span><span class="kbd">↵</span> Kirim &amp; Lanjut</span>
+      <span class="k"><span class="kbd">S</span> Lewati</span>
+      <span class="k"><span class="kbd">Esc</span> Tutup</span>
+    </div>
+    <div class="send-foot-r">
+      <button class="send-mark-skip">Lewati Tamu Ini</button>
+      <button class="send-mark-done" id="markDone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+        Sudah Dikirim · Lanjut
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l5 5L20 7"/></svg>
+  <span id="toastMsg">Tersalin ke clipboard</span>
+</div>
+
+<script>
+// Audience radio
+document.querySelectorAll('.aud-row').forEach(r=>{
+  r.addEventListener('click',()=>{
+    document.querySelectorAll('.aud-row').forEach(x=>x.classList.remove('on'));
+    r.classList.add('on');
+    document.getElementById('audSubGroup').classList.toggle('show',r.dataset.aud==='group');
+    document.getElementById('audSubStatus').classList.toggle('show',r.dataset.aud==='status');
+  });
+});
+
+// Aud sub chip toggle
+document.querySelectorAll('.aud-sub-chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+
+// Channel select
+document.querySelectorAll('.ch-card').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.ch-card').forEach(x=>x.classList.remove('on'));
+  c.classList.add('on');
+}));
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+}));
+
+// AI pills (single-select per group)
+document.querySelectorAll('.ai-pills').forEach(group=>{
+  group.querySelectorAll('.ai-pill').forEach(p=>p.addEventListener('click',()=>{
+    group.querySelectorAll('.ai-pill').forEach(x=>x.classList.remove('on'));
+    p.classList.add('on');
+  }));
+});
+
+// Template list toggle
+document.getElementById('tplToggle').addEventListener('click',()=>{
+  document.getElementById('tplToggle').classList.toggle('open');
+  document.querySelector('.tpl-list').classList.toggle('show');
+});
+document.querySelectorAll('.tpl-opt').forEach(o=>o.addEventListener('click',()=>{
+  document.querySelectorAll('.tpl-opt').forEach(x=>x.classList.remove('on'));
+  o.classList.add('on');
+}));
+
+// Conflict checkbox
+document.querySelector('.opt-cb').addEventListener('click',e=>{
+  e.currentTarget.classList.toggle('on');
+});
+
+// Send modal
+const sendModal=document.getElementById('sendModal'),sendOverlay=document.getElementById('sendOverlay');
+function openSend(){sendModal.classList.add('show');sendOverlay.classList.add('show')}
+function closeSend(){sendModal.classList.remove('show');sendOverlay.classList.remove('show')}
+document.getElementById('startSendBtn').addEventListener('click',openSend);
+document.getElementById('sendClose').addEventListener('click',closeSend);
+sendOverlay.addEventListener('click',closeSend);
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeSend();
+});
+
+// Toast
+const toast=document.getElementById('toast'),toastMsg=document.getElementById('toastMsg');
+function showToast(msg){
+  toastMsg.textContent=msg;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),2200);
+}
+document.getElementById('qaCopy').addEventListener('click',()=>showToast('Pesan tersalin · siap di-paste ke WhatsApp'));
+document.getElementById('qaWA').addEventListener('click',()=>showToast('WhatsApp dibuka di tab baru — pesan sudah terisi'));
+document.getElementById('markDone').addEventListener('click',()=>showToast('Tersimpan · lanjut ke tamu berikutnya'));
+
+// Mobile menu
+const side=document.getElementById('side');
+document.getElementById('menuBtn').addEventListener('click',()=>side.classList.toggle('open'));
+document.getElementById('sideOverlay').addEventListener('click',()=>side.classList.remove('open'));
+</script>
+</body>
+</html>

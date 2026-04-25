@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>UWU — Analytics · Vivi &amp; Roiyan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,200..700,30..100;1,9..144,200..700,30..100&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-0:#06060B;--bg-1:#0C0C15;--bg-2:#13141F;--bg-card:#0E0F18;
+  --ink:#EDE8DE;--ink-dim:#9E9A95;--ink-faint:#4A4850;
+  --line:rgba(237,232,222,.07);--line-strong:rgba(237,232,222,.16);
+  --blue:#8FA3D9;--lilac:#B89DD4;--coral:#F0A09C;--peach:#F4B8A3;--gold:#D4B896;--green:#7ED3A4;--red:#E08A8A;
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg-0);color:var(--ink);font-family:'Inter',sans-serif;font-weight:300;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+em{font-family:'Fraunces',serif;font-style:italic;font-variation-settings:"opsz" 144,"SOFT" 100}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+select{font-family:inherit;color:inherit;background:transparent;border:none;outline:none}
+
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* ============ SIDEBAR (reusable) ============ */
+.side{position:sticky;top:0;height:100vh;background:var(--bg-1);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:24px 18px;overflow:hidden;z-index:30}
+.side-bg{position:absolute;inset:0;pointer-events:none}
+.side-glow{position:absolute;width:300px;height:300px;border-radius:50%;filter:blur(110px);opacity:.1;background:var(--coral);top:-80px;left:-80px}
+.side-inner{position:relative;z-index:2;display:flex;flex-direction:column;height:100%}
+.brand{padding:8px 12px 20px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.brand-logo{height:30px;width:auto;display:block;margin-bottom:12px}
+.brand-couple{font-family:'Fraunces',serif;font-size:16px;font-weight:300;line-height:1.1;letter-spacing:-.01em}
+.brand-couple em{color:var(--coral)}
+.brand-pkg{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase;margin-top:6px;display:flex;align-items:center;gap:8px}
+.brand-pkg::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.nav{display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
+.nav::-webkit-scrollbar{display:none}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;color:var(--ink-dim);font-size:13px;transition:all .25s var(--ease);position:relative}
+.nav-item:hover{color:var(--ink);background:rgba(255,255,255,.025)}
+.nav-item.active{color:var(--ink);background:linear-gradient(90deg,rgba(240,160,156,.12),rgba(240,160,156,0));border-left:2px solid var(--coral);padding-left:12px}
+.nav-item .ico{width:17px;height:17px;flex-shrink:0;opacity:.7}
+.nav-item.active .ico{opacity:1;color:var(--coral)}
+.nav-item .lbl{flex:1}
+.nav-item .badge{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--ink-faint)}
+.nav-item .badge.warn{background:rgba(244,184,163,.12);color:var(--peach)}
+.nav-item.locked{opacity:.55}
+.nav-sep{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;padding:18px 14px 8px}
+.side-foot{padding-top:18px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.preview-cta{display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);color:var(--ink);font-size:12.5px;transition:all .25s}
+.preview-cta:hover{background:rgba(255,255,255,.08);border-color:var(--ink-dim)}
+.logout{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;padding:8px}
+.logout:hover{color:var(--coral)}
+.side-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:29;display:none;pointer-events:none}
+
+/* ============ MAIN ============ */
+.main{padding:36px 44px 64px;position:relative;min-width:0}
+.main-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.main-bg .mg{position:absolute;border-radius:50%;filter:blur(130px);opacity:.06}
+.main-bg .mg1{width:520px;height:520px;background:var(--lilac);top:-120px;right:-100px}
+.main-bg .mg2{width:380px;height:380px;background:var(--blue);bottom:-100px;left:30%}
+.main-inner{position:relative;z-index:1}
+
+/* Top bar */
+.topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:32px;flex-wrap:wrap}
+.tb-l{flex:1;min-width:280px}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.28em;color:var(--coral);text-transform:uppercase;display:inline-flex;align-items:center;gap:14px}
+.eyebrow::before{content:'';width:28px;height:1px;background:var(--coral)}
+.page-title{font-family:'Fraunces',serif;font-weight:200;font-size:clamp(38px,4vw,54px);line-height:1;letter-spacing:-.025em;margin-top:14px;font-variation-settings:"opsz" 144,"SOFT" 30}
+.page-title em{color:var(--coral);font-variation-settings:"opsz" 144,"SOFT" 100}
+.page-meta{margin-top:14px;display:flex;gap:18px;flex-wrap:wrap;color:var(--ink-dim);font-size:13.5px}
+.page-meta>span{display:flex;align-items:center;gap:8px;font-family:'Fraunces',serif;font-size:14px}
+.page-meta .dot{width:5px;height:5px;border-radius:50%;background:var(--coral);box-shadow:0 0 8px var(--coral);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.4}}
+.page-meta .trend{color:var(--green);font-style:italic}
+
+.actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap;align-items:center}
+.time-range{display:flex;align-items:center;gap:2px;background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:999px;padding:3px}
+.time-range button{padding:7px 13px;border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--ink-dim);text-transform:uppercase;transition:all .25s}
+.time-range button.active{background:var(--coral);color:#0B0B15}
+.time-range button:hover:not(.active){color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;font-size:13px;font-family:inherit;border:1px solid var(--line-strong);background:transparent;color:var(--ink);transition:all .3s}
+.btn:hover{border-color:var(--ink-dim);background:rgba(255,255,255,.03)}
+.btn-primary{background:linear-gradient(115deg,var(--blue),var(--lilac) 50%,var(--coral));color:#0B0B15;border-color:transparent;font-weight:500}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(240,160,156,.24)}
+.btn svg{width:14px;height:14px}
+
+/* KPI strip */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:18px;background:linear-gradient(135deg,#0F1020 0%,#0E0F18 100%);overflow:hidden;margin-bottom:28px;position:relative}
+.kpi-strip::after{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(240,160,156,.14),transparent 70%);filter:blur(60px);pointer-events:none}
+.kpi{padding:26px;border-right:1px solid var(--line);position:relative}
+.kpi:last-child{border-right:none}
+.kpi-lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.24em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.kpi-lbl .d{width:6px;height:6px;border-radius:50%}
+.kpi-num{font-family:'Fraunces',serif;font-weight:200;font-size:44px;line-height:1;letter-spacing:-.025em;display:flex;align-items:baseline;gap:4px}
+.kpi-num em{color:var(--coral)}
+.kpi-num .of{font-size:16px;color:var(--ink-dim);font-family:'Inter',sans-serif;font-weight:300;font-style:normal}
+.kpi-foot{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:11.5px;color:var(--ink-dim);font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+.kpi-foot .trend{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-weight:500}
+.kpi-foot .trend.up{background:rgba(126,211,164,.1);color:var(--green)}
+.kpi-foot .trend.dn{background:rgba(224,138,138,.1);color:var(--red)}
+.kpi-foot svg{width:10px;height:10px}
+/* Mini spark */
+.spark{height:28px;margin-top:12px}
+.spark svg{width:100%;height:100%;overflow:visible}
+
+/* Grid */
+.grid-12{display:grid;grid-template-columns:repeat(12,1fr);gap:24px}
+.card{background:var(--bg-card);border:1px solid var(--line);border-radius:18px;padding:28px;position:relative;overflow:hidden}
+.card-h{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:24px;flex-wrap:wrap}
+.card-h-l{display:flex;flex-direction:column;gap:4px}
+.card-eyebrow{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.24em;color:var(--ink-faint);text-transform:uppercase}
+.card-h h3{font-family:'Fraunces',serif;font-weight:300;font-size:22px;letter-spacing:-.015em;line-height:1.1}
+.card-h h3 em{color:var(--coral)}
+.card-h p{font-size:12.5px;color:var(--ink-dim);margin-top:2px}
+.card-h-r{display:flex;gap:8px;align-items:center}
+.pill-select{position:relative;padding:6px 28px 6px 12px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:999px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-dim);text-transform:uppercase;cursor:pointer;appearance:none}
+.pill-wrap{position:relative}
+.pill-wrap::after{content:'';position:absolute;right:12px;top:50%;width:6px;height:6px;border-right:1.5px solid var(--ink-dim);border-bottom:1.5px solid var(--ink-dim);transform:translateY(-70%) rotate(45deg);pointer-events:none}
+
+/* === FUNNEL (hero) === */
+.span-8{grid-column:span 8}
+.span-4{grid-column:span 4}
+.span-6{grid-column:span 6}
+.span-12{grid-column:span 12}
+
+.funnel-hero{position:relative}
+.funnel-hero::before{content:'';position:absolute;top:-80px;right:-80px;width:280px;height:280px;background:radial-gradient(circle,rgba(240,160,156,.14),transparent 70%);filter:blur(50px);pointer-events:none}
+.fn-wrap{display:grid;grid-template-columns:1fr 180px;gap:40px;align-items:center}
+.fn-viz{position:relative;padding:20px 0}
+.fn-stage{display:flex;align-items:flex-end;gap:14px;height:220px;margin-bottom:16px}
+.fn-bar{flex:1;position:relative;display:flex;flex-direction:column;justify-content:flex-end;height:100%;cursor:pointer;transition:transform .25s}
+.fn-bar:hover{transform:translateY(-4px)}
+.fn-bar .fb{width:100%;border-radius:8px 8px 0 0;position:relative;transition:all .4s var(--ease);background:linear-gradient(180deg,var(--c) 0%,color-mix(in oklab,var(--c) 60%,#0B0B15) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.fn-bar .fb::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.1),transparent 40%);border-radius:inherit;pointer-events:none}
+.fn-bar .fb-val{position:absolute;top:-32px;left:50%;transform:translateX(-50%);font-family:'Fraunces',serif;font-weight:200;font-size:24px;letter-spacing:-.02em;white-space:nowrap}
+.fn-bar .fb-val em{color:var(--coral)}
+.fn-axis{display:flex;gap:14px;border-top:1px solid var(--line);padding-top:14px}
+.fn-axis .fx{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.fn-axis .fx-d{display:flex;align-items:center;gap:8px}
+.fn-axis .fx-d .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.fn-axis .fx-n{font-size:12.5px;color:var(--ink)}
+.fn-axis .fx-p{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-faint);padding-left:15px}
+.fn-axis .fx-p em{color:var(--coral);font-style:normal;font-size:11px}
+.fn-drop{padding-left:15px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:var(--red);font-weight:500}
+
+.fn-side{border-left:1px dashed var(--line-strong);padding-left:32px}
+.fn-side .fn-lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.26em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:12px}
+.fn-side .fn-big{font-family:'Fraunces',serif;font-weight:200;font-size:56px;line-height:1;letter-spacing:-.028em}
+.fn-side .fn-big em{color:var(--coral)}
+.fn-side .fn-sub{font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--ink-dim);margin-top:8px;line-height:1.4}
+.fn-insight{margin-top:28px;padding:16px;background:linear-gradient(115deg,rgba(240,160,156,.08),rgba(184,157,212,.06));border:1px solid rgba(240,160,156,.2);border-radius:12px}
+.fn-insight .lbl{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.24em;color:var(--coral);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.fn-insight .lbl svg{width:12px;height:12px}
+.fn-insight .tx{font-family:'Fraunces',serif;font-size:13px;color:var(--ink);line-height:1.5}
+.fn-insight .tx em{color:var(--coral)}
+
+/* === TIME SERIES CHART === */
+.ts-chart{height:280px;position:relative;margin:0 -8px}
+.ts-chart svg{width:100%;height:100%;overflow:visible}
+.chart-grid line{stroke:var(--line);stroke-dasharray:2 4}
+.chart-axis{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;fill:var(--ink-faint);text-transform:uppercase}
+.ts-legend{display:flex;gap:18px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.16em;color:var(--ink-dim);text-transform:uppercase;flex-wrap:wrap}
+.ts-legend span{display:flex;align-items:center;gap:8px}
+.ts-legend .sw{width:12px;height:2px;border-radius:1px}
+.ts-legend .val{color:var(--ink);font-weight:500;margin-left:6px}
+.chart-tt{position:absolute;background:var(--bg-2);border:1px solid var(--line-strong);border-radius:10px;padding:12px 16px;font-size:11.5px;pointer-events:none;transform:translate(-50%,-110%);white-space:nowrap;display:none;z-index:5;min-width:140px}
+.chart-tt::after{content:'';position:absolute;left:50%;bottom:-5px;transform:translateX(-50%) rotate(45deg);width:8px;height:8px;background:var(--bg-2);border-right:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong)}
+.chart-tt .d{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase;margin-bottom:6px}
+.chart-tt .v{font-family:'Fraunces',serif;font-size:16px;color:var(--ink);display:flex;justify-content:space-between;gap:12px;margin-bottom:2px}
+.chart-tt .v em{color:var(--coral)}
+
+/* === BREAKDOWN === */
+.brk{display:flex;flex-direction:column;gap:14px}
+.brk-row{display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center}
+.brk-l{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--ink-dim);min-width:0}
+.brk-l .ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.04);border:1px solid var(--line);flex-shrink:0}
+.brk-l .ico svg{width:16px;height:16px;color:var(--ink)}
+.brk-l .nm{color:var(--ink)}
+.brk-l .sub{font-size:10.5px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;margin-top:2px}
+.brk-bar{width:100px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.brk-bar .bf{height:100%;border-radius:2px;transition:width 1s var(--ease);width:0}
+.brk-v{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);min-width:44px;text-align:right}
+.brk-v .pct{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-faint);margin-left:4px}
+
+/* === HEATMAP === */
+.heat{display:grid;grid-template-columns:36px repeat(24,1fr);gap:3px}
+.heat-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.08em;color:var(--ink-faint);text-transform:uppercase;display:flex;align-items:center;justify-content:center}
+.heat-cell{aspect-ratio:1;border-radius:3px;background:rgba(240,160,156,var(--i,0));border:1px solid rgba(255,255,255,.02);transition:all .2s;cursor:pointer}
+.heat-cell:hover{transform:scale(1.3);z-index:2;border-color:var(--coral);box-shadow:0 4px 12px rgba(240,160,156,.3)}
+.heat-h-labels{display:grid;grid-template-columns:36px repeat(24,1fr);gap:3px;margin-top:8px}
+.heat-h-labels>div{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:.06em;color:var(--ink-faint);text-align:center}
+.heat-legend{display:flex;align-items:center;gap:10px;margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
+.heat-legend .scale{display:flex;gap:2px}
+.heat-legend .scale div{width:14px;height:14px;border-radius:3px}
+
+/* === GROUPS DONUT === */
+.donut-wrap{display:grid;grid-template-columns:180px 1fr;gap:28px;align-items:center}
+.donut{position:relative;width:180px;height:180px}
+.donut svg{width:100%;height:100%;transform:rotate(-90deg)}
+.donut circle{fill:none;stroke-width:20;transition:stroke-dashoffset 1.2s var(--ease)}
+.donut-cn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.donut-cn .n{font-family:'Fraunces',serif;font-weight:200;font-size:42px;line-height:1;letter-spacing:-.02em}
+.donut-cn .n em{color:var(--coral)}
+.donut-cn .l{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.22em;color:var(--ink-faint);text-transform:uppercase;margin-top:4px}
+.donut-legend{display:flex;flex-direction:column;gap:10px}
+.dl{display:grid;grid-template-columns:1fr auto auto;gap:10px;font-size:12.5px;align-items:center}
+.dl .dln{display:flex;align-items:center;gap:8px;color:var(--ink-dim)}
+.dl .dln .ddot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.dl .dlv{font-family:'Fraunces',serif;color:var(--ink);font-size:15px}
+.dl .dlp{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--ink-faint);letter-spacing:.06em;min-width:40px;text-align:right}
+
+/* === LEADERBOARD === */
+.lb{display:flex;flex-direction:column}
+.lb-row{display:grid;grid-template-columns:32px 40px 1fr auto auto;gap:14px;padding:12px 0;border-top:1px solid var(--line);align-items:center;font-size:13px}
+.lb-row:first-of-type{border-top:none}
+.lb-rank{font-family:'Fraunces',serif;font-style:italic;font-weight:300;font-size:22px;color:var(--ink-faint);text-align:center}
+.lb-row:nth-child(1) .lb-rank{color:var(--coral)}
+.lb-row:nth-child(2) .lb-rank{color:var(--peach)}
+.lb-row:nth-child(3) .lb-rank{color:var(--gold)}
+.lb-av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:#0B0B15}
+.lb-av.c{background:linear-gradient(135deg,var(--coral),var(--peach))}
+.lb-av.l{background:linear-gradient(135deg,var(--lilac),var(--blue))}
+.lb-av.g{background:linear-gradient(135deg,var(--gold),var(--peach))}
+.lb-av.gr{background:linear-gradient(135deg,var(--green),var(--blue))}
+.lb-body .nm{color:var(--ink)}
+.lb-body .sub{font-size:10.5px;color:var(--ink-faint);font-family:'JetBrains Mono',monospace;letter-spacing:.04em;margin-top:2px}
+.lb-count{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);text-align:right}
+.lb-count em{color:var(--coral)}
+.lb-pill{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:3px 8px;border-radius:4px;background:rgba(126,211,164,.1);color:var(--green)}
+
+/* === EXPORT PANEL === */
+.export{background:linear-gradient(115deg,rgba(143,163,217,.06),rgba(184,157,212,.06) 50%,rgba(240,160,156,.08));border:1px solid var(--line);border-radius:18px;padding:28px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;position:relative;overflow:hidden}
+.export::after{content:'';position:absolute;top:-80px;right:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(240,160,156,.16),transparent 70%);filter:blur(50px);pointer-events:none}
+.ex-l{position:relative;z-index:1}
+.ex-eyebrow{font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.26em;color:var(--coral);text-transform:uppercase;margin-bottom:12px}
+.ex-ttl{font-family:'Fraunces',serif;font-weight:300;font-size:26px;letter-spacing:-.015em;line-height:1.2;max-width:520px}
+.ex-ttl em{color:var(--coral)}
+.ex-sub{font-size:13px;color:var(--ink-dim);margin-top:8px;max-width:500px}
+.ex-r{display:flex;flex-direction:column;gap:10px;position:relative;z-index:1}
+.ex-btn{display:flex;align-items:center;gap:12px;padding:12px 18px;background:rgba(255,255,255,.04);border:1px solid var(--line-strong);border-radius:10px;min-width:240px;transition:all .25s;cursor:pointer}
+.ex-btn:hover{background:rgba(255,255,255,.08);border-color:var(--ink-dim);transform:translateY(-1px)}
+.ex-btn .xi{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ex-btn.pdf .xi{background:rgba(240,160,156,.14);color:var(--coral)}
+.ex-btn.xlsx .xi{background:rgba(126,211,164,.14);color:var(--green)}
+.ex-btn.png .xi{background:rgba(143,163,217,.14);color:var(--blue)}
+.ex-btn .xi svg{width:16px;height:16px}
+.ex-btn .xt{flex:1;text-align:left}
+.ex-btn .xt .n{font-size:13.5px;color:var(--ink)}
+.ex-btn .xt .s{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--ink-faint);text-transform:uppercase;margin-top:2px}
+.ex-btn .arr{color:var(--ink-faint);transition:all .25s}
+.ex-btn:hover .arr{color:var(--coral);transform:translateX(3px)}
+.ex-btn .arr svg{width:14px;height:14px}
+
+/* Mobile menu */
+.menu-btn{display:none;position:fixed;top:18px;left:18px;z-index:60;width:42px;height:42px;border-radius:10px;border:1px solid var(--line-strong);background:var(--bg-1);color:var(--ink);align-items:center;justify-content:center}
+
+@media (max-width:1280px){
+  .span-8{grid-column:span 12}
+  .span-4{grid-column:span 6}
+  .span-6{grid-column:span 12}
+  .kpi-strip{grid-template-columns:repeat(2,1fr)}
+  .kpi{border-right:none;border-bottom:1px solid var(--line)}
+  .kpi:nth-child(2n){border-right:none}
+  @media (min-width:920px){.kpi:nth-child(odd){border-right:1px solid var(--line)}}
+  .kpi:nth-last-child(-n+2){border-bottom:none}
+  .fn-wrap{grid-template-columns:1fr}
+  .fn-side{border-left:none;border-top:1px dashed var(--line-strong);padding-left:0;padding-top:24px}
+}
+@media (max-width:920px){
+  .app{grid-template-columns:1fr}
+  .side{position:fixed;inset:0;height:100vh;width:280px;transform:translateX(-100%);transition:transform .3s var(--ease)}
+  .side.open{transform:translateX(0)}
+  .side.open ~ .side-overlay{display:block;pointer-events:auto}
+  .menu-btn{display:flex}
+  .main{padding:80px 20px 40px}
+  .span-4,.span-6{grid-column:span 12}
+  .donut-wrap{grid-template-columns:1fr;text-align:center}
+  .donut{margin:0 auto}
+  .export{grid-template-columns:1fr}
+  .heat{grid-template-columns:30px repeat(24,1fr);gap:2px}
+}
+</style>
+</head>
+<body>
+
+<button class="menu-btn" id="menuBtn" aria-label="Menu">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+</button>
+
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="side" id="side">
+    <div class="side-bg"><div class="side-glow"></div></div>
+    <div class="side-inner">
+      <div class="brand">
+        <img src="assets/uwu-logo.svg" alt="UWU" class="brand-logo"/>
+        <div class="brand-couple">Vivi <em>&amp; Roiyan</em></div>
+        <div class="brand-pkg">Rose Gold · Lite</div>
+      </div>
+      <nav class="nav">
+        <a href="UWU Dashboard.html" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1h-5v-7h-6v7H4a1 1 0 01-1-1V9.5z"/></svg>
+          <span class="lbl">Beranda</span>
+        </a>
+        <a href="UWU Website Editor.html" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v5"/></svg>
+          <span class="lbl">Website Editor</span>
+        </a>
+        <a href="UWU Tamu.html" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0112 0M16 11a3 3 0 100-6M21 20a6 6 0 00-4-5.66"/></svg>
+          <span class="lbl">Tamu</span>
+          <span class="badge">12</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l9 6 9-6M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M3 7a2 2 0 012-2h14a2 2 0 012 2"/></svg>
+          <span class="lbl">Kirim Undangan</span>
+        </a>
+        <a href="#" class="nav-item active">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 20h18M6 20V10M11 20V4M16 20v-7M21 20v-4"/></svg>
+          <span class="lbl">Analytics</span>
+        </a>
+        <div class="nav-sep">Hari H</div>
+        <a href="#" class="nav-item locked">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3 8-8M3 7l9 9 9-9"/></svg>
+          <span class="lbl">Check-in</span>
+          <span class="badge">Segera</span>
+        </a>
+        <a href="#" class="nav-item locked">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M3 8l9-5 9 5M12 13v8M3 14h18"/></svg>
+          <span class="lbl">Amplop &amp; Hadiah</span>
+          <span class="badge">Segera</span>
+        </a>
+        <div class="nav-sep">Akun</div>
+        <a href="#" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3h.1a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8v.1a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>
+          <span class="lbl">Pengaturan</span>
+        </a>
+        <a href="#" class="nav-item">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2l3 7h7l-5.5 4 2 7L12 16l-6.5 4 2-7L2 9h7z"/></svg>
+          <span class="lbl">Paket</span>
+          <span class="badge warn">Upgrade</span>
+        </a>
+      </nav>
+      <div class="side-foot">
+        <a href="#" class="preview-cta">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8-10-8-10-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Pratinjau Situs
+        </a>
+        <a href="#" class="logout">Logout</a>
+      </div>
+    </div>
+  </aside>
+  <div class="side-overlay" id="sideOverlay"></div>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <div class="main-bg"><div class="mg mg1"></div><div class="mg mg2"></div></div>
+    <div class="main-inner">
+
+      <!-- Top bar -->
+      <div class="topbar">
+        <div class="tb-l">
+          <div class="eyebrow">Analytics · 7 hari terakhir</div>
+          <h1 class="page-title">Bagaimana tamu <em>menanggapi</em>?</h1>
+          <div class="page-meta">
+            <span><span class="dot"></span>Update real-time · sinkron 12 detik lalu</span>
+            <span class="trend">— engagement 70% di atas rata-rata</span>
+          </div>
+        </div>
+        <div class="actions">
+          <div class="time-range">
+            <button>24J</button>
+            <button class="active">7 Hari</button>
+            <button>30 Hari</button>
+            <button>Semua</button>
+          </div>
+          <button class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Ekspor Laporan
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI -->
+      <div class="kpi-strip">
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--coral);box-shadow:0 0 6px var(--coral)"></span>Total Tamu</div>
+          <div class="kpi-num">12<span class="of">/100</span></div>
+          <div class="kpi-foot">
+            <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 14l5-5 5 5"/></svg>+2</span>
+            vs pekan lalu
+          </div>
+          <div class="spark">
+            <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+              <path d="M0,22 L14,20 L28,18 L42,14 L56,12 L70,10 L84,8 L100,6" fill="none" stroke="#F0A09C" stroke-width="1.5"/>
+              <path d="M0,22 L14,20 L28,18 L42,14 L56,12 L70,10 L84,8 L100,6 L100,28 L0,28 Z" fill="rgba(240,160,156,.15)"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--blue)"></span>Dibuka</div>
+          <div class="kpi-num">8<span class="of">·67%</span></div>
+          <div class="kpi-foot">
+            <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 14l5-5 5 5"/></svg>+18%</span>
+            rata-rata industri 42%
+          </div>
+          <div class="spark">
+            <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+              <path d="M0,24 L14,20 L28,22 L42,16 L56,14 L70,12 L84,8 L100,6" fill="none" stroke="#8FA3D9" stroke-width="1.5"/>
+              <path d="M0,24 L14,20 L28,22 L42,16 L56,14 L70,12 L84,8 L100,6 L100,28 L0,28 Z" fill="rgba(143,163,217,.15)"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--lilac)"></span>RSVP</div>
+          <div class="kpi-num"><em>5</em><span class="of">·62%</span></div>
+          <div class="kpi-foot">
+            <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 14l5-5 5 5"/></svg>+40%</span>
+            dari yang membuka
+          </div>
+          <div class="spark">
+            <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+              <path d="M0,26 L14,24 L28,22 L42,18 L56,16 L70,14 L84,10 L100,8" fill="none" stroke="#B89DD4" stroke-width="1.5"/>
+              <path d="M0,26 L14,24 L28,22 L42,18 L56,16 L70,14 L84,10 L100,8 L100,28 L0,28 Z" fill="rgba(184,157,212,.15)"/>
+            </svg>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-lbl"><span class="d" style="background:var(--green)"></span>Hadir</div>
+          <div class="kpi-num">4<span class="of">pax · 6</span></div>
+          <div class="kpi-foot">
+            <span class="trend up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 14l5-5 5 5"/></svg>+2 pax</span>
+            plus-one · 80% retention
+          </div>
+          <div class="spark">
+            <svg viewBox="0 0 100 28" preserveAspectRatio="none">
+              <path d="M0,26 L14,25 L28,24 L42,22 L56,18 L70,14 L84,12 L100,10" fill="none" stroke="#7ED3A4" stroke-width="1.5"/>
+              <path d="M0,26 L14,25 L28,24 L42,22 L56,18 L70,14 L84,12 L100,10 L100,28 L0,28 Z" fill="rgba(126,211,164,.15)"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="grid-12">
+
+        <!-- Funnel hero -->
+        <div class="card funnel-hero span-8">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Funnel Respons · 25 Apr 2026</div>
+              <h3>Perjalanan <em>tamu</em></h3>
+              <p>Dari undangan dikirim hingga konfirmasi kehadiran.</p>
+            </div>
+            <div class="card-h-r pill-wrap">
+              <select class="pill-select"><option>Semua grup</option><option>Keluarga Inti</option><option>Teman Sekolah</option><option>Kantor</option></select>
+            </div>
+          </div>
+
+          <div class="fn-wrap">
+            <div class="fn-viz">
+              <div class="fn-stage" id="fnStage">
+                <div class="fn-bar" style="--c:var(--coral)">
+                  <div class="fb-val">12</div>
+                  <div class="fb" style="height:100%" data-h="100"></div>
+                </div>
+                <div class="fn-bar" style="--c:var(--peach)">
+                  <div class="fb-val">10</div>
+                  <div class="fb" style="height:84%" data-h="84"></div>
+                </div>
+                <div class="fn-bar" style="--c:var(--blue)">
+                  <div class="fb-val">8</div>
+                  <div class="fb" style="height:67%" data-h="67"></div>
+                </div>
+                <div class="fn-bar" style="--c:var(--lilac)">
+                  <div class="fb-val">5</div>
+                  <div class="fb" style="height:42%" data-h="42"></div>
+                </div>
+                <div class="fn-bar" style="--c:var(--green)">
+                  <div class="fb-val"><em>4</em></div>
+                  <div class="fb" style="height:34%" data-h="34"></div>
+                </div>
+              </div>
+              <div class="fn-axis">
+                <div class="fx">
+                  <div class="fx-d"><span class="dot" style="background:var(--coral)"></span><span class="fx-n">Total Tamu</span></div>
+                  <div class="fx-p"><em>100%</em> · baseline</div>
+                </div>
+                <div class="fx">
+                  <div class="fx-d"><span class="dot" style="background:var(--peach)"></span><span class="fx-n">Diundang</span></div>
+                  <div class="fx-p"><em>84%</em> terkirim</div>
+                  <div class="fn-drop">-2 belum ada kontak</div>
+                </div>
+                <div class="fx">
+                  <div class="fx-d"><span class="dot" style="background:var(--blue)"></span><span class="fx-n">Dibuka</span></div>
+                  <div class="fx-p"><em>80%</em> dari diundang</div>
+                  <div class="fn-drop">-2 belum buka</div>
+                </div>
+                <div class="fx">
+                  <div class="fx-d"><span class="dot" style="background:var(--lilac)"></span><span class="fx-n">Merespons</span></div>
+                  <div class="fx-p"><em>62%</em> dari dibuka</div>
+                  <div class="fn-drop">-3 belum RSVP</div>
+                </div>
+                <div class="fx">
+                  <div class="fx-d"><span class="dot" style="background:var(--green)"></span><span class="fx-n">Hadir</span></div>
+                  <div class="fx-p"><em>80%</em> dari RSVP</div>
+                  <div class="fn-drop">-1 tidak hadir</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="fn-side">
+              <div class="fn-lbl">Konversi Keseluruhan</div>
+              <div class="fn-big"><em>33</em>%</div>
+              <div class="fn-sub">dari total tamu berujung <em>konfirmasi hadir</em></div>
+
+              <div class="fn-insight">
+                <div class="lbl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zM12 8v4M12 16h.01"/></svg>Insight</div>
+                <div class="tx">Drop-off terbesar di langkah <em>RSVP</em> — 3 tamu membuka tapi belum merespons. Pertimbangkan <em>reminder</em> WhatsApp 3 hari sebelum acara.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status donut -->
+        <div class="card span-4">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Distribusi Status</div>
+              <h3>Komposisi <em>tamu</em></h3>
+            </div>
+          </div>
+          <div class="donut-wrap">
+            <div class="donut">
+              <svg viewBox="0 0 120 120">
+                <!-- circumference = 2*PI*r = 2*3.14159*50 = 314.159 -->
+                <!-- Green Hadir 4/12 = 33.3% => 104.72 -->
+                <circle cx="60" cy="60" r="50" stroke="#7ED3A4" stroke-dasharray="104.72 314.159" stroke-dashoffset="0"/>
+                <!-- Red Tidak 1/12 = 8.3% => 26.18, offset -104.72 -->
+                <circle cx="60" cy="60" r="50" stroke="#E08A8A" stroke-dasharray="26.18 314.159" stroke-dashoffset="-104.72"/>
+                <!-- Lilac Dibuka 3/12 = 25% => 78.54, offset -130.9 -->
+                <circle cx="60" cy="60" r="50" stroke="#B89DD4" stroke-dasharray="78.54 314.159" stroke-dashoffset="-130.9"/>
+                <!-- Blue Diundang 2/12 = 16.7% => 52.36, offset -209.44 -->
+                <circle cx="60" cy="60" r="50" stroke="#8FA3D9" stroke-dasharray="52.36 314.159" stroke-dashoffset="-209.44"/>
+                <!-- Faint Baru 2/12 = 16.7% => 52.36, offset -261.8 -->
+                <circle cx="60" cy="60" r="50" stroke="#4A4850" stroke-dasharray="52.36 314.159" stroke-dashoffset="-261.8"/>
+              </svg>
+              <div class="donut-cn">
+                <div class="n"><em>12</em></div>
+                <div class="l">Total</div>
+              </div>
+            </div>
+            <div class="donut-legend">
+              <div class="dl"><div class="dln"><span class="ddot" style="background:var(--green)"></span>Hadir</div><div class="dlv">4</div><div class="dlp">33%</div></div>
+              <div class="dl"><div class="dln"><span class="ddot" style="background:var(--lilac)"></span>Dibuka</div><div class="dlv">3</div><div class="dlp">25%</div></div>
+              <div class="dl"><div class="dln"><span class="ddot" style="background:var(--blue)"></span>Diundang</div><div class="dlv">2</div><div class="dlp">17%</div></div>
+              <div class="dl"><div class="dln"><span class="ddot" style="background:var(--ink-faint)"></span>Baru</div><div class="dlv">2</div><div class="dlp">17%</div></div>
+              <div class="dl"><div class="dln"><span class="ddot" style="background:var(--red)"></span>Tidak Hadir</div><div class="dlv">1</div><div class="dlp">8%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time series chart -->
+        <div class="card span-12">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Aktivitas · 7 hari terakhir</div>
+              <h3>Bukaan vs <em>RSVP</em> per hari</h3>
+              <p>Trafik undangan sepanjang pekan — titik puncak di Rabu malam.</p>
+            </div>
+            <div class="card-h-r" style="gap:14px">
+              <div class="ts-legend" style="border:none;padding:0;margin:0">
+                <span><span class="sw" style="background:var(--blue)"></span>Dibuka <span class="val">38</span></span>
+                <span><span class="sw" style="background:var(--coral)"></span>RSVP <span class="val">13</span></span>
+              </div>
+              <div class="pill-wrap">
+                <select class="pill-select"><option>Semua channel</option><option>WhatsApp</option><option>Email</option><option>Link langsung</option></select>
+              </div>
+            </div>
+          </div>
+          <div class="ts-chart" id="tsChart">
+            <svg viewBox="0 0 1000 280" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="tsBlue" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="#8FA3D9" stop-opacity=".35"/>
+                  <stop offset="1" stop-color="#8FA3D9" stop-opacity="0"/>
+                </linearGradient>
+                <linearGradient id="tsCoral" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="#F0A09C" stop-opacity=".35"/>
+                  <stop offset="1" stop-color="#F0A09C" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <g class="chart-grid">
+                <line x1="0" y1="50" x2="1000" y2="50"/>
+                <line x1="0" y1="120" x2="1000" y2="120"/>
+                <line x1="0" y1="190" x2="1000" y2="190"/>
+              </g>
+              <!-- Y axis labels -->
+              <text x="8" y="54" class="chart-axis">15</text>
+              <text x="8" y="124" class="chart-axis">10</text>
+              <text x="8" y="194" class="chart-axis">5</text>
+              <text x="8" y="254" class="chart-axis">0</text>
+
+              <!-- Bukaan line (blue) -->
+              <path d="M60,220 L200,200 L340,160 L480,100 L620,70 L760,130 L900,180 L900,260 L60,260 Z" fill="url(#tsBlue)"/>
+              <path d="M60,220 L200,200 L340,160 L480,100 L620,70 L760,130 L900,180" fill="none" stroke="#8FA3D9" stroke-width="2"/>
+
+              <!-- RSVP line (coral) -->
+              <path d="M60,250 L200,245 L340,220 L480,180 L620,160 L760,180 L900,200 L900,260 L60,260 Z" fill="url(#tsCoral)"/>
+              <path d="M60,250 L200,245 L340,220 L480,180 L620,160 L760,180 L900,200" fill="none" stroke="#F0A09C" stroke-width="2"/>
+
+              <!-- Dots blue -->
+              <g id="dotsBlue">
+                <circle cx="60" cy="220" r="4" fill="#8FA3D9" data-d="Sen 19 Apr" data-b="3" data-r="1"/>
+                <circle cx="200" cy="200" r="4" fill="#8FA3D9" data-d="Sel 20 Apr" data-b="5" data-r="2"/>
+                <circle cx="340" cy="160" r="4" fill="#8FA3D9" data-d="Rab 21 Apr" data-b="8" data-r="3"/>
+                <circle cx="480" cy="100" r="4" fill="#8FA3D9" data-d="Kam 22 Apr" data-b="12" data-r="5"/>
+                <circle cx="620" cy="70" r="4" fill="#8FA3D9" data-d="Jum 23 Apr" data-b="14" data-r="6"/>
+                <circle cx="760" cy="130" r="4" fill="#8FA3D9" data-d="Sab 24 Apr" data-b="10" data-r="5"/>
+                <circle cx="900" cy="180" r="4" fill="#8FA3D9" data-d="Min 25 Apr" data-b="7" data-r="4"/>
+              </g>
+              <!-- Dots coral -->
+              <g id="dotsCoral">
+                <circle cx="60" cy="250" r="4" fill="#F0A09C"/>
+                <circle cx="200" cy="245" r="4" fill="#F0A09C"/>
+                <circle cx="340" cy="220" r="4" fill="#F0A09C"/>
+                <circle cx="480" cy="180" r="4" fill="#F0A09C"/>
+                <circle cx="620" cy="160" r="4" fill="#F0A09C"/>
+                <circle cx="760" cy="180" r="4" fill="#F0A09C"/>
+                <circle cx="900" cy="200" r="4" fill="#F0A09C"/>
+              </g>
+              <!-- Peak annotation -->
+              <g transform="translate(620,70)">
+                <circle r="8" fill="none" stroke="#F0A09C" stroke-width="1" opacity=".5">
+                  <animate attributeName="r" values="8;14;8" dur="2s" repeatCount="indefinite"/>
+                  <animate attributeName="opacity" values=".5;0;.5" dur="2s" repeatCount="indefinite"/>
+                </circle>
+              </g>
+              <text x="620" y="50" class="chart-axis" text-anchor="middle" style="fill:#F0A09C;font-size:10px">PUNCAK · 14 BUKAAN</text>
+
+              <text x="60" y="276" class="chart-axis" text-anchor="middle">Sen 19</text>
+              <text x="200" y="276" class="chart-axis" text-anchor="middle">Sel 20</text>
+              <text x="340" y="276" class="chart-axis" text-anchor="middle">Rab 21</text>
+              <text x="480" y="276" class="chart-axis" text-anchor="middle">Kam 22</text>
+              <text x="620" y="276" class="chart-axis" text-anchor="middle">Jum 23</text>
+              <text x="760" y="276" class="chart-axis" text-anchor="middle">Sab 24</text>
+              <text x="900" y="276" class="chart-axis" text-anchor="middle">Min 25</text>
+            </svg>
+            <div class="chart-tt" id="chartTt">
+              <div class="d">Kam · 22 Apr</div>
+              <div class="v">Dibuka <em>12</em></div>
+              <div class="v">RSVP <em>5</em></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Device -->
+        <div class="card span-4">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Perangkat tamu</div>
+              <h3>Device <em>breakdown</em></h3>
+            </div>
+          </div>
+          <div class="brk">
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg></div>
+                <div><div class="nm">iOS · iPhone</div><div class="sub">Safari · Chrome</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="58" style="background:var(--coral)"></div></div>
+              <div class="brk-v">7<span class="pct">58%</span></div>
+            </div>
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="2" width="12" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg></div>
+                <div><div class="nm">Android</div><div class="sub">Chrome · WebView</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="33" style="background:var(--lilac)"></div></div>
+              <div class="brk-v">4<span class="pct">33%</span></div>
+            </div>
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 22h8M12 18v4"/></svg></div>
+                <div><div class="nm">Desktop</div><div class="sub">macOS · Windows</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="9" style="background:var(--blue)"></div></div>
+              <div class="brk-v">1<span class="pct">9%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Traffic source -->
+        <div class="card span-4">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Sumber Trafik</div>
+              <h3>Dari <em>mana</em> mereka datang</h3>
+            </div>
+          </div>
+          <div class="brk">
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico" style="background:rgba(126,211,164,.12);color:var(--green)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+                <div><div class="nm">WhatsApp</div><div class="sub">Link broadcast</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="75" style="background:var(--green)"></div></div>
+              <div class="brk-v">9<span class="pct">75%</span></div>
+            </div>
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico" style="background:rgba(143,163,217,.12);color:var(--blue)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 5L2 7"/></svg></div>
+                <div><div class="nm">Email</div><div class="sub">Gmail · Apple Mail</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="17" style="background:var(--blue)"></div></div>
+              <div class="brk-v">2<span class="pct">17%</span></div>
+            </div>
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico" style="background:rgba(240,160,156,.12);color:var(--coral)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+                <div><div class="nm">Link Langsung</div><div class="sub">Copy-paste URL</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="8" style="background:var(--coral)"></div></div>
+              <div class="brk-v">1<span class="pct">8%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Groups donut -->
+        <div class="card span-4">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Engagement per grup</div>
+              <h3>Grup <em>teratas</em></h3>
+            </div>
+          </div>
+          <div class="brk">
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico" style="background:rgba(240,160,156,.12);color:var(--coral);font-family:'Fraunces',serif;font-style:italic;font-size:15px">KI</div>
+                <div><div class="nm">Keluarga Inti</div><div class="sub">100% RSVP rate</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="100" style="background:var(--coral)"></div></div>
+              <div class="brk-v">4/4</div>
+            </div>
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico" style="background:rgba(184,157,212,.12);color:var(--lilac);font-family:'Fraunces',serif;font-style:italic;font-size:15px">TS</div>
+                <div><div class="nm">Teman Sekolah</div><div class="sub">50% RSVP · 1 menunggu</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="50" style="background:var(--lilac)"></div></div>
+              <div class="brk-v">1/2</div>
+            </div>
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico" style="background:rgba(143,163,217,.12);color:var(--blue);font-family:'Fraunces',serif;font-style:italic;font-size:15px">Kt</div>
+                <div><div class="nm">Kantor &amp; Kolega</div><div class="sub">0% · 2 belum RSVP</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="0" style="background:var(--blue)"></div></div>
+              <div class="brk-v">0/2</div>
+            </div>
+            <div class="brk-row">
+              <div class="brk-l">
+                <div class="ico" style="background:rgba(212,184,150,.12);color:var(--gold);font-family:'Fraunces',serif;font-style:italic;font-size:15px">Kn</div>
+                <div><div class="nm">Kenalan</div><div class="sub">Belum diundang</div></div>
+              </div>
+              <div class="brk-bar"><div class="bf" data-w="0" style="background:var(--gold)"></div></div>
+              <div class="brk-v">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heatmap -->
+        <div class="card span-8">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Pola Aktivitas · jam &amp; hari</div>
+              <h3>Kapan mereka <em>membuka</em>?</h3>
+              <p>Intensitas bukaan undangan per jam dalam sepekan terakhir.</p>
+            </div>
+          </div>
+          <div id="heat"></div>
+          <div class="heat-h-labels" id="heatLabels"></div>
+          <div class="heat-legend">
+            Rendah
+            <div class="scale">
+              <div style="background:rgba(240,160,156,.08)"></div>
+              <div style="background:rgba(240,160,156,.2)"></div>
+              <div style="background:rgba(240,160,156,.4)"></div>
+              <div style="background:rgba(240,160,156,.6)"></div>
+              <div style="background:rgba(240,160,156,.85)"></div>
+            </div>
+            Tinggi
+            <span style="margin-left:auto;color:var(--ink-dim)">Peak: <span style="color:var(--coral);font-weight:500">Kam 22 Apr · 20:00 WIB</span> · 7 bukaan</span>
+          </div>
+        </div>
+
+        <!-- Leaderboard -->
+        <div class="card span-4">
+          <div class="card-h">
+            <div class="card-h-l">
+              <div class="card-eyebrow">Tamu Paling Antusias</div>
+              <h3>Top <em>openers</em></h3>
+            </div>
+          </div>
+          <div class="lb">
+            <div class="lb-row">
+              <div class="lb-rank">1</div>
+              <div class="lb-av c">SA</div>
+              <div class="lb-body">
+                <div class="nm">Sandra Apriliani</div>
+                <div class="sub">Teman Sekolah · 3× buka</div>
+              </div>
+              <div class="lb-count"><em>3</em></div>
+              <div class="lb-pill">RSVP</div>
+            </div>
+            <div class="lb-row">
+              <div class="lb-rank">2</div>
+              <div class="lb-av l">VA</div>
+              <div class="lb-body">
+                <div class="nm">Vivi Anggraini</div>
+                <div class="sub">Keluarga · 2× buka</div>
+              </div>
+              <div class="lb-count"><em>2</em></div>
+              <div class="lb-pill">RSVP</div>
+            </div>
+            <div class="lb-row">
+              <div class="lb-rank">3</div>
+              <div class="lb-av g">DM</div>
+              <div class="lb-body">
+                <div class="nm">Dimas Mahendra</div>
+                <div class="sub">Teman Sekolah · 2× buka</div>
+              </div>
+              <div class="lb-count"><em>2</em></div>
+              <div class="lb-pill" style="background:rgba(184,157,212,.1);color:var(--lilac)">Buka</div>
+            </div>
+            <div class="lb-row">
+              <div class="lb-rank">4</div>
+              <div class="lb-av gr">RP</div>
+              <div class="lb-body">
+                <div class="nm">Roiyan Pratama</div>
+                <div class="sub">Keluarga · 1× buka</div>
+              </div>
+              <div class="lb-count"><em>1</em></div>
+              <div class="lb-pill">RSVP</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Export -->
+        <div class="export span-12">
+          <div class="ex-l">
+            <div class="ex-eyebrow">Ekspor Laporan</div>
+            <h3 class="ex-ttl">Simpan ringkasan ini sebagai <em>kenangan</em>, atau kirim ke <em>vendor</em> kalian.</h3>
+            <div class="ex-sub">Semua metrik, funnel, dan daftar tamu dalam satu dokumen — siap dibagikan atau diarsipkan untuk catatan pernikahan digital kalian.</div>
+          </div>
+          <div class="ex-r">
+            <button class="ex-btn pdf">
+              <div class="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg></div>
+              <div class="xt"><div class="n">Laporan PDF · A4</div><div class="s">Full report · 8 halaman</div></div>
+              <div class="arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div>
+            </button>
+            <button class="ex-btn xlsx">
+              <div class="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+              <div class="xt"><div class="n">Data Excel · .xlsx</div><div class="s">Raw data · daftar tamu + events</div></div>
+              <div class="arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div>
+            </button>
+            <button class="ex-btn png">
+              <div class="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5-7 7"/></svg></div>
+              <div class="xt"><div class="n">Infografis PNG</div><div class="s">Share-ready · 1200×1500</div></div>
+              <div class="arr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// Animate breakdown bars
+requestAnimationFrame(()=>{
+  document.querySelectorAll('.bf').forEach(el=>{
+    const w=parseFloat(el.dataset.w)||0;
+    setTimeout(()=>el.style.width=w+'%',80);
+  });
+});
+
+// Chart tooltip
+const chart=document.getElementById('tsChart'),tt=document.getElementById('chartTt');
+document.querySelectorAll('#dotsBlue circle').forEach(c=>{
+  c.style.cursor='pointer';
+  c.addEventListener('mouseenter',()=>{
+    c.setAttribute('r','7');
+    const rect=chart.getBoundingClientRect();
+    const cx=parseFloat(c.getAttribute('cx'));
+    const cy=parseFloat(c.getAttribute('cy'));
+    const x=(cx/1000)*rect.width;
+    const y=(cy/280)*rect.height;
+    tt.querySelector('.d').textContent=c.dataset.d;
+    tt.querySelectorAll('.v em')[0].textContent=c.dataset.b;
+    tt.querySelectorAll('.v em')[1].textContent=c.dataset.r;
+    tt.style.left=x+'px';
+    tt.style.top=y+'px';
+    tt.style.display='block';
+  });
+  c.addEventListener('mouseleave',()=>{c.setAttribute('r','4');tt.style.display='none'});
+});
+
+// Build heatmap
+const heat=document.getElementById('heat');
+const labels=document.getElementById('heatLabels');
+const days=['MIN','SEN','SEL','RAB','KAM','JUM','SAB'];
+// seeded pattern: afternoon+evening peak, especially Kam 20:00
+const data=[
+  [0,0,0,0,0,0,0,1,1,2,2,1,2,3,2,2,3,4,3,4,3,2,1,0], // MIN
+  [0,0,0,0,0,0,1,1,2,2,1,1,2,2,2,3,3,4,3,3,2,1,0,0], // SEN
+  [0,0,0,0,0,0,1,1,2,2,2,2,1,2,3,3,3,4,4,4,3,2,1,0], // SEL
+  [0,0,0,0,0,1,1,2,2,3,2,2,2,3,3,3,4,4,5,5,4,3,1,0], // RAB
+  [0,0,0,0,0,1,1,2,2,3,3,2,2,3,4,4,5,5,6,7,5,3,2,1], // KAM peak
+  [1,0,0,0,0,1,1,2,2,3,3,3,2,3,3,4,4,5,4,4,3,2,1,0], // JUM
+  [0,0,0,0,1,1,2,2,2,2,3,3,3,4,4,3,3,4,4,4,3,2,1,0], // SAB
+];
+// Render
+let html='';
+for(let d=0;d<7;d++){
+  html+=`<div class="heat-label">${days[d]}</div>`;
+  for(let h=0;h<24;h++){
+    const v=data[d][h]/7; // 0..1
+    const op=Math.max(.06,v*.9);
+    html+=`<div class="heat-cell" style="--i:${op.toFixed(2)}" title="${days[d]} ${String(h).padStart(2,'0')}:00 · ${data[d][h]} bukaan"></div>`;
+  }
+}
+heat.innerHTML=html;
+heat.style.display='grid';
+heat.style.gridTemplateColumns='36px repeat(24,1fr)';
+heat.style.gap='3px';
+
+// Hour labels
+let lab='<div></div>';
+for(let h=0;h<24;h++){
+  lab+=`<div>${h%6===0?(String(h).padStart(2,'0')):''}</div>`;
+}
+labels.innerHTML=lab;
+
+// Mobile menu
+const side=document.getElementById('side');
+document.getElementById('menuBtn').addEventListener('click',()=>side.classList.toggle('open'));
+document.getElementById('sideOverlay').addEventListener('click',()=>side.classList.remove('open'));
+</script>
+</body>
+</html>
