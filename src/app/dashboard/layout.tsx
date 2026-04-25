@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
+import { countLiveGuests } from "@/lib/db/queries/guests";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { BottomTab } from "@/components/dashboard/BottomTab";
 import { MobileTopBar } from "@/components/dashboard/MobileTopBar";
@@ -62,17 +63,24 @@ async function SidebarHost() {
       : bundle.event.title;
   const themeLabel = bundle.theme?.name ?? null;
 
+  // Live guest count drives the Tamu badge in the sidebar nav.
+  // Soft-fail to null so a slow/failing query still renders the
+  // sidebar without a badge instead of breaking the layout.
+  const tamuCount = await countLiveGuests(bundle.event.id).catch(() => null);
+
   return (
     <>
       <Sidebar
         coupleLabel={coupleLabel}
         themeLabel={themeLabel}
         previewHref="/preview"
+        tamuCount={tamuCount}
       />
       <MobileTopBar
         coupleLabel={coupleLabel}
         themeLabel={themeLabel}
         previewHref="/preview"
+        tamuCount={tamuCount}
       />
     </>
   );
