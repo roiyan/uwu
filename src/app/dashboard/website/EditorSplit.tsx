@@ -184,7 +184,32 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
-  const [activeSection, setActiveSection] = useState<SectionId>("mempelai");
+  const [activeSection, setActiveSectionState] =
+    useState<SectionId>("mempelai");
+
+  // Wrap setActiveSection so the URL hash mirrors the active section
+  // — keeps deep-linking stable across refreshes and lets the user
+  // copy the URL to share a specific bagian.
+  function setActiveSection(id: SectionId) {
+    setActiveSectionState(id);
+    if (typeof window !== "undefined") {
+      const next = `#${id}`;
+      if (window.location.hash !== next) {
+        window.history.replaceState(null, "", next);
+      }
+    }
+  }
+
+  // On mount, sniff the URL hash for a deep-link target. Dashboard
+  // task checklist sends users here with hashes like `#kutipan` /
+  // `#foto-sampul` / `#acara`.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.location.hash.replace(/^#/, "");
+    if (!raw) return;
+    const match = SECTIONS.find((s) => s.id === raw);
+    if (match) setActiveSectionState(match.id);
+  }, []);
 
   const eventForPreview: InvitationEvent = useMemo(
     () => ({

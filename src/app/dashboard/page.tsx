@@ -17,6 +17,10 @@ import {
   type SetupStep,
 } from "@/components/dashboard/ProgressSetupCard";
 import { DailyOpensChart } from "@/components/dashboard/DailyOpensChart";
+import {
+  ReadinessCard,
+  type ReadinessStep,
+} from "@/components/dashboard/ReadinessCard";
 import { ResponseFunnel } from "@/components/dashboard/ResponseFunnel";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { TamuStatCard } from "@/components/dashboard/TamuStatCard";
@@ -286,19 +290,22 @@ async function ProgressBlock({ userId }: { userId: string }) {
   const guestCount = await countLiveGuests(bundle.event.id);
   const hasCoupleStory = Boolean(bundle.couple?.story || bundle.couple?.quote);
   const hasCoverPhoto = Boolean(bundle.couple?.coverPhotoUrl);
+  // Each href ends with `#<section>` so the website editor can read
+  // window.location.hash on mount and jump straight to that section.
+  // Keys must match the SectionId union in EditorSplit.tsx.
   const steps: SetupStep[] = [
     {
       id: "couple",
       label: "Detail mempelai",
       description: "Nama, foto, dan cerita singkat tentang Anda berdua.",
-      href: "/dashboard/website",
+      href: "/dashboard/website#mempelai",
       done: Boolean(bundle.couple?.brideName && bundle.couple?.groomName),
     },
     {
       id: "schedule",
       label: "Jadwal acara",
       description: "Tanggal, waktu, dan lokasi akad serta resepsi.",
-      href: "/dashboard/website",
+      href: "/dashboard/website#acara",
       done: bundle.schedules.length > 0,
     },
     {
@@ -312,14 +319,14 @@ async function ProgressBlock({ userId }: { userId: string }) {
       id: "story",
       label: "Cerita & kutipan",
       description: "Tambah kisah Anda dan kutipan favorit.",
-      href: "/dashboard/website",
+      href: "/dashboard/website#kutipan",
       done: hasCoupleStory,
     },
     {
       id: "cover",
       label: "Foto sampul",
       description: "Unggah foto bersama sebagai latar utama.",
-      href: "/dashboard/website",
+      href: "/dashboard/website#foto-sampul",
       done: hasCoverPhoto,
     },
     {
@@ -592,7 +599,69 @@ function PublishSkeleton() {
 async function ChartBlock({ userId }: { userId: string }) {
   const current = await getCurrentEventForUser(userId);
   if (!current) return null;
-  const data = await getDailyOpens(current.event.id, 7);
+  const bundle = await getEventBundle(current.event.id);
+  if (!bundle) return null;
+
+  // Pre-publish: open events are still 0, the chart would just show
+  // a flat zero line. Show a "Kesiapan Undangan" card instead so the
+  // user has something actionable in that slot. Switches to the live
+  // chart automatically once isPublished flips true.
+  if (!bundle.event.isPublished) {
+    const guestCount = await countLiveGuests(bundle.event.id);
+    const hasCoupleStory = Boolean(
+      bundle.couple?.story || bundle.couple?.quote,
+    );
+    const hasCoverPhoto = Boolean(bundle.couple?.coverPhotoUrl);
+    const readiness: ReadinessStep[] = [
+      {
+        id: "couple",
+        label: "Detail mempelai",
+        href: "/dashboard/website#mempelai",
+        done: Boolean(
+          bundle.couple?.brideName && bundle.couple?.groomName,
+        ),
+      },
+      {
+        id: "schedule",
+        label: "Jadwal acara",
+        href: "/dashboard/website#acara",
+        done: bundle.schedules.length > 0,
+      },
+      {
+        id: "theme",
+        label: "Tema",
+        href: "/dashboard/website/theme",
+        done: Boolean(bundle.event.themeId),
+      },
+      {
+        id: "story",
+        label: "Cerita & kutipan",
+        href: "/dashboard/website#kutipan",
+        done: hasCoupleStory,
+      },
+      {
+        id: "cover",
+        label: "Foto sampul",
+        href: "/dashboard/website#foto-sampul",
+        done: hasCoverPhoto,
+      },
+      {
+        id: "guests",
+        label: "Tamu",
+        href: "/dashboard/guests",
+        done: guestCount > 0,
+      },
+      {
+        id: "publish",
+        label: "Publikasi",
+        href: "/dashboard/settings?tab=acara",
+        done: bundle.event.isPublished,
+      },
+    ];
+    return <ReadinessCard steps={readiness} />;
+  }
+
+  const data = await getDailyOpens(bundle.event.id, 7);
   return <DailyOpensChart data={data} />;
 }
 
