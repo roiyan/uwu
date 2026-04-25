@@ -410,18 +410,19 @@ export function MessagesClient({
         </button>
       </div>
 
-      {activeTab === "history" ? (
+      {/* Render both panels and toggle visibility instead of swapping
+          via a ternary. The previous version defined ComposeView as a
+          function declaration NESTED inside MessagesClient — that
+          gave it a fresh function identity on every parent re-render,
+          so React unmounted and remounted the entire compose subtree
+          (including the contentEditable div in TemplateChipEditor) on
+          every keystroke, wiping the caret. Keeping both subtrees
+          mounted preserves the editor's DOM across edits and across
+          tab switches. */}
+      <div hidden={activeTab !== "history"}>
         <HistoryListPanel history={history} eventId={eventId} />
-      ) : (
-        <ComposeView />
-      )}
-    </>
-  );
-
-  // Compose view kept as an inner function so the existing JSX stays
-  // intact and we don't have to thread every state value through props.
-  function ComposeView() {
-    return (
+      </div>
+      <div hidden={activeTab !== "compose"}>
     <div className="grid gap-6 lg:grid-cols-5">
       <section className="lg:col-span-3">
         <form action={formAction} className="rounded-2xl bg-surface-card p-6 shadow-ghost-sm">
@@ -1066,8 +1067,9 @@ export function MessagesClient({
         </div>
       </section>
     </div>
-    );
-  }
+      </div>
+    </>
+  );
 }
 
 function HistoryCard({ row, eventId }: { row: HistoryRow; eventId: string }) {
