@@ -121,7 +121,7 @@ export default async function MessagesPage({
               aria-hidden
               className="h-px w-7 bg-[var(--d-coral)]"
             />
-            <p className="d-eyebrow">Kirim Undangan</p>
+            <p className="d-eyebrow">Broadcast · Personal &amp; Massal</p>
           </div>
           <h1 className="d-serif mt-3.5 text-[clamp(36px,4.5vw,54px)] font-extralight leading-[1] tracking-[-0.025em] text-[var(--d-ink)]">
             Sampaikan kabar{" "}
