@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/shared/Toast";
 import {
@@ -348,7 +349,6 @@ function ScanPanel({
   shareUrl: string | null;
   invitationSlug: string;
 }) {
-  const toast = useToast();
   return (
     <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6 lg:p-7">
       <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
@@ -369,22 +369,21 @@ function ScanPanel({
       </div>
 
       {shareUrl && (
-        <div className="mt-5 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              navigator.clipboard.writeText(shareUrl).then(
-                () => toast.success("Link stasiun disalin."),
-                () => toast.error("Gagal menyalin — copy manual."),
-              );
-            }}
-            className="d-mono rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)]"
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border border-[var(--d-line)] bg-[var(--d-bg-card)] px-4 py-3.5">
+          <div className="min-w-0">
+            <p className="text-[13px] text-[var(--d-ink)]">
+              Bagikan akses check-in ke penerima tamu
+            </p>
+            <p className="d-serif mt-0.5 text-[11px] italic text-[var(--d-ink-faint)]">
+              Buat link + PIN aman di Pengaturan
+            </p>
+          </div>
+          <Link
+            href="/dashboard/settings?tab=preferensi#operator-link"
+            className="d-mono inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[rgba(240,160,156,0.25)] bg-[rgba(240,160,156,0.08)] px-4 py-2 text-[11px] uppercase tracking-[0.18em] text-[var(--d-coral)] transition-colors hover:bg-[rgba(240,160,156,0.14)]"
           >
-            Salin Link Stasiun
-          </button>
-          <span className="d-mono break-all text-[11px] text-[var(--d-ink-faint)]">
-            {shareUrl}
-          </span>
+            Buka Pengaturan →
+          </Link>
         </div>
       )}
     </div>

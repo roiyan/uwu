@@ -52,6 +52,23 @@ export function OperatorLinkCard({
     };
   }, [eventId, enabled]);
 
+  // When the page is opened with #operator-link in the hash (e.g. from
+  // /dashboard/checkin's "Buka Pengaturan" CTA), browsers can't resolve
+  // the anchor synchronously because the section only mounts once the
+  // tab data is available. After the initial fetch settles we scroll
+  // ourselves so the operator card is centred in view.
+  useEffect(() => {
+    if (loading || !enabled) return;
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#operator-link") return;
+    const t = window.setTimeout(() => {
+      document
+        .getElementById("operator-link")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+    return () => window.clearTimeout(t);
+  }, [loading, enabled]);
+
   function handleGenerate() {
     startTransition(async () => {
       const res = await generateOperatorLinkAction(eventId);
@@ -114,7 +131,7 @@ export function OperatorLinkCard({
   if (!enabled) return null;
 
   return (
-    <section className="space-y-3">
+    <section id="operator-link" className="space-y-3 scroll-mt-24">
       <div className="flex items-center gap-3">
         <span aria-hidden className="h-px w-8 bg-[var(--d-green)]" />
         <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-green)]">
