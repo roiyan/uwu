@@ -153,6 +153,16 @@ export const events = pgTable("events", {
   // default so the public /check-in/[eventId] route refuses traffic
   // until they're explicitly ready.
   checkinEnabled: boolean("checkin_enabled").notNull().default(false),
+  // Operator-station gate. When checkin is enabled, the couple
+  // generates a pair of (token, PIN). The token sits in the
+  // /check-in/<eventId>?token=… URL, the 4-digit PIN is shared
+  // separately with the receiving operator. Resetting either
+  // invalidates the old link in one step.
+  operatorPin: text("operator_pin"),
+  operatorToken: text("operator_token"),
+  operatorTokenCreatedAt: timestamp("operator_token_created_at", {
+    withTimezone: true,
+  }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
