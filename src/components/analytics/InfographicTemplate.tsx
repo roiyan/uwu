@@ -37,6 +37,7 @@ const C = {
   inkDim: "#9E9A95",
   inkFaint: "#4A4850",
   line: "rgba(237,232,222,0.07)",
+  lineSoft: "rgba(255,255,255,0.04)",
   lineStrong: "rgba(237,232,222,0.16)",
   coral: "#F0A09C",
   peach: "#F4B8A3",
@@ -50,6 +51,15 @@ const C = {
 const FONT_SERIF = '"Fraunces", "Cormorant Garamond", Georgia, serif';
 const FONT_SANS = '"Outfit", "Inter", system-ui, sans-serif';
 const FONT_MONO = '"JetBrains Mono", ui-monospace, monospace';
+
+// Section rhythm — a single source of truth for vertical cadence so
+// every block sits on the same 28-pixel grid the design system uses
+// elsewhere on the dark dashboard.
+const SECTION_GAP = 28;
+const HEADING_TO_CONTENT = 16;
+const EYEBROW_TO_TITLE = 8;
+const CARD_PADDING = 18;
+const CARD_RADIUS = 14;
 
 const DAY_LABELS = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
 const HOUR_BUCKETS: Array<{ label: string; from: number; to: number }> = [
@@ -79,6 +89,40 @@ const ALL_SECTIONS: readonly InfographicSectionId[] = [
   "messages",
   "summary",
 ];
+
+// Normalise the couple-name string the upstream pipeline supplies. Some
+// data sources concatenate without spaces around the ampersand
+// ("Vivi&Roiyan"); the visual is jarring at this size, and a tight
+// letter-spacing makes it worse. Single normaliser, single-purpose.
+function normaliseCoupleName(raw: string): string {
+  return raw.replace(/\s*&\s*/g, " & ").replace(/\s+/g, " ").trim();
+}
+
+// "2026-04-30" → "30 April 2026". Falls back to the input when the
+// string isn't a parseable ISO date so the export never blanks the
+// header on edge data.
+function formatLongDate(raw: string | null): string | null {
+  if (!raw) return null;
+  const m = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return raw;
+  const [, y, mo, d] = m;
+  const dt = new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d)));
+  if (Number.isNaN(dt.getTime())) return raw;
+  return dt.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+// Soft truncate so wishes cards stay roughly uniform height without
+// relying on `line-clamp` (html2canvas's CSS pass occasionally drops
+// the webkit-only properties).
+function softTruncate(text: string, max = 160): string {
+  if (text.length <= max) return text;
+  return text.slice(0, max).trimEnd() + "…";
+}
 
 export function InfographicTemplate({
   data,
@@ -140,38 +184,21 @@ export function InfographicTemplate({
     }
   }
 
-  // Funnel stages — five points narrowing top-down so the visual
-  // mirrors the dashboard chart.
-  const denomTotal = Math.max(1, t.totalGuests);
-  const denomInvited = Math.max(1, t.invited);
-  const denomOpened = Math.max(1, t.opened);
-  const denomResponded = Math.max(1, t.responded);
+  // Funnel stages — every percentage is relative to the TOTAL guest
+  // count and capped at 100%. The previous version used per-stage
+  // denominators (e.g. opened/invited) which produced numbers > 100%
+  // when invitations were resent — visually nonsensical for a funnel.
+  // Total stays anchored at 100% so the bars truly narrow downward.
+  const pct = (v: number) =>
+    t.totalGuests > 0
+      ? Math.min(100, Math.round((v / t.totalGuests) * 100))
+      : 0;
   const funnel = [
     { label: "Total", value: t.totalGuests, pct: 100, color: C.coral },
-    {
-      label: "Diundang",
-      value: t.invited,
-      pct: Math.round((t.invited / denomTotal) * 100),
-      color: C.peach,
-    },
-    {
-      label: "Dibuka",
-      value: t.opened,
-      pct: Math.round((t.opened / denomInvited) * 100),
-      color: C.gold,
-    },
-    {
-      label: "RSVP",
-      value: t.responded,
-      pct: Math.round((t.responded / denomOpened) * 100),
-      color: C.lilac,
-    },
-    {
-      label: "Hadir",
-      value: t.attending,
-      pct: Math.round((t.attending / denomResponded) * 100),
-      color: C.green,
-    },
+    { label: "Diundang", value: t.invited, pct: pct(t.invited), color: C.peach },
+    { label: "Dibuka", value: t.opened, pct: pct(t.opened), color: C.gold },
+    { label: "RSVP", value: t.responded, pct: pct(t.responded), color: C.lilac },
+    { label: "Hadir", value: t.attending, pct: pct(t.attending), color: C.green },
   ];
 
   return (
@@ -186,7 +213,7 @@ export function InfographicTemplate({
         background: C.bg,
         color: C.ink,
         fontFamily: FONT_SANS,
-        padding: "72px 64px 56px",
+        padding: "64px 64px 48px",
         boxSizing: "border-box",
         overflow: "hidden",
         pointerEvents: "none",
@@ -211,19 +238,19 @@ export function InfographicTemplate({
 
       {/* ============== Header ============== */}
       <Header
-        coupleName={data.coupleName}
-        eventDate={data.eventDate}
+        coupleName={normaliseCoupleName(data.coupleName)}
+        eventDate={formatLongDate(data.eventDate)}
         venue={data.venue}
       />
 
-      {/* ============== KPI Row (3 cards) ============== */}
+      {/* ============== KPI Row (3 equal-width cards) ============== */}
       {has("kpi") && (
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 16,
-            marginTop: 56,
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 12,
+            marginTop: 48,
             position: "relative",
           }}
         >
@@ -315,10 +342,11 @@ export function InfographicTemplate({
       {has("summary") && (
         <div
           style={{
-            marginTop: 48,
+            marginTop: SECTION_GAP + 12,
             display: "grid",
             gridTemplateColumns: "1fr 1fr",
-            gap: 16,
+            gap: 12,
+            alignItems: "stretch",
           }}
         >
           <StatusCard
@@ -330,16 +358,18 @@ export function InfographicTemplate({
           <SummaryCard
             totalGuests={t.totalGuests}
             conversionPct={conversionPct}
-            packageName={data.packageName}
           />
         </div>
       )}
 
-      {/* ============== Brand footer ============== */}
+      {/* ============== Brand footer ==============
+          Logo + date sit on a dedicated baseline. The thin line above
+          and the smaller logo/text reflect what an export caption
+          should be: present and identifiable, never dominant. */}
       <div
         style={{
-          marginTop: 56,
-          paddingTop: 24,
+          marginTop: 40,
+          paddingTop: 16,
           borderTop: `1px solid ${C.line}`,
           display: "flex",
           alignItems: "center",
@@ -350,25 +380,26 @@ export function InfographicTemplate({
         {/* Real UWU wordmark from public/logo.png — embedded as a
             base64 data URL so html2canvas can render it without a
             network fetch (path-based <img src="/logo.png"> races the
-            off-screen capture). 96px wide, ~7KB. */}
+            off-screen capture). */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={UWU_LOGO_DATA_URL}
           alt="uwu"
-          width={96}
-          height={30}
-          style={{ display: "block", opacity: 0.85 }}
+          width={56}
+          height={18}
+          style={{ display: "block", opacity: 0.55, objectFit: "contain" }}
         />
         <span
           style={{
             fontFamily: FONT_MONO,
             fontSize: 10,
-            letterSpacing: "0.28em",
+            letterSpacing: "0.22em",
             color: C.inkFaint,
             textTransform: "uppercase",
+            opacity: 0.7,
           }}
         >
-          · {generated}
+          uwu.id · {generated}
         </span>
       </div>
     </div>
@@ -388,6 +419,12 @@ function Header({
   eventDate: string | null;
   venue: string | null;
 }) {
+  // Date and venue render with sentence case; only the eyebrow is
+  // uppercase. Stripping `text-transform: uppercase` from the meta
+  // line is what tames the previous "HOTEL" shouting.
+  const meta =
+    [eventDate, venue].filter((v): v is string => Boolean(v)).join(" · ") ||
+    null;
   return (
     <div style={{ position: "relative", textAlign: "center" }}>
       <div
@@ -432,27 +469,28 @@ function Header({
           fontFamily: FONT_SERIF,
           fontWeight: 200,
           fontSize: 68,
-          letterSpacing: "-0.025em",
+          letterSpacing: "-0.02em",
           lineHeight: 1.05,
-          margin: "26px 0 0",
+          margin: "22px 0 0",
           color: C.ink,
         }}
       >
         {coupleName}
       </h1>
-      <p
-        style={{
-          fontFamily: FONT_MONO,
-          fontSize: 13,
-          letterSpacing: "0.18em",
-          color: C.inkDim,
-          textTransform: "uppercase",
-          marginTop: 16,
-        }}
-      >
-        {eventDate ?? "—"}
-        {venue ? ` · ${venue}` : ""}
-      </p>
+      {meta && (
+        <p
+          style={{
+            fontFamily: FONT_MONO,
+            fontSize: 12,
+            letterSpacing: "0.18em",
+            color: C.inkDim,
+            marginTop: 14,
+            margin: "14px 0 0",
+          }}
+        >
+          {meta}
+        </p>
+      )}
     </div>
   );
 }
@@ -465,7 +503,7 @@ function SectionHeading({
   title: React.ReactNode;
 }) {
   return (
-    <div style={{ marginTop: 56, position: "relative" }}>
+    <div style={{ marginTop: SECTION_GAP, position: "relative" }}>
       <p
         style={{
           fontFamily: FONT_MONO,
@@ -482,10 +520,10 @@ function SectionHeading({
         style={{
           fontFamily: FONT_SERIF,
           fontWeight: 300,
-          fontSize: 26,
+          fontSize: 22,
           letterSpacing: "-0.015em",
           lineHeight: 1.2,
-          margin: "10px 0 22px",
+          margin: `${EYEBROW_TO_TITLE}px 0 ${HEADING_TO_CONTENT}px`,
           color: C.ink,
         }}
       >
@@ -506,16 +544,24 @@ function KpiTile({
   dot: string;
   highlight?: boolean;
 }) {
+  // The "Hadir" tile keeps a subtle green tint instead of a saturated
+  // gradient so it sits as a peer to the other two tiles, not a
+  // dominant focal point.
+  const tileBackground = highlight
+    ? "linear-gradient(135deg, rgba(126,211,164,0.08), rgba(126,211,164,0.04))"
+    : C.bgCard;
+  const tileBorder = highlight
+    ? "1px solid rgba(126,211,164,0.18)"
+    : `1px solid ${C.line}`;
   return (
     <div
       style={{
-        padding: "26px 24px",
-        borderRadius: 18,
-        border: `1px solid ${C.line}`,
-        background: highlight
-          ? "linear-gradient(135deg, rgba(126,211,164,0.10), #0E0F18)"
-          : C.bgCard,
+        padding: "20px",
+        borderRadius: CARD_RADIUS,
+        border: tileBorder,
+        background: tileBackground,
         position: "relative",
+        minHeight: 132,
       }}
     >
       <div
@@ -524,8 +570,8 @@ function KpiTile({
           alignItems: "center",
           gap: 8,
           fontFamily: FONT_MONO,
-          fontSize: 11,
-          letterSpacing: "0.24em",
+          fontSize: 10,
+          letterSpacing: "0.22em",
           color: C.inkDim,
           textTransform: "uppercase",
         }}
@@ -545,7 +591,7 @@ function KpiTile({
         style={{
           fontFamily: FONT_SERIF,
           fontWeight: 200,
-          fontSize: 60,
+          fontSize: 56,
           letterSpacing: "-0.025em",
           lineHeight: 1,
           marginTop: 14,
@@ -570,19 +616,21 @@ function FunnelBlock({
   }>;
   conversionPct: number;
 }) {
-  const max = Math.max(1, ...funnel.map((f) => f.value));
   return (
     <div
       style={{
-        padding: 24,
-        borderRadius: 18,
+        padding: 20,
+        borderRadius: CARD_RADIUS,
         border: `1px solid ${C.line}`,
         background: C.bgCard,
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {funnel.map((f) => {
-          const widthPct = Math.max(8, (f.value / max) * 100);
+          // Width tracks the same total-relative percentage shown on
+          // the right rail, so the bar physically narrows down the
+          // funnel. 6% floor keeps a sliver visible for tiny values.
+          const widthPct = Math.max(6, f.pct);
           return (
             <div
               key={f.label}
@@ -590,12 +638,13 @@ function FunnelBlock({
             >
               <div
                 style={{
-                  width: 90,
+                  width: 84,
                   fontFamily: FONT_MONO,
                   fontSize: 10,
                   letterSpacing: "0.18em",
                   color: C.inkDim,
                   textTransform: "uppercase",
+                  textAlign: "right",
                 }}
               >
                 {f.label}
@@ -603,10 +652,10 @@ function FunnelBlock({
               <div
                 style={{
                   flex: 1,
-                  height: 38,
+                  height: 28,
                   position: "relative",
                   background: "rgba(255,255,255,0.025)",
-                  borderRadius: 8,
+                  borderRadius: 4,
                   overflow: "hidden",
                 }}
               >
@@ -614,13 +663,13 @@ function FunnelBlock({
                   style={{
                     width: `${widthPct}%`,
                     height: "100%",
-                    background: `linear-gradient(90deg, ${f.color}, ${f.color}77)`,
+                    background: `linear-gradient(90deg, ${f.color}, ${f.color}88)`,
                     display: "flex",
                     alignItems: "center",
-                    paddingLeft: 14,
+                    paddingLeft: 12,
                     fontFamily: FONT_SERIF,
                     fontWeight: 300,
-                    fontSize: 18,
+                    fontSize: 15,
                     color: "#0B0B15",
                   }}
                 >
@@ -629,9 +678,10 @@ function FunnelBlock({
               </div>
               <div
                 style={{
-                  width: 60,
+                  width: 52,
                   fontFamily: FONT_MONO,
-                  fontSize: 12,
+                  fontSize: 10,
+                  letterSpacing: "0.04em",
                   textAlign: "right",
                   color: C.ink,
                 }}
@@ -644,8 +694,8 @@ function FunnelBlock({
       </div>
       <div
         style={{
-          marginTop: 22,
-          paddingTop: 18,
+          marginTop: 18,
+          paddingTop: 14,
           borderTop: `1px solid ${C.line}`,
           display: "flex",
           alignItems: "baseline",
@@ -668,7 +718,7 @@ function FunnelBlock({
           style={{
             fontFamily: FONT_SERIF,
             fontWeight: 200,
-            fontSize: 36,
+            fontSize: 32,
             letterSpacing: "-0.02em",
             lineHeight: 1,
             margin: 0,
@@ -676,7 +726,7 @@ function FunnelBlock({
           }}
         >
           {conversionPct}
-          <span style={{ fontSize: 18, color: C.inkDim }}>%</span>
+          <span style={{ fontSize: 16, color: C.inkDim }}>%</span>
         </p>
       </div>
     </div>
@@ -695,8 +745,8 @@ function HeatmapBlock({
   return (
     <div
       style={{
-        padding: 24,
-        borderRadius: 18,
+        padding: 20,
+        borderRadius: CARD_RADIUS,
         border: `1px solid ${C.line}`,
         background: C.bgCard,
       }}
@@ -716,7 +766,7 @@ function HeatmapBlock({
             key={h.label}
             style={{
               fontFamily: FONT_MONO,
-              fontSize: 9,
+              fontSize: 8,
               textAlign: "center",
               color: C.inkFaint,
               letterSpacing: "0.06em",
@@ -740,8 +790,8 @@ function HeatmapBlock({
           <div
             style={{
               fontFamily: FONT_MONO,
-              fontSize: 10,
-              letterSpacing: "0.18em",
+              fontSize: 9,
+              letterSpacing: "0.12em",
               color: C.inkFaint,
               display: "flex",
               alignItems: "center",
@@ -752,7 +802,7 @@ function HeatmapBlock({
           </div>
           {row.map((c, hIdx) => {
             const intensity = max === 0 ? 0 : c / max;
-            const op = c === 0 ? 0.06 : 0.1 + intensity * 0.75;
+            const op = c === 0 ? 0 : 0.12 + intensity * 0.7;
             const isPeak =
               peak && peak.day === dIdx && peak.bucket === hIdx;
             return (
@@ -761,10 +811,11 @@ function HeatmapBlock({
                 style={{
                   height: 28,
                   borderRadius: 4,
-                  background: `rgba(240,160,156,${op})`,
+                  background:
+                    c === 0 ? "transparent" : `rgba(240,160,156,${op})`,
                   border: isPeak
                     ? `1px solid ${C.coral}`
-                    : "1px solid rgba(255,255,255,0.02)",
+                    : "1px solid rgba(255,255,255,0.03)",
                 }}
               />
             );
@@ -774,11 +825,11 @@ function HeatmapBlock({
       {/* Caption */}
       <div
         style={{
-          marginTop: 14,
-          paddingTop: 12,
+          marginTop: 12,
+          paddingTop: 10,
           borderTop: `1px solid ${C.line}`,
           fontFamily: FONT_MONO,
-          fontSize: 10,
+          fontSize: 9,
           letterSpacing: "0.18em",
           color: peak ? C.coral : C.inkFaint,
           textTransform: "uppercase",
@@ -797,11 +848,14 @@ function ResponsesBlock({
 }: {
   rows: AnalyticsExportData["guests"];
 }) {
+  // Column widths: name 35%, group 30%, status 20%, pax 15%. Encoded
+  // as fr units so the grid stretches to the card width.
+  const COLS = "1.4fr 1.2fr 0.8fr 0.6fr";
   return (
     <div
       style={{
-        padding: "20px 24px",
-        borderRadius: 18,
+        padding: "16px 20px",
+        borderRadius: CARD_RADIUS,
         border: `1px solid ${C.line}`,
         background: C.bgCard,
       }}
@@ -810,12 +864,12 @@ function ResponsesBlock({
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1.4fr 1fr 0.9fr 0.7fr",
+          gridTemplateColumns: COLS,
           gap: 14,
-          paddingBottom: 12,
+          paddingBottom: 10,
           borderBottom: `1px solid ${C.line}`,
           fontFamily: FONT_MONO,
-          fontSize: 10,
+          fontSize: 9,
           letterSpacing: "0.22em",
           color: C.inkFaint,
           textTransform: "uppercase",
@@ -831,11 +885,11 @@ function ResponsesBlock({
           key={i}
           style={{
             display: "grid",
-            gridTemplateColumns: "1.4fr 1fr 0.9fr 0.7fr",
+            gridTemplateColumns: COLS,
             gap: 14,
-            padding: "12px 0",
+            padding: "10px 0",
             borderBottom:
-              i === rows.length - 1 ? "none" : `1px solid ${C.line}`,
+              i === rows.length - 1 ? "none" : `1px solid ${C.lineSoft}`,
             fontSize: 13,
             alignItems: "center",
           }}
@@ -865,9 +919,11 @@ function ResponsesBlock({
 }
 
 function StatusPillInline({ status }: { status: string }) {
+  // "Tidak Hadir" intentionally uses soft coral, not the bright red
+  // we reserve for hard errors. The status is a state, not a problem.
   const palette: Record<string, { bg: string; fg: string; dot: string }> = {
     Hadir: {
-      bg: "rgba(126,211,164,0.10)",
+      bg: "rgba(126,211,164,0.12)",
       fg: C.green,
       dot: C.green,
     },
@@ -882,9 +938,9 @@ function StatusPillInline({ status }: { status: string }) {
       dot: C.blue,
     },
     "Tidak Hadir": {
-      bg: "rgba(224,138,138,0.10)",
-      fg: C.red,
-      dot: C.red,
+      bg: "rgba(240,160,156,0.12)",
+      fg: C.coral,
+      dot: C.coral,
     },
     Baru: {
       bg: "rgba(237,232,222,0.04)",
@@ -928,14 +984,14 @@ function WishesBlock({
   wishes: AnalyticsExportData["guests"];
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {wishes.map((w, i) => (
         <div
           key={i}
           style={{
             position: "relative",
-            padding: "22px 26px 22px 32px",
-            borderRadius: 16,
+            padding: "16px 18px 16px 28px",
+            borderRadius: CARD_RADIUS,
             border: `1px solid ${C.line}`,
             background: C.bgCard,
           }}
@@ -944,10 +1000,10 @@ function WishesBlock({
             aria-hidden
             style={{
               position: "absolute",
-              left: 12,
-              top: -4,
+              left: 10,
+              top: 4,
               fontFamily: FONT_SERIF,
-              fontSize: 56,
+              fontSize: 28,
               fontStyle: "italic",
               color: "rgba(240,160,156,0.3)",
               lineHeight: 1,
@@ -959,24 +1015,25 @@ function WishesBlock({
             style={{
               fontFamily: FONT_SERIF,
               fontStyle: "italic",
-              fontSize: 18,
-              lineHeight: 1.5,
+              fontSize: 13,
+              lineHeight: 1.55,
               color: C.ink,
-              margin: "0 0 12px",
+              margin: "0 0 8px",
               position: "relative",
             }}
           >
-            {w.message}
+            {softTruncate(w.message ?? "", 160)}
           </p>
           <p
             style={{
-              fontFamily: FONT_SANS,
-              fontSize: 13,
-              color: C.inkDim,
+              fontFamily: FONT_MONO,
+              fontSize: 10,
+              letterSpacing: "0.04em",
+              color: C.inkFaint,
               margin: 0,
             }}
           >
-            <span style={{ color: C.inkFaint }}>—</span> {w.name}
+            — {w.name}
             {w.group ? `, ${w.group}` : ""}
           </p>
         </div>
@@ -999,10 +1056,12 @@ function StatusCard({
   return (
     <div
       style={{
-        padding: 24,
-        borderRadius: 18,
+        padding: CARD_PADDING,
+        borderRadius: CARD_RADIUS,
         border: `1px solid ${C.line}`,
         background: C.bgCard,
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <p
@@ -1017,15 +1076,31 @@ function StatusCard({
       >
         Status
       </p>
-      <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div
+        style={{
+          marginTop: 14,
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+          flex: 1,
+        }}
+      >
         <StatusRow color={C.green} label="Hadir" value={attending} />
-        <StatusRow color={C.red} label="Tidak Hadir" value={notAttending} />
-        <StatusRow color={C.inkFaint} label="Belum Merespons" value={notResponded} />
+        <StatusRow
+          color={C.coral}
+          label="Tidak Hadir"
+          value={notAttending}
+        />
+        <StatusRow
+          color={C.inkFaint}
+          label="Belum Merespons"
+          value={notResponded}
+        />
       </div>
       <div
         style={{
-          marginTop: 16,
-          paddingTop: 14,
+          marginTop: 14,
+          paddingTop: 12,
           borderTop: `1px solid ${C.line}`,
           fontFamily: FONT_MONO,
           fontSize: 10,
@@ -1064,7 +1139,7 @@ function StatusRow({
           alignItems: "center",
           gap: 8,
           fontFamily: FONT_SANS,
-          fontSize: 14,
+          fontSize: 13,
           color: C.ink,
         }}
       >
@@ -1082,7 +1157,7 @@ function StatusRow({
         style={{
           fontFamily: FONT_SERIF,
           fontWeight: 300,
-          fontSize: 22,
+          fontSize: 20,
           color: C.ink,
         }}
       >
@@ -1095,20 +1170,24 @@ function StatusRow({
 function SummaryCard({
   totalGuests,
   conversionPct,
-  packageName,
 }: {
   totalGuests: number;
   conversionPct: number;
-  packageName: string;
 }) {
+  // No "Paket {name}" line — the package label is internal billing
+  // information, not something the operator wants shared on a public
+  // post. Card height is driven by content + StatusCard's flex stretch
+  // so the two halves stay equal-height.
   return (
     <div
       style={{
-        padding: 24,
-        borderRadius: 18,
+        padding: CARD_PADDING,
+        borderRadius: CARD_RADIUS,
         border: `1px solid ${C.line}`,
         background:
           "linear-gradient(135deg, rgba(143,163,217,0.06), rgba(240,160,156,0.08))",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <p
@@ -1127,40 +1206,28 @@ function SummaryCard({
         style={{
           fontFamily: FONT_SERIF,
           fontWeight: 200,
-          fontSize: 56,
+          fontSize: 48,
           letterSpacing: "-0.025em",
           lineHeight: 1,
           color: C.ink,
-          margin: "16px 0 0",
+          margin: "auto 0 0",
         }}
       >
         {conversionPct}
-        <span style={{ fontSize: 24, color: C.inkDim }}>%</span>
+        <span style={{ fontSize: 20, color: C.inkDim }}>%</span>
       </p>
       <p
         style={{
           fontFamily: FONT_SERIF,
           fontStyle: "italic",
-          fontSize: 14,
+          fontSize: 12,
           color: C.inkDim,
-          marginTop: 10,
+          marginTop: 8,
           lineHeight: 1.5,
         }}
       >
         dari {totalGuests} tamu berujung{" "}
         <em style={{ color: C.coral }}>hadir</em>
-      </p>
-      <p
-        style={{
-          marginTop: 20,
-          fontFamily: FONT_MONO,
-          fontSize: 10,
-          letterSpacing: "0.22em",
-          color: C.inkFaint,
-          textTransform: "uppercase",
-        }}
-      >
-        Paket {packageName}
       </p>
     </div>
   );
