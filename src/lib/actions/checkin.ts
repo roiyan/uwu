@@ -385,3 +385,57 @@ export async function undoCheckinPublic(
     };
   }
 }
+
+// ---------- Operator link + PIN ----------
+//
+// Stubbed out: the underlying operator_pin / operator_token /
+// operator_token_created_at columns aren't yet present in the
+// production database. The action exports remain so the components
+// that import them still compile, but every call returns a
+// "feature not ready" error. Restore the real implementations once
+// migration 0012 has been applied to all environments.
+
+export type OperatorLink = {
+  url: string;
+  pin: string;
+  token: string;
+  createdAt: string;
+};
+
+const OPERATOR_FEATURE_OFFLINE_ERROR =
+  "Fitur link operator sedang dipersiapkan. Coba lagi nanti.";
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export async function generateOperatorLinkAction(
+  eventId: string,
+): Promise<ActionResult<OperatorLink>> {
+  return { ok: false, error: OPERATOR_FEATURE_OFFLINE_ERROR };
+}
+
+export async function resetOperatorLinkAction(
+  eventId: string,
+): Promise<ActionResult<OperatorLink>> {
+  return { ok: false, error: OPERATOR_FEATURE_OFFLINE_ERROR };
+}
+
+export async function verifyOperatorPinAction(
+  eventId: string,
+  token: string,
+  pin: string,
+): Promise<ActionResult<{ sessionKey: string }>> {
+  return { ok: false, error: OPERATOR_FEATURE_OFFLINE_ERROR };
+}
+
+export async function verifyOperatorSessionAction(
+  eventId: string,
+  sessionKey: string,
+): Promise<{ ok: boolean }> {
+  return { ok: false };
+}
+
+export async function getOperatorLinkAction(
+  eventId: string,
+): Promise<ActionResult<OperatorLink | null>> {
+  return { ok: true, data: null };
+}
+/* eslint-enable @typescript-eslint/no-unused-vars */
