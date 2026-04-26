@@ -411,6 +411,25 @@ export function MessagesClient({
 
   return (
     <>
+      {/* Subtle ambient glow behind the entire page — lilac top-right
+          + peach bottom-left, both heavy blur at low opacity. Mirrors
+          the template's `.main-bg` decoration so the dark surface
+          gets a touch of editorial depth without distracting from
+          the form chrome. pointer-events-none so it never intercepts
+          clicks. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+      >
+        <div
+          className="absolute -right-24 -top-24 h-[520px] w-[520px] rounded-full opacity-[0.06] blur-[130px]"
+          style={{ background: "var(--d-lilac)" }}
+        />
+        <div
+          className="absolute bottom-[-100px] left-[30%] h-[380px] w-[380px] rounded-full opacity-[0.06] blur-[130px]"
+          style={{ background: "var(--d-peach)" }}
+        />
+      </div>
       {!isPublished && <UnpublishedBanner />}
       <div className="mb-7 inline-flex flex-wrap rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1">
         <TabButton
@@ -476,8 +495,10 @@ export function MessagesClient({
       </div>
       <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
     {/* Single-column compose layout. Riwayat lives on its own tab now,
-        so the right rail (recent broadcasts + tips) was retired. */}
-    <div className="mx-auto max-w-4xl">
+        so the right rail (recent broadcasts + tips) was retired.
+        Per template ref the compose surface fills the full width of
+        the dashboard content area — no max-width constraint here. */}
+    <div>
       <section className="min-w-0">
         <form
           action={formAction}
@@ -489,40 +510,48 @@ export function MessagesClient({
               className="h-px w-7 bg-[var(--d-coral)]"
             />
             <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
-              N° 01 — Buat Broadcast
+              N° 01 — Buat broadcast
             </p>
           </div>
           <h2 className="d-serif text-[24px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
-            Susun pesan, pilih audiens, lalu{" "}
-            <em className="d-serif italic text-[var(--d-coral)]">kirim</em>.
+            Pilih kanal &amp;{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">susun pesan</em>
           </h2>
 
           <div className="mt-6">
-            <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-              Kanal
-            </span>
+            <FieldLabel
+              label="Kanal pengiriman"
+              hint="Bisa pilih satu atau gabungan"
+            />
             <div className="mt-2.5 grid grid-cols-3 gap-2.5">
               <ChannelButton
                 active={channel === "whatsapp"}
                 onClick={() => selectChannel("whatsapp")}
-                label="📱 WhatsApp"
+                label="WhatsApp"
                 hint={
                   providers.whatsappConfigured
-                    ? "Server aktif"
-                    : "Mode manual"
+                    ? "Mode Otomatis"
+                    : "Mode Manual"
                 }
+                kind="whatsapp"
               />
               <ChannelButton
                 active={channel === "email"}
                 onClick={() => selectChannel("email")}
-                label="✉️ Email"
-                hint={providers.emailConfigured ? "Aktif" : "Mode simulasi"}
+                label="Email"
+                hint={
+                  providers.emailConfigured
+                    ? "Mode Otomatis"
+                    : "Mode Simulasi"
+                }
+                kind="email"
               />
               <ChannelButton
                 active={channel === "both"}
                 onClick={() => selectChannel("both")}
-                label="📨 Keduanya"
+                label="Keduanya"
                 hint="Email + WA"
+                kind="both"
               />
             </div>
           </div>
@@ -544,9 +573,10 @@ export function MessagesClient({
           />
 
           <label className="mt-5 block">
-            <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-              Template
-            </span>
+            <FieldLabel
+              label="Template pesan"
+              hint={`${channelTemplates.length} template tersedia`}
+            />
             <div className="relative mt-2.5">
               <select
                 value={templateSlug}
@@ -572,9 +602,10 @@ export function MessagesClient({
 
           {(channel === "email" || channel === "both") && (
             <label className="mt-5 block">
-              <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-                {channel === "both" ? "Subject Email" : "Subject"}
-              </span>
+              <FieldLabel
+                label={channel === "both" ? "Subject Email" : "Subject"}
+                hint="Tampil di inbox tamu"
+              />
               <input
                 name="subject"
                 value={subject}
@@ -586,23 +617,28 @@ export function MessagesClient({
           )}
 
           <div className="mt-5">
-            <div className="mb-2.5 flex items-center justify-between">
-              <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+            <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
+              <span className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-ink-faint)]">
                 {channel === "both"
                   ? "Isi Pesan WhatsApp"
                   : channel === "email"
                     ? "Isi Pesan Email"
                     : "Isi Pesan"}
               </span>
-              {providers.aiAvailable && (
-                <button
-                  type="button"
-                  onClick={() => setAiTarget("primary")}
-                  className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(184,157,212,0.3)] bg-[rgba(184,157,212,0.06)] px-3 py-1 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-lilac)] transition-colors hover:border-[var(--d-lilac)] hover:bg-[rgba(184,157,212,0.12)]"
-                >
-                  <span aria-hidden>✦</span> Bantu Tulis
-                </button>
-              )}
+              <div className="flex items-baseline gap-3">
+                <span className="d-serif hidden text-[11px] italic text-[var(--d-ink-faint)] sm:inline">
+                  Variabel diisi otomatis per tamu
+                </span>
+                {providers.aiAvailable && (
+                  <button
+                    type="button"
+                    onClick={() => setAiTarget("primary")}
+                    className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(184,157,212,0.3)] bg-[rgba(184,157,212,0.06)] px-3 py-1 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-lilac)] transition-colors hover:border-[var(--d-lilac)] hover:bg-[rgba(184,157,212,0.12)]"
+                  >
+                    <span aria-hidden>✦</span> Bantu Tulis
+                  </button>
+                )}
+              </div>
             </div>
             <TemplateChipEditor
               name="body"
@@ -691,9 +727,10 @@ export function MessagesClient({
           <input type="hidden" name="scheduledAt" value={scheduledAtIso} />
 
           <div className="mt-6">
-            <span className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-              Audiens
-            </span>
+            <FieldLabel
+              label="Audiens · Pilih penerima"
+              hint={`Total ${recipientSample.length} tamu memiliki kontak`}
+            />
             <div className="mt-2.5 space-y-2">
               <AudienceRadio
                 active={audience.type === "all"}
@@ -1640,11 +1677,15 @@ function UnpublishedBanner() {
             Belum dipublikasikan
           </p>
           <p className="d-serif mt-1.5 text-[16px] font-light leading-tight text-[var(--d-ink)]">
-            Undangan masih tersembunyi.
+            Undangan belum dipublikasikan.
           </p>
           <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--d-ink-dim)]">
-            Tamu yang menerima link undangan saat ini akan melihat halaman
-            404. Publikasikan dulu di Pengaturan agar undangan bisa dibuka.
+            Tamu yang menerima link akan melihat halaman 404. Publikasikan
+            dulu di{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">
+              Pengaturan
+            </em>{" "}
+            agar undangan bisa dibuka.
           </p>
           <Link
             href="/dashboard/settings?tab=acara"
@@ -1733,17 +1774,83 @@ function UpgradeWhatsAppCard() {
   );
 }
 
+// Field label — uppercase mono caption + optional serif italic hint
+// matching the template's `.field-label` / `.hint` pattern.
+function FieldLabel({ label, hint }: { label: string; hint?: string }) {
+  return (
+    <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <span className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-ink-faint)]">
+        {label}
+      </span>
+      {hint && (
+        <span className="d-serif text-[11px] italic text-[var(--d-ink-faint)]">
+          {hint}
+        </span>
+      )}
+    </div>
+  );
+}
+
+const CHANNEL_ICON: Record<
+  "whatsapp" | "email" | "both",
+  { icon: React.ReactNode; bg: string; color: string }
+> = {
+  whatsapp: {
+    bg: "rgba(37,211,102,0.10)",
+    color: "var(--d-green)",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-[18px] w-[18px]">
+        <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-1 1.1-.2.2-.4.2-.7.1-.9-.4-1.7-.9-2.4-1.6-.6-.6-1.1-1.3-1.5-2-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.5-.4-.5-.6-.5h-.6c-.2 0-.5.2-.7.4-.7.7-1.1 1.6-1.1 2.6 0 .8.3 1.6.7 2.3 1.4 2 3.1 3.6 5.2 4.6.5.2.9.4 1.4.5.6.2 1.2.2 1.8.1.7-.1 1.4-.6 1.8-1.2.2-.4.2-.7.1-.8 0-.1-.2-.2-.5-.3M12 2C6.5 2 2 6.5 2 12c0 1.7.5 3.4 1.3 4.9L2 22l5.3-1.4c1.5.8 3.1 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2" />
+      </svg>
+    ),
+  },
+  email: {
+    bg: "rgba(143,163,217,0.10)",
+    color: "var(--d-blue)",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        className="h-[18px] w-[18px]"
+      >
+        <rect x="2" y="4" width="20" height="16" rx="2" />
+        <path d="M22 7l-10 5L2 7" />
+      </svg>
+    ),
+  },
+  both: {
+    bg: "linear-gradient(135deg, rgba(37,211,102,0.12), rgba(143,163,217,0.12))",
+    color: "var(--d-lilac)",
+    icon: (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        className="h-[18px] w-[18px]"
+      >
+        <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 4a2 2 0 100 4 2 2 0 000-4z" />
+      </svg>
+    ),
+  },
+};
+
 function ChannelButton({
   active,
   onClick,
   label,
   hint,
+  kind,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
   hint: string;
+  kind: "whatsapp" | "email" | "both";
 }) {
+  const { icon, bg, color } = CHANNEL_ICON[kind];
   return (
     <button
       type="button"
@@ -1761,12 +1868,15 @@ function ChannelButton({
           className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[var(--d-coral)] shadow-[0_0_8px_var(--d-coral)]"
         />
       )}
-      <p className="d-serif text-[14px]">{label}</p>
-      <p
-        className={`d-mono mt-1 text-[10.5px] uppercase tracking-[0.18em] ${
-          active ? "text-[var(--d-coral)]" : "text-[var(--d-ink-faint)]"
-        }`}
+      <span
+        aria-hidden
+        className="mb-2 inline-flex h-[34px] w-[34px] items-center justify-center rounded-[10px]"
+        style={{ background: bg, color }}
       >
+        {icon}
+      </span>
+      <p className="d-serif text-[14px]">{label}</p>
+      <p className="d-mono mt-1 text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
         {hint}
       </p>
     </button>
