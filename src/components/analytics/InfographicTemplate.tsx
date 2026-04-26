@@ -62,13 +62,33 @@ const HOUR_BUCKETS: Array<{ label: string; from: number; to: number }> = [
   { label: "21", from: 21, to: 23 },
 ];
 
+export type InfographicSectionId =
+  | "kpi"
+  | "funnel"
+  | "heatmap"
+  | "responses"
+  | "messages"
+  | "summary";
+
+const ALL_SECTIONS: readonly InfographicSectionId[] = [
+  "kpi",
+  "funnel",
+  "heatmap",
+  "responses",
+  "messages",
+  "summary",
+];
+
 export function InfographicTemplate({
   data,
   id = "uwu-infographic",
+  selectedSections = ALL_SECTIONS,
 }: {
   data: AnalyticsExportData;
   id?: string;
+  selectedSections?: readonly InfographicSectionId[];
 }) {
+  const has = (s: InfographicSectionId) => selectedSections.includes(s);
   const t = data.totals;
   const conversionPct =
     t.totalGuests > 0
@@ -196,55 +216,64 @@ export function InfographicTemplate({
       />
 
       {/* ============== KPI Row (3 cards) ============== */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 16,
-          marginTop: 56,
-          position: "relative",
-        }}
-      >
-        <KpiTile
-          label="Total Tamu"
-          value={t.totalGuests}
-          dot={C.coral}
-        />
-        <KpiTile
-          label="Hadir (RSVP)"
-          value={t.attending}
-          dot={C.green}
-          highlight
-        />
-        <KpiTile label="Dibuka" value={t.opened} dot={C.lilac} />
-      </div>
+      {has("kpi") && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: 16,
+            marginTop: 56,
+            position: "relative",
+          }}
+        >
+          <KpiTile label="Total Tamu" value={t.totalGuests} dot={C.coral} />
+          <KpiTile
+            label="Hadir (RSVP)"
+            value={t.attending}
+            dot={C.green}
+            highlight
+          />
+          <KpiTile label="Dibuka" value={t.opened} dot={C.lilac} />
+        </div>
+      )}
 
       {/* ============== Funnel ============== */}
-      <SectionHeading
-        eyebrow="Konversi Funnel"
-        title={
-          <>
-            Perjalanan{" "}
-            <em style={{ fontStyle: "italic", color: C.coral }}>tamu</em>.
-          </>
-        }
-      />
-      <FunnelBlock funnel={funnel} conversionPct={conversionPct} />
+      {has("funnel") && (
+        <>
+          <SectionHeading
+            eyebrow="Konversi Funnel"
+            title={
+              <>
+                Perjalanan{" "}
+                <em style={{ fontStyle: "italic", color: C.coral }}>tamu</em>.
+              </>
+            }
+          />
+          <FunnelBlock funnel={funnel} conversionPct={conversionPct} />
+        </>
+      )}
 
       {/* ============== Heatmap ============== */}
-      <SectionHeading
-        eyebrow="Aktivitas Tamu"
-        title={
-          <>
-            Kapan mereka{" "}
-            <em style={{ fontStyle: "italic", color: C.coral }}>membuka</em>?
-          </>
-        }
-      />
-      <HeatmapBlock matrix={heatMatrix} max={heatMax} peak={peak} />
+      {has("heatmap") && (
+        <>
+          <SectionHeading
+            eyebrow="Aktivitas Tamu"
+            title={
+              <>
+                Kapan mereka{" "}
+                <em style={{ fontStyle: "italic", color: C.coral }}>
+                  membuka
+                </em>
+                ?
+              </>
+            }
+          />
+          <HeatmapBlock matrix={heatMatrix} max={heatMax} peak={peak} />
+        </>
+      )}
 
       {/* ============== Responses Table ============== */}
-      {responses.length > 0 && (
+      {has("responses") && responses.length > 0 && (
         <>
           <SectionHeading
             eyebrow="Respons Tamu"
@@ -263,7 +292,7 @@ export function InfographicTemplate({
       )}
 
       {/* ============== Featured Wishes ============== */}
-      {wishes.length > 0 && (
+      {has("messages") && wishes.length > 0 && (
         <>
           <SectionHeading
             eyebrow="Ucapan Terbaik"
@@ -282,45 +311,93 @@ export function InfographicTemplate({
       )}
 
       {/* ============== Status + Summary footer ============== */}
-      <div
-        style={{
-          marginTop: 48,
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 16,
-        }}
-      >
-        <StatusCard
-          attending={t.attending}
-          notAttending={t.notAttending}
-          notResponded={t.notResponded}
-          confirmedPax={t.confirmedAttendees}
-        />
-        <SummaryCard
-          totalGuests={t.totalGuests}
-          conversionPct={conversionPct}
-          packageName={data.packageName}
-        />
-      </div>
+      {has("summary") && (
+        <div
+          style={{
+            marginTop: 48,
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 16,
+          }}
+        >
+          <StatusCard
+            attending={t.attending}
+            notAttending={t.notAttending}
+            notResponded={t.notResponded}
+            confirmedPax={t.confirmedAttendees}
+          />
+          <SummaryCard
+            totalGuests={t.totalGuests}
+            conversionPct={conversionPct}
+            packageName={data.packageName}
+          />
+        </div>
+      )}
 
       {/* ============== Brand footer ============== */}
       <div
         style={{
           marginTop: 56,
-          textAlign: "center",
-          fontFamily: FONT_MONO,
-          fontSize: 11,
-          letterSpacing: "0.32em",
-          color: C.inkFaint,
-          textTransform: "uppercase",
+          paddingTop: 24,
+          borderTop: `1px solid ${C.line}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 14,
         }}
       >
-        Dibuat dengan{" "}
-        <span style={{ color: C.coral }}>uwu.id</span>
-        {" · "}
-        {generated}
+        <UwuWordmark />
+        <span
+          style={{
+            fontFamily: FONT_MONO,
+            fontSize: 10,
+            letterSpacing: "0.28em",
+            color: C.inkFaint,
+            textTransform: "uppercase",
+          }}
+        >
+          · {generated}
+        </span>
       </div>
     </div>
+  );
+}
+
+/**
+ * Inline UWU wordmark — intentionally a small, hand-crafted SVG (not
+ * the 220kb production logo) because html2canvas is far more reliable
+ * with self-contained inline paths than with `<img>` references. The
+ * shape is the lowercase "uwu" in Fraunces-style serif italics with a
+ * small heart over the "w", matching the brand book.
+ */
+function UwuWordmark() {
+  return (
+    <svg
+      viewBox="0 0 120 36"
+      width={96}
+      height={28}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      <text
+        x="60"
+        y="26"
+        textAnchor="middle"
+        fontFamily={FONT_SERIF}
+        fontSize={26}
+        fontStyle="italic"
+        fontWeight={400}
+        fill={C.ink}
+        letterSpacing="-0.02em"
+      >
+        uwu
+      </text>
+      <path
+        d="M58 7c-1.4-1.6-4.1-1.6-5.3 0-1 1.3-.8 3.2.5 4.4l4.8 4.6 4.8-4.6c1.3-1.2 1.5-3.1.5-4.4-1.2-1.6-3.9-1.6-5.3 0z"
+        fill={C.coral}
+      />
+    </svg>
   );
 }
 
