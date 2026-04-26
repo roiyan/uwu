@@ -17,6 +17,7 @@ import { GuestQrCode } from "@/components/invitation/guest-qr-code";
 import { RsvpForm } from "./rsvp-form";
 import { GiftSection } from "./gift-section";
 import type { PublicGiftAccount } from "@/lib/actions/gift";
+import { GallerySection, type PublicGalleryImage } from "./gallery-section";
 
 type Palette = { primary: string; secondary: string; accent: string };
 
@@ -63,6 +64,7 @@ export function InvitationClient(props: {
   couple: Couple | null;
   schedules: Schedule[];
   giftAccounts?: PublicGiftAccount[];
+  galleryImages?: PublicGalleryImage[];
 }) {
   return (
     <Suspense fallback={<Skeleton palette={props.palette} />}>
@@ -94,6 +96,7 @@ function InvitationInner({
   couple,
   schedules,
   giftAccounts,
+  galleryImages,
 }: {
   event: {
     id: string;
@@ -106,6 +109,7 @@ function InvitationInner({
   couple: Couple | null;
   schedules: Schedule[];
   giftAccounts?: PublicGiftAccount[];
+  galleryImages?: PublicGalleryImage[];
 }) {
   const searchParams = useSearchParams();
   const token = searchParams.get("to");
@@ -182,6 +186,10 @@ function InvitationInner({
         palette={palette}
         eventTitle={event.title}
       />
+
+      {galleryImages && galleryImages.length > 0 && (
+        <GallerySection images={galleryImages} palette={palette} />
+      )}
 
       <RsvpSection
         token={token}

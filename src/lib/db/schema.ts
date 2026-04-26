@@ -507,6 +507,20 @@ export const giftConfirmations = pgTable("gift_confirmations", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
+
+// ---------- event_gallery (pre-wedding photo grid) ----------
+
+export const eventGallery = pgTable("event_gallery", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  caption: text("caption"),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
 // ---------- Type exports ----------
 
 export type Profile = typeof profiles.$inferSelect;
@@ -522,5 +536,6 @@ export type MessageDelivery = typeof messageDeliveries.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type EventMember = typeof eventMembers.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
+export type EventGalleryRow = typeof eventGallery.$inferSelect;
 export type GiftAccount = typeof giftAccounts.$inferSelect;
 export type GiftConfirmation = typeof giftConfirmations.$inferSelect;

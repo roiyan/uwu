@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { saveWebsiteDraftAction } from "@/lib/actions/event";
 import { useToast } from "@/components/shared/Toast";
@@ -151,7 +151,7 @@ const SECTIONS: SectionDef[] = [
     number: "06",
     title: "Galeri",
     description: "Foto pre-wedding",
-    comingSoon: true,
+    flag: "gallery",
   },
   {
     id: "rsvp",
@@ -163,9 +163,9 @@ const SECTIONS: SectionDef[] = [
   {
     id: "amplop",
     number: "08",
-    title: "Amplop Digital",
-    description: "Gift / transfer",
-    comingSoon: true,
+    title: "Tanda Kasih",
+    description: "Rekening + konfirmasi tamu",
+    flag: "gifts",
   },
 ];
 
@@ -440,7 +440,9 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                 />
               )}
               {activeSection === "rsvp" && <RsvpForm />}
-              {activeSection === "galeri" && <GaleriForm />}
+              {activeSection === "galeri" && (
+                <GaleriForm eventId={defaults.event.id ?? ""} />
+              )}
               {activeSection === "amplop" && <AmplopForm />}
             </div>
           </div>
@@ -1214,147 +1216,174 @@ function RsvpForm() {
 // Galeri (placeholder UI — visual only, no save wired yet)
 // ============================================================================
 
-function GaleriForm() {
-  // Six fixed slots that mirror the planned final layout. Buttons are
-  // disabled because the gallery_images column doesn't exist yet; the
-  // notice at the top makes the state clear without locking the row
-  // out of the section list.
-  const slots = Array.from({ length: 6 });
-  return (
-    <div className="space-y-6">
-      <BetaNotice
-        message="Upload galeri masih dalam pengembangan. Tampilan di bawah adalah pratinjau struktur yang akan segera tersedia — Anda tidak perlu upgrade paket."
-      />
+function GaleriForm({ eventId }: { eventId: string }) {
+  return <GalleryEditorClient eventId={eventId} />;
+}
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-        {slots.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            disabled
-            className="group relative flex aspect-square cursor-not-allowed items-center justify-center rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[var(--d-bg-2)] text-[var(--d-ink-faint)] transition-colors"
-            aria-label={`Slot foto ${i + 1}`}
-          >
-            <span className="d-mono flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.18em]">
-              <span aria-hidden className="text-[20px]">
-                📷
-              </span>
-              Foto {i + 1}
-            </span>
-          </button>
-        ))}
+function GalleryEditorClient({ eventId }: { eventId: string }) {
+  const [images, setImages] = useState<
+    { id: string; imageUrl: string; sortOrder: number }[]
+  >([]);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!eventId) return;
+    let cancelled = false;
+    void import("@/lib/actions/gallery").then(({ listGalleryImagesAction }) =>
+      listGalleryImagesAction(eventId).then((res) => {
+        if (cancelled) return;
+        if (res.ok && res.data) {
+          setImages(
+            res.data.map((r) => ({
+              id: r.id,
+              imageUrl: r.imageUrl,
+              sortOrder: r.sortOrder,
+            })),
+          );
+        }
+      }),
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId]);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !eventId) return;
+    setError(null);
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const { uploadGalleryImageAction } = await import("@/lib/actions/gallery");
+      const res = await uploadGalleryImageAction(eventId, fd);
+      if (res.ok && res.data) {
+        setImages((prev) => [
+          ...prev,
+          { id: res.data!.id, imageUrl: res.data!.imageUrl, sortOrder: prev.length },
+        ]);
+      } else if (!res.ok) {
+        setError(res.error);
+      }
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!eventId) return;
+    if (!window.confirm("Hapus foto ini?")) return;
+    const { deleteGalleryImageAction } = await import("@/lib/actions/gallery");
+    const res = await deleteGalleryImageAction(eventId, id);
+    if (res.ok) {
+      setImages((prev) => prev.filter((p) => p.id !== id));
+    } else if (!res.ok) {
+      setError(res.error);
+    }
+  }
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+          Galeri Foto
+        </p>
+        <h3 className="d-serif mt-2 text-[20px] font-light leading-tight text-[var(--d-ink)]">
+          Momen{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">terindah</em>{" "}
+          kalian.
+        </h3>
+        <p className="d-serif mt-2 text-[12.5px] italic leading-relaxed text-[var(--d-ink-dim)]">
+          Upload foto pre-wedding atau momen bersama. Maksimal 6 foto.
+        </p>
       </div>
 
-      <p className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-        Maksimal 6 foto · JPG / PNG / WebP · 5 MB per foto
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {images.map((img, i) => (
+          <div key={img.id} className="group relative aspect-square overflow-hidden rounded-xl border border-[var(--d-line)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={img.imageUrl} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
+            <span className="d-mono absolute left-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-md bg-black/60 text-[10px] text-[var(--d-ink-dim)] backdrop-blur">
+              {i + 1}
+            </span>
+            <button type="button" onClick={() => handleDelete(img.id)}
+              aria-label={`Hapus foto ${i + 1}`}
+              className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 transition-opacity group-hover:opacity-100">
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none"
+                stroke="#E08A8A" strokeWidth={2} aria-hidden>
+                <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+              </svg>
+            </button>
+          </div>
+        ))}
+        {images.length < 6 && (
+          <label className={`flex aspect-square cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.02)] text-[var(--d-ink-faint)] transition-colors hover:border-[var(--d-coral)] hover:bg-[rgba(240,160,156,0.04)] ${uploading ? "pointer-events-none opacity-60" : ""}`}>
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp"
+              className="sr-only" onChange={handleUpload} disabled={uploading} />
+            {uploading ? (
+              <span aria-hidden className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--d-coral)] border-t-transparent" />
+            ) : (
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth={1.5} aria-hidden>
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <path d="M21 15l-5-5L5 21" />
+              </svg>
+            )}
+            <span className="d-mono text-[9.5px] uppercase tracking-[0.16em]">
+              {uploading ? "Mengunggah…" : `Foto ${images.length + 1}`}
+            </span>
+          </label>
+        )}
+      </div>
+
+      {error && (
+        <p className="d-serif text-[12.5px] italic text-[var(--d-coral)]">{error}</p>
+      )}
+
+      <p className="d-mono text-center text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+        {images.length}/6 foto · JPG / PNG / WebP · max 5 MB per foto
       </p>
     </div>
   );
 }
 
 // ============================================================================
-// Amplop Digital (placeholder UI)
+// Tanda Kasih — full editor lives at /dashboard/amplop; this section
+// just confirms the toggle is on and deep-links the couple over there.
 // ============================================================================
-
-const BANK_OPTIONS = [
-  "BCA",
-  "BNI",
-  "BRI",
-  "Mandiri",
-  "BSI",
-  "CIMB Niaga",
-  "Permata",
-  "Bank Jago",
-  "Jenius / BTPN",
-  "GoPay",
-  "OVO",
-  "DANA",
-  "ShopeePay",
-  "LinkAja",
-];
 
 function AmplopForm() {
   return (
-    <div className="space-y-6">
-      <BetaNotice
-        message="Form rekening masih dalam pengembangan. Tampilan di bawah adalah pratinjau struktur final — Anda akan dapat menambah rekening begitu fitur tersedia."
-      />
-
-      <div className="rounded-[14px] border border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-5">
-        <div className="flex items-center justify-between">
-          <h4 className="d-serif text-[18px] font-light text-[var(--d-ink)]">
-            Rekening 1
-          </h4>
-          <span className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-            Pratinjau
-          </span>
-        </div>
-        <div className="mt-4 grid gap-6 md:grid-cols-2">
-          <label className="block">
-            <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-              Bank / E-Wallet
-            </span>
-            <select
-              disabled
-              defaultValue="BCA"
-              className="mt-2 w-full cursor-not-allowed rounded-md border border-[var(--d-line-strong)] bg-[var(--d-bg-2)] px-3 py-2.5 text-[14px] text-[var(--d-ink-dim)] opacity-70 outline-none"
-            >
-              {BANK_OPTIONS.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-              Nomor rekening
-            </span>
-            <input
-              type="text"
-              disabled
-              placeholder="1234567890"
-              className="mt-2 w-full cursor-not-allowed bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink-dim)] outline-none placeholder:italic placeholder:text-[var(--d-ink-faint)]"
-            />
-          </label>
-          <label className="block md:col-span-2">
-            <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-              Atas nama
-            </span>
-            <input
-              type="text"
-              disabled
-              placeholder="Vivi Anggraini"
-              className="mt-2 w-full cursor-not-allowed bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink-dim)] outline-none placeholder:italic placeholder:text-[var(--d-ink-faint)]"
-            />
-          </label>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        disabled
-        className="d-mono w-full cursor-not-allowed rounded-[14px] border border-dashed border-[var(--d-line-strong)] bg-transparent px-4 py-4 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]"
-      >
-        + Tambah Rekening
-      </button>
-    </div>
-  );
-}
-
-function BetaNotice({ message }: { message: string }) {
-  return (
-    <div className="flex items-start gap-3 rounded-[14px] border border-[rgba(184,157,212,0.30)] bg-[rgba(184,157,212,0.06)] p-4">
-      <span aria-hidden className="text-[14px]">
-        ✨
-      </span>
+    <div className="space-y-5 rounded-[14px] border border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-5">
       <div>
-        <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-lilac)]">
-          Beta · Segera Hadir
+        <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+          Tanda Kasih
         </p>
-        <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-          {message}
+        <h3 className="d-serif mt-2 text-[20px] font-light leading-tight text-[var(--d-ink)]">
+          Tamu bisa{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">menitipkan doa</em>{" "}
+          dalam bentuk lain — langsung dari undangan.
+        </h3>
+        <p className="d-serif mt-2 text-[12.5px] italic leading-relaxed text-[var(--d-ink-dim)]">
+          Buka jembatan pertama agar tamu bisa mengirimkan tanda kasih mereka.
+          Setup rekening + lihat konfirmasi masuk di halaman Tanda Kasih.
         </p>
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          href="/dashboard/amplop"
+          className="d-mono inline-flex items-center gap-2 rounded-full bg-[var(--d-coral)] px-4 py-2 text-[11px] font-medium uppercase tracking-[0.2em] text-[#0B0B15] transition-shadow hover:shadow-[0_10px_30px_rgba(240,160,156,0.3)]"
+        >
+          Kelola Jembatan Kasih →
+        </Link>
+        <span className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+          Aktifkan toggle di kiri agar section ini tampil di undangan.
+        </span>
       </div>
     </div>
   );

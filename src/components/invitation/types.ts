@@ -46,6 +46,8 @@ export type SectionFlags = {
   story: boolean;
   schedules: boolean;
   rsvp: boolean;
+  gallery: boolean;
+  gifts: boolean;
 };
 
 export const ALL_SECTIONS_ON: SectionFlags = {
@@ -54,4 +56,6 @@ export const ALL_SECTIONS_ON: SectionFlags = {
   story: true,
   schedules: true,
   rsvp: true,
+  gallery: true,
+  gifts: true,
 };
