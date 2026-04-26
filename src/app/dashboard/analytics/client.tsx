@@ -262,12 +262,6 @@ export function AnalyticsClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topOpeners, cutoff]);
 
-  const filteredWishes = useMemo(() => {
-    if (!cutoff) return wishes;
-    return wishes.filter((w) => inWindow(w.rsvpedAt));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wishes, cutoff]);
-
   // Top enthusiast candidates — pass the raw response rows; the
   // EnthusiastCard does its own scoring + slice. Just narrow to the
   // shape the card expects (drops sendCount / lastSent* which the
