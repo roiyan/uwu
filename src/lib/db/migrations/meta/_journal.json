@@ -92,6 +92,13 @@
       "when": 1777766400000,
       "tag": "0012_operator_link_pin",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1777852800000,
+      "tag": "0013_event_timezone",
+      "breakpoints": true
     }
   ]
 }

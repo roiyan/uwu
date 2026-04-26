@@ -26,6 +26,7 @@ function eventCoreCols() {
     packageId: events.packageId,
     culturalPreference: events.culturalPreference,
     musicUrl: events.musicUrl,
+    timezone: events.timezone,
     isPublished: events.isPublished,
     publishedAt: events.publishedAt,
     checkinEnabled: events.checkinEnabled,

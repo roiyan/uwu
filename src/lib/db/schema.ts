@@ -146,6 +146,8 @@ export const events = pgTable("events", {
     .notNull()
     .default("umum"),
   musicUrl: text("music_url"),
+  // IANA timezone — drives analytics heatmap bucketing (migration 0013).
+  timezone: text("timezone").default("Asia/Jakarta"),
   isPublished: boolean("is_published").notNull().default(false),
   publishedAt: timestamp("published_at", { withTimezone: true }),
   // Hari-H check-in switch. Couple flips this on in Pengaturan when
