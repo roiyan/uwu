@@ -86,6 +86,14 @@ export default async function DashboardBerandaPage() {
               <FunnelBlock userId={user.id} />
             </Suspense>
           </div>
+
+          {/* Ucapan tamu fills the otherwise-empty stretch beneath the
+              chart row, sitting flush with the right-rail stack
+              (PublishStatCard / ActivityBlock) on desktop. On mobile
+              it just stacks naturally inside the left column. */}
+          <Suspense fallback={<UcapanTamuSkeleton />}>
+            <UcapanBlock userId={user.id} />
+          </Suspense>
         </div>
 
         <div className="space-y-4">
@@ -103,10 +111,6 @@ export default async function DashboardBerandaPage() {
           </Suspense>
         </div>
       </div>
-
-      <Suspense fallback={<UcapanTamuSkeleton />}>
-        <UcapanBlock userId={user.id} />
-      </Suspense>
 
       <Suspense fallback={null}>
         <CountdownBand userId={user.id} />
