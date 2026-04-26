@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { events } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { listGuestGroups } from "@/lib/db/queries/guests";
 import {
   getCheckinEventGate,
@@ -7,7 +10,7 @@ import {
   listGuestsForCheckin,
   listRecentCheckins,
 } from "@/lib/db/queries/checkin";
-import { CheckinStation } from "@/components/checkin/checkin-station";
+import { PublicCheckinClient } from "./client";
 
 export const dynamic = "force-dynamic";
 
@@ -15,16 +18,22 @@ function appUrl() {
   return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 }
 
-// Public operator station: anyone with the eventId UUID can scan/search
-// guests in. Authorization is by possession of the link (the UUID is
-// non-guessable). The owner can revoke by toggling check-in off in
-// Pengaturan, which makes assertCheckinEnabled fail in the actions.
+// Public operator station — accessed by the couple's delegated greeter
+// at the venue. Two access controls layer on top of each other:
+//   1. Possession of `?token=…` matching events.operator_token
+//   2. Knowledge of the 4-digit PIN (events.operator_pin)
+// Both checks happen client-side via server actions inside
+// OperatorPinGate. The page itself only verifies that the event exists
+// and check-in is enabled — the gate handles the rest.
 export default async function PublicCheckinPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ eventId: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { eventId } = await params;
+  const { token: rawToken } = await searchParams;
   const gate = await getCheckinEventGate(eventId);
   if (!gate) notFound();
 
@@ -53,6 +62,21 @@ export default async function PublicCheckinPage({
     );
   }
 
+  // Confirm the URL token matches what's stored. We don't bail early on
+  // mismatch — the gate UI will show "Link tidak valid" with the
+  // correct messaging. We do, however, only pass the token through
+  // when it's actually valid, so a wrong/stale token can't reach the
+  // PIN form.
+  const [eventRow] = await db
+    .select({ operatorToken: events.operatorToken })
+    .from(events)
+    .where(eq(events.id, eventId))
+    .limit(1);
+
+  const tokenIsValid =
+    rawToken && eventRow?.operatorToken && rawToken === eventRow.operatorToken;
+  const token = tokenIsValid ? rawToken : null;
+
   const [stats, guests, groupRows, recent, breakdown] = await Promise.all([
     getCheckinStats(eventId),
     listGuestsForCheckin(eventId),
@@ -66,51 +90,24 @@ export default async function PublicCheckinPage({
       className="theme-dashboard min-h-screen"
       style={{ background: "var(--d-bg-0)", color: "var(--d-ink)" }}
     >
-      <PublicHeader eventTitle={gate.title} />
-      <div className="px-5 pb-12 lg:px-10">
-        <CheckinStation
-          eventId={eventId}
-          invitationOrigin={appUrl()}
-          invitationSlug={gate.slug}
-          groups={groupRows.map((g) => ({ id: g.id, name: g.name }))}
-          guests={guests}
-          stats={stats}
-          recent={recent}
-          breakdown={breakdown}
-          variant="public"
-          defaultOperator=""
-          hideShare
-        />
-      </div>
+      <PublicCheckinClient
+        eventId={eventId}
+        token={token}
+        eventTitle={gate.title}
+        stationProps={{
+          eventId,
+          invitationOrigin: appUrl(),
+          invitationSlug: gate.slug,
+          groups: groupRows.map((g) => ({ id: g.id, name: g.name })),
+          guests,
+          stats,
+          recent,
+          breakdown,
+          variant: "public",
+          defaultOperator: "",
+          hideShare: true,
+        }}
+      />
     </main>
-  );
-}
-
-function PublicHeader({ eventTitle }: { eventTitle: string }) {
-  return (
-    <header
-      className="border-b border-[var(--d-line)] px-5 py-6 lg:px-10"
-      style={{ background: "var(--d-bg-1)" }}
-    >
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden
-          className="h-px w-8"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
-          }}
-        />
-        <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
-          Stasiun Check-in
-        </p>
-      </div>
-      <h1 className="d-serif mt-3 text-[26px] font-extralight leading-[1.1] text-[var(--d-ink)] md:text-[36px]">
-        {eventTitle}
-      </h1>
-      <p className="mt-2 max-w-[58ch] text-[12px] leading-relaxed text-[var(--d-ink-dim)] md:text-[13px]">
-        Setiap tamu yang Anda sambut adalah hadiah hari ini.
-      </p>
-    </header>
   );
 }
