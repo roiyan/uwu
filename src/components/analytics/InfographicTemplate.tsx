@@ -1,6 +1,7 @@
 "use client";
 
 import type { AnalyticsExportData } from "@/lib/actions/analytics-export";
+import { UWU_LOGO_DATA_URL } from "./uwu-logo-base64";
 
 /**
  * Off-screen 1200×auto layout for the "Infografis PNG" export.
@@ -346,7 +347,18 @@ export function InfographicTemplate({
           gap: 14,
         }}
       >
-        <UwuWordmark />
+        {/* Real UWU wordmark from public/logo.png — embedded as a
+            base64 data URL so html2canvas can render it without a
+            network fetch (path-based <img src="/logo.png"> races the
+            off-screen capture). 96px wide, ~7KB. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={UWU_LOGO_DATA_URL}
+          alt="uwu"
+          width={96}
+          height={30}
+          style={{ display: "block", opacity: 0.85 }}
+        />
         <span
           style={{
             fontFamily: FONT_MONO,
@@ -360,44 +372,6 @@ export function InfographicTemplate({
         </span>
       </div>
     </div>
-  );
-}
-
-/**
- * Inline UWU wordmark — intentionally a small, hand-crafted SVG (not
- * the 220kb production logo) because html2canvas is far more reliable
- * with self-contained inline paths than with `<img>` references. The
- * shape is the lowercase "uwu" in Fraunces-style serif italics with a
- * small heart over the "w", matching the brand book.
- */
-function UwuWordmark() {
-  return (
-    <svg
-      viewBox="0 0 120 36"
-      width={96}
-      height={28}
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden
-    >
-      <text
-        x="60"
-        y="26"
-        textAnchor="middle"
-        fontFamily={FONT_SERIF}
-        fontSize={26}
-        fontStyle="italic"
-        fontWeight={400}
-        fill={C.ink}
-        letterSpacing="-0.02em"
-      >
-        uwu
-      </text>
-      <path
-        d="M58 7c-1.4-1.6-4.1-1.6-5.3 0-1 1.3-.8 3.2.5 4.4l4.8 4.6 4.8-4.6c1.3-1.2 1.5-3.1.5-4.4-1.2-1.6-3.9-1.6-5.3 0z"
-        fill={C.coral}
-      />
-    </svg>
   );
 }
 

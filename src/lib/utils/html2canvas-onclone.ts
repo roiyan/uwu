@@ -104,7 +104,7 @@ function rewriteContaining(
 }
 
 export function buildOnClone(rootLive: HTMLElement) {
-  return function onClone(_clonedDoc: Document, clonedRoot: HTMLElement) {
+  return function onClone(clonedDoc: Document, clonedRoot: HTMLElement) {
     const resolve = makeResolver();
     const liveAll = rootLive.querySelectorAll<HTMLElement>("*");
     const cloneAll = clonedRoot.querySelectorAll<HTMLElement>("*");
@@ -115,6 +115,18 @@ export function buildOnClone(rootLive: HTMLElement) {
     for (let i = 0; i < len; i++) {
       pinStyles(liveAll[i], cloneAll[i], resolve);
     }
+
+    // Strip every <style>/<link rel="stylesheet"> from the cloned
+    // document. With every visible color already pinned inline above,
+    // the cloned doc no longer needs the original stylesheets — but if
+    // we leave them in, html2canvas's own CSS parser walks them and
+    // logs "Attempting to parse an unsupported color function 'oklab'"
+    // for every Tailwind v4 oklch() rule it encounters. Removing the
+    // sheets before the canvas pass silences those warnings entirely.
+    const sheets = clonedDoc.querySelectorAll(
+      'style, link[rel="stylesheet"]',
+    );
+    sheets.forEach((s) => s.remove());
   };
 }
 
