@@ -4,11 +4,13 @@ import { redirect } from "next/navigation";
 import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import {
+  countGuestWishes,
   countGuestsByStatus,
   countLiveGuests,
   getDailyOpens,
   getEventPackageLimit,
   getResponseFunnel,
+  listGuestWishes,
   sumAttendees,
 } from "@/lib/db/queries/guests";
 import { getRecentActivity } from "@/lib/actions/activity";
@@ -24,6 +26,10 @@ import {
 import { ResponseFunnel } from "@/components/dashboard/ResponseFunnel";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { TamuStatCard } from "@/components/dashboard/TamuStatCard";
+import {
+  UcapanTamuCard,
+  UcapanTamuSkeleton,
+} from "@/components/dashboard/UcapanTamuCard";
 
 function formatDate(iso: string) {
   const [y, m, d] = iso.split("-").map((x) => parseInt(x, 10));
@@ -97,6 +103,10 @@ export default async function DashboardBerandaPage() {
           </Suspense>
         </div>
       </div>
+
+      <Suspense fallback={<UcapanTamuSkeleton />}>
+        <UcapanBlock userId={user.id} />
+      </Suspense>
 
       <Suspense fallback={null}>
         <CountdownBand userId={user.id} />
@@ -702,6 +712,26 @@ async function ActivityBlock({ userId }: { userId: string }) {
         userEmail: r.userEmail,
         createdAt: r.createdAt,
       }))}
+    />
+  );
+}
+
+async function UcapanBlock({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  // 3 wishes for the card + the totals for the footer line. Both
+  // queries scope to live guests with non-empty rsvpMessage so the
+  // numerator and denominator stay consistent.
+  const [wishes, totalWishes, totalGuests] = await Promise.all([
+    listGuestWishes(current.event.id, 3),
+    countGuestWishes(current.event.id),
+    countLiveGuests(current.event.id),
+  ]);
+  return (
+    <UcapanTamuCard
+      wishes={wishes}
+      totalWishes={totalWishes}
+      totalGuests={totalGuests}
     />
   );
 }
