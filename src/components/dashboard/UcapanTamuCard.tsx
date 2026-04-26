@@ -84,7 +84,7 @@ export function UcapanTamuCard({
 
       {smallWishes.length > 0 && (
         <div
-          className={`mt-3.5 grid gap-3.5 ${smallWishes.length === 1 ? "" : "md:grid-cols-2"}`}
+          className={`custom-scroll mt-3.5 grid gap-3.5 ${smallWishes.length === 1 ? "" : "md:grid-cols-2"}`}
         >
           {smallWishes.map((w) => (
             <article

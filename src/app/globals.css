@@ -351,6 +351,25 @@ h1, h2, h3, h4, h5, h6 {
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Thin, ink-faint scrollbar for vertical scroll regions inside
+   dashboard cards (Daftar Respons, Ucapan Tamu, etc.). The default
+   browser scrollbar is too thick + too white against our dark theme
+   tokens. Subtle by default; brighter on hover so it stays
+   discoverable. */
+.custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+.custom-scroll::-webkit-scrollbar-track { background: transparent; }
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(237, 232, 222, 0.10);
+  border-radius: 3px;
+}
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(237, 232, 222, 0.20);
+}
+.custom-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(237, 232, 222, 0.10) transparent;
+}
+
 /* Used by the operator-station PIN gate to flag a wrong PIN. */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
