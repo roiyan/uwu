@@ -156,6 +156,8 @@ export function GuestsClient({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
   const [bulkPending, setBulkPending] = useState(false);
+  const [bulkMovePending, setBulkMovePending] = useState(false);
+  const [bulkMoveDropdown, setBulkMoveDropdown] = useState(false);
 
   // Detail drawer — opens on row click (excluding action buttons).
   // Reads only data we already have on GuestRow; no new server queries.
@@ -329,6 +331,60 @@ export function GuestsClient({
       setBulkPending(false);
     }
   }
+
+  // Bulk move — reuses moveGuestToGroupAction one guest at a time.
+  // The server action revalidates after each call which is wasted
+  // work for big batches, but the alternative (a dedicated bulk
+  // endpoint) doubles the action surface for marginal benefit on
+  // typical wedding sizes (≤500 guests).
+  async function handleBulkMove(targetGroupId: string | null) {
+    if (selectedIds.size === 0 || bulkMovePending) return;
+    setBulkMoveDropdown(false);
+    setBulkMovePending(true);
+    const ids = Array.from(selectedIds);
+    const targetName =
+      groups.find((g) => g.id === targetGroupId)?.name ?? "Tanpa Grup";
+    try {
+      const results = await Promise.all(
+        ids.map((id) =>
+          moveGuestToGroupAction(eventId, id, targetGroupId),
+        ),
+      );
+      const failed = results.filter((r) => !r.ok).length;
+      if (failed === 0) {
+        toast.success(`${ids.length} tamu dipindahkan ke ${targetName}`);
+        setSelectedIds(new Set());
+      } else if (failed < ids.length) {
+        toast.error(
+          `${ids.length - failed} berhasil, ${failed} gagal — coba lagi.`,
+        );
+      } else {
+        toast.error(`Gagal memindahkan tamu.`);
+      }
+      startTransition(() => router.refresh());
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Gagal memindahkan sebagian tamu",
+      );
+    } finally {
+      setBulkMovePending(false);
+    }
+  }
+
+  // Close the move-group dropdown when the operator clicks anywhere
+  // outside of it. Scoped to mounted dropdown only — no listener when
+  // closed.
+  useEffect(() => {
+    if (!bulkMoveDropdown) return;
+    function onDocClick(e: MouseEvent) {
+      const target = e.target as HTMLElement | null;
+      if (!target?.closest("[data-bulk-move-root]")) {
+        setBulkMoveDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [bulkMoveDropdown]);
 
   const allSelected = guests.length > 0 && selectedIds.size === guests.length;
   const someSelected = selectedIds.size > 0 && !allSelected;
@@ -914,11 +970,112 @@ export function GuestsClient({
           <div className="ml-auto flex gap-2">
             <button
               type="button"
-              onClick={() => setSelectedIds(new Set())}
+              onClick={() => {
+                setSelectedIds(new Set());
+                setBulkMoveDropdown(false);
+              }}
               className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-black/20 px-3.5 py-1.5 text-[11.5px] tracking-[0.04em] text-[var(--d-ink)] transition-colors hover:border-[var(--d-ink-dim)] hover:bg-black/40"
             >
               Batal
             </button>
+
+            {/* Bulk move-group dropdown. Position: dropup so the menu
+                opens above the floating bar instead of off-screen. The
+                outside-click effect above closes it when the operator
+                clicks anywhere except inside this root. */}
+            <div className="relative" data-bulk-move-root>
+              <button
+                type="button"
+                onClick={() => setBulkMoveDropdown((prev) => !prev)}
+                disabled={bulkMovePending || groups.length === 0}
+                aria-haspopup="menu"
+                aria-expanded={bulkMoveDropdown}
+                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-black/20 px-3.5 py-1.5 text-[11.5px] tracking-[0.04em] text-[var(--d-ink)] transition-colors hover:border-[var(--d-ink-dim)] hover:bg-black/40 disabled:opacity-50"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  className="h-3 w-3"
+                >
+                  <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M13 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {bulkMovePending ? "Memindahkan…" : "Pindah Grup"}
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={`h-3 w-3 transition-transform ${
+                    bulkMoveDropdown ? "rotate-180" : ""
+                  }`}
+                >
+                  <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {bulkMoveDropdown && (
+                <div
+                  role="menu"
+                  className="absolute bottom-full left-0 z-50 mb-2 w-64 overflow-hidden rounded-xl border border-[var(--d-line-strong)] bg-[var(--d-bg-2)] shadow-[0_24px_60px_-20px_rgba(0,0,0,0.7)]"
+                >
+                  <p className="d-mono border-b border-[var(--d-line)] px-3 py-2.5 text-[9px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+                    Pindahkan {selectedIds.size} tamu ke
+                  </p>
+                  <ul className="max-h-72 overflow-y-auto py-1">
+                    {groups.map((g) => {
+                      const count = guests.filter(
+                        (x) => x.groupId === g.id,
+                      ).length;
+                      return (
+                        <li key={g.id}>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => handleBulkMove(g.id)}
+                            disabled={bulkMovePending}
+                            className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
+                          >
+                            <span
+                              aria-hidden
+                              className="h-2 w-2 shrink-0 rounded-full"
+                              style={{
+                                background: g.color ?? "var(--d-ink-faint)",
+                              }}
+                            />
+                            <span className="d-serif flex-1 truncate text-[13px] text-[var(--d-ink)]">
+                              {g.name}
+                            </span>
+                            <span className="d-mono text-[10px] tracking-[0.06em] text-[var(--d-ink-faint)]">
+                              {String(count).padStart(2, "0")}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                    <li className="border-t border-[var(--d-line)]">
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => handleBulkMove(null)}
+                        disabled={bulkMovePending}
+                        className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-[rgba(255,255,255,0.04)] disabled:opacity-50"
+                      >
+                        <span
+                          aria-hidden
+                          className="h-2 w-2 shrink-0 rounded-full bg-[var(--d-ink-faint)]"
+                        />
+                        <span className="d-serif flex-1 truncate text-[13px] italic text-[var(--d-ink-dim)]">
+                          Tanpa grup
+                        </span>
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+
             <button
               type="button"
               onClick={() => setBulkDeleteOpen(true)}
@@ -1121,18 +1278,29 @@ export function GuestsClient({
         </div>
       )}
 
-      <GuestFormDialog
-        open={addOpen || editGuest !== null}
-        eventId={eventId}
-        groups={groups}
-        editing={editGuest}
-        presetGroupId={addPresetGroup}
-        onClose={() => {
-          setAddOpen(false);
-          setEditGuest(null);
-          setAddPresetGroup(null);
-        }}
-      />
+      {/* Conditionally render — not just hide content — so the dialog
+          unmounts on close and remounts fresh on open. The previous
+          version was always-mounted and used `if (!open) return null`
+          inside, which left useActionState's state ({ ok: true, ... })
+          persisted across closes. On the next open the effect that
+          calls onClose() when the action result is ok would fire
+          again immediately, slamming the dialog shut before the
+          operator could see the form. Conditional render guarantees
+          a fresh useActionState hook on every open. */}
+      {(addOpen || editGuest !== null) && (
+        <GuestFormDialog
+          open
+          eventId={eventId}
+          groups={groups}
+          editing={editGuest}
+          presetGroupId={addPresetGroup}
+          onClose={() => {
+            setAddOpen(false);
+            setEditGuest(null);
+            setAddPresetGroup(null);
+          }}
+        />
+      )}
 
       <GroupsPanel
         open={groupsOpen}
