@@ -10,6 +10,39 @@ import {
   themes,
 } from "@/lib/db/schema";
 
+// Explicit column projection for the events table.
+//
+// Why this exists: the schema declares some columns (operator_pin,
+// operator_token, operator_token_created_at — added in migration 0012)
+// that may not yet exist in every environment's database. Drizzle's
+// `select({ event: events })` enumerates every schema-declared column,
+// so a deploy where code is ahead of migration crashes every page that
+// hits getEventBundle with `column "operator_pin" does not exist`.
+//
+// Listing the core columns explicitly here keeps the page render path
+// independent of any operator-specific columns. Code paths that
+// genuinely need the operator fields (the settings card) query them
+// directly via dedicated actions.
+function eventCoreCols() {
+  return {
+    id: events.id,
+    ownerId: events.ownerId,
+    slug: events.slug,
+    title: events.title,
+    ownerRole: events.ownerRole,
+    themeId: events.themeId,
+    packageId: events.packageId,
+    culturalPreference: events.culturalPreference,
+    musicUrl: events.musicUrl,
+    isPublished: events.isPublished,
+    publishedAt: events.publishedAt,
+    checkinEnabled: events.checkinEnabled,
+    createdAt: events.createdAt,
+    updatedAt: events.updatedAt,
+    deletedAt: events.deletedAt,
+  };
+}
+
 // React cache() dedupes calls with the same args within a single server render.
 // The dashboard layout + its child page both call these — without dedup we'd
 // issue the same query twice per navigation.
@@ -17,7 +50,7 @@ export const getCurrentEventForUser = cache(async function getCurrentEventForUse
   userId: string,
 ) {
   const [row] = await db
-    .select({ event: events, theme: themes })
+    .select({ event: eventCoreCols(), theme: themes })
     .from(events)
     .leftJoin(themes, eq(themes.id, events.themeId))
     .leftJoin(
@@ -37,7 +70,7 @@ export const getCurrentEventForUser = cache(async function getCurrentEventForUse
 
 export const getEventBundle = cache(async function getEventBundle(eventId: string) {
   const [eventRow] = await db
-    .select({ event: events, theme: themes })
+    .select({ event: eventCoreCols(), theme: themes })
     .from(events)
     .leftJoin(themes, eq(themes.id, events.themeId))
     .where(and(eq(events.id, eventId), isNull(events.deletedAt)))
@@ -85,7 +118,7 @@ export const getPublishedEventBySlug = cache(async function getPublishedEventByS
   slug: string,
 ) {
   const [row] = await db
-    .select({ event: events, theme: themes })
+    .select({ event: eventCoreCols(), theme: themes })
     .from(events)
     .leftJoin(themes, eq(themes.id, events.themeId))
     .where(
