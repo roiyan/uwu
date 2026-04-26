@@ -17,6 +17,7 @@ import {
   schedulesSchema,
   themeConfigSchema,
 } from "@/lib/schemas/event";
+import { logActivity } from "./activity";
 
 function emptyToNull(v: FormDataEntryValue | null) {
   if (v === null) return null;
@@ -89,6 +90,11 @@ export async function updateCoupleAction(
   if (result.ok) {
     revalidatePath("/dashboard/website");
     revalidatePath("/dashboard", "layout");
+    await logActivity({
+      eventId,
+      action: "update_couple",
+      summary: "Memperbarui data mempelai",
+    });
   }
   return result;
 }
@@ -133,7 +139,14 @@ export async function updateSchedulesAction(
     });
   });
 
-  if (result.ok) revalidatePath("/dashboard/website");
+  if (result.ok) {
+    revalidatePath("/dashboard/website");
+    await logActivity({
+      eventId,
+      action: "update_schedule",
+      summary: "Memperbarui jadwal acara",
+    });
+  }
   return result;
 }
 
@@ -144,6 +157,7 @@ export async function selectThemeAction(
 ): Promise<ActionResult> {
   const themeId = String(formData.get("themeId") ?? "");
 
+  let themeName: string | null = null;
   const result = await withAuth(eventId, "editor", async () => {
     const [theme] = await db
       .select()
@@ -151,6 +165,7 @@ export async function selectThemeAction(
       .where(and(eq(themes.id, themeId), eq(themes.isActive, true)))
       .limit(1);
     if (!theme) throw new Error("Tema tidak tersedia");
+    themeName = theme.name;
 
     const now = new Date();
     await Promise.all([
@@ -171,6 +186,15 @@ export async function selectThemeAction(
   if (result.ok) {
     revalidatePath("/dashboard/website/theme");
     revalidatePath("/dashboard", "layout");
+    await logActivity({
+      eventId,
+      action: "update_theme",
+      summary: themeName
+        ? `Mengganti tema ke ${themeName}`
+        : "Mengganti tema",
+      targetType: "theme",
+      targetId: themeId,
+    });
   }
   return result;
 }
@@ -209,7 +233,14 @@ export async function updateThemeConfigAction(
       });
   });
 
-  if (result.ok) revalidatePath("/dashboard/website/theme");
+  if (result.ok) {
+    revalidatePath("/dashboard/website/theme");
+    await logActivity({
+      eventId,
+      action: "update_theme",
+      summary: "Memperbarui warna tema",
+    });
+  }
   return result;
 }
 
@@ -251,6 +282,11 @@ export async function updateEventSettingsAction(
   if (result.ok) {
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard", "layout");
+    await logActivity({
+      eventId,
+      action: "update_settings",
+      summary: "Memperbarui pengaturan acara",
+    });
   }
   return result;
 }
@@ -270,6 +306,13 @@ export async function setCheckinEnabledAction(
     revalidatePath("/dashboard/settings");
     revalidatePath("/dashboard/checkin");
     revalidatePath("/dashboard", "layout");
+    await logActivity({
+      eventId,
+      action: "update_settings",
+      summary: enabled
+        ? "Mengaktifkan check-in"
+        : "Menonaktifkan check-in",
+    });
   }
   return result;
 }
@@ -384,6 +427,11 @@ export async function saveWebsiteDraftAction(
     revalidatePath("/dashboard/website");
     revalidatePath("/preview");
     revalidatePath("/dashboard", "layout");
+    await logActivity({
+      eventId,
+      action: "update_website",
+      summary: "Memperbarui konten website",
+    });
   }
   return result;
 }
@@ -397,7 +445,14 @@ export async function publishEventAction(
       .set({ isPublished: true, publishedAt: new Date(), updatedAt: new Date() })
       .where(eq(events.id, eventId));
   });
-  if (result.ok) revalidatePath("/dashboard", "layout");
+  if (result.ok) {
+    revalidatePath("/dashboard", "layout");
+    await logActivity({
+      eventId,
+      action: "publish_event",
+      summary: "Mempublikasikan undangan",
+    });
+  }
   return result;
 }
 
@@ -410,6 +465,13 @@ export async function unpublishEventAction(
       .set({ isPublished: false, updatedAt: new Date() })
       .where(eq(events.id, eventId));
   });
-  if (result.ok) revalidatePath("/dashboard", "layout");
+  if (result.ok) {
+    revalidatePath("/dashboard", "layout");
+    await logActivity({
+      eventId,
+      action: "unpublish_event",
+      summary: "Membatalkan publikasi undangan",
+    });
+  }
   return result;
 }
