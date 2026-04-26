@@ -62,6 +62,7 @@ export function InvitationClient(props: {
   palette: Palette;
   couple: Couple | null;
   schedules: Schedule[];
+  giftAccounts?: PublicGiftAccount[];
 }) {
   return (
     <Suspense fallback={<Skeleton palette={props.palette} />}>
@@ -104,6 +105,7 @@ function InvitationInner({
   palette: Palette;
   couple: Couple | null;
   schedules: Schedule[];
+  giftAccounts?: PublicGiftAccount[];
 }) {
   const searchParams = useSearchParams();
   const token = searchParams.get("to");
