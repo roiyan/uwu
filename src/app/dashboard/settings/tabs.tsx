@@ -18,6 +18,7 @@ import { useToast } from "@/components/shared/Toast";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { getWhatsAppShareUrl } from "@/lib/utils/share";
 import { CheckinToggleCard } from "./checkin-toggle-card";
+import { OperatorLinkCard } from "./operator-link-card";
 
 type Tab = "akun" | "acara" | "budaya" | "kolaborator";
 
@@ -67,6 +68,8 @@ export function SettingsTabs({
     musicUrl: string;
     culturalPreference: "islami" | "umum" | "custom";
     checkinEnabled: boolean;
+    operatorPin: string | null;
+    operatorToken: string | null;
   };
   owner: { fullName: string | null; email: string; isCurrentUser: boolean };
   collaborators: CollaboratorRow[];
@@ -131,6 +134,14 @@ export function SettingsTabs({
             eventId={eventId}
             initialEnabled={event.checkinEnabled}
           />
+          {event.checkinEnabled && (
+            <OperatorLinkCard
+              eventId={eventId}
+              initialPin={event.operatorPin}
+              initialToken={event.operatorToken}
+              origin={origin}
+            />
+          )}
         </div>
       )}
       {active === "kolaborator" && (

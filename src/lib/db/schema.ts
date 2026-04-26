@@ -11,6 +11,7 @@ import {
   time,
   numeric,
   unique,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 // ---------- Enums ----------
@@ -153,6 +154,15 @@ export const events = pgTable("events", {
   // default so the public /check-in/[eventId] route refuses traffic
   // until they're explicitly ready.
   checkinEnabled: boolean("checkin_enabled").notNull().default(false),
+  // Hari-H operator delegation: 4-digit PIN gates the public station
+  // and the 32-char token in the URL is rotated on reset to invalidate
+  // any old operator sessions. Both nullable until the couple generates
+  // a link from Pengaturan.
+  operatorPin: varchar("operator_pin", { length: 4 }),
+  operatorToken: varchar("operator_token", { length: 32 }),
+  operatorTokenCreatedAt: timestamp("operator_token_created_at", {
+    withTimezone: true,
+  }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
