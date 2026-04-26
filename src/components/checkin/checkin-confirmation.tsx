@@ -265,13 +265,23 @@ export function CheckinConfirmation({
                 <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
                   Operator
                 </span>
-                <input
-                  value={operator}
-                  onChange={(e) => setOperator(e.target.value)}
-                  placeholder="Nama operator"
-                  disabled={busy}
-                  className="mt-2 w-full bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink)] outline-none focus:border-[var(--d-coral)] transition-colors placeholder:text-[var(--d-ink-faint)]"
-                />
+                {defaultOperator ? (
+                  <div className="mt-2 flex items-center gap-2 py-2.5 text-[14px] text-[var(--d-ink)]">
+                    <span
+                      aria-hidden
+                      className="h-1.5 w-1.5 rounded-full bg-[var(--d-coral)]"
+                    />
+                    <span>{defaultOperator}</span>
+                  </div>
+                ) : (
+                  <input
+                    value={operator}
+                    onChange={(e) => setOperator(e.target.value)}
+                    placeholder="Nama operator"
+                    disabled={busy}
+                    className="mt-2 w-full bg-transparent border-0 border-b border-[var(--d-line-strong)] px-0 py-2.5 text-[14px] text-[var(--d-ink)] outline-none focus:border-[var(--d-coral)] transition-colors placeholder:text-[var(--d-ink-faint)]"
+                  />
+                )}
               </label>
 
               <label className="block">
