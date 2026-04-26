@@ -171,13 +171,23 @@ export function WalkinForm({
 
         <label className="block">
           <span className={labelClass}>Operator</span>
-          <input
-            value={operator}
-            onChange={(e) => setOperator(e.target.value)}
-            placeholder="Nama operator"
-            className={inputClass}
-            disabled={busy}
-          />
+          {defaultOperator ? (
+            <div className="mt-2 flex items-center gap-2 py-2.5 text-[14px] text-[var(--d-ink)]">
+              <span
+                aria-hidden
+                className="h-1.5 w-1.5 rounded-full bg-[var(--d-coral)]"
+              />
+              <span>{defaultOperator}</span>
+            </div>
+          ) : (
+            <input
+              value={operator}
+              onChange={(e) => setOperator(e.target.value)}
+              placeholder="Nama operator"
+              className={inputClass}
+              disabled={busy}
+            />
+          )}
         </label>
 
         <label className="md:col-span-2 block">

@@ -7,8 +7,7 @@ import {
   listGuestsForCheckin,
   listRecentCheckins,
 } from "@/lib/db/queries/checkin";
-import { CheckinStation } from "@/components/checkin/checkin-station";
-import { PinGate } from "@/components/checkin/pin-gate";
+import { PublicStationShell } from "./public-station-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -74,57 +73,17 @@ export default async function PublicCheckinPage({
   ]);
 
   return (
-    <PinGate eventId={eventId} token={token} eventTitle={gate.title}>
-      <main
-        className="theme-dashboard min-h-screen"
-        style={{ background: "var(--d-bg-0)", color: "var(--d-ink)" }}
-      >
-        <PublicHeader eventTitle={gate.title} />
-        <div className="px-5 pb-12 lg:px-10">
-          <CheckinStation
-            eventId={eventId}
-            invitationOrigin={appUrl()}
-            invitationSlug={gate.slug}
-            groups={groupRows.map((g) => ({ id: g.id, name: g.name }))}
-            guests={guests}
-            stats={stats}
-            recent={recent}
-            breakdown={breakdown}
-            variant="public"
-            defaultOperator=""
-            hideShare
-          />
-        </div>
-      </main>
-    </PinGate>
-  );
-}
-
-function PublicHeader({ eventTitle }: { eventTitle: string }) {
-  return (
-    <header
-      className="border-b border-[var(--d-line)] px-5 py-6 lg:px-10"
-      style={{ background: "var(--d-bg-1)" }}
-    >
-      <div className="flex items-center gap-3">
-        <span
-          aria-hidden
-          className="h-px w-8"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
-          }}
-        />
-        <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-coral)]">
-          Stasiun Check-in
-        </p>
-      </div>
-      <h1 className="d-serif mt-3 text-[26px] font-extralight leading-[1.1] text-[var(--d-ink)] md:text-[36px]">
-        {eventTitle}
-      </h1>
-      <p className="mt-2 max-w-[58ch] text-[12px] leading-relaxed text-[var(--d-ink-dim)] md:text-[13px]">
-        Setiap tamu yang Anda sambut adalah hadiah hari ini.
-      </p>
-    </header>
+    <PublicStationShell
+      eventId={eventId}
+      token={token}
+      eventTitle={gate.title}
+      invitationOrigin={appUrl()}
+      invitationSlug={gate.slug}
+      groups={groupRows.map((g) => ({ id: g.id, name: g.name }))}
+      guests={guests}
+      stats={stats}
+      recent={recent}
+      breakdown={breakdown}
+    />
   );
 }

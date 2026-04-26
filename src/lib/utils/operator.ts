@@ -73,3 +73,59 @@ export function parseOperatorSessionValue(
   if (!/^\d{4}$/.test(pin)) return null;
   return { token, pin };
 }
+
+/**
+ * On-disk shape of the operator's localStorage entry. The PIN gate
+ * stores both the (token, pin) session key the server re-validates
+ * AND the operator's own name — collected once on day-of setup so
+ * every check-in auto-fills the "Operator" field instead of
+ * re-prompting per guest.
+ *
+ * Older sessions (pre-name capture) are stored as the bare
+ * `${token}:${pin}` string. `readOperatorSessionPayload` accepts both
+ * shapes so a legacy session keeps working until the operator next
+ * lands on the keypad.
+ */
+export type OperatorSessionPayload = {
+  sessionKey: string;
+  operatorName: string;
+};
+
+export function operatorSessionPayload(
+  token: string,
+  pin: string,
+  operatorName: string,
+): OperatorSessionPayload {
+  return {
+    sessionKey: operatorSessionValue(token, pin),
+    operatorName: operatorName.trim(),
+  };
+}
+
+export function readOperatorSessionPayload(
+  raw: string | null | undefined,
+): OperatorSessionPayload | null {
+  if (!raw) return null;
+  if (raw.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (
+        parsed &&
+        typeof parsed.sessionKey === "string" &&
+        typeof parsed.operatorName === "string"
+      ) {
+        return {
+          sessionKey: parsed.sessionKey,
+          operatorName: parsed.operatorName,
+        };
+      }
+    } catch {
+      return null;
+    }
+    return null;
+  }
+  if (parseOperatorSessionValue(raw)) {
+    return { sessionKey: raw, operatorName: "" };
+  }
+  return null;
+}
