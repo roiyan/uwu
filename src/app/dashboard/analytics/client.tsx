@@ -170,24 +170,107 @@ export function AnalyticsClient({
   const fnPct = (v: number, denom: number) =>
     denom > 0 ? Math.round((v / denom) * 100) : 0;
 
-  // Funnel rebuild client-side when group filter changes. We compute
-  // from `responses` instead of round-tripping to keep the dropdown
-  // snappy. When "all" is selected we use the server-rendered numbers
-  // so empty-on-first-load still works.
+  // Time-window cutoff for the 24J / 7 Hari / 30 Hari / Semua
+  // selector. `null` means "no time filter" (Semua). Everything
+  // downstream — funnel counts, donut, heatmap, response table,
+  // top openers, wishes — re-derives from this so the buttons are
+  // not visual-only.
+  const cutoff = useMemo<Date | null>(() => {
+    if (range === "semua") return null;
+    const now = Date.now();
+    const ms =
+      range === "24j"
+        ? 24 * 60 * 60 * 1000
+        : range === "30h"
+          ? 30 * 24 * 60 * 60 * 1000
+          : 7 * 24 * 60 * 60 * 1000;
+    return new Date(now - ms);
+  }, [range]);
+
+  // Helpers — "this row had activity within the window" by checking
+  // the relevant timestamp. We use the field that maps to whatever
+  // metric we're counting (opens use openedAt, RSVPs use rsvpedAt,
+  // sends use lastSentAt) so the same row can land in one bucket and
+  // not another within the same window.
+  const inWindow = (d: Date | string | null) => {
+    if (!cutoff) return true;
+    if (!d) return false;
+    return new Date(d) >= cutoff;
+  };
+
+  // Pre-filter the response list once. The table + group-engagement +
+  // KPI counts all read from this. When `range = semua`, the filter
+  // is a no-op so server-side numbers are preserved.
+  const filteredResponses = useMemo(() => {
+    if (!cutoff) return responses;
+    return responses.filter(
+      (r) =>
+        inWindow(r.rsvpedAt) ||
+        inWindow(r.openedAt) ||
+        inWindow(r.lastSentAt),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [responses, cutoff]);
+
+  // Funnel rebuild — combines group filter AND range filter. When
+  // both are at their defaults (no group, range=semua) we fall back
+  // to the server-rendered funnel so empty-on-first-load still works.
   const filteredFunnel = useMemo(() => {
-    if (!groupFilter) return funnel;
-    const target = groups.find((g) => g.id === groupFilter)?.name;
-    const rows = responses.filter((r) => r.groupName === target);
+    if (!groupFilter && !cutoff) return funnel;
+    const target = groupFilter
+      ? groups.find((g) => g.id === groupFilter)?.name
+      : null;
+    const rows = target
+      ? responses.filter((r) => r.groupName === target)
+      : responses;
     return {
       total: rows.length,
-      invited: rows.filter((r) => r.sendCount > 0).length,
-      opened: rows.filter((r) => r.openedAt !== null).length,
+      invited: rows.filter((r) => r.sendCount > 0 && inWindow(r.lastSentAt))
+        .length,
+      opened: rows.filter((r) => inWindow(r.openedAt)).length,
       responded: rows.filter(
-        (r) => r.rsvpStatus === "hadir" || r.rsvpStatus === "tidak_hadir",
+        (r) =>
+          (r.rsvpStatus === "hadir" || r.rsvpStatus === "tidak_hadir") &&
+          inWindow(r.rsvpedAt),
       ).length,
-      attending: rows.filter((r) => r.rsvpStatus === "hadir").length,
+      attending: rows.filter(
+        (r) => r.rsvpStatus === "hadir" && inWindow(r.rsvpedAt),
+      ).length,
     };
-  }, [groupFilter, funnel, responses, groups]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groupFilter, funnel, responses, groups, cutoff]);
+
+  // Heatmap re-aggregated client-side from filtered responses so the
+  // grid only shows opens that happened inside the selected window.
+  // Falls back to the server-aggregated buckets when range = semua,
+  // since those use a more accurate full-history aggregate.
+  const filteredHeatmap = useMemo<HeatmapBucket[]>(() => {
+    if (!cutoff) return heatmapBuckets;
+    const matrix = new Map<string, number>();
+    for (const r of responses) {
+      if (!r.openedAt) continue;
+      const t = new Date(r.openedAt);
+      if (t < cutoff) continue;
+      const key = `${t.getDay()}-${t.getHours()}`;
+      matrix.set(key, (matrix.get(key) ?? 0) + 1);
+    }
+    return Array.from(matrix.entries()).map(([k, count]) => {
+      const [day, hour] = k.split("-").map(Number);
+      return { day, hour, count };
+    });
+  }, [heatmapBuckets, cutoff, responses]);
+
+  const filteredTopOpeners = useMemo(() => {
+    if (!cutoff) return topOpeners;
+    return topOpeners.filter((r) => inWindow(r.openedAt));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topOpeners, cutoff]);
+
+  const filteredWishes = useMemo(() => {
+    if (!cutoff) return wishes;
+    return wishes.filter((w) => inWindow(w.rsvpedAt));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wishes, cutoff]);
 
   const kpiCards: KpiCardData[] = [
     {
@@ -204,18 +287,21 @@ export function AnalyticsClient({
       dot: "var(--d-blue)",
       color: "#8FA3D9",
       label: "Dibuka",
-      value: funnel.opened,
-      suffix: `·${fnPct(funnel.opened, Math.max(funnel.invited, 1))}%`,
+      value: filteredFunnel.opened,
+      // Denominator is total guests (not "invited") so the percentage
+      // can never exceed 100%. Direct-link opens land in `opened` even
+      // when sendCount is 0, which used to push the ratio above 100.
+      suffix: `·${fnPct(filteredFunnel.opened, Math.max(total, 1))}%`,
       delta: deltaOf(sparkOpened),
-      compare: "rata industri 42%",
+      compare: "dari total tamu",
       spark: sparkOpened,
     },
     {
       dot: "var(--d-lilac)",
       color: "#B89DD4",
       label: "RSVP",
-      value: funnel.responded,
-      suffix: `·${fnPct(funnel.responded, Math.max(funnel.opened, 1))}%`,
+      value: filteredFunnel.responded,
+      suffix: `·${fnPct(filteredFunnel.responded, Math.max(filteredFunnel.opened, 1))}%`,
       delta: deltaOf(sparkRsvped),
       compare: "dari yang membuka",
       spark: sparkRsvped,
@@ -224,7 +310,7 @@ export function AnalyticsClient({
       dot: "var(--d-green)",
       color: "#7ED3A4",
       label: "Hadir",
-      value: funnel.attending,
+      value: filteredFunnel.attending,
       suffix: `· ${confirmedAttendees} pax`,
       delta: deltaOf(sparkAttending),
       deltaUnit: "pax",
@@ -241,7 +327,8 @@ export function AnalyticsClient({
     rsvped: t.rsvped,
   }));
 
-  // Donut slices for the status distribution chart.
+  // Donut slices for the status distribution chart. Reads from the
+  // window-filtered list so the donut updates with the range buttons.
   const statusCounts: Record<GuestStatus, number> = {
     baru: 0,
     diundang: 0,
@@ -249,7 +336,7 @@ export function AnalyticsClient({
     hadir: 0,
     tidak_hadir: 0,
   };
-  for (const r of responses) statusCounts[r.rsvpStatus]++;
+  for (const r of filteredResponses) statusCounts[r.rsvpStatus]++;
   const donutSlices = [
     {
       key: "hadir",
@@ -283,7 +370,14 @@ export function AnalyticsClient({
     },
   ];
 
-  const engagementPct = fnPct(funnel.opened, Math.max(funnel.invited, 1));
+  // Engagement = opens / total guests. Using `invited` (sendCount > 0)
+  // as the denominator broke when guests opened a direct-share link
+  // before any send had been recorded — the ratio could exceed 100%.
+  // Total tamu is the natural ceiling.
+  const engagementPct = fnPct(
+    filteredFunnel.opened,
+    Math.max(total, 1),
+  );
 
   return (
     <main className="flex-1 overflow-x-hidden px-5 py-8 lg:px-12 lg:py-12">
@@ -314,8 +408,8 @@ export function AnalyticsClient({
           source={trafficSource}
           groups={groupEngagement}
           totalGuests={total}
-          wishes={wishes}
-          wishesTotal={wishesTotal}
+          wishes={filteredWishes}
+          wishesTotal={filteredWishes.length}
           wishesGuestTotal={wishesGuestTotal}
         />
       </div>
@@ -333,8 +427,8 @@ export function AnalyticsClient({
 
       {/* 5. Heatmap + Top openers */}
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <ActivityHeatmap buckets={heatmapBuckets} />
-        <TopOpeners rows={topOpeners} />
+        <ActivityHeatmap buckets={filteredHeatmap} />
+        <TopOpeners rows={filteredTopOpeners} />
       </div>
 
       {/* 6. Response table — placed above Ekspor so the operator can
@@ -346,7 +440,7 @@ export function AnalyticsClient({
             Daftar Respons
           </p>
           <h2 className="d-serif mt-2 text-[22px] font-light tracking-[-0.015em] text-[var(--d-ink)]">
-            {responses.length} tamu, diurutkan dari respons{" "}
+            {filteredResponses.length} tamu, diurutkan dari respons{" "}
             <em className="d-serif italic text-[var(--d-coral)]">terbaru</em>.
           </h2>
         </header>
@@ -362,7 +456,7 @@ export function AnalyticsClient({
               </tr>
             </thead>
             <tbody>
-              {responses.length === 0 ? (
+              {filteredResponses.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -373,7 +467,7 @@ export function AnalyticsClient({
                   </td>
                 </tr>
               ) : (
-                responses.map((r) => (
+                filteredResponses.map((r) => (
                   <tr
                     key={r.id}
                     className="border-b border-[var(--d-line)] last:border-0 hover:bg-[rgba(255,255,255,0.018)]"
@@ -452,7 +546,16 @@ function Header({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-3">
           <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
-          <p className="d-eyebrow">Analytics · 7 Hari Terakhir</p>
+          <p className="d-eyebrow">
+            Analytics ·{" "}
+            {range === "24j"
+              ? "24 Jam Terakhir"
+              : range === "7h"
+                ? "7 Hari Terakhir"
+                : range === "30h"
+                  ? "30 Hari Terakhir"
+                  : "Semua Waktu"}
+          </p>
         </div>
         <h1 className="d-serif mt-3.5 text-[clamp(36px,4.5vw,54px)] font-extralight leading-[1] tracking-[-0.025em] text-[var(--d-ink)]">
           Bagaimana tamu{" "}
@@ -468,7 +571,7 @@ function Header({
           </span>
           {engagementPct > 0 && (
             <span className="d-serif text-[14px] italic text-[var(--d-green)]">
-              — engagement {engagementPct}% dari yang diundang
+              — engagement {engagementPct}% dari total tamu
             </span>
           )}
         </div>
