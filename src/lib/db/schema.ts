@@ -11,6 +11,8 @@ import {
   time,
   numeric,
   unique,
+  varchar,
+  bigint,
 } from "drizzle-orm/pg-core";
 
 // ---------- Enums ----------
@@ -458,6 +460,53 @@ export const orders = pgTable("orders", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+
+// ---------- gift_accounts (Amplop / Tanda Kasih) ----------
+
+export const giftAccounts = pgTable("gift_accounts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  // 'bank' | 'ewallet' — kept as varchar (not enum) so adding a new
+  // type in the future is a one-line schema change instead of a
+  // migration that touches existing enum values.
+  type: varchar("type", { length: 20 }).notNull(),
+  provider: varchar("provider", { length: 50 }).notNull(),
+  accountName: varchar("account_name", { length: 100 }).notNull(),
+  accountNumber: varchar("account_number", { length: 50 }).notNull(),
+  isActive: boolean("is_active").default(true),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+// ---------- gift_confirmations ----------
+
+export const giftConfirmations = pgTable("gift_confirmations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  // Nullable — public confirmations come from a guest who may not be
+  // matched to a row (anonymous well-wisher).
+  guestId: uuid("guest_id").references(() => guests.id, {
+    onDelete: "set null",
+  }),
+  guestName: varchar("guest_name", { length: 100 }).notNull(),
+  guestMessage: text("guest_message"),
+  accountId: uuid("account_id").references(() => giftAccounts.id, {
+    onDelete: "set null",
+  }),
+  // Rupiah; bigint because amplop totals can run into the millions.
+  amount: bigint("amount", { mode: "number" }),
+  transferProofUrl: text("transfer_proof_url"),
+  // 'pending' | 'verified' | 'rejected'.
+  status: varchar("status", { length: 20 }).default("pending"),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
+
 // ---------- Type exports ----------
 
 export type Profile = typeof profiles.$inferSelect;
@@ -473,3 +522,5 @@ export type MessageDelivery = typeof messageDeliveries.$inferSelect;
 export type Order = typeof orders.$inferSelect;
 export type EventMember = typeof eventMembers.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
+export type GiftAccount = typeof giftAccounts.$inferSelect;
+export type GiftConfirmation = typeof giftConfirmations.$inferSelect;

@@ -28,7 +28,7 @@ const ACCOUNT_GROUP = new Set([
 
 const HARI_H_GROUP = new Set([
   "/dashboard/checkin",
-  "/dashboard/gifts",
+  "/dashboard/amplop",
 ]);
 
 // SVG icon paths per nav href. 24×24 viewBox, stroke-width 1.5, no fill.
@@ -58,7 +58,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/dashboard/checkin": (
     <path d="M9 11l3 3 8-8M3 7l9 9 9-9" />
   ),
-  "/dashboard/gifts": (
+  "/dashboard/amplop": (
     <>
       <rect x="3" y="8" width="18" height="13" rx="2" />
       <path d="M3 8l9-5 9 5M12 13v8M3 14h18" />

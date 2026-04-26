@@ -15,6 +15,8 @@ import {
 } from "@/components/invitation/formatting";
 import { GuestQrCode } from "@/components/invitation/guest-qr-code";
 import { RsvpForm } from "./rsvp-form";
+import { GiftSection } from "./gift-section";
+import type { PublicGiftAccount } from "@/lib/actions/gift";
 
 type Palette = { primary: string; secondary: string; accent: string };
 
@@ -91,6 +93,7 @@ function InvitationInner({
   palette,
   couple,
   schedules,
+  giftAccounts,
 }: {
   event: {
     id: string;
@@ -187,6 +190,14 @@ function InvitationInner({
         isExistingRsvp={isExistingRsvp}
         palette={palette}
       />
+
+      {giftAccounts && giftAccounts.length > 0 && (
+        <GiftSection
+          eventId={event.id}
+          accounts={giftAccounts}
+          palette={palette}
+        />
+      )}
 
       {/* Tiket kehadiran — only renders when the couple has enabled
           check-in AND this guest has RSVP'd "hadir". The QR encodes
