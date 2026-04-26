@@ -133,6 +133,55 @@ export function GuestsClient({
   const params = useSearchParams();
   const [, startTransition] = useTransition();
 
+  // Top-level view tab: "tamu" (default — group chips, toolbar, table)
+  // or "ucapan" (a search/sort view of guests who left an RSVP message).
+  // Driven by ?tab=ucapan so the Beranda Ucapan card can deep-link into it.
+  const tab = params.get("tab") === "ucapan" ? "ucapan" : "tamu";
+
+  // Ucapan-tab-only state. Lives at this level so reopening the tab
+  // returns to the same scroll/sort the operator left it in within the
+  // session.
+  const [messageSearch, setMessageSearch] = useState("");
+  const [messageSort, setMessageSort] = useState<"newest" | "oldest">(
+    "newest",
+  );
+  const [expandedMessages, setExpandedMessages] = useState<Set<string>>(
+    new Set(),
+  );
+  const toggleExpandMessage = (id: string) =>
+    setExpandedMessages((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const guestsWithMessages = useMemo(
+    () =>
+      guests.filter(
+        (g) => g.rsvpMessage && g.rsvpMessage.trim().length > 0,
+      ),
+    [guests],
+  );
+
+  const filteredMessages = useMemo(() => {
+    let result = guestsWithMessages;
+    if (messageSearch) {
+      const q = messageSearch.toLowerCase();
+      result = result.filter(
+        (g) =>
+          g.name?.toLowerCase().includes(q) ||
+          g.nickname?.toLowerCase().includes(q) ||
+          g.rsvpMessage?.toLowerCase().includes(q),
+      );
+    }
+    return [...result].sort((a, b) => {
+      const aTs = a.rsvpedAt ? new Date(a.rsvpedAt).getTime() : 0;
+      const bTs = b.rsvpedAt ? new Date(b.rsvpedAt).getTime() : 0;
+      return messageSort === "newest" ? bTs - aTs : aTs - bTs;
+    });
+  }, [guestsWithMessages, messageSearch, messageSort]);
+
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -662,6 +711,57 @@ export function GuestsClient({
         />
       </section>
 
+      {/* Top-level view tabs: Tamu (default list) vs Ucapan (RSVP
+          messages). The Ucapan tab is reachable via /dashboard/guests
+          ?tab=ucapan from the Beranda Ucapan card. */}
+      <section className="mb-5 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => updateParam("tab", null)}
+          aria-pressed={tab === "tamu"}
+          className={`d-mono rounded-full px-4 py-2 text-[10.5px] uppercase tracking-[0.18em] transition-colors ${
+            tab === "tamu"
+              ? "bg-[rgba(240,160,156,0.10)] text-[var(--d-coral)]"
+              : "text-[var(--d-ink-faint)] hover:text-[var(--d-ink)]"
+          }`}
+        >
+          Daftar Tamu
+        </button>
+        <button
+          type="button"
+          onClick={() => updateParam("tab", "ucapan")}
+          aria-pressed={tab === "ucapan"}
+          className={`d-mono inline-flex items-center gap-2 rounded-full px-4 py-2 text-[10.5px] uppercase tracking-[0.18em] transition-colors ${
+            tab === "ucapan"
+              ? "bg-[rgba(240,160,156,0.10)] text-[var(--d-coral)]"
+              : "text-[var(--d-ink-faint)] hover:text-[var(--d-ink)]"
+          }`}
+        >
+          <span aria-hidden>💬</span>
+          Ucapan
+          {guestsWithMessages.length > 0 && (
+            <span className="rounded-full bg-[rgba(240,160,156,0.14)] px-2 py-0.5 text-[9px] text-[var(--d-coral)]">
+              {guestsWithMessages.length}
+            </span>
+          )}
+        </button>
+      </section>
+
+      {tab === "ucapan" ? (
+        <UcapanTabPanel
+          messages={filteredMessages}
+          totalMessages={guestsWithMessages.length}
+          totalGuests={totalLive}
+          search={messageSearch}
+          onSearchChange={setMessageSearch}
+          sort={messageSort}
+          onSortChange={setMessageSort}
+          expanded={expandedMessages}
+          onToggleExpand={toggleExpandMessage}
+        />
+      ) : (
+        <>
+
       {/* Group chips — horizontal scroll quick filter */}
       {groups.length > 0 && (
         <section className="-mx-5 mb-5 overflow-x-auto px-5 scrollbar-hide lg:mx-0 lg:px-0">
@@ -949,6 +1049,8 @@ export function GuestsClient({
               )}
             </div>
           )}
+        </>
+      )}
         </>
       )}
 
@@ -1350,6 +1452,168 @@ export function GuestsClient({
         />
       )}
     </main>
+  );
+}
+
+function UcapanTabPanel({
+  messages,
+  totalMessages,
+  totalGuests,
+  search,
+  onSearchChange,
+  sort,
+  onSortChange,
+  expanded,
+  onToggleExpand,
+}: {
+  messages: GuestRow[];
+  totalMessages: number;
+  totalGuests: number;
+  search: string;
+  onSearchChange: (s: string) => void;
+  sort: "newest" | "oldest";
+  onSortChange: (s: "newest" | "oldest") => void;
+  expanded: Set<string>;
+  onToggleExpand: (id: string) => void;
+}) {
+  return (
+    <section>
+      <h2 className="d-serif text-[22px] font-light tracking-[-0.015em] text-[var(--d-ink)]">
+        Ucapan dari{" "}
+        <em className="d-serif italic text-[var(--d-coral)]">tamu</em>
+      </h2>
+      <p className="d-serif mt-1 text-[12.5px] italic text-[var(--d-ink-faint)]">
+        {totalMessages} ucapan dari {totalGuests} tamu
+      </p>
+
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <label className="flex min-w-[260px] flex-1 items-center gap-2.5 rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] px-4 py-2.5 transition-colors focus-within:border-[var(--d-coral)]">
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="h-3.5 w-3.5 shrink-0 text-[var(--d-ink-faint)]"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="M21 21l-4.3-4.3" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Cari nama atau isi ucapan…"
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="d-serif flex-1 bg-transparent text-[13px] italic text-[var(--d-ink)] outline-none placeholder:italic placeholder:text-[var(--d-ink-faint)]"
+          />
+        </label>
+        <div className="d-mono inline-flex gap-0.5 rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-[3px] text-[10px] uppercase tracking-[0.16em]">
+          {(["newest", "oldest"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onSortChange(s)}
+              aria-pressed={sort === s}
+              className={`rounded-full px-3 py-1.5 transition-colors ${
+                sort === s
+                  ? "bg-[var(--d-coral)] text-[#0B0B15]"
+                  : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
+              }`}
+            >
+              {s === "newest" ? "Terbaru" : "Terlama"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-col gap-3">
+        {messages.length === 0 ? (
+          <div className="rounded-[14px] border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.02)] px-5 py-12 text-center">
+            <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
+              {search
+                ? `Tidak ditemukan ucapan untuk "${search}"`
+                : "Belum ada ucapan dari tamu."}
+            </p>
+          </div>
+        ) : (
+          messages.map((g) => {
+            const isOpen = expanded.has(g.id);
+            const dateLabel = g.rsvpedAt
+              ? new Date(g.rsvpedAt).toLocaleDateString("id-ID", {
+                  day: "numeric",
+                  month: "short",
+                })
+              : null;
+            return (
+              <article
+                key={g.id}
+                onClick={() => onToggleExpand(g.id)}
+                className="cursor-pointer rounded-[14px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] px-5 py-4 transition-colors hover:border-[var(--d-line-strong)] hover:bg-[rgba(255,255,255,0.03)]"
+              >
+                <span
+                  aria-hidden
+                  className="d-serif block text-[28px] leading-[0.6] text-[var(--d-coral)] opacity-30"
+                >
+                  &ldquo;
+                </span>
+                <p
+                  className={`d-serif mt-2 text-[14px] italic leading-[1.6] text-[var(--d-ink)] ${
+                    isOpen ? "" : "line-clamp-3"
+                  }`}
+                >
+                  {g.rsvpMessage}
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="d-serif flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] italic"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, var(--d-coral), var(--d-peach))",
+                      color: "#0B0B15",
+                    }}
+                  >
+                    {(g.name || "?")[0]}
+                  </span>
+                  <span className="text-[13px] text-[var(--d-ink-dim)]">
+                    {g.nickname || g.name}
+                  </span>
+                  {g.groupName && (
+                    <>
+                      <span
+                        aria-hidden
+                        className="h-1 w-1 shrink-0 rounded-full"
+                        style={{
+                          background: g.groupColor ?? "var(--d-ink-faint)",
+                        }}
+                      />
+                      <span className="d-mono text-[9px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+                        {g.groupName}
+                      </span>
+                    </>
+                  )}
+                  {dateLabel && (
+                    <>
+                      <span className="text-[var(--d-ink-faint)]">·</span>
+                      <span className="d-mono text-[9px] uppercase tracking-[0.14em] text-[var(--d-ink-faint)]">
+                        {dateLabel}
+                      </span>
+                    </>
+                  )}
+                </div>
+                {!isOpen &&
+                  g.rsvpMessage &&
+                  g.rsvpMessage.length > 120 && (
+                    <p className="d-mono mt-2 text-[10px] uppercase tracking-[0.18em] text-[var(--d-coral)]">
+                      Klik untuk baca selengkapnya →
+                    </p>
+                  )}
+              </article>
+            );
+          })
+        )}
+      </div>
+    </section>
   );
 }
 

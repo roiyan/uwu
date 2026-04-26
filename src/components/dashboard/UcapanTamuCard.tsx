@@ -122,7 +122,7 @@ export function UcapanTamuCard({
           tamu
         </span>
         <Link
-          href="/dashboard/analytics"
+          href="/dashboard/guests?tab=ucapan"
           className="d-mono text-[10px] uppercase tracking-[0.16em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-ink)]"
         >
           Lihat semua →
