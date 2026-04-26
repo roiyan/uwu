@@ -12,17 +12,9 @@ import {
 
 // Explicit column projection for the events table.
 //
-// Why this exists: the schema declares some columns (operator_pin,
-// operator_token, operator_token_created_at — added in migration 0012)
-// that may not yet exist in every environment's database. Drizzle's
-// `select({ event: events })` enumerates every schema-declared column,
-// so a deploy where code is ahead of migration crashes every page that
-// hits getEventBundle with `column "operator_pin" does not exist`.
-//
-// Listing the core columns explicitly here keeps the page render path
-// independent of any operator-specific columns. Code paths that
-// genuinely need the operator fields (the settings card) query them
-// directly via dedicated actions.
+// We list the columns we actually render here so a future migration
+// that adds a column the production DB hasn't received yet doesn't
+// crash these read paths via Drizzle's full-table `select({ event: events })`.
 function eventCoreCols() {
   return {
     id: events.id,
