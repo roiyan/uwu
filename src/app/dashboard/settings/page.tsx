@@ -49,7 +49,12 @@ export default async function SettingsPage({
   const isOwner = bundle.event.ownerId === user.id;
 
   const params = await searchParams;
-  const requested = params.tab as Tab | undefined;
+  // Accept "preferensi" as a UX-facing alias for the internal "budaya"
+  // tab id — the rest of the app links here with ?tab=preferensi
+  // (e.g. checkin-disabled-card, the dashboard check-in CTA), which
+  // matches the human-facing label of the tab.
+  const rawTab = params.tab === "preferensi" ? "budaya" : params.tab;
+  const requested = rawTab as Tab | undefined;
   const active: Tab =
     requested && VALID_TABS.includes(requested) ? requested : "akun";
 
