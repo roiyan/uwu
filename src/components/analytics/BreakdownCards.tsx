@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 export type SourceData = {
   whatsapp: number;
   email: number;
@@ -17,12 +15,21 @@ export type GroupEngagementRow = {
   opened: number;
 };
 
-export type WishRow = {
+export type EnthusiastRow = {
   id: string;
   name: string;
-  message: string | null;
+  nickname: string | null;
   groupName: string | null;
   groupColor: string | null;
+  rsvpStatus:
+    | "baru"
+    | "diundang"
+    | "dibuka"
+    | "hadir"
+    | "tidak_hadir";
+  rsvpAttendees: number | null;
+  rsvpMessage: string | null;
+  openedAt: Date | null;
   rsvpedAt: Date | null;
 };
 
@@ -30,26 +37,142 @@ export function BreakdownCards({
   source,
   groups,
   totalGuests,
-  wishes,
-  wishesTotal,
-  wishesGuestTotal,
+  enthusiasts,
 }: {
   source: SourceData;
   groups: GroupEngagementRow[];
   totalGuests: number;
-  wishes: WishRow[];
-  wishesTotal: number;
-  wishesGuestTotal: number;
+  enthusiasts: EnthusiastRow[];
 }) {
   return (
     <section className="grid gap-4 lg:grid-cols-3">
-      <WishesCard
-        wishes={wishes}
-        total={wishesTotal}
-        guestTotal={wishesGuestTotal}
-      />
+      <EnthusiastCard rows={enthusiasts} />
       <SourceCard source={source} totalGuests={totalGuests} />
       <GroupCard groups={groups} />
+    </section>
+  );
+}
+
+/**
+ * "Tamu Paling Antusias" — top 5 guests scored by signals that reveal
+ * excitement: opened the invite, RSVP'd "hadir", responded fast after
+ * opening, brought a +1, left a wish. Replaces the old WishesCard
+ * (wishes are now their own tab on /dashboard/guests).
+ */
+function rsvpSpeedLabel(opened: Date | null, rsvped: Date | null): string {
+  if (!opened || !rsvped) return "";
+  const diff = (new Date(rsvped).getTime() - new Date(opened).getTime()) / 60000;
+  if (diff < 1) return "RSVP langsung";
+  if (diff < 60) return `RSVP ${Math.round(diff)} menit setelah buka`;
+  if (diff < 1440) return `RSVP ${Math.round(diff / 60)} jam setelah buka`;
+  return `RSVP ${Math.round(diff / 1440)} hari setelah buka`;
+}
+
+function scoreEnthusiast(g: EnthusiastRow): number {
+  let score = 0;
+  if (g.rsvpStatus === "hadir") score += 3;
+  if (g.openedAt && g.rsvpedAt) {
+    const diff =
+      (new Date(g.rsvpedAt).getTime() - new Date(g.openedAt).getTime()) /
+      60000;
+    if (diff < 5) score += 3;
+    else if (diff < 30) score += 2;
+    else if (diff < 60) score += 1;
+  }
+  if (g.rsvpMessage && g.rsvpMessage.trim().length > 0) score += 2;
+  if (g.rsvpAttendees && g.rsvpAttendees > 1) score += 1;
+  return score;
+}
+
+function EnthusiastCard({ rows }: { rows: EnthusiastRow[] }) {
+  const ranked = rows
+    .filter((g) => g.openedAt)
+    .map((g) => ({ ...g, score: scoreEnthusiast(g) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
+
+  const medals = ["🥇", "🥈", "🥉", "4", "5"];
+  const avatarBg = (rank: number) => {
+    if (rank === 0)
+      return "linear-gradient(135deg, var(--d-coral), var(--d-peach))";
+    if (rank === 1)
+      return "linear-gradient(135deg, var(--d-lilac), var(--d-blue))";
+    return "rgba(255,255,255,0.06)";
+  };
+
+  return (
+    <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
+      <p className="d-mono text-[10px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+        Tamu Paling Antusias
+      </p>
+      <h3 className="d-serif mt-2 text-[18px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
+        Siapa yang paling{" "}
+        <em className="d-serif italic text-[var(--d-coral)]">excited</em>?
+      </h3>
+
+      {ranked.length === 0 ? (
+        <div className="mt-5 rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.02)] px-4 py-8 text-center">
+          <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
+            Belum ada tamu yang membuka undangan.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-5 flex flex-col">
+          {ranked.map((g, i) => {
+            const speed = rsvpSpeedLabel(g.openedAt, g.rsvpedAt);
+            const meta = [
+              speed,
+              g.rsvpAttendees && g.rsvpAttendees > 1
+                ? `${g.rsvpAttendees} pax`
+                : null,
+              g.rsvpMessage ? "💬" : null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
+            return (
+              <div
+                key={g.id}
+                className={`flex items-center gap-3.5 py-3 ${
+                  i < ranked.length - 1
+                    ? "border-b border-[var(--d-line)]"
+                    : ""
+                }`}
+              >
+                <div
+                  className={`d-mono w-7 shrink-0 text-center ${
+                    i < 3 ? "text-[18px]" : "text-[12px]"
+                  } ${i < 3 ? "text-[var(--d-ink)]" : "text-[var(--d-ink-faint)]"}`}
+                >
+                  {medals[i]}
+                </div>
+                <div
+                  aria-hidden
+                  className="d-serif flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[13px] italic"
+                  style={{
+                    background: avatarBg(i),
+                    color: i < 2 ? "#0B0B15" : "var(--d-ink-dim)",
+                  }}
+                >
+                  {(g.name || "?")[0]}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-[13px] font-medium text-[var(--d-ink)]">
+                    {g.nickname || g.name}
+                  </p>
+                  {meta && (
+                    <p className="d-mono mt-0.5 truncate text-[10px] uppercase tracking-[0.14em] text-[var(--d-ink-faint)]">
+                      {meta}
+                    </p>
+                  )}
+                </div>
+                <div className="d-mono shrink-0 text-[10px] uppercase tracking-[0.14em] text-[var(--d-ink-faint)] opacity-60">
+                  {g.score}pt
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }
@@ -125,133 +248,6 @@ function BrkRow({
         </span>
       </div>
     </div>
-  );
-}
-
-function WishesCard({
-  wishes,
-  total,
-  guestTotal,
-}: {
-  wishes: WishRow[];
-  total: number;
-  guestTotal: number;
-}) {
-  // When `expanded` is false the list is capped to a scroll viewport
-  // (~3 cards visible) so the dashboard doesn't stretch indefinitely
-  // on couples with hundreds of wishes. Operator can hit "Lihat
-  // Semua" to drop the cap and read in-flow.
-  const [expanded, setExpanded] = useState(false);
-  return (
-    <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
-      <p className="d-mono text-[10px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
-        Ucapan Tamu
-      </p>
-      <h3 className="d-serif mt-2 text-[18px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
-        Kata-kata{" "}
-        <em className="d-serif italic text-[var(--d-coral)]">terindah</em> dari
-        mereka yang mendoakan.
-      </h3>
-
-      {wishes.length === 0 ? (
-        <div className="mt-5 rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.02)] px-4 py-8 text-center">
-          <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
-            Belum ada ucapan.
-          </p>
-          <p className="d-serif mx-auto mt-2 max-w-[28ch] text-[12.5px] italic leading-relaxed text-[var(--d-ink-faint)]">
-            Saat tamu mengonfirmasi kehadiran dan meninggalkan pesan, kata-kata
-            mereka akan muncul di sini.
-          </p>
-        </div>
-      ) : (
-        <>
-          <div
-            className={`mt-5 flex flex-col gap-3 ${
-              expanded ? "" : "max-h-[320px] overflow-y-auto pr-1 scroll-smooth"
-            }`}
-          >
-            {wishes.map((w) => (
-              <WishCard key={w.id} wish={w} />
-            ))}
-          </div>
-          <div className="mt-5 flex items-center justify-between gap-3">
-            <p className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)]">
-              <span className="text-[var(--d-ink)]">{total}</span> ucapan dari{" "}
-              <span className="text-[var(--d-ink)]">{guestTotal}</span> tamu
-            </p>
-            {wishes.length > 3 && (
-              <button
-                type="button"
-                onClick={() => setExpanded((v) => !v)}
-                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
-              >
-                {expanded
-                  ? "Tutup"
-                  : `Lihat Semua (${wishes.length})`}
-                <span aria-hidden>{expanded ? "↑" : "→"}</span>
-              </button>
-            )}
-          </div>
-        </>
-      )}
-    </section>
-  );
-}
-
-function WishCard({ wish }: { wish: WishRow }) {
-  // Each card collapses to two lines by default. Click-to-expand
-  // toggles the clamp so operators can read the full message inline,
-  // no modal hop.
-  const [open, setOpen] = useState(false);
-  const dateLabel = wish.rsvpedAt
-    ? new Date(wish.rsvpedAt).toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-      })
-    : null;
-  return (
-    <article
-      onClick={() => setOpen((v) => !v)}
-      className="relative cursor-pointer rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-1)] p-4 pl-5 transition-colors hover:border-[var(--d-line-strong)] hover:bg-[var(--d-bg-2)]"
-    >
-      <span
-        aria-hidden
-        className="d-serif pointer-events-none absolute left-2 top-1.5 text-[36px] italic leading-none text-[var(--d-coral)]/30"
-      >
-        &ldquo;
-      </span>
-      <p
-        className={`d-serif relative text-[14px] italic leading-relaxed text-[var(--d-ink)] ${
-          open ? "" : "line-clamp-2"
-        }`}
-      >
-        {wish.message}
-      </p>
-      <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-        <p className="text-[13px] font-medium text-[var(--d-ink)]">
-          <span aria-hidden className="text-[var(--d-ink-faint)]">
-            —{" "}
-          </span>
-          {wish.name}
-        </p>
-        <p className="d-mono flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-          {wish.groupName && (
-            <>
-              <span
-                aria-hidden
-                className="h-1 w-1 rounded-full"
-                style={{
-                  background: wish.groupColor ?? "var(--d-gold)",
-                }}
-              />
-              {wish.groupName}
-            </>
-          )}
-          {wish.groupName && dateLabel && <span aria-hidden>·</span>}
-          {dateLabel && <span>{dateLabel}</span>}
-        </p>
-      </div>
-    </article>
   );
 }
 

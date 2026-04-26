@@ -89,6 +89,7 @@ function Skeleton({ palette }: { palette: Palette }) {
 }
 
 function InvitationInner({
+  giftAccounts,
   event,
   palette,
   couple,

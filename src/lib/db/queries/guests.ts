@@ -250,10 +250,12 @@ export async function listGuestsWithActivity(eventId: string) {
     .select({
       id: guests.id,
       name: guests.name,
+      nickname: guests.nickname,
       groupName: guestGroups.name,
       groupColor: guestGroups.color,
       rsvpStatus: guests.rsvpStatus,
       rsvpAttendees: guests.rsvpAttendees,
+      rsvpMessage: guests.rsvpMessage,
       sendCount: guests.sendCount,
       openedAt: guests.openedAt,
       rsvpedAt: guests.rsvpedAt,

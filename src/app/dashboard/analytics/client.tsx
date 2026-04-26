@@ -8,9 +8,9 @@ import {
 } from "@/components/analytics/TimeSeriesChart";
 import {
   BreakdownCards,
+  type EnthusiastRow,
   type GroupEngagementRow,
   type SourceData,
-  type WishRow,
 } from "@/components/analytics/BreakdownCards";
 import { FunnelChart } from "@/components/analytics/FunnelChart";
 import { StatusDonut } from "@/components/analytics/StatusDonut";
@@ -42,10 +42,12 @@ export type AnalyticsTrendRow = {
 export type AnalyticsResponseRow = {
   id: string;
   name: string;
+  nickname: string | null;
   groupName: string | null;
   groupColor: string | null;
   rsvpStatus: GuestStatus;
   rsvpAttendees: number | null;
+  rsvpMessage: string | null;
   sendCount: number;
   openedAt: Date | null;
   rsvpedAt: Date | null;
@@ -109,9 +111,6 @@ export function AnalyticsClient({
   groupEngagement,
   heatmapBuckets,
   topOpeners,
-  wishes,
-  wishesTotal,
-  wishesGuestTotal,
 }: {
   eventId: string;
   total: number;
@@ -132,9 +131,6 @@ export function AnalyticsClient({
   groupEngagement: GroupEngagementRow[];
   heatmapBuckets: HeatmapBucket[];
   topOpeners: TopOpenerRow[];
-  wishes: WishRow[];
-  wishesTotal: number;
-  wishesGuestTotal: number;
 }) {
   const [range, setRange] = useState<Range>("7h");
   const [groupFilter, setGroupFilter] = useState<string>("");
@@ -266,11 +262,26 @@ export function AnalyticsClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topOpeners, cutoff]);
 
-  const filteredWishes = useMemo(() => {
-    if (!cutoff) return wishes;
-    return wishes.filter((w) => inWindow(w.rsvpedAt));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wishes, cutoff]);
+  // Top enthusiast candidates — pass the raw response rows; the
+  // EnthusiastCard does its own scoring + slice. Just narrow to the
+  // shape the card expects (drops sendCount / lastSent* which the
+  // ranking doesn't use).
+  const enthusiasts = useMemo<EnthusiastRow[]>(
+    () =>
+      responses.map((r) => ({
+        id: r.id,
+        name: r.name,
+        nickname: r.nickname,
+        groupName: r.groupName,
+        groupColor: r.groupColor,
+        rsvpStatus: r.rsvpStatus,
+        rsvpAttendees: r.rsvpAttendees,
+        rsvpMessage: r.rsvpMessage,
+        openedAt: r.openedAt,
+        rsvpedAt: r.rsvpedAt,
+      })),
+    [responses],
+  );
 
   const kpiCards: KpiCardData[] = [
     {
@@ -408,9 +419,7 @@ export function AnalyticsClient({
           source={trafficSource}
           groups={groupEngagement}
           totalGuests={total}
-          wishes={filteredWishes}
-          wishesTotal={filteredWishes.length}
-          wishesGuestTotal={wishesGuestTotal}
+          enthusiasts={enthusiasts}
         />
       </div>
 
