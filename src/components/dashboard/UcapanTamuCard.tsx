@@ -65,13 +65,13 @@ export function UcapanTamuCard({
         className="mt-5 rounded-[14px] border border-[var(--d-line)] px-5 py-5 lg:px-6 lg:py-6"
         style={{ background: "rgba(255,255,255,0.02)" }}
       >
-        <span
-          aria-hidden
-          className="d-serif block text-[36px] leading-[0.8] text-[var(--d-coral)] opacity-50"
-        >
-          “
-        </span>
-        <p className="d-serif mt-2 text-[15px] italic leading-[1.6] text-[var(--d-ink)] lg:text-[16px]">
+        <p className="d-serif text-[15px] italic leading-[1.6] text-[var(--d-ink)] lg:text-[16px]">
+          <span
+            aria-hidden
+            className="d-serif mr-1 align-text-top text-[20px] leading-none text-[var(--d-coral)] opacity-40"
+          >
+            “
+          </span>
           {featured.message}
         </p>
         <FooterLine
@@ -101,7 +101,13 @@ export function UcapanTamuCard({
                   overflow: "hidden",
                 }}
               >
-                “{w.message}”
+                <span
+                  aria-hidden
+                  className="d-serif mr-0.5 align-text-top text-[16px] leading-none text-[var(--d-coral)] opacity-40"
+                >
+                  “
+                </span>
+                {w.message}
               </p>
               <FooterLine
                 name={w.name}

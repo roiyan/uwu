@@ -107,7 +107,7 @@ function EnthusiastCard({ rows }: { rows: EnthusiastRow[] }) {
       </p>
       <h3 className="d-serif mt-2 text-[18px] font-light leading-tight tracking-[-0.01em] text-[var(--d-ink)]">
         Siapa yang paling{" "}
-        <em className="d-serif italic text-[var(--d-coral)]">excited</em>?
+        <em className="d-serif italic text-[var(--d-coral)]">antusias</em>?
       </h3>
 
       {ranked.length === 0 ? (

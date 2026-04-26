@@ -1550,17 +1550,17 @@ function UcapanTabPanel({
                 onClick={() => onToggleExpand(g.id)}
                 className="cursor-pointer rounded-[14px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] px-5 py-4 transition-colors hover:border-[var(--d-line-strong)] hover:bg-[rgba(255,255,255,0.03)]"
               >
-                <span
-                  aria-hidden
-                  className="d-serif block text-[28px] leading-[0.6] text-[var(--d-coral)] opacity-30"
-                >
-                  &ldquo;
-                </span>
                 <p
-                  className={`d-serif mt-2 text-[14px] italic leading-[1.6] text-[var(--d-ink)] ${
+                  className={`d-serif text-[14px] italic leading-[1.6] text-[var(--d-ink)] ${
                     isOpen ? "" : "line-clamp-3"
                   }`}
                 >
+                  <span
+                    aria-hidden
+                    className="d-serif mr-1 align-text-top text-[18px] leading-none text-[var(--d-coral)] opacity-40"
+                  >
+                    &ldquo;
+                  </span>
                   {g.rsvpMessage}
                 </p>
                 <div className="mt-3 flex flex-wrap items-center gap-2">

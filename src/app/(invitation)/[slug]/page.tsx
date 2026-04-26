@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getPublishedEventBySlug } from "@/lib/db/queries/events";
 import { listPublicGiftAccountsAction } from "@/lib/actions/gift";
+import { listPublicGalleryImages } from "@/lib/actions/gallery";
 import { InvitationClient } from "./client";
 
 // Static shell revalidates every 5 min; guest personalisation is fetched per
@@ -45,7 +46,10 @@ export default async function InvitationPage({
   if (!bundle) notFound();
 
   const palette = extractPalette(bundle.theme?.config ?? null);
-  const giftAccounts = await listPublicGiftAccountsAction(bundle.event.id);
+  const [giftAccounts, galleryImages] = await Promise.all([
+    listPublicGiftAccountsAction(bundle.event.id),
+    listPublicGalleryImages(bundle.event.id),
+  ]);
 
   // NB: we deliberately do not read searchParams here so the page stays
   // static. Guest personalization is resolved on the client via a lightweight
@@ -53,6 +57,7 @@ export default async function InvitationPage({
   return (
     <InvitationClient
       giftAccounts={giftAccounts}
+      galleryImages={galleryImages}
       event={{
         id: bundle.event.id,
         title: bundle.event.title,

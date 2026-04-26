@@ -11,7 +11,6 @@ import {
   getWeeklyTrend,
   listGuestGroups,
   listGuestsWithActivity,
-  listTopOpeners,
   sumAttendees,
 } from "@/lib/db/queries/guests";
 import Link from "next/link";
@@ -36,7 +35,6 @@ export default async function AnalyticsPage() {
     trafficSource,
     groupEngagement,
     heatmapBuckets,
-    topOpeners,
   ] = await Promise.all([
     countLiveGuests(eventId),
     sumAttendees(eventId),
@@ -48,7 +46,6 @@ export default async function AnalyticsPage() {
     getTrafficSourceBreakdown(eventId),
     getGroupEngagement(eventId),
     getOpenHeatmap(eventId, eventTimezone),
-    listTopOpeners(eventId, 5),
   ]);
 
   if (total === 0) {
@@ -121,7 +118,6 @@ export default async function AnalyticsPage() {
       trafficSource={trafficSource}
       groupEngagement={groupEngagement}
       heatmapBuckets={heatmapBuckets}
-      topOpeners={topOpeners}
     />
   );
 }

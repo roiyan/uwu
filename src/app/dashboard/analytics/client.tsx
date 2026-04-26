@@ -18,10 +18,6 @@ import {
   ActivityHeatmap,
   type HeatmapBucket,
 } from "@/components/analytics/ActivityHeatmap";
-import {
-  TopOpeners,
-  type TopOpenerRow,
-} from "@/components/analytics/TopOpeners";
 import { ExportSection } from "@/components/analytics/ExportSection";
 
 export type GuestStatus =
@@ -110,7 +106,6 @@ export function AnalyticsClient({
   trafficSource,
   groupEngagement,
   heatmapBuckets,
-  topOpeners,
 }: {
   eventId: string;
   total: number;
@@ -130,7 +125,6 @@ export function AnalyticsClient({
   trafficSource: SourceData;
   groupEngagement: GroupEngagementRow[];
   heatmapBuckets: HeatmapBucket[];
-  topOpeners: TopOpenerRow[];
 }) {
   const [range, setRange] = useState<Range>("7h");
   const [groupFilter, setGroupFilter] = useState<string>("");
@@ -255,12 +249,6 @@ export function AnalyticsClient({
       return { day, hour, count };
     });
   }, [heatmapBuckets, cutoff, responses]);
-
-  const filteredTopOpeners = useMemo(() => {
-    if (!cutoff) return topOpeners;
-    return topOpeners.filter((r) => inWindow(r.openedAt));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [topOpeners, cutoff]);
 
   // Top enthusiast candidates — pass the raw response rows; the
   // EnthusiastCard does its own scoring + slice. Just narrow to the
@@ -434,10 +422,12 @@ export function AnalyticsClient({
         <StatusDonut slices={donutSlices} total={total} />
       </div>
 
-      {/* 5. Heatmap + Top openers */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+      {/* 5. Heatmap (full-width) — Top openers card removed; the
+             "Tamu Paling Antusias" card on the breakdown row above
+             already surfaces the most engaged guests with a richer
+             ranking, so a separate top-opener list was duplicative. */}
+      <div className="mt-6">
         <ActivityHeatmap buckets={filteredHeatmap} />
-        <TopOpeners rows={filteredTopOpeners} />
       </div>
 
       {/* 6. Response table — placed above Ekspor so the operator can
