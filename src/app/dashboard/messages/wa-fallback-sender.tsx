@@ -20,7 +20,6 @@ type LogEntry = {
 
 type Phase =
   | "loading"
-  | "ready"
   | "sending"
   | "paused"
   | "completed"
@@ -74,11 +73,11 @@ export function WaFallbackSender({
         // Only iterate ones still pending — completed/failed are skipped.
         const pending = rows.filter((r) => r.status === "pending");
         setDeliveries(pending);
-        // Stop in "ready" so the user can confirm the audience before
-        // we start opening WA tabs. Sending always starts at index 0
-        // and walks every pending delivery — broadcast = kirim ke
-        // semua, bukan hanya yang di-preview di compose form.
-        setPhase(pending.length === 0 ? "completed" : "ready");
+        // Go straight to "sending" so the green "Mulai Kirim WhatsApp →"
+        // click opens the first WA tab in one user action — no second
+        // confirmation gate. Sending always starts at index 0 and walks
+        // every pending delivery.
+        setPhase(pending.length === 0 ? "completed" : "sending");
       })
       .catch((err) => {
         if (cancelled) return;
@@ -272,93 +271,6 @@ export function WaFallbackSender({
     return (
       <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 text-sm text-[var(--d-ink-dim)]">
         Memuat daftar tamu…
-      </div>
-    );
-  }
-
-  if (phase === "ready") {
-    const first = deliveries[0];
-    const sample = deliveries.slice(0, 5);
-    return (
-      <div
-        className="rounded-[14px] border px-[22px] py-[18px]"
-        style={{
-          background: "rgba(240,160,156,0.04)",
-          borderColor: "rgba(240,160,156,0.18)",
-        }}
-      >
-        <div className="flex items-center gap-2.5">
-          <span
-            aria-hidden
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
-            style={{
-              background: "rgba(240,160,156,0.12)",
-              color: "var(--d-coral)",
-            }}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              className="h-3.5 w-3.5"
-            >
-              <path d="M22 2L11 13" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <h3 className="d-serif text-[15px] text-[var(--d-ink)]">
-            Siap Kirim WhatsApp
-          </h3>
-        </div>
-        <p className="mt-2 text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-          Akan mengirim ke{" "}
-          <strong className="text-[var(--d-ink)]">
-            {deliveries.length} tamu
-          </strong>
-          , mulai dari{" "}
-          <strong className="text-[var(--d-ink)]">
-            {first?.recipientName ?? "tamu pertama"}
-          </strong>
-          . Setiap tamu menerima pesan yang sudah dipersonalisasi.
-        </p>
-        <div className="mt-3 rounded-[10px] border border-[var(--d-line)] bg-black/20 px-3 py-2.5 text-[12px] text-[var(--d-ink-dim)]">
-          <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-            Urutan kirim
-          </p>
-          <ol className="mt-1.5 list-decimal pl-5 text-[var(--d-ink)]">
-            {sample.map((d) => (
-              <li key={d.id} className="py-0.5">
-                {d.recipientName ?? "Tamu"}
-              </li>
-            ))}
-          </ol>
-          {deliveries.length > sample.length && (
-            <p className="mt-1 text-[var(--d-ink-faint)]">
-              … dan {deliveries.length - sample.length} tamu lainnya
-            </p>
-          )}
-        </div>
-        <p className="d-serif mt-3 text-[11.5px] italic text-[var(--d-ink-faint)]">
-          Preview di form compose hanya untuk cek template — broadcast
-          tetap dikirim ke seluruh audiens terpilih.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2.5">
-          <button
-            type="button"
-            onClick={() => setPhase("sending")}
-            className="d-mono rounded-full bg-[var(--d-coral)] px-5 py-2 text-[12px] font-medium uppercase tracking-[0.18em] text-[#0B0B15] transition-all hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(240,160,156,0.32)]"
-          >
-            Mulai Kirim →
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-full border border-[var(--d-line-strong)] bg-transparent px-4 py-2 text-[12px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)]"
-          >
-            Batal
-          </button>
-        </div>
       </div>
     );
   }
