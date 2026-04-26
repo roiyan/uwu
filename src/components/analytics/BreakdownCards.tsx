@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 export type SourceData = {
   whatsapp: number;
   email: number;
@@ -135,6 +137,11 @@ function WishesCard({
   total: number;
   guestTotal: number;
 }) {
+  // When `expanded` is false the list is capped to a scroll viewport
+  // (~3 cards visible) so the dashboard doesn't stretch indefinitely
+  // on couples with hundreds of wishes. Operator can hit "Lihat
+  // Semua" to drop the cap and read in-flow.
+  const [expanded, setExpanded] = useState(false);
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
       <p className="d-mono text-[10px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
@@ -158,15 +165,33 @@ function WishesCard({
         </div>
       ) : (
         <>
-          <div className="mt-5 flex flex-col gap-3">
+          <div
+            className={`mt-5 flex flex-col gap-3 ${
+              expanded ? "" : "max-h-[320px] overflow-y-auto pr-1 scroll-smooth"
+            }`}
+          >
             {wishes.map((w) => (
               <WishCard key={w.id} wish={w} />
             ))}
           </div>
-          <p className="d-mono mt-5 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)]">
-            <span className="text-[var(--d-ink)]">{total}</span> ucapan dari{" "}
-            <span className="text-[var(--d-ink)]">{guestTotal}</span> tamu
-          </p>
+          <div className="mt-5 flex items-center justify-between gap-3">
+            <p className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)]">
+              <span className="text-[var(--d-ink)]">{total}</span> ucapan dari{" "}
+              <span className="text-[var(--d-ink)]">{guestTotal}</span> tamu
+            </p>
+            {wishes.length > 3 && (
+              <button
+                type="button"
+                onClick={() => setExpanded((v) => !v)}
+                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
+              >
+                {expanded
+                  ? "Tutup"
+                  : `Lihat Semua (${wishes.length})`}
+                <span aria-hidden>{expanded ? "↑" : "→"}</span>
+              </button>
+            )}
+          </div>
         </>
       )}
     </section>
@@ -174,6 +199,10 @@ function WishesCard({
 }
 
 function WishCard({ wish }: { wish: WishRow }) {
+  // Each card collapses to two lines by default. Click-to-expand
+  // toggles the clamp so operators can read the full message inline,
+  // no modal hop.
+  const [open, setOpen] = useState(false);
   const dateLabel = wish.rsvpedAt
     ? new Date(wish.rsvpedAt).toLocaleDateString("id-ID", {
         day: "numeric",
@@ -181,14 +210,21 @@ function WishCard({ wish }: { wish: WishRow }) {
       })
     : null;
   return (
-    <article className="relative rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-1)] p-4 pl-5">
+    <article
+      onClick={() => setOpen((v) => !v)}
+      className="relative cursor-pointer rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-1)] p-4 pl-5 transition-colors hover:border-[var(--d-line-strong)] hover:bg-[var(--d-bg-2)]"
+    >
       <span
         aria-hidden
         className="d-serif pointer-events-none absolute left-2 top-1.5 text-[36px] italic leading-none text-[var(--d-coral)]/30"
       >
         &ldquo;
       </span>
-      <p className="d-serif relative text-[14px] italic leading-relaxed text-[var(--d-ink)]">
+      <p
+        className={`d-serif relative text-[14px] italic leading-relaxed text-[var(--d-ink)] ${
+          open ? "" : "line-clamp-2"
+        }`}
+      >
         {wish.message}
       </p>
       <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">

@@ -333,12 +333,21 @@ export async function getGroupEngagement(eventId: string) {
  * Aktivitas heatmap. Day-of-week comes back as 0=Sunday … 6=Saturday
  * to match JS Date.getDay(). Bucket counts are 0 when nothing happened
  * in that slot — the renderer fills the matrix from this sparse list.
+ *
+ * Time zone: opened_at is stored as `timestamptz`. Postgres'
+ * `extract()` against a timestamptz uses the database session's
+ * timezone (UTC on Supabase), which produced the "WIB 16:00 looks
+ * like 09:00 SAB" off-by-7 the heatmap was showing. We coerce to
+ * Asia/Jakarta with `AT TIME ZONE 'Asia/Jakarta'` before extracting
+ * — the result is a `timestamp without time zone` that represents
+ * the wall-clock value the operator actually wants to bucket on.
  */
 export async function getOpenHeatmap(eventId: string) {
+  const localOpenedAt = sql`(${guests.openedAt} at time zone 'Asia/Jakarta')`;
   const rows = await db
     .select({
-      day: sql<number>`extract(dow from ${guests.openedAt})::int`,
-      hour: sql<number>`extract(hour from ${guests.openedAt})::int`,
+      day: sql<number>`extract(dow from ${localOpenedAt})::int`,
+      hour: sql<number>`extract(hour from ${localOpenedAt})::int`,
       count: sql<number>`count(*)::int`,
     })
     .from(guests)
@@ -350,8 +359,8 @@ export async function getOpenHeatmap(eventId: string) {
       ),
     )
     .groupBy(
-      sql`extract(dow from ${guests.openedAt})`,
-      sql`extract(hour from ${guests.openedAt})`,
+      sql`extract(dow from ${localOpenedAt})`,
+      sql`extract(hour from ${localOpenedAt})`,
     );
   return rows;
 }

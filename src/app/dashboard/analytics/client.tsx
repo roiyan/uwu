@@ -350,10 +350,10 @@ export function AnalyticsClient({
             <em className="d-serif italic text-[var(--d-coral)]">terbaru</em>.
           </h2>
         </header>
-        <div className="overflow-x-auto scrollbar-hide">
+        <div className="max-h-[400px] overflow-y-auto overflow-x-auto scrollbar-hide">
           <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b border-[var(--d-line)] bg-[rgba(255,255,255,0.015)]">
+            <thead className="sticky top-0 z-10">
+              <tr className="border-b border-[var(--d-line)] bg-[var(--d-bg-card)] backdrop-blur-sm">
                 <Th>Nama</Th>
                 <Th>Status</Th>
                 <Th>Dibuka</Th>
