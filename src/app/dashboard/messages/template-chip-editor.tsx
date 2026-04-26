@@ -25,15 +25,110 @@ export const DEFAULT_PLACEHOLDERS: ChipPlaceholder[] = [
 
 const PLACEHOLDER_RE = /\{([a-zA-Z0-9_]+)\}/g;
 
-const KNOWN_CHIP_CLASS =
-  "tpl-chip mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5 " +
-  "font-sans text-[12px] font-medium select-none align-baseline " +
-  "bg-[var(--d-bg-2)]/10 text-[var(--d-ink)]";
+// Each placeholder type gets its own colour on both the toolbar pill
+// and the inline chip rendered inside the editor. Keys are intentional —
+// they map to the placeholder.key values (nama/panggilan/bride/groom/
+// date/venue/link_undangan) rather than the human labels, so the
+// colour stays consistent if a label is renamed.
+type ChipColorKey = "blue" | "coral" | "lilac" | "gold" | "green" | "fallback";
 
-const UNKNOWN_CHIP_CLASS =
-  "tpl-chip mx-0.5 inline-flex items-center rounded-md px-1.5 py-0.5 " +
-  "font-sans text-[12px] font-medium select-none align-baseline " +
-  "border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]";
+type ChipColor = {
+  bg: string;
+  border: string;
+  text: string;
+  toolbarBg: string;
+};
+
+const CHIP_COLORS: Record<ChipColorKey, ChipColor> = {
+  blue: {
+    bg: "rgba(143,163,217,0.12)",
+    border: "rgba(143,163,217,0.20)",
+    text: "#8FA3D9",
+    toolbarBg: "rgba(143,163,217,0.08)",
+  },
+  coral: {
+    bg: "rgba(240,160,156,0.12)",
+    border: "rgba(240,160,156,0.20)",
+    text: "#F0A09C",
+    toolbarBg: "rgba(240,160,156,0.08)",
+  },
+  lilac: {
+    bg: "rgba(184,157,212,0.12)",
+    border: "rgba(184,157,212,0.20)",
+    text: "#B89DD4",
+    toolbarBg: "rgba(184,157,212,0.08)",
+  },
+  gold: {
+    bg: "rgba(212,184,150,0.12)",
+    border: "rgba(212,184,150,0.20)",
+    text: "#D4B896",
+    toolbarBg: "rgba(212,184,150,0.08)",
+  },
+  green: {
+    bg: "rgba(126,211,164,0.12)",
+    border: "rgba(126,211,164,0.20)",
+    text: "#7ED3A4",
+    toolbarBg: "rgba(126,211,164,0.08)",
+  },
+  fallback: {
+    // Used for unknown variable keys (legacy templates with custom
+    // placeholders). Coral-tinted so they stand out as "needs review".
+    bg: "rgba(240,160,156,0.10)",
+    border: "rgba(240,160,156,0.25)",
+    text: "#F0A09C",
+    toolbarBg: "rgba(240,160,156,0.06)",
+  },
+};
+
+function colorKeyFor(key: string): ChipColorKey {
+  switch (key) {
+    case "nama":
+    case "panggilan":
+      return "blue";
+    case "bride":
+    case "groom":
+      return "coral";
+    case "date":
+      return "lilac";
+    case "venue":
+      return "gold";
+    case "link_undangan":
+      return "green";
+    default:
+      return "fallback";
+  }
+}
+
+// Inline style string for an editor chip span. Anti-pattern in the
+// spec: chips MUST use inline styles, not CSS classes — contentEditable
+// + Tailwind has historically been flaky around the focus/caret math.
+// `tpl-chip` stays as a marker class because toTemplate() relies on
+// classList.contains("tpl-chip") to detect chip nodes during the
+// DOM → template-string round-trip.
+function chipStyleString(key: string): string {
+  const c = CHIP_COLORS[colorKeyFor(key)];
+  return [
+    "display:inline-flex",
+    "align-items:center",
+    "gap:4px",
+    "padding:2px 9px",
+    "border-radius:6px",
+    `background:${c.bg}`,
+    `color:${c.text}`,
+    `border:1px solid ${c.border}`,
+    "font-family:'Inter',sans-serif",
+    "font-size:11.5px",
+    "font-weight:500",
+    "letter-spacing:0",
+    "margin:0 1px",
+    "user-select:all",
+    "white-space:nowrap",
+    "vertical-align:baseline",
+  ].join(";");
+}
+
+const CHIP_DOT_STYLE =
+  "display:inline-block;width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.7;flex-shrink:0";
 
 function escapeHtml(text: string): string {
   return text
@@ -61,11 +156,11 @@ function toHtml(value: string, placeholders: ChipPlaceholder[]): string {
     const before = value.slice(cursor, match.index);
     if (before) out += escapeHtml(before).replace(/\n/g, "<br>");
     const key = match[1];
-    const known = labelByKey.has(key);
     const label = labelByKey.get(key) ?? key;
-    const cls = known ? KNOWN_CHIP_CLASS : UNKNOWN_CHIP_CLASS;
     out +=
-      `<span class="${cls}" data-key="${escapeAttr(key)}" contenteditable="false">` +
+      `<span class="tpl-chip" data-key="${escapeAttr(key)}" ` +
+      `contenteditable="false" style="${escapeAttr(chipStyleString(key))}">` +
+      `<span aria-hidden="true" style="${escapeAttr(CHIP_DOT_STYLE)}"></span>` +
       escapeHtml(label) +
       `</span>`;
     cursor = match.index + match[0].length;
@@ -114,13 +209,20 @@ function buildChipElement(
   placeholders: ChipPlaceholder[],
 ): HTMLElement {
   const labelByKey = new Map(placeholders.map((p) => [p.key, p.label]));
-  const known = labelByKey.has(key);
   const label = labelByKey.get(key) ?? key;
   const span = document.createElement("span");
-  span.className = known ? KNOWN_CHIP_CLASS : UNKNOWN_CHIP_CLASS;
+  // tpl-chip stays as a marker class so toTemplate() can still detect
+  // chip nodes during DOM → template-string round-trip; all visual
+  // styling is on the inline `style` attribute.
+  span.className = "tpl-chip";
   span.setAttribute("data-key", key);
   span.setAttribute("contenteditable", "false");
-  span.textContent = label;
+  span.setAttribute("style", chipStyleString(key));
+  const dot = document.createElement("span");
+  dot.setAttribute("aria-hidden", "true");
+  dot.setAttribute("style", CHIP_DOT_STYLE);
+  span.appendChild(dot);
+  span.appendChild(document.createTextNode(label));
   return span;
 }
 
@@ -290,11 +392,12 @@ export function TemplateChipEditor({
 
   return (
     <div className="rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)]">
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--d-line)] bg-[var(--d-bg-2)]/40 p-2">
-        <span className="mr-1 text-[11px] font-medium text-[var(--d-ink-dim)]">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--d-line)] bg-[var(--d-bg-2)]/40 px-3 py-2.5">
+        <span className="d-mono mr-1 text-[9px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
           Sisipkan:
         </span>
         {placeholders.map((p) => {
+          const c = CHIP_COLORS[colorKeyFor(p.key)];
           const isUsed = usedKeys.has(p.key);
           return (
             <button
@@ -311,16 +414,48 @@ export function TemplateChipEditor({
               }}
               title={
                 isUsed
-                  ? "Sudah ada di template (klik untuk tambah lagi)"
-                  : `Sisipkan {${p.key}}`
+                  ? `${p.label} sudah ada di template — klik untuk tambah lagi`
+                  : `Sisipkan ${p.label}`
               }
-              className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium transition-colors ${
-                isUsed
-                  ? "border-[#3B7A57]/30 bg-[#E8F3EE] text-[#3B7A57] hover:bg-[#D6EADC]"
-                  : "border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)]"
-              }`}
+              // Inline styles per type so the toolbar pill colour stays
+              // in lockstep with the inline chip rendered in the editor
+              // body. Used-state reduces opacity slightly so re-inserts
+              // are still visible but don't dominate. We avoid CSS
+              // class colors here for the same reason chips do — keeps
+              // colour resolution out of any cascade and makes the
+              // styling identical to what `chipStyleString` produces.
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 5,
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: c.toolbarBg,
+                border: `1px solid ${c.border}`,
+                color: c.text,
+                fontSize: 11,
+                lineHeight: 1.4,
+                fontWeight: 500,
+                fontFamily: "Inter, system-ui, sans-serif",
+                cursor: "pointer",
+                opacity: isUsed ? 0.7 : 1,
+                transition: "opacity 0.18s, background 0.18s",
+              }}
             >
-              <span className="text-[10px] opacity-70">{isUsed ? "✓" : "+"}</span>
+              {/* Always plus — toolbar inserts; "used" state is conveyed
+                  via opacity + tooltip, not by switching the icon. */}
+              <svg
+                viewBox="0 0 24 24"
+                width="11"
+                height="11"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
               {p.label}
             </button>
           );
