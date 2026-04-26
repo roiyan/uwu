@@ -128,6 +128,36 @@ const HISTORY_STATUS_LABEL: Record<HistoryStatus, string> = {
  * truncated to minutes — what `<input type="datetime-local" />` wants.
  * Empty string means "send immediately".
  */
+// Renders the resolved preview body — turns the WhatsApp-style
+// `*emphasis*` markers from the templates into <strong> spans (white,
+// regular weight) instead of leaking literal asterisks. The actual
+// outgoing message keeps the asterisks because WhatsApp renders them
+// as bold natively.
+function renderPreviewBody(body: string): React.ReactNode[] {
+  if (!body) return [];
+  const parts: React.ReactNode[] = [];
+  const re = /\*([^*\n]+)\*/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  let key = 0;
+  while ((m = re.exec(body)) !== null) {
+    if (m.index > last) {
+      parts.push(body.slice(last, m.index));
+    }
+    parts.push(
+      <strong
+        key={`s-${key++}`}
+        className="font-normal text-[var(--d-ink)]"
+      >
+        {m[1]}
+      </strong>,
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < body.length) parts.push(body.slice(last));
+  return parts;
+}
+
 function WhatsAppGlyph() {
   return (
     <svg
@@ -917,116 +947,195 @@ export function MessagesClient({
 
           {/* Per-guest preview — shows what the first/current
               filtered recipient will actually receive. Renders client-
-              side using the same renderTemplate as the server. */}
-          <div className="mt-6 rounded-2xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.015)] p-5">
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
-                Pratinjau Pesan
-              </p>
-              <p className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-                {filteredRecipients.length === 0
-                  ? "Tidak ada tamu terpilih"
-                  : `${String(previewIndex + 1).padStart(2, "0")} / ${String(filteredRecipients.length).padStart(2, "0")}`}
-              </p>
+              side using the same renderTemplate as the server. Now
+              styled to match docs/dashboard-design/UWU_Kirim_Undangan
+              .html: gradient card, avatar, "Untuk: <em>name</em>",
+              counter, dark body with <strong>-rendered variables. */}
+          <div className="mt-6">
+            <div className="mb-2.5 flex items-center justify-between gap-2">
+              <span className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-ink-faint)]">
+                Preview Pesan
+              </span>
+              <span className="d-serif text-[11px] italic text-[var(--d-ink-faint)]">
+                Lihat isi pesan untuk tamu tertentu
+              </span>
             </div>
-            {previewGuest ? (
-              <>
-                <div className="mb-3 flex flex-wrap items-center gap-2 text-[12px] text-[var(--d-ink-dim)]">
-                  <span className="d-serif italic">
-                    Untuk{" "}
-                    <strong className="not-italic text-[var(--d-ink)]">
-                      {previewGuest.name}
-                    </strong>
-                    {previewGuest.nickname && (
-                      <span className="ml-1 text-[var(--d-ink-faint)]">
-                        ({previewGuest.nickname})
+            <div
+              className="overflow-hidden rounded-2xl border border-[var(--d-line-strong)] p-5"
+              style={{
+                background:
+                  "linear-gradient(135deg, #0F1024 0%, #0E0F18 100%)",
+              }}
+            >
+              {previewGuest ? (
+                <>
+                  <div className="mb-3.5 flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span
+                        aria-hidden
+                        className="d-serif flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[13px] italic text-[#0B0B15]"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, var(--d-coral), var(--d-peach))",
+                        }}
+                      >
+                        {previewGuest.name.charAt(0).toUpperCase()}
                       </span>
-                    )}
+                      <div>
+                        <div className="text-[13px] text-[var(--d-ink)]">
+                          Untuk:{" "}
+                          <em className="d-serif italic text-[var(--d-coral)]">
+                            {previewGuest.name}
+                          </em>
+                          {previewGuest.nickname && (
+                            <span className="ml-1 text-[11.5px] text-[var(--d-ink-dim)]">
+                              ({previewGuest.nickname})
+                            </span>
+                          )}
+                        </div>
+                        {channel === "whatsapp" && previewGuest.phone && (
+                          <div className="d-mono mt-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-ink-faint)]">
+                            {previewGuest.phone}
+                          </div>
+                        )}
+                        {channel === "email" && previewGuest.email && (
+                          <div className="d-mono mt-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-ink-faint)]">
+                            {previewGuest.email}
+                          </div>
+                        )}
+                      </div>
+                      {previewGuest.sendCount > 0 && (
+                        <span className="d-mono rounded bg-[rgba(240,160,156,0.12)] px-1.5 py-0.5 text-[9px] uppercase tracking-[0.18em] text-[var(--d-coral)]">
+                          Pernah dikirim {previewGuest.sendCount}×
+                        </span>
+                      )}
+                    </div>
+                    <span className="d-mono text-[10.5px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)]">
+                      <em className="not-italic text-[var(--d-coral)]">
+                        {previewIndex + 1}
+                      </em>{" "}
+                      dari{" "}
+                      <em className="not-italic text-[var(--d-coral)]">
+                        {filteredRecipients.length}
+                      </em>
+                    </span>
+                  </div>
+                  <div className="d-mono max-h-60 overflow-y-auto whitespace-pre-wrap rounded-[10px] border border-[var(--d-line)] p-4 text-[12px] leading-[1.65] text-[var(--d-ink-dim)]"
+                    style={{ background: "rgba(7,7,11,0.6)" }}
+                  >
+                    {renderPreviewBody(previewBody)}
+                  </div>
+                </>
+              ) : (
+                <p className="d-serif py-6 text-center text-[13px] italic text-[var(--d-ink-faint)]">
+                  Pilih audiens dan kanal untuk melihat pratinjau pesan.
+                </p>
+              )}
+              <div className="d-mono mt-3.5 flex items-center justify-between gap-3 text-[10.5px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)]">
+                <button
+                  type="button"
+                  onClick={() => setPreviewIndex((i) => Math.max(0, i - 1))}
+                  disabled={!previewGuest || previewIndex === 0}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line)] bg-transparent px-3.5 py-1.5 transition-colors hover:border-[var(--d-ink-dim)] hover:text-[var(--d-ink)] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  ← Sebelumnya
+                </button>
+                {previewGuest && (
+                  <span className="hidden truncate sm:inline">
+                    <em className="not-italic text-[var(--d-coral)]">
+                      {previewIndex + 1}
+                    </em>
+                    /{filteredRecipients.length} — {previewGuest.name}
                   </span>
-                  {channel === "whatsapp" && previewGuest.phone && (
-                    <span className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(126,211,164,0.25)] bg-[rgba(126,211,164,0.06)] px-2.5 py-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-green)]">
-                      <span className="h-1 w-1 rounded-full bg-[var(--d-green)]" />
-                      {previewGuest.phone}
-                    </span>
-                  )}
-                  {channel === "email" && previewGuest.email && (
-                    <span className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(143,163,217,0.25)] bg-[rgba(143,163,217,0.06)] px-2.5 py-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-blue)]">
-                      <span className="h-1 w-1 rounded-full bg-[var(--d-blue)]" />
-                      {previewGuest.email}
-                    </span>
-                  )}
-                  {previewGuest.sendCount > 0 && (
-                    <span className="d-mono rounded-full bg-[rgba(240,160,156,0.12)] px-2.5 py-0.5 text-[10.5px] tracking-[0.04em] text-[var(--d-coral)]">
-                      Kirim ulang · {previewGuest.sendCount}×
-                    </span>
-                  )}
-                </div>
-                <pre className="d-mono max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl border border-[var(--d-line)] bg-[var(--d-bg-2)] p-4 text-[12px] leading-[1.7] text-[var(--d-ink)]">
-                  {previewBody}
-                </pre>
-              </>
-            ) : (
-              <p className="d-serif text-[13px] italic text-[var(--d-ink-faint)]">
-                Pilih audiens dan kanal untuk melihat pratinjau pesan.
-              </p>
-            )}
-            <div className="mt-4 flex items-center justify-between">
-              <button
-                type="button"
-                onClick={() =>
-                  setPreviewIndex((i) => Math.max(0, i - 1))
-                }
-                disabled={!previewGuest || previewIndex === 0}
-                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-transparent px-3.5 py-1.5 text-[11px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-ink-dim)] hover:text-[var(--d-ink)] disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                <span aria-hidden>←</span> Sebelumnya
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  setPreviewIndex((i) =>
-                    Math.min(filteredRecipients.length - 1, i + 1),
-                  )
-                }
-                disabled={
-                  !previewGuest ||
-                  previewIndex >= filteredRecipients.length - 1
-                }
-                className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line-strong)] bg-transparent px-3.5 py-1.5 text-[11px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-ink-dim)] hover:text-[var(--d-ink)] disabled:cursor-not-allowed disabled:opacity-30"
-              >
-                Berikutnya <span aria-hidden>→</span>
-              </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setPreviewIndex((i) =>
+                      Math.min(filteredRecipients.length - 1, i + 1),
+                    )
+                  }
+                  disabled={
+                    !previewGuest ||
+                    previewIndex >= filteredRecipients.length - 1
+                  }
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line)] bg-transparent px-3.5 py-1.5 transition-colors hover:border-[var(--d-ink-dim)] hover:text-[var(--d-ink)] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Berikutnya →
+                </button>
+              </div>
             </div>
           </div>
 
           {alreadySentCount > 0 && (
-            <div className="mt-5 rounded-xl border border-[rgba(212,184,150,0.22)] bg-[rgba(212,184,150,0.06)] px-4 py-3.5">
-              <div className="d-serif flex items-center gap-2 text-[13.5px] text-[var(--d-ink)]">
-                <span aria-hidden className="text-[var(--d-gold)]">
-                  ⓘ
-                </span>
-                <span>
-                  <em className="d-serif italic text-[var(--d-gold)]">
-                    {alreadySentCount}
+            <div
+              className="mt-[18px] flex items-start gap-3.5 rounded-[12px] border border-[rgba(244,184,163,0.22)] px-[18px] py-4"
+              style={{ background: "rgba(244,184,163,0.05)" }}
+            >
+              <span
+                aria-hidden
+                className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg text-[var(--d-peach)]"
+                style={{ background: "rgba(244,184,163,0.12)" }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="h-3.5 w-3.5"
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" />
+                </svg>
+              </span>
+              <div className="flex-1">
+                <p className="d-serif text-[13px] text-[var(--d-ink)]">
+                  <em className="d-serif italic text-[var(--d-peach)]">
+                    {alreadySentCount} tamu
                   </em>{" "}
-                  tamu sudah pernah diundang.
-                </span>
+                  sudah pernah diundang sebelumnya.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIncludeSent(!includeSent)}
+                  className="mt-2.5 flex w-full items-center gap-2.5 text-left"
+                >
+                  <span
+                    aria-hidden
+                    className="flex h-4 w-4 shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-[var(--d-peach)] transition-colors"
+                    style={{
+                      background: includeSent
+                        ? "var(--d-peach)"
+                        : "transparent",
+                    }}
+                  >
+                    {includeSent && (
+                      <svg
+                        width="10"
+                        height="8"
+                        viewBox="0 0 10 8"
+                        fill="none"
+                      >
+                        <path
+                          d="M1 4l2.5 2.5L9 1"
+                          stroke="#0B0B15"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="flex-1">
+                    <span className="block text-[12.5px] text-[var(--d-ink)]">
+                      Sertakan yang sudah diundang ({alreadySentCount} tamu)
+                    </span>
+                    <span className="d-serif mt-0.5 block text-[11px] italic text-[var(--d-ink-dim)]">
+                      Secara default, broadcast hanya dikirim ke tamu yang
+                      belum pernah diundang.
+                    </span>
+                  </span>
+                </button>
               </div>
-              <label className="mt-2.5 flex cursor-pointer items-center gap-2.5 text-[13px] text-[var(--d-ink-dim)]">
-                <input
-                  type="checkbox"
-                  checked={includeSent}
-                  onChange={(e) => setIncludeSent(e.target.checked)}
-                  className="h-4 w-4 cursor-pointer accent-[var(--d-coral)]"
-                />
-                <span>
-                  Sertakan yang sudah diundang ({alreadySentCount} tamu)
-                </span>
-              </label>
-              <p className="mt-1.5 text-[11.5px] text-[var(--d-ink-faint)]">
-                Secara default, broadcast hanya dikirim ke tamu yang belum
-                pernah diundang.
-              </p>
             </div>
           )}
 
