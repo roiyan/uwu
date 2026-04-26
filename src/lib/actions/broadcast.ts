@@ -17,6 +17,7 @@ import { broadcastInputSchema } from "@/lib/schemas/broadcast";
 import { renderTemplate } from "@/lib/templates/messages";
 import { sendWhatsAppText } from "@/lib/providers/whatsapp";
 import { sendEmail } from "@/lib/providers/email";
+import { logActivity } from "./activity";
 
 const WA_RATE_LIMIT_MS = 1500;
 
@@ -121,6 +122,7 @@ export async function createBroadcastAction(
   const scheduledForFuture =
     scheduledAt !== null && scheduledAt.getTime() > Date.now() + 30_000;
 
+  let recipientCount = 0;
   return withAuth(eventId, "editor", async (userId) => {
     const ctx = await resolveEventContext(eventId);
     if (!ctx.couple) throw new Error("Detail mempelai belum diisi.");
@@ -146,6 +148,7 @@ export async function createBroadcastAction(
           : "Tidak ada tamu dengan email pada audiens terpilih.",
       );
     }
+    recipientCount = recipients.length;
 
     const dateStr = ctx.firstSchedule
       ? formatDate(ctx.firstSchedule.eventDate)
@@ -190,9 +193,22 @@ export async function createBroadcastAction(
     );
 
     return { messageId };
-  }).then((r) => {
+  }).then(async (r) => {
     if (r.ok) {
       revalidatePath("/dashboard/messages");
+      const channelLabel =
+        parsed.data.channel === "whatsapp"
+          ? "WhatsApp"
+          : parsed.data.channel === "email"
+            ? "Email"
+            : "WhatsApp + Email";
+      await logActivity({
+        eventId,
+        action: "send_broadcast",
+        summary: `Mengirim undangan ke ${recipientCount} tamu via ${channelLabel}`,
+        targetType: "message",
+        targetId: r.data?.messageId,
+      });
     }
     return r;
   });

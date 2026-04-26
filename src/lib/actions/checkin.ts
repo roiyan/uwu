@@ -17,6 +17,7 @@ import {
   generateOperatorToken,
   parseOperatorSessionValue,
 } from "@/lib/utils/operator";
+import { logActivity } from "./activity";
 
 // ---------- Schemas ----------
 
@@ -253,12 +254,22 @@ export async function checkinGuestAction(
       error: parsed.error.issues[0]?.message ?? "Input tidak valid",
     };
   }
-  return withAuth(eventId, "editor", async () => {
+  const result = await withAuth(eventId, "editor", async () => {
     await assertCheckinEnabled(eventId);
-    const result = await performCheckin(eventId, guestId, parsed.data);
+    const summary = await performCheckin(eventId, guestId, parsed.data);
     bumpCachePaths(eventId);
-    return result;
+    return summary;
   });
+  if (result.ok && result.data) {
+    await logActivity({
+      eventId,
+      action: "checkin_guest",
+      summary: `Check-in ${result.data.name}`,
+      targetType: "guest",
+      targetId: result.data.id,
+    });
+  }
+  return result;
 }
 
 /**
@@ -278,13 +289,23 @@ export async function checkinWalkInAction(
       error: parsed.error.issues[0]?.message ?? "Input tidak valid",
     };
   }
-  return withAuth(eventId, "editor", async () => {
+  const result = await withAuth(eventId, "editor", async () => {
     await assertCheckinEnabled(eventId);
     await assertWalkInBelowLimit(eventId);
-    const result = await performWalkIn(eventId, parsed.data);
+    const summary = await performWalkIn(eventId, parsed.data);
     bumpCachePaths(eventId);
-    return result;
+    return summary;
   });
+  if (result.ok && result.data) {
+    await logActivity({
+      eventId,
+      action: "checkin_guest",
+      summary: `Check-in walk-in ${result.data.name}`,
+      targetType: "guest",
+      targetId: result.data.id,
+    });
+  }
+  return result;
 }
 
 /**

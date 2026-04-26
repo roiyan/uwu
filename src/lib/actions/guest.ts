@@ -10,6 +10,7 @@ import {
   guestInputSchema,
 } from "@/lib/schemas/guest";
 import { getEventPackageLimit } from "@/lib/db/queries/guests";
+import { logActivity } from "./activity";
 
 function optional(v: FormDataEntryValue | null) {
   if (v === null) return "";
@@ -61,6 +62,12 @@ export async function createGuestAction(
   // cache and forced every subsequent nav to cold-fetch.
   if (result.ok) {
     revalidatePath("/dashboard/guests");
+    await logActivity({
+      eventId,
+      action: "add_guest",
+      summary: `Menambahkan tamu ${parsed.data.name}`,
+      targetType: "guest",
+    });
   }
   return result;
 }
@@ -94,7 +101,16 @@ export async function updateGuestAction(
       .where(and(eq(guests.id, guestId), eq(guests.eventId, eventId)));
   });
 
-  if (result.ok) revalidatePath("/dashboard/guests");
+  if (result.ok) {
+    revalidatePath("/dashboard/guests");
+    await logActivity({
+      eventId,
+      action: "update_guest",
+      summary: `Memperbarui data ${parsed.data.name}`,
+      targetType: "guest",
+      targetId: guestId,
+    });
+  }
   return result;
 }
 
@@ -139,13 +155,27 @@ export async function softDeleteGuestAction(
   eventId: string,
   guestId: string,
 ): Promise<ActionResult> {
+  let deletedName: string | null = null;
   const result = await withAuth(eventId, "editor", async () => {
-    await db
+    const updated = await db
       .update(guests)
       .set({ deletedAt: new Date() })
-      .where(and(eq(guests.id, guestId), eq(guests.eventId, eventId)));
+      .where(and(eq(guests.id, guestId), eq(guests.eventId, eventId)))
+      .returning({ name: guests.name });
+    deletedName = updated[0]?.name ?? null;
   });
-  if (result.ok) revalidatePath("/dashboard/guests");
+  if (result.ok) {
+    revalidatePath("/dashboard/guests");
+    await logActivity({
+      eventId,
+      action: "delete_guest",
+      summary: deletedName
+        ? `Menghapus tamu ${deletedName}`
+        : "Menghapus tamu",
+      targetType: "guest",
+      targetId: guestId,
+    });
+  }
   return result;
 }
 
@@ -473,7 +503,17 @@ export async function importGuestsAction(
       skipped: payload.length - rows.length,
     };
   });
-  if (result.ok) revalidatePath("/dashboard/guests");
+  if (result.ok) {
+    revalidatePath("/dashboard/guests");
+    const imported = result.data?.imported ?? 0;
+    if (imported > 0) {
+      await logActivity({
+        eventId,
+        action: "import_guests",
+        summary: `Mengimpor ${imported} tamu`,
+      });
+    }
+  }
   return result;
 }
 
