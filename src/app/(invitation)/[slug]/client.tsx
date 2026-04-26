@@ -13,6 +13,7 @@ import {
   formatDate,
   formatTimeRange,
 } from "@/components/invitation/formatting";
+import { GuestQrCode } from "@/components/invitation/guest-qr-code";
 import { RsvpForm } from "./rsvp-form";
 
 type Palette = { primary: string; secondary: string; accent: string };
@@ -184,6 +185,22 @@ function InvitationInner({
         isExistingRsvp={isExistingRsvp}
         palette={palette}
       />
+
+      {/* Tiket kehadiran — only renders when the couple has enabled
+          check-in AND this guest has RSVP'd "hadir". The QR encodes
+          the same token used for the invitation link so the operator
+          scanner resolves to the same guest row. */}
+      {event.checkinEnabled &&
+        token &&
+        guest?.rsvpStatus === "hadir" && (
+          <GuestQrCode
+            slug={event.slug}
+            token={token}
+            guestName={guest.name}
+            attendees={guest.rsvpAttendees}
+            palette={palette}
+          />
+        )}
 
       <footer className="py-10 text-center text-xs opacity-70">
         <p>Dibuat dengan ♡ di uwu</p>

@@ -55,10 +55,7 @@ export default async function InvitationPage({
         title: bundle.event.title,
         slug: bundle.event.slug,
         musicUrl: bundle.event.musicUrl,
-        // Checkin feature ships separately — the schema column +
-        // settings toggle land in a follow-up PR. Until then this
-        // satisfies the prop type with the safe default (off).
-        checkinEnabled: false,
+        checkinEnabled: bundle.event.checkinEnabled,
       }}
       palette={palette}
       couple={
