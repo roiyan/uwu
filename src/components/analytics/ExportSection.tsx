@@ -6,7 +6,11 @@ import {
   getAnalyticsExportData,
   type AnalyticsExportData,
 } from "@/lib/actions/analytics-export";
-import { InfographicTemplate } from "./InfographicTemplate";
+import {
+  InfographicTemplate,
+  type InfographicSectionId,
+} from "./InfographicTemplate";
+import { InfographicShareModal } from "./InfographicShareModal";
 
 type ExportFormat = "pdf" | "xlsx" | "png";
 
@@ -73,6 +77,18 @@ export function ExportSection({ eventId }: { eventId: string }) {
   // the filename. Re-running an export within the same session reuses
   // the same data so we don't hit the server twice unnecessarily.
   const [snapshot, setSnapshot] = useState<AnalyticsExportData | null>(null);
+  // PNG flow: open the share modal so the operator picks sections,
+  // then we re-render the off-screen template with the chosen subset
+  // and capture it. `pngSections` drives that re-render.
+  const [pngOpen, setPngOpen] = useState(false);
+  const [pngSections, setPngSections] = useState<InfographicSectionId[]>([
+    "kpi",
+    "funnel",
+    "heatmap",
+    "responses",
+    "messages",
+    "summary",
+  ]);
 
   async function ensureSnapshot(): Promise<AnalyticsExportData | null> {
     if (snapshot) return snapshot;
@@ -116,17 +132,12 @@ export function ExportSection({ eventId }: { eventId: string }) {
         await exportAnalyticsExcel(data);
         toast.success("Data Excel terunduh.");
       } else {
+        // PNG: open the share modal. The actual capture happens inside
+        // `handlePngGenerate` once the operator picks their sections.
         const data = await ensureSnapshot();
         if (!data) return;
-        const { exportAnalyticsInfographic } = await import(
-          "@/lib/utils/analytics-export-png"
-        );
-        // The InfographicTemplate is mounted below; we need to wait
-        // one tick after `data` lands so React commits it before
-        // html2canvas reads the element.
         await new Promise((r) => requestAnimationFrame(() => r(null)));
-        await exportAnalyticsInfographic(PNG_TARGET_ID, data.coupleName);
-        toast.success("Infografis terunduh.");
+        setPngOpen(true);
       }
     } catch (err) {
       console.error("[analytics-export]", err);
@@ -211,8 +222,46 @@ export function ExportSection({ eventId }: { eventId: string }) {
       </section>
 
       {/* Off-screen template — only mounted once we have a snapshot,
-          so the html2canvas capture sees the real numbers. */}
-      {snapshot && <InfographicTemplate data={snapshot} id={PNG_TARGET_ID} />}
+          so the html2canvas capture sees the real numbers. The
+          `selectedSections` prop drives which blocks render in the
+          captured PNG. */}
+      {snapshot && (
+        <InfographicTemplate
+          data={snapshot}
+          id={PNG_TARGET_ID}
+          selectedSections={pngSections}
+        />
+      )}
+
+      {snapshot && (
+        <InfographicShareModal
+          open={pngOpen}
+          coupleName={snapshot.coupleName}
+          onClose={() => setPngOpen(false)}
+          onGenerate={async (sections) => {
+            try {
+              setPngSections(sections);
+              // Wait one paint so the off-screen template re-renders
+              // with the new section subset before we capture.
+              await new Promise((r) =>
+                requestAnimationFrame(() => r(null)),
+              );
+              const { renderInfographicDataUrl } = await import(
+                "@/lib/utils/analytics-infographic-render"
+              );
+              return await renderInfographicDataUrl(PNG_TARGET_ID);
+            } catch (err) {
+              console.error("[infographic-render]", err);
+              toast.error(
+                err instanceof Error
+                  ? err.message
+                  : "Gagal membuat infografis.",
+              );
+              return null;
+            }
+          }}
+        />
+      )}
     </>
   );
 }
