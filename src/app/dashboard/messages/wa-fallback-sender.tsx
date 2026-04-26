@@ -280,22 +280,57 @@ export function WaFallbackSender({
     const first = deliveries[0];
     const sample = deliveries.slice(0, 5);
     return (
-      <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-        <h3 className="font-display text-lg text-[var(--d-ink)]">📤 Siap Kirim WhatsApp</h3>
-        <p className="mt-2 text-sm text-[var(--d-ink-dim)]">
+      <div
+        className="rounded-[14px] border px-[22px] py-[18px]"
+        style={{
+          background: "rgba(240,160,156,0.04)",
+          borderColor: "rgba(240,160,156,0.18)",
+        }}
+      >
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+            style={{
+              background: "rgba(240,160,156,0.12)",
+              color: "var(--d-coral)",
+            }}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              className="h-3.5 w-3.5"
+            >
+              <path d="M22 2L11 13" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <h3 className="d-serif text-[15px] text-[var(--d-ink)]">
+            Siap Kirim WhatsApp
+          </h3>
+        </div>
+        <p className="mt-2 text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
           Akan mengirim ke{" "}
-          <strong className="text-[var(--d-ink)]">{deliveries.length} tamu</strong>,
-          mulai dari{" "}
+          <strong className="text-[var(--d-ink)]">
+            {deliveries.length} tamu
+          </strong>
+          , mulai dari{" "}
           <strong className="text-[var(--d-ink)]">
             {first?.recipientName ?? "tamu pertama"}
           </strong>
           . Setiap tamu menerima pesan yang sudah dipersonalisasi.
         </p>
-        <div className="mt-4 rounded-xl bg-[var(--d-bg-2)] p-3 text-xs text-[var(--d-ink-dim)]">
-          <p className="font-medium text-[var(--d-ink)]">Urutan kirim:</p>
-          <ol className="mt-1 list-decimal pl-5">
+        <div className="mt-3 rounded-[10px] border border-[var(--d-line)] bg-black/20 px-3 py-2.5 text-[12px] text-[var(--d-ink-dim)]">
+          <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+            Urutan kirim
+          </p>
+          <ol className="mt-1.5 list-decimal pl-5 text-[var(--d-ink)]">
             {sample.map((d) => (
-              <li key={d.id}>{d.recipientName ?? "Tamu"}</li>
+              <li key={d.id} className="py-0.5">
+                {d.recipientName ?? "Tamu"}
+              </li>
             ))}
           </ol>
           {deliveries.length > sample.length && (
@@ -304,22 +339,22 @@ export function WaFallbackSender({
             </p>
           )}
         </div>
-        <p className="mt-3 text-xs text-[var(--d-ink-faint)]">
-          ℹ️ Preview di form compose hanya untuk cek template. Broadcast
+        <p className="d-serif mt-3 text-[11.5px] italic text-[var(--d-ink-faint)]">
+          Preview di form compose hanya untuk cek template — broadcast
           tetap dikirim ke seluruh audiens terpilih.
         </p>
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-2.5">
           <button
             type="button"
             onClick={() => setPhase("sending")}
-            className="rounded-full bg-coral px-5 py-2 text-sm font-medium text-white hover:opacity-90"
+            className="d-mono rounded-full bg-[var(--d-coral)] px-5 py-2 text-[12px] font-medium uppercase tracking-[0.18em] text-[#0B0B15] transition-all hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(240,160,156,0.32)]"
           >
             Mulai Kirim →
           </button>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-sm text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
+            className="rounded-full border border-[var(--d-line-strong)] bg-transparent px-4 py-2 text-[12px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)]"
           >
             Batal
           </button>

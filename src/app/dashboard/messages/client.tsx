@@ -1144,19 +1144,17 @@ export function MessagesClient({
               {state.error}
             </p>
           )}
-          {state?.ok && state.data?.messageId && (
-            <div className="mt-4 rounded-md bg-[rgba(212,184,150,0.10)] px-3 py-2 text-sm text-[var(--d-gold)]">
-              {scheduledAtIso && channel === "email"
-                ? `Broadcast email terjadwal untuk ${new Date(scheduledAtIso).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}.`
-                : channel === "both"
-                  ? pairedEmailId
-                    ? scheduledAtIso
-                      ? `WA: kirim manual di bawah. Email terjadwal untuk ${new Date(scheduledAtIso).toLocaleString("id-ID", { dateStyle: "long", timeStyle: "short" })}.`
-                      : "Dua broadcast dibuat (Email + WA). Kirim masing-masing di bawah."
-                    : pairedPending
-                      ? "Broadcast WA dibuat. Membuat broadcast Email…"
-                      : "Broadcast dibuat. Tekan tombol kirim di bawah."
-                  : "Broadcast dibuat. Tekan \"Kirim Sekarang\" di bawah."}
+          {/* Inline WA fallback confirmation — appears here (above the
+              submit bar) right after the broadcast row is created so
+              the user's next click ("Mulai Kirim →") directly opens
+              the first WA tab. */}
+          {waFallbackOpen && state?.ok && state.data?.messageId && (
+            <div className="mt-4">
+              <WaFallbackSender
+                eventId={eventId}
+                messageId={state.data.messageId}
+                onClose={() => setWaFallbackOpen(false)}
+              />
             </div>
           )}
           {cancelError && (
@@ -1365,18 +1363,6 @@ export function MessagesClient({
             <p className="mt-3 text-sm text-[var(--d-coral)]">{runError}</p>
           )}
         </form>
-
-        {/* Client-side WhatsApp fallback — only renders when the user
-            opted in via the "Kirim WhatsApp (manual)" button above. */}
-        {waFallbackOpen && state?.ok && state.data?.messageId && (
-          <div className="mt-4">
-            <WaFallbackSender
-              eventId={eventId}
-              messageId={state.data.messageId}
-              onClose={() => setWaFallbackOpen(false)}
-            />
-          </div>
-        )}
 
         {/* AI assistant modal. The target tells us which textarea to
             populate when the user clicks "Pakai Pesan Ini". The
