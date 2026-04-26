@@ -11,6 +11,12 @@ import {
   type GuestStatus,
 } from "@/lib/db/queries/guests";
 import { lookupGuestForCheckin } from "@/lib/db/queries/checkin";
+import {
+  buildOperatorUrl,
+  generateOperatorPin,
+  generateOperatorToken,
+  parseOperatorSessionValue,
+} from "@/lib/utils/operator";
 
 // ---------- Schemas ----------
 
@@ -384,4 +390,169 @@ export async function undoCheckinPublic(
       error: err instanceof Error ? err.message : "Gagal membatalkan.",
     };
   }
+}
+
+// ---------- Operator link + PIN ----------
+//
+// Generation + reset are dashboard-only (withAuth("editor")).
+// Verification is intentionally public — the operator at the venue
+// has no UWU account; their authorisation is "owns the URL + knows
+// the PIN".
+//
+// Verification ALWAYS checks the token first. That keeps the PIN
+// keyspace (10000 combinations) effectively unreachable to anyone
+// who hasn't already obtained a valid 32-hex-char token. Pin
+// brute-force against an arbitrary eventId fails the token check
+// and never increments any meaningful state.
+
+export type OperatorLink = {
+  url: string;
+  pin: string;
+  token: string;
+  createdAt: string;
+};
+
+function appBaseUrl(): string {
+  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+}
+
+/**
+ * Mint a fresh (token, PIN) for the operator station and return the
+ * full URL the couple should share. Re-running this is the same as
+ * "reset link" — both replace whatever pair was there. Action gated
+ * on `editor` so a viewer-collaborator can't rotate keys behind the
+ * couple's back.
+ */
+export async function generateOperatorLinkAction(
+  eventId: string,
+): Promise<ActionResult<OperatorLink>> {
+  return withAuth(eventId, "editor", async () => {
+    const pin = generateOperatorPin();
+    const token = generateOperatorToken();
+    const now = new Date();
+    await db
+      .update(events)
+      .set({
+        operatorPin: pin,
+        operatorToken: token,
+        operatorTokenCreatedAt: now,
+        updatedAt: now,
+      })
+      .where(eq(events.id, eventId));
+    revalidatePath("/dashboard/settings");
+    return {
+      url: buildOperatorUrl(appBaseUrl(), eventId, token),
+      pin,
+      token,
+      createdAt: now.toISOString(),
+    };
+  });
+}
+
+/**
+ * Same shape as generateOperatorLinkAction but with explicit "reset"
+ * semantics so the UI can show a confirm dialog and a fresh toast.
+ * The DB write is identical — there's no "soft reset" path; either
+ * the link is current or it's invalid.
+ */
+export async function resetOperatorLinkAction(
+  eventId: string,
+): Promise<ActionResult<OperatorLink>> {
+  return generateOperatorLinkAction(eventId);
+}
+
+/**
+ * Verify a single (token, pin) submission from the public PIN gate.
+ * Token check first (see security note above). Returns a session
+ * value the operator's browser stores in localStorage.
+ */
+export async function verifyOperatorPinAction(
+  eventId: string,
+  token: string,
+  pin: string,
+): Promise<ActionResult<{ sessionKey: string }>> {
+  // Cheap shape check before hitting the DB.
+  if (
+    !eventId ||
+    !/^[0-9a-f]{32}$/i.test(token) ||
+    !/^\d{4}$/.test(pin)
+  ) {
+    return { ok: false, error: "Link atau PIN tidak valid." };
+  }
+
+  const [event] = await db
+    .select({
+      checkinEnabled: events.checkinEnabled,
+      operatorPin: events.operatorPin,
+      operatorToken: events.operatorToken,
+    })
+    .from(events)
+    .where(and(eq(events.id, eventId), isNull(events.deletedAt)))
+    .limit(1);
+
+  if (!event) return { ok: false, error: "Acara tidak ditemukan." };
+  if (!event.checkinEnabled) {
+    return { ok: false, error: "Check-in belum diaktifkan untuk acara ini." };
+  }
+  if (!event.operatorToken || !event.operatorPin) {
+    return { ok: false, error: "Link operator belum dibuat oleh pasangan." };
+  }
+  // Token first — see security note above.
+  if (event.operatorToken !== token) {
+    return { ok: false, error: "Link operator tidak berlaku." };
+  }
+  if (event.operatorPin !== pin) {
+    return { ok: false, error: "PIN salah." };
+  }
+
+  return {
+    ok: true,
+    data: { sessionKey: `${token}:${pin}` },
+  };
+}
+
+/**
+ * Re-validate a stored session on subsequent loads. Same checks as
+ * verifyOperatorPinAction but parses the combined sessionKey instead
+ * of taking token+pin separately. Used by the PinGate's mount
+ * effect: if the saved session no longer validates (link reset, or
+ * check-in toggled off), we drop the session and re-prompt for PIN.
+ */
+export async function verifyOperatorSessionAction(
+  eventId: string,
+  sessionKey: string,
+): Promise<{ ok: boolean }> {
+  const parsed = parseOperatorSessionValue(sessionKey);
+  if (!parsed) return { ok: false };
+  const res = await verifyOperatorPinAction(eventId, parsed.token, parsed.pin);
+  return { ok: res.ok };
+}
+
+/**
+ * Read-only fetch for the dashboard "Operator Link" card. Returns
+ * the existing link if one has been generated, else null. Auth-gated
+ * so we don't leak the PIN to viewers (only editors and owner can
+ * see the actual digits).
+ */
+export async function getOperatorLinkAction(
+  eventId: string,
+): Promise<ActionResult<OperatorLink | null>> {
+  return withAuth(eventId, "editor", async () => {
+    const [row] = await db
+      .select({
+        operatorPin: events.operatorPin,
+        operatorToken: events.operatorToken,
+        operatorTokenCreatedAt: events.operatorTokenCreatedAt,
+      })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1);
+    if (!row || !row.operatorToken || !row.operatorPin) return null;
+    return {
+      url: buildOperatorUrl(appBaseUrl(), eventId, row.operatorToken),
+      pin: row.operatorPin,
+      token: row.operatorToken,
+      createdAt: row.operatorTokenCreatedAt?.toISOString() ?? "",
+    };
+  });
 }
