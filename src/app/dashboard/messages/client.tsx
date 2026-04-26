@@ -18,6 +18,7 @@ import dynamic from "next/dynamic";
 import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
 import { TemplateChipEditor } from "./template-chip-editor";
 import { WaFallbackSender } from "./wa-fallback-sender";
+import { useToast } from "@/components/shared/Toast";
 
 // AI assistant modal lives behind a click and brings ~25 kB of
 // preset arrays + form chrome with it. Lazy-load so the messages
@@ -324,6 +325,12 @@ export function MessagesClient({
   const [state, formAction, pending] = useActionState(create, null);
   const [runPending, startRun] = useTransition();
   const [runError, setRunError] = useState<string | null>(null);
+  const toast = useToast();
+  // Set when the user submits via "Mulai Kirim WhatsApp →" so the
+  // post-creation effect knows to immediately open the WA fallback or
+  // call runBroadcastAction once state.ok lands. Cleared after firing
+  // or on submit error.
+  const [autoSendWa, setAutoSendWa] = useState(false);
   // For "both" channel: paired email broadcast created in the
   // background after the primary WA broadcast lands.
   const [pairedEmailId, setPairedEmailId] = useState<string | null>(null);
@@ -383,6 +390,44 @@ export function MessagesClient({
     includeSent,
     scheduledAtIso,
     create,
+  ]);
+
+  // Auto-send-on-create: when "Mulai Kirim WhatsApp →" submits the
+  // form, this effect picks up the resulting state.ok + messageId and
+  // either calls runBroadcastAction (Cloud API) or opens the manual
+  // fallback drawer — whichever the WA half should resolve to. On
+  // submission failure (state.ok === false), clear the intent so the
+  // user can retry.
+  useEffect(() => {
+    if (!autoSendWa) return;
+    if (!state) return;
+    if (!state.ok) {
+      setAutoSendWa(false);
+      return;
+    }
+    const messageId = state.data?.messageId;
+    if (!messageId) return;
+    if (channel === "email") {
+      // User picked email-only after submitting WA intent — just clear.
+      setAutoSendWa(false);
+      return;
+    }
+    if (providers.whatsappConfigured) {
+      setRunError(null);
+      startRun(async () => {
+        const r = await runBroadcastAction(eventId, messageId);
+        if (!r.ok) setRunError(r.error);
+      });
+    } else {
+      setWaFallbackOpen(true);
+    }
+    setAutoSendWa(false);
+  }, [
+    autoSendWa,
+    state,
+    channel,
+    providers.whatsappConfigured,
+    eventId,
   ]);
 
   function selectChannel(c: Channel) {
@@ -1155,26 +1200,43 @@ export function MessagesClient({
                     : `Estimasi ±${Math.max(1, Math.round((filteredRecipients.length * 90) / 60))} menit · ~90 detik per tamu`}
               </p>
             </div>
+            {/* Three primary buttons, always visible, matching the
+                template. The green WA button is `type=submit` and sets
+                `autoSendWa` so the post-creation effect immediately
+                opens the fallback or fires runBroadcastAction once the
+                broadcast row is saved. Conditional Email/Cancel/run-
+                again buttons live in a separate row below the bar. */}
             <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              type="submit"
-              disabled={pending || !isPublished}
-              title={
-                !isPublished
-                  ? "Publikasikan undangan dulu di Pengaturan."
-                  : undefined
-              }
-              className="inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-transparent px-[18px] py-[11px] text-[13px] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
-            >
-              {pending ? "Menyimpan…" : "Simpan Draft"}
-            </button>
-            {(channel === "email" || channel === "both") && (
+              <button
+                type="submit"
+                disabled={pending || !isPublished}
+                title={
+                  !isPublished
+                    ? "Publikasikan undangan dulu di Pengaturan."
+                    : undefined
+                }
+                onClick={() => setAutoSendWa(false)}
+                className="inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-transparent px-[18px] py-[11px] text-[13px] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
+              >
+                {pending && !autoSendWa ? "Menyimpan…" : "Simpan Draft"}
+              </button>
+
               <button
                 type="button"
-                onClick={() => setScheduleEnabled((v) => !v)}
-                aria-pressed={scheduleEnabled}
+                onClick={() => {
+                  if (channel === "email" || channel === "both") {
+                    setScheduleEnabled((v) => !v);
+                  } else {
+                    toast.info(
+                      "Jadwal otomatis tersedia saat kanal Email atau Keduanya dipilih.",
+                    );
+                  }
+                }}
+                aria-pressed={
+                  scheduleEnabled && (channel === "email" || channel === "both")
+                }
                 className={`inline-flex items-center gap-2 rounded-full border px-[18px] py-[11px] text-[13px] transition-colors ${
-                  scheduleEnabled
+                  scheduleEnabled && (channel === "email" || channel === "both")
                     ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
                     : "border-[var(--d-line-strong)] bg-transparent text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
                 }`}
@@ -1189,69 +1251,98 @@ export function MessagesClient({
                   <rect x="3" y="4" width="18" height="18" rx="2" />
                   <path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
-                {scheduleEnabled ? "Jadwal aktif" : "Jadwalkan"}
+                {scheduleEnabled && (channel === "email" || channel === "both")
+                  ? "Jadwal aktif"
+                  : "Jadwalkan"}
               </button>
-            )}
 
-            {/* Cancel button for the scheduled email half. The cron
-                handler skips broadcasts in 'cancelled' status. */}
-            {scheduledAtIso &&
-              (channel === "email" || channel === "both") &&
-              ((channel === "email" && state?.ok && state.data?.messageId) ||
-                (channel === "both" && pairedEmailId)) && (
-                <button
-                  type="button"
-                  disabled={cancelPending}
-                  onClick={() => {
-                    const id =
-                      channel === "both"
-                        ? pairedEmailId
-                        : state?.ok
-                          ? state.data?.messageId
-                          : null;
-                    if (!id) return;
-                    setCancelError(null);
-                    startCancel(async () => {
-                      const r = await cancelScheduledBroadcast(eventId, id);
-                      if (!r.ok) {
-                        setCancelError(r.error);
-                      } else {
-                        setCancelledIds((prev) => new Set(prev).add(id));
-                      }
-                    });
-                  }}
-                  className="rounded-full border border-[var(--d-line-strong)] px-6 py-2 text-sm font-medium text-[var(--d-coral)] transition-colors hover:border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] disabled:opacity-60"
-                >
-                  {cancelPending ? "Membatalkan..." : "Batalkan Jadwal"}
-                </button>
-              )}
-
-            {/* Paired Email broadcast (only shown when channel ===
-                "both", and never for scheduled — those fire via cron).
-                Kept first so the user sends email before opening WA
-                tabs. */}
-            {pairedEmailId && !scheduledAtIso && !cancelledIds.has(pairedEmailId) && (
               <button
-                type="button"
-                disabled={runPending}
-                onClick={() => {
-                  setRunError(null);
-                  startRun(async () => {
-                    const r = await runBroadcastAction(eventId, pairedEmailId);
-                    if (!r.ok) setRunError(r.error);
-                  });
-                }}
-                className="rounded-full bg-[var(--d-bg-2)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
+                type="submit"
+                disabled={pending || runPending || !isPublished}
+                title={
+                  !isPublished
+                    ? "Publikasikan undangan dulu di Pengaturan."
+                    : undefined
+                }
+                onClick={() => setAutoSendWa(true)}
+                className="inline-flex items-center gap-2 rounded-full px-[18px] py-[11px] text-[13px] font-medium text-white transition-shadow hover:shadow-[0_10px_30px_rgba(37,211,102,0.3)] disabled:opacity-60"
+                style={{ background: "#25D366" }}
               >
-                ✉️ Kirim Email
+                <WhatsAppGlyph />
+                {pending && autoSendWa
+                  ? "Menyimpan…"
+                  : runPending
+                    ? "Mengirim…"
+                    : "Mulai Kirim WhatsApp →"}
               </button>
-            )}
+            </div>
+          </div>
 
-            {state?.ok && state.data?.messageId && (
-              <>
-                {/* For scheduled email broadcasts, no immediate-send
-                    button — cron picks it up. */}
-                {channel === "email" && scheduledAtIso ? null : channel === "email" ? (
+          {/* Post-creation follow-ups (Cancel scheduled, Send Email,
+              re-run WA) — relevant only after a broadcast row has been
+              created. Lives outside the always-3-button submit bar so
+              the bar stays visually stable. */}
+          {(state?.ok ||
+            pairedEmailId ||
+            (scheduledAtIso && (channel === "email" || channel === "both"))) && (
+            <div className="mt-3 flex flex-wrap items-center justify-end gap-2.5">
+              {scheduledAtIso &&
+                (channel === "email" || channel === "both") &&
+                ((channel === "email" && state?.ok && state.data?.messageId) ||
+                  (channel === "both" && pairedEmailId)) && (
+                  <button
+                    type="button"
+                    disabled={cancelPending}
+                    onClick={() => {
+                      const id =
+                        channel === "both"
+                          ? pairedEmailId
+                          : state?.ok
+                            ? state.data?.messageId
+                            : null;
+                      if (!id) return;
+                      setCancelError(null);
+                      startCancel(async () => {
+                        const r = await cancelScheduledBroadcast(eventId, id);
+                        if (!r.ok) {
+                          setCancelError(r.error);
+                        } else {
+                          setCancelledIds((prev) => new Set(prev).add(id));
+                        }
+                      });
+                    }}
+                    className="rounded-full border border-[var(--d-line-strong)] bg-[rgba(240,160,156,0.08)] px-5 py-2 text-[12px] font-medium text-[var(--d-coral)] transition-colors hover:border-[rgba(240,160,156,0.3)] disabled:opacity-60"
+                  >
+                    {cancelPending ? "Membatalkan…" : "Batalkan Jadwal"}
+                  </button>
+                )}
+
+              {pairedEmailId &&
+                !scheduledAtIso &&
+                !cancelledIds.has(pairedEmailId) && (
+                  <button
+                    type="button"
+                    disabled={runPending}
+                    onClick={() => {
+                      setRunError(null);
+                      startRun(async () => {
+                        const r = await runBroadcastAction(
+                          eventId,
+                          pairedEmailId,
+                        );
+                        if (!r.ok) setRunError(r.error);
+                      });
+                    }}
+                    className="rounded-full bg-[var(--d-bg-2)] px-5 py-2 text-[12px] font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
+                  >
+                    ✉️ Kirim Email
+                  </button>
+                )}
+
+              {state?.ok &&
+                state.data?.messageId &&
+                channel === "email" &&
+                !scheduledAtIso && (
                   <button
                     type="button"
                     disabled={runPending}
@@ -1263,46 +1354,13 @@ export function MessagesClient({
                         if (!r.ok) setRunError(r.error);
                       });
                     }}
-                    className="rounded-full bg-[var(--d-bg-2)] px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
+                    className="rounded-full bg-[var(--d-bg-2)] px-5 py-2 text-[12px] font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
                   >
-                    {runPending ? "Mengirim..." : "✉️ Kirim Email Sekarang"}
+                    {runPending ? "Mengirim…" : "✉️ Kirim Email Sekarang"}
                   </button>
-                ) : null}
-                {/* The active WA broadcast — server-side run when the
-                    Cloud API is configured, client-side fallback
-                    otherwise. Only shown when the WA half exists. */}
-                {channel !== "email" &&
-                  (providers.whatsappConfigured ? (
-                    <button
-                      type="button"
-                      disabled={runPending}
-                      onClick={() => {
-                        const id = state.data!.messageId;
-                        setRunError(null);
-                        startRun(async () => {
-                          const r = await runBroadcastAction(eventId, id);
-                          if (!r.ok) setRunError(r.error);
-                        });
-                      }}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-[18px] py-[11px] text-[13px] font-medium text-white transition-shadow hover:shadow-[0_10px_30px_rgba(37,211,102,0.3)] disabled:opacity-60"
-                    >
-                      <WhatsAppGlyph />
-                      {runPending ? "Mengirim…" : "Mulai Kirim WhatsApp →"}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setWaFallbackOpen(true)}
-                      className="inline-flex items-center gap-2 rounded-full bg-[#25D366] px-[18px] py-[11px] text-[13px] font-medium text-white transition-shadow hover:shadow-[0_10px_30px_rgba(37,211,102,0.3)]"
-                    >
-                      <WhatsAppGlyph />
-                      Mulai Kirim WhatsApp →
-                    </button>
-                  ))}
-              </>
-            )}
+                )}
             </div>
-          </div>
+          )}
           {runError && (
             <p className="mt-3 text-sm text-[var(--d-coral)]">{runError}</p>
           )}
