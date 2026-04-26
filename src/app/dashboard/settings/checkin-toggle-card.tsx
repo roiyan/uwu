@@ -7,9 +7,14 @@ import { useToast } from "@/components/shared/Toast";
 export function CheckinToggleCard({
   eventId,
   initialEnabled,
+  onEnabledChange,
 }: {
   eventId: string;
   initialEnabled: boolean;
+  // Optional callback so a parent can react to flips without waiting
+  // for the next page render. Used by the settings page so the
+  // operator-link card can appear/disappear in lockstep.
+  onEnabledChange?: (next: boolean) => void;
 }) {
   const [enabled, setEnabled] = useState(initialEnabled);
   const [pending, startTransition] = useTransition();
@@ -19,6 +24,7 @@ export function CheckinToggleCard({
     if (pending) return;
     const next = !enabled;
     setEnabled(next);
+    onEnabledChange?.(next);
     startTransition(async () => {
       const res = await setCheckinEnabledAction(eventId, next);
       if (res.ok) {
@@ -29,6 +35,7 @@ export function CheckinToggleCard({
         );
       } else {
         setEnabled(!next);
+        onEnabledChange?.(!next);
         toast.error(res.error);
       }
     });

@@ -18,6 +18,7 @@ import { useToast } from "@/components/shared/Toast";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { getWhatsAppShareUrl } from "@/lib/utils/share";
 import { CheckinToggleCard } from "./checkin-toggle-card";
+import { OperatorLinkCard } from "./operator-link-card";
 
 type Tab = "akun" | "acara" | "budaya" | "kolaborator";
 
@@ -127,7 +128,7 @@ export function SettingsTabs({
       {active === "budaya" && (
         <div className="space-y-6">
           <BudayaTab eventId={eventId} event={event} />
-          <CheckinToggleCard
+          <CheckinSection
             eventId={eventId}
             initialEnabled={event.checkinEnabled}
           />
@@ -142,6 +143,30 @@ export function SettingsTabs({
         />
       )}
     </div>
+  );
+}
+
+// Co-locates the check-in toggle and the operator-link card so flipping
+// the toggle reveals/hides the link card without a refresh. Without
+// this wrapper the OperatorLinkCard sees only the server-snapshot
+// `event.checkinEnabled` and lags behind a flip until the next render.
+function CheckinSection({
+  eventId,
+  initialEnabled,
+}: {
+  eventId: string;
+  initialEnabled: boolean;
+}) {
+  const [enabled, setEnabled] = useState(initialEnabled);
+  return (
+    <>
+      <CheckinToggleCard
+        eventId={eventId}
+        initialEnabled={initialEnabled}
+        onEnabledChange={setEnabled}
+      />
+      <OperatorLinkCard eventId={eventId} enabled={enabled} />
+    </>
   );
 }
 

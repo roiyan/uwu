@@ -8,6 +8,7 @@ import {
   listRecentCheckins,
 } from "@/lib/db/queries/checkin";
 import { CheckinStation } from "@/components/checkin/checkin-station";
+import { PinGate } from "@/components/checkin/pin-gate";
 
 export const dynamic = "force-dynamic";
 
@@ -15,16 +16,27 @@ function appUrl() {
   return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 }
 
-// Public operator station: anyone with the eventId UUID can scan/search
-// guests in. Authorization is by possession of the link (the UUID is
-// non-guessable). The owner can revoke by toggling check-in off in
-// Pengaturan, which makes assertCheckinEnabled fail in the actions.
+// Public operator station. Two-layer gate:
+//   1. checkinEnabled toggle on the events row (the couple opens the
+//      station from Pengaturan).
+//   2. operatorToken in `?token=…` + 4-digit PIN entered on the
+//      <PinGate> below. Verified server-side; saved sessions are
+//      re-validated on every reload so a "Reset Link & PIN" from the
+//      dashboard kicks the operator out automatically.
+//
+// We still pre-fetch the guest list / stats here at the server so the
+// authenticated operator gets snappy initial data — the work is
+// scoped to a single eventId that the URL's UUID already references.
 export default async function PublicCheckinPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ eventId: string }>;
+  searchParams: Promise<{ token?: string }>;
 }) {
   const { eventId } = await params;
+  const sp = await searchParams;
+  const token = typeof sp.token === "string" ? sp.token : null;
   const gate = await getCheckinEventGate(eventId);
   if (!gate) notFound();
 
@@ -62,27 +74,29 @@ export default async function PublicCheckinPage({
   ]);
 
   return (
-    <main
-      className="theme-dashboard min-h-screen"
-      style={{ background: "var(--d-bg-0)", color: "var(--d-ink)" }}
-    >
-      <PublicHeader eventTitle={gate.title} />
-      <div className="px-5 pb-12 lg:px-10">
-        <CheckinStation
-          eventId={eventId}
-          invitationOrigin={appUrl()}
-          invitationSlug={gate.slug}
-          groups={groupRows.map((g) => ({ id: g.id, name: g.name }))}
-          guests={guests}
-          stats={stats}
-          recent={recent}
-          breakdown={breakdown}
-          variant="public"
-          defaultOperator=""
-          hideShare
-        />
-      </div>
-    </main>
+    <PinGate eventId={eventId} token={token} eventTitle={gate.title}>
+      <main
+        className="theme-dashboard min-h-screen"
+        style={{ background: "var(--d-bg-0)", color: "var(--d-ink)" }}
+      >
+        <PublicHeader eventTitle={gate.title} />
+        <div className="px-5 pb-12 lg:px-10">
+          <CheckinStation
+            eventId={eventId}
+            invitationOrigin={appUrl()}
+            invitationSlug={gate.slug}
+            groups={groupRows.map((g) => ({ id: g.id, name: g.name }))}
+            guests={guests}
+            stats={stats}
+            recent={recent}
+            breakdown={breakdown}
+            variant="public"
+            defaultOperator=""
+            hideShare
+          />
+        </div>
+      </main>
+    </PinGate>
   );
 }
 
