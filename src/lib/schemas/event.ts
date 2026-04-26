@@ -67,6 +67,7 @@ export const eventSettingsSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Hanya huruf kecil, angka, dan tanda minus"),
   culturalPreference: z.enum(["islami", "umum", "custom"]),
   musicUrl: z.string().url("URL musik tidak valid").optional().or(z.literal("")),
+  timezone: z.string().max(40).optional().or(z.literal("")),
 });
 
 export const profileSettingsSchema = z.object({

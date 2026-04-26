@@ -68,6 +68,7 @@ export function SettingsTabs({
     musicUrl: string;
     culturalPreference: "islami" | "umum" | "custom";
     checkinEnabled: boolean;
+    timezone: string;
   };
   owner: { fullName: string | null; email: string; isCurrentUser: boolean };
   collaborators: CollaboratorRow[];
@@ -269,7 +270,7 @@ function AcaraTab({
 }: {
   eventId: string;
   isPublished: boolean;
-  event: { title: string; slug: string; musicUrl: string; culturalPreference: "islami" | "umum" | "custom" };
+  event: { title: string; slug: string; musicUrl: string; culturalPreference: "islami" | "umum" | "custom"; timezone: string };
 }) {
   const bound = updateEventSettingsAction.bind(null, eventId);
   const [state, formAction, pending] = useActionState(bound, null);
@@ -332,6 +333,27 @@ function AcaraTab({
             />
             <span className="mt-2 block text-[11px] text-[var(--d-ink-faint)]">
               Musik akan muted secara default. Tamu dapat mengaktifkan manual.
+            </span>
+          </label>
+          <label className="block md:col-span-2">
+            <span className={labelClass}>Zona waktu</span>
+            <select
+              name="timezone"
+              defaultValue={event.timezone || "Asia/Jakarta"}
+              className={`${inputClass} cursor-pointer appearance-none`}
+            >
+              <option value="Asia/Jakarta">WIB · Jakarta (UTC+7)</option>
+              <option value="Asia/Makassar">WITA · Makassar (UTC+8)</option>
+              <option value="Asia/Jayapura">WIT · Jayapura (UTC+9)</option>
+              <option value="Asia/Singapore">SGT · Singapore (UTC+8)</option>
+              <option value="Asia/Kuala_Lumpur">MYT · Kuala Lumpur (UTC+8)</option>
+              <option value="Asia/Tokyo">JST · Tokyo (UTC+9)</option>
+              <option value="Asia/Dubai">GST · Dubai (UTC+4)</option>
+              <option value="Europe/London">GMT · London (UTC+0)</option>
+              <option value="America/New_York">EST · New York (UTC-5)</option>
+            </select>
+            <span className="d-serif mt-2 block text-[11px] italic text-[var(--d-ink-faint)]">
+              Digunakan untuk heatmap analytics dan jadwal broadcast.
             </span>
           </label>
         </div>
@@ -446,6 +468,7 @@ function BudayaTab({
     musicUrl: string;
     culturalPreference: "islami" | "umum" | "custom";
     checkinEnabled: boolean;
+    timezone: string;
   };
 }) {
   const bound = updateEventSettingsAction.bind(null, eventId);

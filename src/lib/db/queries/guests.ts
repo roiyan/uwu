@@ -342,8 +342,14 @@ export async function getGroupEngagement(eventId: string) {
  * — the result is a `timestamp without time zone` that represents
  * the wall-clock value the operator actually wants to bucket on.
  */
-export async function getOpenHeatmap(eventId: string) {
-  const localOpenedAt = sql`(${guests.openedAt} at time zone 'Asia/Jakarta')`;
+export async function getOpenHeatmap(
+  eventId: string,
+  timezone: string = "Asia/Jakarta",
+) {
+  const tz = /^[A-Za-z]+(?:\/[A-Za-z_+\-0-9]+){0,2}$/.test(timezone)
+    ? timezone
+    : "Asia/Jakarta";
+  const localOpenedAt = sql.raw(`("guests"."opened_at" at time zone '${tz}')`);
   const rows = await db
     .select({
       day: sql<number>`extract(dow from ${localOpenedAt})::int`,

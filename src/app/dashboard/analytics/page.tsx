@@ -25,6 +25,7 @@ export default async function AnalyticsPage() {
   if (!current) redirect("/onboarding");
 
   const eventId = current.event.id;
+  const eventTimezone = current.event.timezone ?? "Asia/Jakarta";
 
   const [
     total,
@@ -50,7 +51,7 @@ export default async function AnalyticsPage() {
     getEventPackageLimit(eventId),
     getTrafficSourceBreakdown(eventId),
     getGroupEngagement(eventId),
-    getOpenHeatmap(eventId),
+    getOpenHeatmap(eventId, eventTimezone),
     listTopOpeners(eventId, 5),
     listGuestWishes(eventId, 3),
     countGuestWishes(eventId),

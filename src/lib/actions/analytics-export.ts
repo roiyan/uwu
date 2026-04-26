@@ -87,8 +87,13 @@ export async function getAnalyticsExportData(
   eventId: string,
 ): Promise<ActionResult<AnalyticsExportData>> {
   return withAuth(eventId, "viewer", async () => {
+    const bundle = await getEventBundle(eventId);
+    if (!bundle) {
+      throw new Error("Acara tidak ditemukan.");
+    }
+    const eventTimezone = bundle.event.timezone ?? "Asia/Jakarta";
+
     const [
-      bundle,
       total,
       confirmedAttendees,
       funnel,
@@ -96,18 +101,13 @@ export async function getAnalyticsExportData(
       packageInfo,
       heatmap,
     ] = await Promise.all([
-      getEventBundle(eventId),
       countLiveGuests(eventId),
       sumAttendees(eventId),
       getResponseFunnel(eventId),
       listGuestsForEvent(eventId),
       getEventPackageLimit(eventId),
-      getOpenHeatmap(eventId),
+      getOpenHeatmap(eventId, eventTimezone),
     ]);
-
-    if (!bundle) {
-      throw new Error("Acara tidak ditemukan.");
-    }
 
     const coupleName = bundle.couple
       ? `${bundle.couple.brideName} & ${bundle.couple.groomName}`

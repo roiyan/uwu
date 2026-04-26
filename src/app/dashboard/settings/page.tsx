@@ -102,6 +102,7 @@ export default async function SettingsPage({
           musicUrl: bundle.event.musicUrl ?? "",
           culturalPreference: bundle.event.culturalPreference,
           checkinEnabled: bundle.event.checkinEnabled,
+          timezone: bundle.event.timezone ?? "Asia/Jakarta",
         }}
         owner={{
           fullName: profile?.fullName ?? null,

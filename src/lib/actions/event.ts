@@ -254,7 +254,12 @@ export async function updateEventSettingsAction(
     slug: formData.get("slug"),
     culturalPreference: formData.get("culturalPreference"),
     musicUrl: formData.get("musicUrl") ?? "",
+    timezone: formData.get("timezone") ?? "",
   });
+  const ALLOWED_TIMEZONES = [
+    "Asia/Jakarta","Asia/Makassar","Asia/Jayapura","Asia/Singapore",
+    "Asia/Kuala_Lumpur","Asia/Tokyo","Asia/Dubai","Europe/London","America/New_York",
+  ];
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Input tidak valid" };
   }
@@ -274,6 +279,10 @@ export async function updateEventSettingsAction(
         slug: parsed.data.slug,
         culturalPreference: parsed.data.culturalPreference,
         musicUrl: parsed.data.musicUrl || null,
+        timezone:
+          parsed.data.timezone && ALLOWED_TIMEZONES.includes(parsed.data.timezone)
+            ? parsed.data.timezone
+            : "Asia/Jakarta",
         updatedAt: new Date(),
       })
       .where(eq(events.id, eventId));
