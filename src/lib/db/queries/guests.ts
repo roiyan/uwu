@@ -1,6 +1,13 @@
 import { and, asc, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { events, guestGroups, guests, packages, themes } from "@/lib/db/schema";
+import {
+  eventSchedules,
+  events,
+  guestGroups,
+  guests,
+  packages,
+  themes,
+} from "@/lib/db/schema";
 import type { guestRsvpStatusEnum } from "@/lib/db/schema";
 
 export type GuestStatus = (typeof guestRsvpStatusEnum.enumValues)[number];
@@ -473,6 +480,94 @@ export async function getEventPackageLimit(eventId: string) {
     limit: row?.guestLimit ?? 25,
     packageName: row?.packageName ?? "Starter",
   };
+}
+
+/**
+ * Aggregate check-in totals for the analytics "Show-up Rate" card.
+ * Computed in a single round-trip via filtered counts:
+ * - rsvpHadir / rsvpHadirPax: guests who said yes (RSVP "hadir") and the
+ *   pax they pledged. The denominator for the show-up rate.
+ * - actualCheckin / actualPax: guests with `checked_in_at` set, summed by
+ *   `actual_pax` (operator-recorded count) which can differ from the RSVP
+ *   pledge.
+ * - walkIn: checked in but didn't RSVP "hadir" — guests who showed up
+ *   without confirming, including walk-ins added at the door.
+ * - rsvpHadirCheckedIn: RSVP "hadir" AND actually checked in (numerator
+ *   for show-up rate).
+ * - noShow: RSVP "hadir" but no check-in.
+ */
+export async function getCheckinStats(eventId: string) {
+  const [row] = await db
+    .select({
+      rsvpHadir: sql<number>`count(*) filter (where ${guests.rsvpStatus} = 'hadir')::int`,
+      rsvpHadirPax: sql<number>`coalesce(sum(${guests.rsvpAttendees}) filter (where ${guests.rsvpStatus} = 'hadir'), 0)::int`,
+      actualCheckin: sql<number>`count(*) filter (where ${guests.checkedInAt} is not null)::int`,
+      actualPax: sql<number>`coalesce(sum(coalesce(${guests.actualPax}, ${guests.rsvpAttendees}, 1)) filter (where ${guests.checkedInAt} is not null), 0)::int`,
+      walkIn: sql<number>`count(*) filter (where ${guests.checkedInAt} is not null and ${guests.rsvpStatus} <> 'hadir')::int`,
+      rsvpHadirCheckedIn: sql<number>`count(*) filter (where ${guests.rsvpStatus} = 'hadir' and ${guests.checkedInAt} is not null)::int`,
+      noShow: sql<number>`count(*) filter (where ${guests.rsvpStatus} = 'hadir' and ${guests.checkedInAt} is null)::int`,
+    })
+    .from(guests)
+    .where(and(eq(guests.eventId, eventId), isNull(guests.deletedAt)));
+
+  const r = row ?? {
+    rsvpHadir: 0,
+    rsvpHadirPax: 0,
+    actualCheckin: 0,
+    actualPax: 0,
+    walkIn: 0,
+    rsvpHadirCheckedIn: 0,
+    noShow: 0,
+  };
+  const showUpRate =
+    r.rsvpHadir > 0
+      ? Math.round((r.rsvpHadirCheckedIn / r.rsvpHadir) * 100)
+      : 0;
+  return { ...r, showUpRate };
+}
+
+/**
+ * Per-arrival rows for the Arrival Timeline chart. Strips down to just
+ * the fields the chart needs (timestamp, pax, walk-in flag) and sorts
+ * by check-in time so the bucketing client-side stays linear.
+ */
+export async function listArrivals(eventId: string) {
+  return db
+    .select({
+      id: guests.id,
+      checkedInAt: guests.checkedInAt,
+      actualPax: guests.actualPax,
+      rsvpAttendees: guests.rsvpAttendees,
+      rsvpStatus: guests.rsvpStatus,
+    })
+    .from(guests)
+    .where(
+      and(
+        eq(guests.eventId, eventId),
+        isNull(guests.deletedAt),
+        sql`${guests.checkedInAt} is not null`,
+      ),
+    )
+    .orderBy(asc(guests.checkedInAt));
+}
+
+/**
+ * Schedule rows used by the Arrival Timeline as time-window references.
+ * Sorted by sort_order then date so the swipeable navigator follows the
+ * couple's intended order.
+ */
+export async function listEventSchedules(eventId: string) {
+  return db
+    .select({
+      id: eventSchedules.id,
+      label: eventSchedules.label,
+      eventDate: eventSchedules.eventDate,
+      startTime: eventSchedules.startTime,
+      endTime: eventSchedules.endTime,
+    })
+    .from(eventSchedules)
+    .where(eq(eventSchedules.eventId, eventId))
+    .orderBy(asc(eventSchedules.sortOrder), asc(eventSchedules.eventDate));
 }
 
 export async function getGuestByToken(token: string) {
