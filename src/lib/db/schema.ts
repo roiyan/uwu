@@ -521,6 +521,39 @@ export const eventGallery = pgTable("event_gallery", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
+// ---------- event_media (centralised media library) ----------
+//
+// One row per file uploaded to the couple's media library. Distinct
+// from `event_gallery` (which stores the curated public-facing photo
+// reel): every gallery image starts life as an `event_media` row, but
+// not every media row ends up in the gallery. The picker UI in the
+// Website Editor reads this table; section editors (mempelai photo,
+// cover, gallery) reference rows here so a single upload can be
+// reused without re-uploading.
+//
+// Files live in the existing `event-media` Supabase Storage bucket.
+// The DB row carries the public URL + size/type metadata so the
+// editor can render the grid and enforce the per-event storage quota
+// without round-tripping to Storage.
+export const eventMedia = pgTable("event_media", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  fileUrl: text("file_url").notNull(),
+  // Storage key inside the bucket — kept so a future hard-delete can
+  // call `storage.from(BUCKET).remove([storagePath])`.
+  storagePath: text("storage_path").notNull(),
+  fileName: text("file_name"),
+  fileSize: integer("file_size"),
+  mimeType: text("mime_type"),
+  width: integer("width"),
+  height: integer("height"),
+  uploadedAt: timestamp("uploaded_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
 // ---------- Type exports ----------
 
 export type Profile = typeof profiles.$inferSelect;
@@ -537,5 +570,6 @@ export type Order = typeof orders.$inferSelect;
 export type EventMember = typeof eventMembers.$inferSelect;
 export type ActivityLog = typeof activityLogs.$inferSelect;
 export type EventGalleryRow = typeof eventGallery.$inferSelect;
+export type EventMedia = typeof eventMedia.$inferSelect;
 export type GiftAccount = typeof giftAccounts.$inferSelect;
 export type GiftConfirmation = typeof giftConfirmations.$inferSelect;
