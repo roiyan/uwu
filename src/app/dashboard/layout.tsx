@@ -8,6 +8,18 @@ import { Sidebar } from "@/components/dashboard/Sidebar";
 import { BottomTab } from "@/components/dashboard/BottomTab";
 import { MobileTopBar } from "@/components/dashboard/MobileTopBar";
 
+// Reads the persisted collapse preference and stamps `--sidebar-w` on
+// <html> BEFORE first paint, so both the SidebarSkeleton (Suspense
+// fallback) and the real Sidebar render at the correct width on
+// reload. Without this, every navigation that re-streams the
+// SidebarHost flashes back to 280px before the client component
+// hydrates and snaps to the persisted width.
+const SIDEBAR_INIT_SCRIPT = `
+(function(){try{var c=localStorage.getItem('uwu-sidebar-collapsed')==='true';
+document.documentElement.style.setProperty('--sidebar-w',c?'68px':'280px');}
+catch(e){}})();
+`;
+
 // Synchronous shell — children paint immediately. Auth + sidebar data
 // both resolve inside Suspense boundaries so one slow query can't
 // block the other half of the screen.
@@ -26,6 +38,9 @@ export default function DashboardLayout({
       className="theme-dashboard relative min-h-screen lg:flex"
       style={{ background: "var(--d-bg-0)" }}
     >
+      <script
+        dangerouslySetInnerHTML={{ __html: SIDEBAR_INIT_SCRIPT }}
+      />
       {/* Soft global glow orbs — kept very low opacity so content
           contrast remains AAA. */}
       <div
@@ -112,8 +127,13 @@ async function MobileTopBarHost() {
 function SidebarSkeleton() {
   return (
     <aside
-      className="hidden w-[280px] flex-col overflow-hidden px-5 py-6 lg:sticky lg:top-0 lg:flex lg:h-screen"
-      style={{ background: "var(--d-bg-1)" }}
+      className="hidden flex-col overflow-hidden px-5 py-6 lg:sticky lg:top-0 lg:flex lg:h-screen"
+      style={{
+        background: "var(--d-bg-1)",
+        // Read from --sidebar-w (set by SIDEBAR_INIT_SCRIPT pre-paint).
+        // Falls back to 280px when the var is unset (first-ever visit).
+        width: "var(--sidebar-w, 280px)",
+      }}
     >
       <div className="h-9 w-20 animate-pulse rounded bg-[var(--d-bg-2)]" />
       <div className="mt-3 h-4 w-40 animate-pulse rounded bg-[var(--d-bg-2)]" />
