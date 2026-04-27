@@ -7,7 +7,6 @@ import {
   updateSectionOrderAction,
 } from "@/lib/actions/event";
 import { useToast } from "@/components/shared/Toast";
-import { PhotoUpload } from "@/components/shared/PhotoUpload";
 import { VenueMapField } from "@/components/shared/VenueMapField";
 import { Preview } from "@/components/invitation/Preview";
 import { PhoneFrame, type Viewport } from "@/components/invitation/PhoneFrame";
