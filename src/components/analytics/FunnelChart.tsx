@@ -6,6 +6,10 @@ export type FunnelData = {
   opened: number;
   responded: number;
   attending: number;
+  /** Optional — only included when at least one guest has checked in.
+   *  Renders as an extra stage below "Hadir" so couples can see the
+   *  actual show-up gap on the same chart. */
+  checkedIn?: number;
 };
 
 type Stage = {
@@ -16,7 +20,7 @@ type Stage = {
   hint: (data: FunnelData) => string;
 };
 
-const STAGES: Stage[] = [
+const BASE_STAGES: Stage[] = [
   {
     key: "total",
     label: "Total",
@@ -28,7 +32,7 @@ const STAGES: Stage[] = [
     label: "Diundang",
     color: "#F4B8A3",
     pctOf: "total",
-    hint: (d) => `${Math.max(0, d.total - d.invited)} belum kontak`,
+    hint: (d) => `${Math.max(0, d.total - d.invited)} belum diundang`,
   },
   {
     key: "opened",
@@ -46,27 +50,45 @@ const STAGES: Stage[] = [
   },
   {
     key: "attending",
-    label: "Hadir",
+    label: "Hadir (RSVP)",
     color: "#7ED3A4",
     pctOf: "responded",
     hint: () => "dari RSVP",
   },
 ];
 
+const CHECKIN_STAGE: Stage = {
+  key: "checkedIn",
+  label: "Tiba di Lokasi",
+  color: "#8FA3D9",
+  pctOf: "attending",
+  hint: () => "dari yang RSVP hadir",
+};
+
 const STAGE_LABEL: Record<keyof FunnelData, string> = {
   total: "total",
   invited: "diundang",
   opened: "dibuka",
   responded: "RSVP",
-  attending: "hadir",
+  attending: "RSVP hadir",
+  checkedIn: "tiba di lokasi",
 };
 
+function resolveStages(d: FunnelData): Stage[] {
+  return d.checkedIn != null && d.checkedIn >= 0 && d.attending > 0
+    ? [...BASE_STAGES, CHECKIN_STAGE]
+    : BASE_STAGES;
+}
+
 function generateInsight(d: FunnelData): { from: string; to: string; count: number } | null {
+  const stages = resolveStages(d);
   let biggest: { from: string; to: string; count: number } | null = null;
-  for (let i = 0; i < STAGES.length - 1; i++) {
-    const a = STAGES[i].key;
-    const b = STAGES[i + 1].key;
-    const drop = d[a] - d[b];
+  for (let i = 0; i < stages.length - 1; i++) {
+    const a = stages[i].key;
+    const b = stages[i + 1].key;
+    const av = d[a] ?? 0;
+    const bv = d[b] ?? 0;
+    const drop = av - bv;
     if (drop > 0 && (!biggest || drop > biggest.count)) {
       biggest = { from: STAGE_LABEL[a], to: STAGE_LABEL[b], count: drop };
     }
@@ -89,13 +111,18 @@ export function FunnelChart({
   const conversionPct =
     data.total > 0 ? Math.round((data.attending / data.total) * 100) : 0;
   const insight = generateInsight(data);
+  const stages = resolveStages(data);
+  const stageGridClass =
+    stages.length === 6
+      ? "grid-cols-3 sm:grid-cols-6"
+      : "grid-cols-5";
 
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
-            Funnel Respons · {todayLabel()}
+            Perjalanan Respons · {todayLabel()}
           </p>
           <h2 className="d-serif mt-2 text-[24px] font-light leading-tight tracking-[-0.015em] text-[var(--d-ink)] lg:text-[26px]">
             Perjalanan{" "}
@@ -126,8 +153,8 @@ export function FunnelChart({
         {/* Visualization */}
         <div>
           <div className="flex h-[220px] items-end gap-3.5">
-            {STAGES.map((s) => {
-              const v = data[s.key];
+            {stages.map((s) => {
+              const v = data[s.key] ?? 0;
               const heightPct = (v / max) * 100;
               return (
                 <div
@@ -165,10 +192,11 @@ export function FunnelChart({
           </div>
 
           {/* Axis legend */}
-          <div className="mt-5 grid grid-cols-5 gap-3.5 border-t border-[var(--d-line)] pt-4">
-            {STAGES.map((s) => {
-              const v = data[s.key];
-              const denom = s.pctOf ? data[s.pctOf] : data.total;
+          <div className={`mt-5 grid ${stageGridClass} gap-3.5 border-t border-[var(--d-line)] pt-4`}>
+            {stages.map((s) => {
+              const v = data[s.key] ?? 0;
+              const denomRaw = s.pctOf ? data[s.pctOf] : data.total;
+              const denom = denomRaw ?? 0;
               const pct =
                 denom > 0 ? Math.round((v / Math.max(1, denom)) * 100) : 0;
               return (
@@ -196,14 +224,14 @@ export function FunnelChart({
         {/* Sidebar */}
         <aside className="border-t border-dashed border-[var(--d-line-strong)] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
           <p className="d-mono text-[10px] uppercase tracking-[0.28em] text-[var(--d-ink-faint)]">
-            Konversi keseluruhan
+            Respons keseluruhan
           </p>
           <p className="d-serif mt-2 text-[52px] font-extralight leading-none tracking-[-0.028em] text-[var(--d-ink)] lg:text-[56px]">
             {conversionPct}
             <span className="text-[24px] text-[var(--d-ink-dim)]">%</span>
           </p>
           <p className="d-serif mt-2 text-[13px] italic leading-relaxed text-[var(--d-ink-dim)]">
-            dari total tamu berujung{" "}
+            dari total tamu akhirnya{" "}
             <em className="d-serif italic text-[var(--d-coral)]">hadir</em>.
           </p>
 
@@ -216,14 +244,14 @@ export function FunnelChart({
               }}
             >
               <p className="d-mono text-[9.5px] uppercase tracking-[0.24em] text-[var(--d-coral)]">
-                Insight
+                Temuan
               </p>
               <p className="d-serif mt-2 text-[13px] leading-[1.5] text-[var(--d-ink)]">
-                Drop-off terbesar di langkah{" "}
+                Penurunan terbesar di langkah{" "}
                 <em className="d-serif italic text-[var(--d-coral)]">
                   {insight.to}
                 </em>{" "}
-                — {insight.count} tamu {insight.from} tapi belum {insight.to}.
+                — {insight.count} tamu {insight.from} tapi belum lanjut.
               </p>
             </div>
           )}

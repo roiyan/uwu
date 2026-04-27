@@ -3,12 +3,15 @@ import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser } from "@/lib/db/queries/events";
 import {
   countLiveGuests,
+  getCheckinStats,
   getEventPackageLimit,
   getGroupEngagement,
   getOpenHeatmap,
   getResponseFunnel,
   getTrafficSourceBreakdown,
   getWeeklyTrend,
+  listArrivals,
+  listEventSchedules,
   listGuestGroups,
   listGuestsWithActivity,
   sumAttendees,
@@ -35,6 +38,9 @@ export default async function AnalyticsPage() {
     trafficSource,
     groupEngagement,
     heatmapBuckets,
+    checkinStats,
+    arrivals,
+    schedules,
   ] = await Promise.all([
     countLiveGuests(eventId),
     sumAttendees(eventId),
@@ -46,6 +52,9 @@ export default async function AnalyticsPage() {
     getTrafficSourceBreakdown(eventId),
     getGroupEngagement(eventId),
     getOpenHeatmap(eventId, eventTimezone),
+    getCheckinStats(eventId),
+    listArrivals(eventId),
+    listEventSchedules(eventId),
   ]);
 
   if (total === 0) {
@@ -118,6 +127,10 @@ export default async function AnalyticsPage() {
       trafficSource={trafficSource}
       groupEngagement={groupEngagement}
       heatmapBuckets={heatmapBuckets}
+      checkinStats={checkinStats}
+      arrivals={arrivals}
+      schedules={schedules}
+      eventTimezone={eventTimezone}
     />
   );
 }

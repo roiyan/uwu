@@ -18,6 +18,15 @@ import {
   ActivityHeatmap,
   type HeatmapBucket,
 } from "@/components/analytics/ActivityHeatmap";
+import {
+  ShowUpRateCard,
+  type ShowUpStats,
+} from "@/components/analytics/ShowUpRateCard";
+import {
+  ArrivalTimeline,
+  type ArrivalRow,
+  type ArrivalSchedule,
+} from "@/components/analytics/ArrivalTimeline";
 import { ExportSection } from "@/components/analytics/ExportSection";
 
 export type GuestStatus =
@@ -106,6 +115,10 @@ export function AnalyticsClient({
   trafficSource,
   groupEngagement,
   heatmapBuckets,
+  checkinStats,
+  arrivals,
+  schedules,
+  eventTimezone,
 }: {
   eventId: string;
   total: number;
@@ -125,6 +138,10 @@ export function AnalyticsClient({
   trafficSource: SourceData;
   groupEngagement: GroupEngagementRow[];
   heatmapBuckets: HeatmapBucket[];
+  checkinStats: ShowUpStats;
+  arrivals: ArrivalRow[];
+  schedules: ArrivalSchedule[];
+  eventTimezone: string;
 }) {
   const [range, setRange] = useState<Range>("7h");
   const [groupFilter, setGroupFilter] = useState<string>("");
@@ -206,7 +223,15 @@ export function AnalyticsClient({
   // both are at their defaults (no group, range=semua) we fall back
   // to the server-rendered funnel so empty-on-first-load still works.
   const filteredFunnel = useMemo(() => {
-    if (!groupFilter && !cutoff) return funnel;
+    // Server-rendered funnel doesn't include checkedIn — append it from
+    // checkinStats so the chart can show the extra row even with default
+    // filters. Hidden by FunnelChart when attending is 0.
+    if (!groupFilter && !cutoff) {
+      return {
+        ...funnel,
+        checkedIn: checkinStats.rsvpHadirCheckedIn,
+      };
+    }
     const target = groupFilter
       ? groups.find((g) => g.id === groupFilter)?.name
       : null;
@@ -226,9 +251,13 @@ export function AnalyticsClient({
       attending: rows.filter(
         (r) => r.rsvpStatus === "hadir" && inWindow(r.rsvpedAt),
       ).length,
+      // For the filtered case we approximate "checkedIn" from the
+      // pre-filtered response list since responses includes openedAt /
+      // rsvpedAt but not checkedInAt. Default to 0 to suppress the row.
+      checkedIn: 0,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groupFilter, funnel, responses, groups, cutoff]);
+  }, [groupFilter, funnel, responses, groups, cutoff, checkinStats]);
 
   // Heatmap re-aggregated client-side from filtered responses so the
   // grid only shows opens that happened inside the selected window.
@@ -401,6 +430,20 @@ export function AnalyticsClient({
         <TimeSeriesChart series={series} />
       </div>
 
+      {/* 2b. Check-in surfaces — only mount when at least one guest has
+              checked in. Show-up rate sits left, arrival timeline
+              right (timeline gets the wider column for the bar chart). */}
+      {checkinStats.actualCheckin > 0 && (
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_2fr]">
+          <ShowUpRateCard stats={checkinStats} />
+          <ArrivalTimeline
+            arrivals={arrivals}
+            schedules={schedules}
+            timezone={eventTimezone}
+          />
+        </div>
+      )}
+
       {/* 3. 3-column breakdowns */}
       <div className="mt-6">
         <BreakdownCards
@@ -461,8 +504,8 @@ export function AnalyticsClient({
                     colSpan={5}
                     className="d-serif px-6 py-10 text-center text-[13px] italic text-[var(--d-ink-dim)]"
                   >
-                    Belum ada tamu. Tambahkan tamu lalu kirim undangan untuk
-                    mulai melihat data respons di sini.
+                    Belum ada tamu. Tambahkan tamu dan kirim undangan untuk
+                    mulai melihat jejaknya.
                   </td>
                 </tr>
               ) : (
@@ -546,7 +589,7 @@ function Header({
         <div className="flex items-center gap-3">
           <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
           <p className="d-eyebrow">
-            Analytics ·{" "}
+            Jejak Undangan ·{" "}
             {range === "24j"
               ? "24 Jam Terakhir"
               : range === "7h"
@@ -566,11 +609,11 @@ function Header({
               aria-hidden
               className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-green)] shadow-[0_0_8px_var(--d-green)]"
             />
-            Update real-time · sinkron {syncSec} detik lalu
+            Terkini · sinkron {syncSec} detik lalu
           </span>
           {engagementPct > 0 && (
             <span className="d-serif text-[14px] italic text-[var(--d-green)]">
-              — engagement {engagementPct}% dari total tamu
+              — keterlibatan {engagementPct}% dari total tamu
             </span>
           )}
         </div>
