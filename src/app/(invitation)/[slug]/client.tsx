@@ -14,7 +14,10 @@ import {
   formatTimeRange,
 } from "@/components/invitation/formatting";
 import { GuestQrCode } from "@/components/invitation/guest-qr-code";
-import { QuickQrButton } from "@/components/invitation/quick-qr-button";
+import {
+  QrTicketModal,
+  isWeddingDayRange,
+} from "@/components/invitation/quick-qr-button";
 import { RsvpForm } from "./rsvp-form";
 import { GiftSection } from "./gift-section";
 import type { PublicGiftAccount } from "@/lib/actions/gift";
@@ -127,6 +130,7 @@ function InvitationInner({
   const [guest, setGuest] = useState<ResolvedGuest | null>(null);
   const [guestResolved, setGuestResolved] = useState(false);
   const [opened, setOpened] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -160,6 +164,24 @@ function InvitationInner({
   const isExistingRsvp =
     guest?.rsvpStatus === "hadir" || guest?.rsvpStatus === "tidak_hadir";
 
+  // Show the "Tiket Kehadiran" button on the cover only when:
+  //   - the couple enabled check-in,
+  //   - we have a personalised token,
+  //   - this guest already RSVP'd `hadir`,
+  //   - and we're inside the H-1 … H+1 wedding-day window.
+  // Outside the window the QR is meaningless (operator station is
+  // closed) so the button stays hidden to keep the cover uncluttered.
+  const inWeddingWindow = isWeddingDayRange(
+    schedules[0]?.eventDate ?? "",
+    schedules[0]?.timezone ?? "Asia/Jakarta",
+  );
+  const showQrButton =
+    event.checkinEnabled &&
+    Boolean(token) &&
+    guest?.rsvpStatus === "hadir" &&
+    inWeddingWindow;
+  const isCheckedIn = Boolean(guest?.checkedInAt);
+
   return (
     <div
       className="min-h-screen font-body"
@@ -173,6 +195,9 @@ function InvitationInner({
             guestName={guestName}
             date={schedules[0] ? formatDate(schedules[0].eventDate) : null}
             onOpen={handleOpen}
+            showQrButton={showQrButton}
+            isCheckedIn={isCheckedIn}
+            onShowQr={() => setShowQrModal(true)}
           />
         )}
       </AnimatePresence>
@@ -266,28 +291,24 @@ function InvitationInner({
           />
         )}
 
-      {/* Floating quick-access QR — only on the wedding-day window
-          (H-1 … H+1) for guests already RSVP'd hadir. Lets the guest
-          pull up the QR at the door without scrolling the embedded
-          ticket card into view. Auto-flips to a "tercatat" badge once
-          the operator has checked them in. */}
-      {event.checkinEnabled &&
-        token &&
-        guest?.rsvpStatus === "hadir" && (
-          <QuickQrButton
-            slug={event.slug}
-            token={token}
-            guest={{
-              name: guest.name,
-              groupName: guest.groupName,
-              pax: guest.rsvpAttendees,
-              checkedInAt: guest.checkedInAt,
-            }}
-            palette={palette}
-            eventDate={schedules[0]?.eventDate}
-            eventTimezone={schedules[0]?.timezone}
-          />
-        )}
+      {/* QR ticket modal — controlled from the cover screen's
+          "Tiket Kehadiran" button. Replaces the previous floating
+          FAB; lives at the page root so opening it from the cover
+          (which is itself fixed-positioned) doesn't fight z-index. */}
+      {event.checkinEnabled && token && guest?.rsvpStatus === "hadir" && (
+        <QrTicketModal
+          open={showQrModal}
+          onClose={() => setShowQrModal(false)}
+          slug={event.slug}
+          token={token}
+          guest={{
+            name: guest.name,
+            groupName: guest.groupName,
+            pax: guest.rsvpAttendees,
+          }}
+          palette={palette}
+        />
+      )}
 
       <footer className="py-10 text-center text-xs opacity-70">
         <p>Dibuat dengan ♡ di uwu</p>
@@ -305,12 +326,24 @@ function EnvelopeReveal({
   guestName,
   date,
   onOpen,
+  showQrButton,
+  isCheckedIn,
+  onShowQr,
 }: {
   palette: Palette;
   title: string;
   guestName: string;
   date: string | null;
   onOpen: () => void;
+  /** True when the guest is RSVP'd hadir + we're inside the H-1 … H+1
+   *  wedding-day window. Drives whether to render the secondary QR
+   *  CTA below "Buka Undangan". */
+  showQrButton: boolean;
+  /** True once `guests.checked_in_at` is set by the operator. The
+   *  button stays clickable (operator may need a re-scan) but flips
+   *  styling + label to a green "tercatat" pill. */
+  isCheckedIn: boolean;
+  onShowQr: () => void;
 }) {
   return (
     <motion.div
@@ -357,6 +390,22 @@ function EnvelopeReveal({
         >
           ✉ Buka Undangan
         </motion.button>
+        {showQrButton && (
+          <button
+            type="button"
+            onClick={onShowQr}
+            className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-full border-[1.5px] py-3 text-[14px] transition-colors"
+            style={{
+              background: "transparent",
+              borderColor: isCheckedIn
+                ? "rgba(126,211,164,0.5)"
+                : "rgba(126,211,164,0.4)",
+              color: "#7ED3A4",
+            }}
+          >
+            {isCheckedIn ? "✓ Kehadiran Tercatat" : "🎫 Tiket Kehadiran"}
+          </button>
+        )}
       </motion.div>
     </motion.div>
   );
