@@ -630,6 +630,18 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
           </div>
         </div>
       )}
+
+      {/* Centralised media library — opened from the camera button in
+          TopBar. Manager mode (no onSelect): tiles are delete-only.
+          Section editors call MediaPicker which mounts the same modal
+          in picker mode. */}
+      {defaults.event.id && (
+        <MediaLibraryModal
+          eventId={defaults.event.id}
+          open={mediaLibraryOpen}
+          onClose={() => setMediaLibraryOpen(false)}
+        />
+      )}
     </div>
   );
 }
