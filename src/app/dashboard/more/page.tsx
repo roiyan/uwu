@@ -9,7 +9,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
     <path d="M3 20h18M6 20V10M11 20V4M16 20v-7M21 20v-4" />
   ),
   "/dashboard/checkin": <path d="M9 11l3 3 8-8M3 7l9 9 9-9" />,
-  "/dashboard/gifts": (
+  "/dashboard/amplop": (
     <>
       <rect x="3" y="8" width="18" height="13" rx="2" />
       <path d="M3 8l9-5 9 5M12 13v8M3 14h18" />
@@ -126,7 +126,7 @@ export default function MoreMenuPage() {
             type="submit"
             className="d-mono w-full rounded-full px-4 py-3 text-center text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)] transition-colors hover:text-[var(--d-coral)]"
           >
-            Logout
+            Keluar
           </button>
         </form>
       </div>
