@@ -108,6 +108,18 @@ export const themeConfigSchema = z.object({
     .partial()
     .optional(),
   palette6: palette6Schema.optional(),
+  // Heading + body font pair persisted in `eventThemeConfigs.config.fonts`.
+  // Values are validated against the curated catalog at the action
+  // layer (see `isAllowedHeadingFont` / `isAllowedBodyFont` in
+  // `@/lib/theme/fonts`) so we keep this Zod schema permissive — the
+  // strict allow-list lives next to the catalog itself.
+  fonts: z
+    .object({
+      heading: z.string().min(2).max(60).optional(),
+      body: z.string().min(2).max(60).optional(),
+    })
+    .partial()
+    .optional(),
 });
 
 export type Palette6Input = z.infer<typeof palette6Schema>;

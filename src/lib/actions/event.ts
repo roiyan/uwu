@@ -17,6 +17,10 @@ import {
   schedulesSchema,
   themeConfigSchema,
 } from "@/lib/schemas/event";
+import {
+  isAllowedBodyFont,
+  isAllowedHeadingFont,
+} from "@/lib/theme/fonts";
 import { logActivity } from "./activity";
 
 function emptyToNull(v: FormDataEntryValue | null) {
@@ -217,6 +221,18 @@ export async function updateThemeConfigAction(
     brandLight: emptyToNull(formData.get("palette6_brandLight")) ?? undefined,
     brandDark: emptyToNull(formData.get("palette6_brandDark")) ?? undefined,
   };
+
+  // Font submission. Each slot is gated by its category-specific
+  // allow-list — heading accepts Serif/Script, body accepts
+  // Serif/Sans. Anything else is silently dropped here so a crafted
+  // form post can't smuggle an arbitrary `font-family` through.
+  const headingRaw = emptyToNull(formData.get("fonts_heading")) ?? undefined;
+  const bodyRaw = emptyToNull(formData.get("fonts_body")) ?? undefined;
+  const fontsInput = {
+    heading: isAllowedHeadingFont(headingRaw) ? headingRaw : undefined,
+    body: isAllowedBodyFont(bodyRaw) ? bodyRaw : undefined,
+  };
+
   const parsed = themeConfigSchema.safeParse({
     themeId: formData.get("themeId"),
     // Legacy 3-color (still accepted from older callers, otherwise
@@ -227,6 +243,7 @@ export async function updateThemeConfigAction(
       accent: emptyToNull(formData.get("palette_accent")) ?? undefined,
     },
     palette6: palette6Input,
+    fonts: fontsInput,
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Input tidak valid" };
@@ -242,23 +259,43 @@ export async function updateThemeConfigAction(
     accent: legacy.accent ?? p6.brandLight,
   };
 
-  const config = {
+  // Patch we want to apply this round. Sibling keys we don't touch
+  // (e.g. a future sectionOrder field added by Feature 3) need to be
+  // preserved so each editor panel can save independently without
+  // wiping its peers — see the read-modify-write below.
+  const patch = {
     palette: mergedLegacy,
     palette6: parsed.data.palette6 ?? {},
+    fonts: parsed.data.fonts ?? {},
   };
 
   const result = await withAuth(eventId, "editor", async () => {
+    const [existing] = await db
+      .select({ config: eventThemeConfigs.config })
+      .from(eventThemeConfigs)
+      .where(
+        and(
+          eq(eventThemeConfigs.eventId, eventId),
+          eq(eventThemeConfigs.themeId, parsed.data.themeId),
+        ),
+      )
+      .limit(1);
+    const merged = {
+      ...((existing?.config as Record<string, unknown>) ?? {}),
+      ...patch,
+    };
+
     await db
       .insert(eventThemeConfigs)
       .values({
         eventId,
         themeId: parsed.data.themeId,
-        config,
+        config: merged,
       })
       .onConflictDoUpdate({
         target: [eventThemeConfigs.eventId, eventThemeConfigs.themeId],
         set: {
-          config,
+          config: merged,
           updatedAt: new Date(),
         },
       });
@@ -269,7 +306,7 @@ export async function updateThemeConfigAction(
     await logActivity({
       eventId,
       action: "update_theme",
-      summary: "Memperbarui warna tema",
+      summary: "Memperbarui tampilan tema",
     });
   }
   return result;

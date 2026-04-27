@@ -17,13 +17,14 @@ export default async function ThemeEditorPage() {
 
   const themes = await listThemes();
 
-  // Read both the legacy 3-color override (kept for older callers) and
-  // the new 6-color override. The editor only consumes the 6-color one;
-  // the action layer derives the legacy palette on save.
+  // Read the persisted overrides off the event's themeConfig blob.
+  // Each editor panel consumes only its own slice — the action layer
+  // merges siblings on save so each panel can write independently.
   const themeConfig = bundle.themeConfig?.config as
     | {
         palette?: Record<string, string>;
         palette6?: Record<string, string>;
+        fonts?: { heading?: string; body?: string };
       }
     | null
     | undefined;
@@ -31,6 +32,10 @@ export default async function ThemeEditorPage() {
     string,
     string
   >;
+  const fontsOverride = (themeConfig?.fonts ?? {}) as {
+    heading?: string;
+    body?: string;
+  };
 
   return (
     <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
@@ -69,6 +74,7 @@ export default async function ThemeEditorPage() {
         eventId={bundle.event.id}
         selectedId={bundle.event.themeId}
         paletteOverride6={paletteOverride6}
+        fontsOverride={fontsOverride}
         themes={themes.map((t) => ({
           id: t.id,
           slug: t.slug,

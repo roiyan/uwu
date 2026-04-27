@@ -10,6 +10,13 @@ import {
   mergePalette6,
   type Palette6,
 } from "@/lib/theme/palette";
+import {
+  DEFAULT_FONTS,
+  FONT_OPTIONS,
+  googleFontsCatalogHref,
+  type FontOption,
+  type ThemeFonts,
+} from "@/lib/theme/fonts";
 
 type ThemeOption = {
   id: string;
@@ -73,6 +80,7 @@ export function ThemeEditor({
   themes,
   selectedId,
   paletteOverride6,
+  fontsOverride,
 }: {
   eventId: string;
   themes: ThemeOption[];
@@ -80,6 +88,9 @@ export function ThemeEditor({
   // The persisted 6-slot override read from `eventThemeConfigs.config.palette6`.
   // Empty object on first render — fields fall back to the theme default.
   paletteOverride6: Partial<Palette6>;
+  // Persisted heading + body font pair. Empty when the couple hasn't
+  // picked one yet; the picker falls back to the catalog default.
+  fontsOverride: Partial<ThemeFonts>;
 }) {
   const boundSelect = selectThemeAction.bind(null, eventId);
   const boundPalette = updateThemeConfigAction.bind(null, eventId);
@@ -107,6 +118,10 @@ export function ThemeEditor({
   );
 
   const [palette, setPalette] = useState<Palette6>(initial);
+  const [fonts, setFonts] = useState<ThemeFonts>({
+    heading: fontsOverride.heading ?? DEFAULT_FONTS.heading,
+    body: fontsOverride.body ?? DEFAULT_FONTS.body,
+  });
 
   function updateSlot(key: keyof Palette6, value: string) {
     setPalette((cur) => ({ ...cur, [key]: value }));
@@ -114,6 +129,10 @@ export function ThemeEditor({
 
   function resetToThemeDefault() {
     setPalette(themeDefault);
+  }
+
+  function resetFontsToDefault() {
+    setFonts(DEFAULT_FONTS);
   }
 
   return (
@@ -226,6 +245,11 @@ export function ThemeEditor({
                 value={palette[f.key]}
               />
             ))}
+            {/* Same form persists fonts alongside palette so one Save
+                button writes both — the action layer merges them into
+                a single eventThemeConfigs.config payload. */}
+            <input type="hidden" name="fonts_heading" value={fonts.heading} />
+            <input type="hidden" name="fonts_body" value={fonts.body} />
 
             <div className="space-y-3">
               <div className="grid gap-3 md:grid-cols-2">
@@ -270,10 +294,25 @@ export function ThemeEditor({
               </div>
             </div>
 
-            {/* Live mini-preview rendered with the in-flight palette so
-                the couple sees changes before saving. */}
-            <PreviewCard palette={palette} />
+            {/* Live mini-preview rendered with the in-flight palette
+                AND fonts so the couple sees both changes before
+                saving. */}
+            <PreviewCard palette={palette} fonts={fonts} />
           </form>
+
+          {/* Editor-only stylesheet. Loads every catalog font at 400
+              weight so each <option> previews in its real face. The
+              public invitation only loads the chosen pair. */}
+          <link rel="stylesheet" href={googleFontsCatalogHref()} />
+
+          {/* Font picker — sits inside the same <section> so the Save
+              button above persists both palette and fonts in one
+              round-trip via the shared form (hidden inputs above). */}
+          <FontPickerBlock
+            fonts={fonts}
+            onChange={setFonts}
+            onReset={resetFontsToDefault}
+          />
         </section>
       )}
     </div>
@@ -333,7 +372,13 @@ function ColorSlotCard({
   );
 }
 
-function PreviewCard({ palette }: { palette: Palette6 }) {
+function PreviewCard({
+  palette,
+  fonts,
+}: {
+  palette: Palette6;
+  fonts: ThemeFonts;
+}) {
   return (
     <div
       className="flex h-64 flex-col items-center justify-center rounded-2xl p-6 text-center"
@@ -346,18 +391,30 @@ function PreviewCard({ palette }: { palette: Palette6 }) {
         ♡
       </div>
       <p
-        className="mt-3 font-display text-lg"
-        style={{ color: palette.headingText }}
+        className="mt-3 text-lg"
+        style={{
+          color: palette.headingText,
+          fontFamily: `"${fonts.heading}", serif`,
+        }}
       >
         The Wedding of
       </p>
       <p
-        className="font-display text-xl"
-        style={{ color: palette.brandPrimary }}
+        className="text-xl"
+        style={{
+          color: palette.brandPrimary,
+          fontFamily: `"${fonts.heading}", serif`,
+        }}
       >
         Anisa &amp; Rizky
       </p>
-      <p className="mt-2 text-[12px]" style={{ color: palette.bodyText }}>
+      <p
+        className="mt-2 text-[12px]"
+        style={{
+          color: palette.bodyText,
+          fontFamily: `"${fonts.body}", sans-serif`,
+        }}
+      >
         Kepada Yth. Bpk/Ibu/Saudara/i
       </p>
       <span
@@ -366,6 +423,156 @@ function PreviewCard({ palette }: { palette: Palette6 }) {
       >
         Pratinjau Warna
       </span>
+    </div>
+  );
+}
+
+/**
+ * Heading + body font picker block. Each dropdown is filtered by
+ * category so a Script font can't accidentally land on body copy and
+ * a Sans font can't replace the couple-name display:
+ *   • heading: Serif + Script
+ *   • body:    Serif + Sans
+ *
+ * The dropdown options try-on each font via inline `font-family` so
+ * the operator gets a typographic preview before they pick. The full
+ * preview boxes underneath each select render in the actual chosen
+ * pair so the couple-name + body sample always stays representative.
+ */
+function FontPickerBlock({
+  fonts,
+  onChange,
+  onReset,
+}: {
+  fonts: ThemeFonts;
+  onChange: (next: ThemeFonts) => void;
+  onReset: () => void;
+}) {
+  const headingChoices = useMemo(
+    () => [...FONT_OPTIONS.Serif, ...FONT_OPTIONS.Script],
+    [],
+  );
+  const bodyChoices = useMemo(
+    () => [...FONT_OPTIONS.Serif, ...FONT_OPTIONS.Sans],
+    [],
+  );
+
+  return (
+    <div
+      className="mt-7 rounded-2xl p-5 md:p-6"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid var(--d-line)",
+      }}
+    >
+      <p
+        className="text-[10px] uppercase"
+        style={{
+          fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+          letterSpacing: "0.26em",
+          color: "var(--d-coral)",
+        }}
+      >
+        Tipografi
+      </p>
+      <h3
+        className="d-serif mt-2 text-[20px] font-extralight"
+        style={{ color: "var(--d-ink)" }}
+      >
+        Pilih{" "}
+        <em className="d-serif italic" style={{ color: "var(--d-coral)" }}>
+          karakter
+        </em>{" "}
+        tulisan.
+      </h3>
+      <p
+        className="d-serif mt-1 text-[12.5px] italic"
+        style={{ color: "var(--d-ink-dim)" }}
+      >
+        Font judul untuk nama mempelai, font isi untuk detail dan
+        keterangan.
+      </p>
+
+      <div className="mt-4 grid gap-5 md:grid-cols-2">
+        <FontFieldset
+          label="Font Judul"
+          value={fonts.heading}
+          options={headingChoices}
+          previewSize={26}
+          previewSample="Vivi & Roiyan"
+          onChange={(v) => onChange({ ...fonts, heading: v })}
+        />
+        <FontFieldset
+          label="Font Isi"
+          value={fonts.body}
+          options={bodyChoices}
+          previewSize={13}
+          previewSample="Kami mengundang Bapak/Ibu/Saudara/i untuk hadir di hari bahagia kami."
+          onChange={(v) => onChange({ ...fonts, body: v })}
+        />
+      </div>
+
+      <div className="mt-4 flex justify-end">
+        <button
+          type="button"
+          onClick={onReset}
+          className="d-mono text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)] underline-offset-4 transition-colors hover:text-[var(--d-coral)] hover:underline"
+        >
+          ↺ Kembalikan ke font default
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FontFieldset({
+  label,
+  value,
+  options,
+  previewSize,
+  previewSample,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: FontOption[];
+  previewSize: number;
+  previewSample: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <label className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+        {label}
+      </label>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-2 w-full rounded-[10px] border bg-[var(--d-bg-2)] px-3 py-2.5 text-[14px] outline-none focus:border-[var(--d-coral)]"
+        style={{
+          color: "var(--d-ink)",
+          borderColor: "var(--d-line-strong)",
+          fontFamily: `"${value}", serif`,
+        }}
+      >
+        {options.map((f) => (
+          <option key={f.value} value={f.value} style={{ fontFamily: f.value }}>
+            {f.label}
+          </option>
+        ))}
+      </select>
+      <div
+        className="mt-2 rounded-[10px] p-3 text-center"
+        style={{
+          background: "rgba(255,255,255,0.025)",
+          color: "var(--d-ink)",
+          fontFamily: `"${value}", serif`,
+          fontSize: previewSize,
+          lineHeight: 1.5,
+        }}
+      >
+        {previewSample}
+      </div>
     </div>
   );
 }

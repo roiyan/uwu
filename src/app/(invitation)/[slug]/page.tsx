@@ -3,6 +3,11 @@ import type { Metadata } from "next";
 import { getPublishedEventBySlug } from "@/lib/db/queries/events";
 import { listPublicGiftAccountsAction } from "@/lib/actions/gift";
 import { listPublicGalleryImages } from "@/lib/actions/gallery";
+import {
+  googleFontsHref,
+  resolveFonts,
+  type ThemeFonts,
+} from "@/lib/theme/fonts";
 import { InvitationClient } from "./client";
 
 // Static shell revalidates every 5 min; guest personalisation is fetched per
@@ -62,6 +67,14 @@ export default async function InvitationPage({
     bundle.theme?.config ?? null,
     bundle.themeConfig?.config ?? null,
   );
+  // Resolve heading + body font pair from theme defaults + per-event
+  // override. Falls back silently to DEFAULT_FONTS for any unknown
+  // value, so a stale override that referenced a since-removed font
+  // never breaks the public invitation.
+  const fonts: ThemeFonts = resolveFonts(
+    bundle.theme?.config ?? null,
+    bundle.themeConfig?.config ?? null,
+  );
   const [giftAccounts, galleryImages] = await Promise.all([
     listPublicGiftAccountsAction(bundle.event.id),
     listPublicGalleryImages(bundle.event.id),
@@ -70,48 +83,69 @@ export default async function InvitationPage({
   // NB: we deliberately do not read searchParams here so the page stays
   // static. Guest personalization is resolved on the client via a lightweight
   // server action that looks up by token.
+  // Wrap the existing invitation tree in a scope that overrides the
+  // heading + body fonts via two surgical CSS rules. Using a wrapper
+  // class instead of patching every component keeps this PR minimal:
+  // any element rendered with `font-display` (Tailwind heading utility)
+  // automatically picks up the chosen heading font, while the wrapper's
+  // own `font-family` defaults the body copy. `!important` is required
+  // to win against the existing utility class — otherwise Tailwind's
+  // own font-family declaration wins.
   return (
-    <InvitationClient
-      giftAccounts={giftAccounts}
-      galleryImages={galleryImages}
-      event={{
-        id: bundle.event.id,
-        title: bundle.event.title,
-        slug: bundle.event.slug,
-        musicUrl: bundle.event.musicUrl,
-        checkinEnabled: bundle.event.checkinEnabled,
-      }}
-      palette={palette}
-      couple={
-        bundle.couple
-          ? {
-              brideName: bundle.couple.brideName,
-              brideNickname: bundle.couple.brideNickname,
-              bridePhotoUrl: bundle.couple.bridePhotoUrl,
-              brideFatherName: bundle.couple.brideFatherName,
-              brideMotherName: bundle.couple.brideMotherName,
-              groomName: bundle.couple.groomName,
-              groomNickname: bundle.couple.groomNickname,
-              groomPhotoUrl: bundle.couple.groomPhotoUrl,
-              groomFatherName: bundle.couple.groomFatherName,
-              groomMotherName: bundle.couple.groomMotherName,
-              coverPhotoUrl: bundle.couple.coverPhotoUrl,
-              story: bundle.couple.story,
-              quote: bundle.couple.quote,
-            }
-          : null
-      }
-      schedules={bundle.schedules.map((s) => ({
-        label: s.label,
-        eventDate: s.eventDate,
-        startTime: s.startTime,
-        endTime: s.endTime,
-        timezone: s.timezone,
-        venueName: s.venueName,
-        venueAddress: s.venueAddress,
-        venueMapUrl: s.venueMapUrl,
-      }))}
-    />
+    <>
+      <link rel="stylesheet" href={googleFontsHref(fonts)} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+.uwu-invitation-fonts { font-family: "${fonts.body}", "Plus Jakarta Sans", sans-serif !important; }
+.uwu-invitation-fonts .font-display { font-family: "${fonts.heading}", "Playfair Display", serif !important; }
+`,
+        }}
+      />
+      <div className="uwu-invitation-fonts">
+        <InvitationClient
+          giftAccounts={giftAccounts}
+          galleryImages={galleryImages}
+          event={{
+            id: bundle.event.id,
+            title: bundle.event.title,
+            slug: bundle.event.slug,
+            musicUrl: bundle.event.musicUrl,
+            checkinEnabled: bundle.event.checkinEnabled,
+          }}
+          palette={palette}
+          couple={
+            bundle.couple
+              ? {
+                  brideName: bundle.couple.brideName,
+                  brideNickname: bundle.couple.brideNickname,
+                  bridePhotoUrl: bundle.couple.bridePhotoUrl,
+                  brideFatherName: bundle.couple.brideFatherName,
+                  brideMotherName: bundle.couple.brideMotherName,
+                  groomName: bundle.couple.groomName,
+                  groomNickname: bundle.couple.groomNickname,
+                  groomPhotoUrl: bundle.couple.groomPhotoUrl,
+                  groomFatherName: bundle.couple.groomFatherName,
+                  groomMotherName: bundle.couple.groomMotherName,
+                  coverPhotoUrl: bundle.couple.coverPhotoUrl,
+                  story: bundle.couple.story,
+                  quote: bundle.couple.quote,
+                }
+              : null
+          }
+          schedules={bundle.schedules.map((s) => ({
+            label: s.label,
+            eventDate: s.eventDate,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            timezone: s.timezone,
+            venueName: s.venueName,
+            venueAddress: s.venueAddress,
+            venueMapUrl: s.venueMapUrl,
+          }))}
+        />
+      </div>
+    </>
   );
 }
 
