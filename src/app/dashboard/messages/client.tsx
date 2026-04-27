@@ -16,6 +16,7 @@ import {
 } from "@/lib/actions/broadcast";
 import dynamic from "next/dynamic";
 import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
+import { buildInvitationUrl } from "@/lib/utils/invitation-url";
 import { TemplateChipEditor } from "./template-chip-editor";
 import { WaFallbackSender } from "./wa-fallback-sender";
 import { useToast } from "@/components/shared/Toast";
@@ -306,9 +307,6 @@ export function MessagesClient({
 
   const previewGuest = filteredRecipients[previewIndex] ?? null;
 
-  const appBase =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://uwu-beta.vercel.app";
-
   const previewBody = previewGuest
     ? renderTemplate(body, {
         name: previewGuest.name,
@@ -317,7 +315,10 @@ export function MessagesClient({
         groom: eventContext.groom,
         date: eventContext.date,
         venue: eventContext.venue,
-        link: `${appBase}/${eventContext.slug}?to=${previewGuest.token}`,
+        link: buildInvitationUrl(
+          eventContext.slug,
+          `?to=${previewGuest.token}`,
+        ),
       })
     : "";
 

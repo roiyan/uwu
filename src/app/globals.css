@@ -379,3 +379,18 @@ h1, h2, h3, h4, h5, h6 {
   80%      { transform: translateX(4px); }
 }
 .animate-shake { animation: shake 0.4s ease-in-out; }
+
+/* Soft, rhythmic pulse used by the unpublished-status indicators
+   (sidebar dot + Beranda banner dot). Tailwind's built-in
+   animate-pulse only fades opacity, which doesn't read as
+   "attention" the same way a scale-down does. */
+@keyframes uwu-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(0.82); }
+}
+.uwu-pulse {
+  animation: uwu-pulse 2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .uwu-pulse { animation: none; }
+}

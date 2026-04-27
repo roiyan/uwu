@@ -16,6 +16,10 @@ type SidebarProps = {
   previewHref?: string;
   /** Live guest count, rendered as the Tamu badge. Hidden when null. */
   tamuCount?: number | null;
+  /** Drives the publish status dot above the preview button. `null`
+   *  hides the row entirely (used by mobile drawer where the
+   *  Beranda banner already covers it). */
+  isPublished?: boolean | null;
   /** Adds the responsive `lg:flex` toggle. When rendered as a mobile
    *  drawer (via SidebarMobileDrawer below), pass false. */
   responsive?: boolean;
@@ -163,6 +167,7 @@ export function Sidebar({
   packageLabel,
   previewHref,
   tamuCount,
+  isPublished,
   responsive = true,
   onCloseMobile,
 }: SidebarProps) {
@@ -451,6 +456,12 @@ export function Sidebar({
             isCollapsed ? "px-2 py-4" : "px-5 py-5"
           }`}
         >
+          {isPublished !== null && isPublished !== undefined && (
+            <PublishStatusRow
+              isPublished={isPublished}
+              collapsed={isCollapsed}
+            />
+          )}
           <Link
             href={previewHref ?? "#"}
             target={previewHref ? "_blank" : undefined}
@@ -485,6 +496,63 @@ export function Sidebar({
         </div>
       </div>
     </aside>
+  );
+}
+
+// Publish status row sitting in the sidebar footer. Always-on shortcut
+// to the Acara → Publikasi section so couples discover the publish
+// toggle without hunting through Pengaturan. Pulses red-coral when
+// unpublished so it reads as "needs attention" in peripheral vision.
+function PublishStatusRow({
+  isPublished,
+  collapsed,
+}: {
+  isPublished: boolean;
+  collapsed: boolean;
+}) {
+  const dotColor = isPublished ? "var(--d-green)" : "var(--d-coral)";
+  const glow = isPublished
+    ? "0 0 6px rgba(126,211,164,0.55)"
+    : "0 0 8px rgba(240,160,156,0.6)";
+  const label = isPublished ? "Sudah tayang" : "Belum tayang";
+  const href = "/dashboard/settings?tab=acara#publikasi";
+  const dot = (
+    <span
+      aria-hidden
+      className={isPublished ? undefined : "uwu-pulse"}
+      style={{
+        display: "inline-block",
+        width: collapsed ? 8 : 6,
+        height: collapsed ? 8 : 6,
+        borderRadius: "50%",
+        background: dotColor,
+        boxShadow: glow,
+        flexShrink: 0,
+      }}
+    />
+  );
+
+  if (collapsed) {
+    return (
+      <Link
+        href={href}
+        title={isPublished ? label : `${label} — klik untuk tayangkan`}
+        className="flex w-full items-center justify-center py-1.5"
+      >
+        {dot}
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      className="d-mono flex items-center gap-2 rounded-[8px] px-1 py-1 text-[10px] uppercase tracking-[0.22em] transition-colors hover:bg-[var(--d-bg-2)]"
+      style={{ color: dotColor, opacity: 0.85 }}
+    >
+      {dot}
+      {label}
+    </Link>
   );
 }
 
