@@ -590,38 +590,40 @@ export function GuestsClient({
             )}
           </p>
         </div>
-        <div className="flex flex-shrink-0 flex-wrap gap-2.5">
-          <HeaderBtn
-            onClick={handleTemplateDownload}
-            disabled={templatePending}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M12 11v6M9 14l3 3 3-3M5 21h14a2 2 0 002-2V8l-6-6H5a2 2 0 00-2 2v15a2 2 0 002 2zM14 2v6h6" />
-            </svg>
-            {templatePending ? "Menyiapkan…" : "Template"}
-          </HeaderBtn>
-          <HeaderBtn
-            onClick={() => fileInputRef.current?.click()}
-            disabled={parsing || atLimit}
-          >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
-            </svg>
-            {parsing ? "Membaca…" : "Import Excel"}
-          </HeaderBtn>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            hidden
-            onChange={handleFilePicked}
-          />
-          <HeaderBtn onClick={() => setGroupsOpen(true)}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-            </svg>
-            Kelola Grup
-          </HeaderBtn>
+        <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-shrink-0 sm:flex-row sm:flex-wrap">
+          <div className="flex flex-wrap gap-2.5">
+            <HeaderBtn
+              onClick={handleTemplateDownload}
+              disabled={templatePending}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M12 11v6M9 14l3 3 3-3M5 21h14a2 2 0 002-2V8l-6-6H5a2 2 0 00-2 2v15a2 2 0 002 2zM14 2v6h6" />
+              </svg>
+              {templatePending ? "Menyiapkan…" : "Template"}
+            </HeaderBtn>
+            <HeaderBtn
+              onClick={() => fileInputRef.current?.click()}
+              disabled={parsing || atLimit}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+              {parsing ? "Membaca…" : "Import Excel"}
+            </HeaderBtn>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".xlsx,.xls"
+              hidden
+              onChange={handleFilePicked}
+            />
+            <HeaderBtn onClick={() => setGroupsOpen(true)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
+              </svg>
+              Kelola Grup
+            </HeaderBtn>
+          </div>
           <button
             type="button"
             onClick={() => {
@@ -629,7 +631,7 @@ export function GuestsClient({
               setAddOpen(true);
             }}
             disabled={atLimit}
-            className="inline-flex items-center gap-2 rounded-full px-[18px] py-[11px] text-[13px] font-medium text-[#0B0B15] transition-transform hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(240,160,156,0.24)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-[18px] py-[11px] text-[13px] font-medium text-[#0B0B15] transition-transform hover:-translate-y-px hover:shadow-[0_10px_30px_rgba(240,160,156,0.24)] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none sm:w-auto"
             style={{
               background:
                 "linear-gradient(115deg, var(--d-blue), var(--d-lilac) 50%, var(--d-coral))",

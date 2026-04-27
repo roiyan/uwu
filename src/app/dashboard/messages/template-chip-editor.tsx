@@ -392,7 +392,11 @@ export function TemplateChipEditor({
 
   return (
     <div className="rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)]">
-      <div className="flex flex-wrap items-center gap-2 border-b border-[var(--d-line)] bg-[var(--d-bg-2)]/40 px-3 py-2.5">
+      {/* Toolbar sticks below the mobile dashboard header (~56px) so
+          chips remain reachable even with the on-screen keyboard
+          eating most of the viewport. Solid background (no /40 alpha)
+          so chips stay legible when overlapping editor body. */}
+      <div className="sticky top-[56px] z-20 flex flex-wrap items-center gap-2 rounded-t-lg border-b border-[var(--d-line)] bg-[var(--d-bg-card)] px-3 py-2.5 lg:top-0">
         <span className="d-mono mr-1 text-[9px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
           Sisipkan:
         </span>

@@ -45,7 +45,7 @@ export function BreakdownCards({
   enthusiasts: EnthusiastRow[];
 }) {
   return (
-    <section className="grid gap-4 lg:grid-cols-3">
+    <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <EnthusiastCard rows={enthusiasts} />
       <SourceCard source={source} totalGuests={totalGuests} />
       <GroupCard groups={groups} />
