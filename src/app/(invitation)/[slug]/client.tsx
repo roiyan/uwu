@@ -13,6 +13,7 @@ import {
   formatDate,
   formatTimeRange,
 } from "@/components/invitation/formatting";
+import { Countdown } from "@/components/invitation/countdown";
 import { GuestQrCode } from "@/components/invitation/guest-qr-code";
 import {
   QrTicketModal,
@@ -242,6 +243,16 @@ function InvitationInner({
                 eventTitle={event.title}
               />
             );
+          case "countdown":
+            return schedules[0]?.eventDate ? (
+              <Countdown
+                key={id}
+                eventDate={schedules[0].eventDate}
+                startTime={schedules[0].startTime}
+                timezone={schedules[0].timezone}
+                palette={palette}
+              />
+            ) : null;
           case "galeri":
             return galleryImages && galleryImages.length > 0 ? (
               <GallerySection

@@ -5,6 +5,7 @@ import {
   DEFAULT_SECTION_ORDER,
   type SectionId,
 } from "@/lib/theme/sections";
+import { Countdown } from "./countdown";
 import { formatDate, formatTimeRange } from "./formatting";
 import { ALL_SECTIONS_ON } from "./types";
 import type {
@@ -99,6 +100,17 @@ export function Preview({
               <SchedulesSection
                 key={id}
                 schedules={schedules}
+                palette={palette}
+                staticMode={staticMode}
+              />
+            ) : null;
+          case "countdown":
+            return sections.countdown ? (
+              <Countdown
+                key={id}
+                eventDate={schedules[0]?.eventDate}
+                startTime={schedules[0]?.startTime}
+                timezone={schedules[0]?.timezone}
                 palette={palette}
                 staticMode={staticMode}
               />
