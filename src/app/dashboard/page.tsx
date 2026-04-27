@@ -62,6 +62,13 @@ export default async function DashboardBerandaPage() {
   const user = await requireSessionUserFast();
   return (
     <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
+      {/* Unpublished banner — streams in alongside the header. Self-
+          gates to render nothing when isPublished, so on the happy
+          path it only briefly contributes a 0-height fallback. */}
+      <Suspense fallback={null}>
+        <UnpublishedBanner userId={user.id} />
+      </Suspense>
+
       <Suspense fallback={<HeaderSkeleton />}>
         <Header userId={user.id} />
       </Suspense>
@@ -116,6 +123,51 @@ export default async function DashboardBerandaPage() {
         <CountdownBand userId={user.id} />
       </Suspense>
     </main>
+  );
+}
+
+async function UnpublishedBanner({ userId }: { userId: string }) {
+  const current = await getCurrentEventForUser(userId);
+  if (!current) return null;
+  const bundle = await getEventBundle(current.event.id);
+  if (!bundle || bundle.event.isPublished) return null;
+  return (
+    <Link
+      href="/dashboard/settings?tab=acara#publikasi"
+      className="mb-5 flex items-center justify-between gap-3 rounded-[14px] border px-5 py-3.5 transition-colors hover:bg-[var(--d-bg-2)] lg:mb-8"
+      style={{
+        background:
+          "linear-gradient(115deg, rgba(240,160,156,0.08), rgba(244,184,163,0.08))",
+        borderColor: "rgba(240,160,156,0.22)",
+      }}
+    >
+      <div className="flex min-w-0 items-center gap-3">
+        <span
+          aria-hidden
+          className="uwu-pulse"
+          style={{
+            display: "inline-block",
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: "var(--d-coral)",
+            boxShadow: "0 0 8px rgba(240,160,156,0.6)",
+            flexShrink: 0,
+          }}
+        />
+        <div className="min-w-0">
+          <p className="d-serif text-[14px] leading-tight text-[var(--d-ink)]">
+            Undangan belum tayang
+          </p>
+          <p className="d-serif mt-0.5 truncate text-[12px] italic text-[var(--d-ink-dim)]">
+            Tamu yang menerima link belum bisa membuka undangan.
+          </p>
+        </div>
+      </div>
+      <span className="d-mono inline-flex shrink-0 items-center gap-1 rounded-full bg-[var(--d-coral)] px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#0B0B15]">
+        Tayangkan →
+      </span>
+    </Link>
   );
 }
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
+import { buildInvitationUrl } from "@/lib/utils/invitation-url";
 
 type Palette = { primary: string; secondary: string; accent: string };
 
@@ -20,12 +21,13 @@ export function GuestQrCode({
   palette: Palette;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  // Build the absolute URL after hydration only — `window` is not
-  // available during SSR, and the QR code is meaningless without the
-  // origin in front of the path.
+  // Resolve the guest-facing URL after hydration. We delegate to
+  // buildInvitationUrl() so the encoded link respects subdomain
+  // mode in production (`<slug>.uwu.id?to=…`) while still falling
+  // back to `<app>/<slug>?to=…` for staging/local.
   const [invitationUrl, setInvitationUrl] = useState<string | null>(null);
   useEffect(() => {
-    setInvitationUrl(`${window.location.origin}/${slug}?to=${token}`);
+    setInvitationUrl(buildInvitationUrl(slug, `?to=${token}`));
   }, [slug, token]);
 
   if (!invitationUrl) return null;

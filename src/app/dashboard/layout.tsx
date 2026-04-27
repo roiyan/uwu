@@ -97,17 +97,24 @@ async function resolveSidebarData() {
   // sidebar without a badge instead of breaking the layout.
   const tamuCount = await countLiveGuests(bundle.event.id).catch(() => null);
 
-  return { coupleLabel, themeLabel, tamuCount };
+  return {
+    coupleLabel,
+    themeLabel,
+    tamuCount,
+    isPublished: bundle.event.isPublished,
+  };
 }
 
 async function SidebarHost() {
-  const { coupleLabel, themeLabel, tamuCount } = await resolveSidebarData();
+  const { coupleLabel, themeLabel, tamuCount, isPublished } =
+    await resolveSidebarData();
   return (
     <Sidebar
       coupleLabel={coupleLabel}
       themeLabel={themeLabel}
       previewHref="/preview"
       tamuCount={tamuCount}
+      isPublished={isPublished}
     />
   );
 }

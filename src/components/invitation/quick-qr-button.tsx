@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
+import { buildInvitationUrl } from "@/lib/utils/invitation-url";
 
 type Palette = { primary: string; secondary: string; accent: string };
 
@@ -60,7 +61,7 @@ export function QuickQrButton({
   const [qrValue, setQrValue] = useState<string | null>(null);
 
   useEffect(() => {
-    setQrValue(`${window.location.origin}/${slug}?to=${token}`);
+    setQrValue(buildInvitationUrl(slug, `?to=${token}`));
   }, [slug, token]);
 
   // Wake Lock — keep the screen lit while the modal is open so the

@@ -17,6 +17,7 @@ import { broadcastInputSchema } from "@/lib/schemas/broadcast";
 import { renderTemplate } from "@/lib/templates/messages";
 import { sendWhatsAppText } from "@/lib/providers/whatsapp";
 import { sendEmail } from "@/lib/providers/email";
+import { buildInvitationUrl } from "@/lib/utils/invitation-url";
 import { logActivity } from "./activity";
 
 const WA_RATE_LIMIT_MS = 1500;
@@ -81,9 +82,6 @@ function formatDate(iso: string) {
   });
 }
 
-function appUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-}
 
 export async function createBroadcastAction(
   eventId: string,
@@ -186,7 +184,7 @@ export async function createBroadcastAction(
           groom: ctx.couple!.groomName,
           date: dateStr,
           venue: venueStr,
-          link: `${appUrl()}/${ctx.event.slug}?to=${g.token}`,
+          link: buildInvitationUrl(ctx.event.slug, `?to=${g.token}`),
         }),
         status: "pending" as const,
       })),

@@ -392,7 +392,7 @@ function AcaraTab({
         </div>
       </form>
 
-      <section className="d-card p-7 md:p-9">
+      <section id="publikasi" className="d-card scroll-mt-24 p-7 md:p-9">
         <header>
           <h2 className="d-serif text-[24px] font-extralight text-[var(--d-ink)]">
             Publikasi
