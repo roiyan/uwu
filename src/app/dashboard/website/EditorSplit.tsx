@@ -120,6 +120,7 @@ type SectionId =
   | "kutipan"
   | "cerita"
   | "acara"
+  | "countdown"
   | "galeri"
   | "rsvp"
   | "amplop";
@@ -162,22 +163,29 @@ const SECTIONS: SectionDef[] = [
     flag: "schedules",
   },
   {
-    id: "galeri",
+    id: "countdown",
     number: "06",
+    title: "Hitung Mundur",
+    description: "Live countdown ke hari H",
+    flag: "countdown",
+  },
+  {
+    id: "galeri",
+    number: "07",
     title: "Galeri",
     description: "Foto pre-wedding",
     flag: "gallery",
   },
   {
     id: "rsvp",
-    number: "07",
+    number: "08",
     title: "RSVP & Ucapan",
     description: "Form konfirmasi tamu",
     flag: "rsvp",
   },
   {
     id: "amplop",
-    number: "08",
+    number: "09",
     title: "Tanda Kasih",
     description: "Rekening + konfirmasi tamu",
     flag: "gifts",
@@ -436,17 +444,57 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
   // Mobile drag-and-drop for the section pills. iOS Safari ignores
   // HTML5 DnD on touch, so we feed the same draggingId / dragOverId
   // state from raw touch events and look up the target pill via
-  // document.elementFromPoint(). The synthetic click that fires
-  // after a touch drag gets suppressed (suppressNextClickRef) so a
-  // drop doesn't also flip the active section.
+  // document.elementFromPoint().
+  //
+  // Drag mode is gated on a 500 ms long-press: until the timer fires
+  // we leave the gesture alone so the pill strip can scroll
+  // horizontally / page can scroll vertically as normal. After the
+  // timer fires we set `pillDragId`, switch the held pill's
+  // touch-action to "none", and start tracking pointer position.
+  // Without that gate every quick swipe hijacks the scroll into a
+  // failed drag, which felt awful.
+  //
+  // The synthetic click that fires after a touch drag gets
+  // suppressed (suppressNextClickRef) so a drop doesn't also flip
+  // the active section.
   const suppressNextClickRef = useRef(false);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [pillDragId, setPillDragId] = useState<string | null>(null);
+
+  function clearLongPress() {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }
+
   function handlePillTouchStart(id: string) {
-    setDraggingId(id);
-    setDragOverId(null);
     suppressNextClickRef.current = false;
+    clearLongPress();
+    longPressTimerRef.current = setTimeout(() => {
+      setPillDragId(id);
+      setDraggingId(id);
+      setDragOverId(null);
+      // Light haptic so the user feels the drag mode unlock —
+      // matches iOS native long-press affordance.
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        try {
+          navigator.vibrate(40);
+        } catch {
+          /* ignore */
+        }
+      }
+    }, 500);
   }
   function handlePillTouchMove(e: React.TouchEvent<HTMLButtonElement>) {
-    if (!draggingId) return;
+    // Pre-arm: a real move means the user is scrolling, not holding.
+    // Cancel the drag-arm timer and fall through; we DO NOT
+    // preventDefault here so the browser keeps scrolling normally.
+    if (!pillDragId) {
+      clearLongPress();
+      return;
+    }
+    e.preventDefault();
     const t = e.touches[0];
     if (!t) return;
     const el = document.elementFromPoint(
@@ -455,7 +503,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
     ) as HTMLElement | null;
     const pill = el?.closest<HTMLElement>("[data-pill-id]");
     const targetId = pill?.dataset.pillId;
-    if (targetId && targetId !== draggingId) {
+    if (targetId && targetId !== pillDragId) {
       if (dragOverId !== targetId) setDragOverId(targetId);
       // Once the gesture has actually moved to a different pill,
       // treat it as a drag — the upcoming synthetic click should
@@ -464,12 +512,14 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
     }
   }
   function handlePillTouchEnd() {
-    if (draggingId && dragOverId && draggingId !== dragOverId) {
+    clearLongPress();
+    if (pillDragId && dragOverId && pillDragId !== dragOverId) {
       handleSectionDrop(dragOverId);
     } else {
       setDraggingId(null);
       setDragOverId(null);
     }
+    setPillDragId(null);
   }
 
   const enabledCount = SECTIONS.reduce((acc, s) => {
@@ -556,13 +606,14 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                   style={{
                     opacity: isDragging ? 0.5 : 1,
                     transform: isDragging ? "scale(0.95)" : "scale(1)",
-                    // Block the browser's native horizontal-scroll
-                    // gesture *on the pill* so a horizontal swipe
-                    // means "drag this pill", not "scroll the
-                    // strip". The strip can still be scrolled by
-                    // touching the gap between pills (or vertically
-                    // through the page).
-                    touchAction: "none",
+                    // Default `pan-y` lets the browser handle vertical
+                    // page scroll + horizontal pill-strip scroll
+                    // normally. Once the long-press timer fires we
+                    // promote the held pill to `touchAction: 'none'`
+                    // so the upcoming move is treated as a drag, not
+                    // a scroll.
+                    touchAction:
+                      pillDragId === s.id ? "none" : "pan-y",
                     cursor: "grab",
                   }}
                 >
@@ -572,7 +623,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             })}
           </nav>
           <p className="d-mono px-5 pb-2 text-center text-[9px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-            Tahan & geser untuk ubah urutan
+            Tahan 0,5 detik lalu geser untuk ubah urutan
           </p>
         </div>
       </div>
@@ -697,6 +748,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                   remove={removeSchedule}
                 />
               )}
+              {activeSection === "countdown" && <CountdownForm />}
               {activeSection === "rsvp" && <RsvpForm />}
               {activeSection === "galeri" && (
                 <GaleriForm eventId={defaults.event.id ?? ""} />
@@ -805,6 +857,8 @@ function sectionLead(id: SectionId): string {
       return "Bagikan kisah perjalanan kalian — singkat saja, biarkan tamu penasaran.";
     case "acara":
       return "Akad, resepsi, intimate dinner — tambahkan setiap momen.";
+    case "countdown":
+      return "Hitung mundur ke hari H. Otomatis pakai tanggal acara pertama — toggle di sini untuk menampilkan / menyembunyikan.";
     case "rsvp":
       return "Form konfirmasi kehadiran tamu otomatis aktif. Toggle di sini mengatur tampilannya.";
     case "galeri":
@@ -1561,6 +1615,33 @@ function RsvpForm() {
         Tamu →
       </Link>
     </p>
+  );
+}
+
+// ============================================================================
+// Countdown — pure visibility-only, no extra inputs. The ticker reads
+// the first schedule's eventDate / startTime / timezone from the
+// existing Acara form, so toggling this section on/off is the only
+// knob the couple needs.
+// ============================================================================
+
+function CountdownForm() {
+  return (
+    <div className="space-y-4 text-[14px] leading-relaxed text-[var(--d-ink-dim)]">
+      <p>
+        Hitung mundur otomatis pakai{" "}
+        <em className="not-italic text-[var(--d-ink)]">
+          tanggal &amp; jam acara pertama
+        </em>{" "}
+        dari bagian Acara. Toggle di sini mengatur apakah blok “Hitung
+        Mundur” tampil di halaman undangan.
+      </p>
+      <p className="text-[12.5px]">
+        Belum mengisi tanggal? Buka{" "}
+        <span className="text-[var(--d-coral)]">Acara</span> lalu kembali —
+        ticker akan langsung hidup di pratinjau.
+      </p>
+    </div>
   );
 }
 

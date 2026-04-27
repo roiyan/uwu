@@ -45,6 +45,7 @@ export type SectionFlags = {
   couple: boolean;
   story: boolean;
   schedules: boolean;
+  countdown: boolean;
   rsvp: boolean;
   gallery: boolean;
   gifts: boolean;
@@ -55,6 +56,7 @@ export const ALL_SECTIONS_ON: SectionFlags = {
   couple: true,
   story: true,
   schedules: true,
+  countdown: true,
   rsvp: true,
   gallery: true,
   gifts: true,
