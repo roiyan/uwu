@@ -134,7 +134,7 @@ const SECTIONS: SectionDef[] = [
   {
     id: "cerita",
     number: "04",
-    title: "Cerita Kami",
+    title: "Kisah Kami",
     description: "Timeline kisah cinta",
     flag: "story",
     heroAccent: "kalian",
@@ -156,7 +156,7 @@ const SECTIONS: SectionDef[] = [
   {
     id: "rsvp",
     number: "07",
-    title: "RSVP & Wishes",
+    title: "RSVP & Ucapan",
     description: "Form konfirmasi tamu",
     flag: "rsvp",
   },
@@ -270,7 +270,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
     form.set("quote", couple.quote ?? "");
     form.set("schedules", JSON.stringify(schedules));
 
-    toast.success("Tersimpan");
+    toast.success("Perubahan tersimpan");
     startTransition(async () => {
       const res = await saveWebsiteDraftAction(defaults.event.id!, null, form);
       if (!res.ok) toast.error(res.error);

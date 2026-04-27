@@ -28,7 +28,7 @@ export default function SelesaiStep() {
             </em>
           </>
         }
-        sub="Semua kepingan pertama sudah di tempatnya. Mari kita polish undangan kalian di dashboard."
+        sub="Semua kepingan pertama sudah di tempatnya. Mari kita poles undangan kalian di beranda."
       />
 
       <Suspense fallback={<LoadingCard />}>
@@ -107,7 +107,7 @@ async function SelesaiContent() {
         className="relative mt-2 overflow-hidden rounded-[24px] border border-[var(--ob-line)] bg-[var(--ob-bg-card)] p-8 md:p-10"
       >
         <p className="ob-mono text-[10px] uppercase tracking-[0.32em] text-[var(--ob-ink-dim)]">
-          Pratinjau Final
+          Pratinjau Akhir
         </p>
         <div
           className="relative mt-6 overflow-hidden rounded-[18px] p-10 text-center shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]"
@@ -181,14 +181,14 @@ async function SelesaiContent() {
           </p>
           <p className="mt-3 text-[14px] text-[var(--ob-ink-dim)]">
             Lanjutkan dengan menyesuaikan isi undangan, tambah tamu, lalu
-            kirim undangan digital.
+            kirim ke mereka.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
               href="/dashboard"
               className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-7 py-3 text-[13px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90"
             >
-              Masuk Dashboard →
+              Masuk Beranda →
             </Link>
             <Link
               href="/dashboard/website"
@@ -255,7 +255,7 @@ function LoadingCard() {
     <section className="mt-2 rounded-[24px] border border-[var(--ob-line)] bg-[var(--ob-bg-card)] p-8 text-center md:p-10">
       <div className="mx-auto h-72 animate-pulse rounded-[18px] bg-[var(--ob-bg-2)]" />
       <p className="mt-6 text-sm text-[var(--ob-ink-dim)]">
-        Menyiapkan undangan Anda…
+        Menyiapkan undangan kalian…
       </p>
     </section>
   );

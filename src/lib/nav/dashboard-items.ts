@@ -9,11 +9,11 @@ export type DashboardNavItem = {
 
 export const dashboardNav: DashboardNavItem[] = [
   { href: "/dashboard",           label: "Beranda",          icon: "🏠", primary: true },
-  { href: "/dashboard/website",   label: "Website Editor",   icon: "📝", primary: true },
+  { href: "/dashboard/website",   label: "Editor Undangan",  icon: "📝", primary: true },
   { href: "/dashboard/guests",    label: "Tamu",             icon: "👥", primary: true },
   { href: "/dashboard/messages",  label: "Kirim Undangan",   icon: "📨", primary: true },
-  { href: "/dashboard/analytics", label: "Analytics",        icon: "📊" },
-  { href: "/dashboard/checkin",   label: "Check-in",         icon: "✅" },
+  { href: "/dashboard/analytics", label: "Jejak Undangan",   icon: "📊" },
+  { href: "/dashboard/checkin",   label: "Sambut Tamu",      icon: "✅" },
   { href: "/dashboard/amplop",    label: "Tanda Kasih",      icon: "🎁" },
   { href: "/dashboard/settings",  label: "Pengaturan",       icon: "⚙️" },
   { href: "/dashboard/packages",  label: "Paket",            icon: "📦" },

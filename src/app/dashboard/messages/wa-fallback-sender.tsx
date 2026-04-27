@@ -254,7 +254,7 @@ export function WaFallbackSender({
   if (error) {
     return (
       <div className="rounded-2xl border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] p-6 text-sm text-[var(--d-coral)]">
-        <p className="font-medium">Gagal memuat broadcast.</p>
+        <p className="font-medium">Ups, koneksi terputus. Coba muat ulang ya.</p>
         <p className="mt-1">{error}</p>
         <button
           type="button"
@@ -270,7 +270,7 @@ export function WaFallbackSender({
   if (phase === "loading") {
     return (
       <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 text-sm text-[var(--d-ink-dim)]">
-        Memuat daftar tamu…
+        Menyiapkan daftar tamu…
       </div>
     );
   }
@@ -285,7 +285,7 @@ export function WaFallbackSender({
     return (
       <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
         <h3 className="font-display text-lg text-[var(--d-ink)]">
-          {phase === "completed" ? "✅ Broadcast selesai" : "⏹ Dihentikan"}
+          {phase === "completed" ? "✅ Semua undangan tersampaikan!" : "⏹ Dihentikan"}
         </h3>
         <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
           {sentCount} terkirim
@@ -313,7 +313,7 @@ export function WaFallbackSender({
         <h3 className="font-display text-lg text-[var(--d-ink)]">
           📤 Mengirim via WhatsApp
           <span className="ml-2 rounded-full bg-[var(--d-bg-2)] px-2 py-0.5 text-[10px] font-normal text-[var(--d-ink-dim)]">
-            mode manual
+            kirim satu per satu
           </span>
         </h3>
         <span className="text-xs text-[var(--d-ink-dim)]">

@@ -176,7 +176,7 @@ export function Sidebar({
       : "flex h-full",
   ].join(" ");
 
-  const couple = splitCoupleLabel(coupleLabel ?? "Belum ada acara");
+  const couple = splitCoupleLabel(coupleLabel ?? "Cerita belum dimulai");
   const metaLabel = [themeLabel, packageLabel]
     .filter(Boolean)
     .join(" · ")
@@ -309,14 +309,14 @@ export function Sidebar({
             }`}
           >
             <EyeIcon />
-            Pratinjau Situs
+            Intip Undangan
           </Link>
           <form action={signOutAction}>
             <button
               type="submit"
               className="d-mono w-full rounded-full px-4 py-1 text-center text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)] transition-colors hover:text-[var(--d-coral)]"
             >
-              Logout
+              Keluar
             </button>
           </form>
         </div>
@@ -411,7 +411,7 @@ function NavItem({
 function SoonBadge() {
   return (
     <span className="d-mono rounded bg-white/5 px-2 py-0.5 text-[8.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-      Segera
+      Akan Hadir ✨
     </span>
   );
 }

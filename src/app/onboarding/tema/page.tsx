@@ -22,7 +22,7 @@ export default function TemaStep() {
             cerita kalian.
           </>
         }
-        sub="Anda bisa mengubah tema setelah ini. Tema akan mewarnai halaman undangan tamu."
+        sub="Kalian bisa mengubah tema setelah ini. Tema akan mewarnai halaman undangan tamu."
       />
       <Suspense fallback={<PickerSkeleton />}>
         <TemaPickerLoader />

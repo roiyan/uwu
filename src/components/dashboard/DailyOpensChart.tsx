@@ -171,7 +171,7 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
             <em className="d-serif italic text-[var(--d-coral)]">per hari</em>
           </h2>
           <p className="mt-1 text-[12.5px] text-[var(--d-ink-dim)]">
-            Tujuh hari terakhir · forecast hingga hari H
+            Tujuh hari terakhir · prediksi hingga hari H
           </p>
         </div>
         <Legend />
@@ -194,8 +194,8 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
             <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
           </svg>
           <p className="flex-1 text-[12px] leading-relaxed text-[var(--d-ink-dim)]">
-            Setiap kali tamu membuka link undangan, bukaan tercatat di sini.
-            Pakai data ini untuk tahu kapan waktu terbaik mengirim broadcast
+            Setiap kali tamu membuka link undangan, kami mencatatnya di sini.
+            Gunakan untuk tahu kapan waktu terbaik mengirim undangan
             berikutnya.
           </p>
           <button
@@ -327,7 +327,7 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
             }}
           >
             <p className="d-mono uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-              {hover.kind === "actual" ? "Aktual" : "Forecast"}
+              {hover.kind === "actual" ? "Aktual" : "Prediksi"}
             </p>
             <p className="d-serif mt-0.5 text-[16px] font-light text-[var(--d-coral)]">
               {hover.count}{" "}
@@ -343,7 +343,7 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
 
         {isEmpty && (
           <p className="d-mono mt-3 text-center text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-            Belum ada data bukaan · Publikasikan undangan untuk mulai tracking
+            Belum ada jejak bukaan · Tayangkan undangan untuk mulai melihat jejaknya.
           </p>
         )}
       </div>
@@ -368,7 +368,7 @@ function Legend() {
           className="inline-block h-2 w-2 rounded-sm"
           style={{ background: "#8FA3D9" }}
         />
-        Forecast
+        Prediksi
       </span>
     </div>
   );

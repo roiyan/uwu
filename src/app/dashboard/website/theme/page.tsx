@@ -42,7 +42,7 @@ export default async function ThemeEditorPage() {
             visual.
           </h1>
           <p className="mt-3 max-w-[60ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-            Pilih dasar visual undangan. Anda dapat menyesuaikan warna di
+            Pilih suasana undangan kalian. Warna bisa disesuaikan di
             bawah.
           </p>
         </div>

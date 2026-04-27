@@ -79,8 +79,26 @@ export const themeSelectSchema = z.object({
   themeId: z.string().uuid("Tema tidak valid"),
 });
 
+// Six-slot palette covering background + heading + body + 3 brand
+// accents. Optional throughout so the editor can save partial diffs and
+// the action layer falls back to theme defaults for missing slots.
+export const palette6Schema = z
+  .object({
+    background: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    headingText: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    bodyText: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    brandPrimary: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    brandLight: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+    brandDark: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  })
+  .partial();
+
 export const themeConfigSchema = z.object({
   themeId: z.string().uuid(),
+  // Legacy 3-color palette — the public invitation renderer still reads
+  // this directly as `{ primary, secondary, accent }`. Kept as the
+  // canonical write target so older clients/themes keep rendering. The
+  // 6-color palette is derived/stored alongside (see below).
   palette: z
     .object({
       primary: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
@@ -89,7 +107,10 @@ export const themeConfigSchema = z.object({
     })
     .partial()
     .optional(),
+  palette6: palette6Schema.optional(),
 });
+
+export type Palette6Input = z.infer<typeof palette6Schema>;
 
 export type MempelaiInput = z.infer<typeof mempelaiSchema>;
 export type ScheduleInput = z.infer<typeof scheduleInputSchema>;

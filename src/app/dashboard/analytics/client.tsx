@@ -461,8 +461,8 @@ export function AnalyticsClient({
                     colSpan={5}
                     className="d-serif px-6 py-10 text-center text-[13px] italic text-[var(--d-ink-dim)]"
                   >
-                    Belum ada tamu. Tambahkan tamu lalu kirim undangan untuk
-                    mulai melihat data respons di sini.
+                    Belum ada tamu. Tambahkan tamu dan kirim undangan untuk
+                    mulai melihat jejaknya.
                   </td>
                 </tr>
               ) : (
@@ -546,7 +546,7 @@ function Header({
         <div className="flex items-center gap-3">
           <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
           <p className="d-eyebrow">
-            Analytics ·{" "}
+            Jejak Undangan ·{" "}
             {range === "24j"
               ? "24 Jam Terakhir"
               : range === "7h"
@@ -566,11 +566,11 @@ function Header({
               aria-hidden
               className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--d-green)] shadow-[0_0_8px_var(--d-green)]"
             />
-            Update real-time · sinkron {syncSec} detik lalu
+            Terkini · sinkron {syncSec} detik lalu
           </span>
           {engagementPct > 0 && (
             <span className="d-serif text-[14px] italic text-[var(--d-green)]">
-              — engagement {engagementPct}% dari total tamu
+              — keterlibatan {engagementPct}% dari total tamu
             </span>
           )}
         </div>

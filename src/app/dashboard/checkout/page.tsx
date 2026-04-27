@@ -52,7 +52,7 @@ export default async function CheckoutPage({
                 "linear-gradient(90deg, transparent 0%, var(--d-coral) 100%)",
             }}
           />
-          <p className="d-eyebrow">Checkout</p>
+          <p className="d-eyebrow">Pembayaran</p>
         </div>
         <h1 className="d-serif mt-3 text-[40px] font-extralight leading-[1.05] tracking-[-0.01em] text-[var(--d-ink)] md:text-[48px]">
           Upgrade ke{" "}
@@ -77,7 +77,7 @@ export default async function CheckoutPage({
         </section>
 
         <aside className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-          <h2 className="font-display text-lg text-[var(--d-ink)]">Yang Anda dapatkan</h2>
+          <h2 className="font-display text-lg text-[var(--d-ink)]">Yang kalian dapatkan</h2>
           <ul className="mt-3 space-y-2 text-sm text-[var(--d-ink-dim)]">
             {pkg.features.map((f) => (
               <li key={f} className="flex gap-2">
@@ -92,7 +92,7 @@ export default async function CheckoutPage({
               {formatIdr(pkg.priceIdr)}
             </p>
             <p className="text-xs text-[var(--d-ink-dim)]">
-              Sekali bayar • berlaku untuk acara aktif Anda.
+              Sekali bayar • berlaku untuk acara aktif kalian.
             </p>
           </div>
         </aside>

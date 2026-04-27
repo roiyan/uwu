@@ -54,7 +54,7 @@ export function WalkinForm({
 
     const pax = Number.parseInt(actualPax, 10);
     if (!Number.isFinite(pax) || pax < 1) {
-      setLocalError("Jumlah pax minimal 1.");
+      setLocalError("Jumlah orang minimal 1.");
       return;
     }
     const trimmedName = name.trim();
@@ -84,7 +84,7 @@ export function WalkinForm({
       setNotes("");
     } catch (err) {
       setLocalError(
-        err instanceof Error ? err.message : "Gagal menyimpan walk-in.",
+        err instanceof Error ? err.message : "Ups, pencatatan belum berhasil. Coba lagi.",
       );
     }
   }
@@ -137,7 +137,7 @@ export function WalkinForm({
 
         <label className="block">
           <span className={labelClass}>
-            Pax <span className="text-[var(--d-coral)]">*</span>
+            Jumlah Orang <span className="text-[var(--d-coral)]">*</span>
           </span>
           <input
             type="number"

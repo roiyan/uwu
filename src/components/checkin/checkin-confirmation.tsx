@@ -9,7 +9,7 @@ const STATUS_LABEL: Record<GuestStatus, string> = {
   diundang: "Sudah diundang",
   dibuka: "Sudah membuka",
   hadir: "Hadir",
-  tidak_hadir: "Tidak hadir",
+  tidak_hadir: "Berhalangan",
 };
 
 const STATUS_PILL: Record<GuestStatus, string> = {
@@ -111,7 +111,7 @@ export function CheckinConfirmation({
     setLocalError(null);
     const pax = Number.parseInt(actualPax, 10);
     if (!Number.isFinite(pax) || pax < 1) {
-      setLocalError("Jumlah pax minimal 1.");
+      setLocalError("Jumlah orang minimal 1.");
       return;
     }
     try {
@@ -122,7 +122,7 @@ export function CheckinConfirmation({
       });
     } catch (err) {
       setLocalError(
-        err instanceof Error ? err.message : "Gagal menyimpan check-in.",
+        err instanceof Error ? err.message : "Ups, pencatatan belum berhasil. Coba lagi.",
       );
     }
   }
@@ -134,7 +134,7 @@ export function CheckinConfirmation({
       await onUndo();
     } catch (err) {
       setLocalError(
-        err instanceof Error ? err.message : "Gagal membatalkan check-in.",
+        err instanceof Error ? err.message : "Ups, pembatalan belum berhasil. Coba lagi.",
       );
     }
   }
@@ -213,7 +213,7 @@ export function CheckinConfirmation({
               </p>
               {typeof guest.actualPax === "number" && (
                 <p className="d-mono mt-2 text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-                  {guest.actualPax} pax tercatat
+                  {guest.actualPax} orang tercatat
                 </p>
               )}
               <div className="mt-5 flex flex-wrap items-center justify-end gap-3">
@@ -241,7 +241,7 @@ export function CheckinConfirmation({
             <form onSubmit={handleConfirm} className="mt-6 space-y-5">
               <label className="block">
                 <span className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-                  Pax <span className="text-[var(--d-coral)]">*</span>
+                  Jumlah Orang <span className="text-[var(--d-coral)]">*</span>
                 </span>
                 <input
                   type="number"
@@ -256,7 +256,7 @@ export function CheckinConfirmation({
                 />
                 {typeof guest.rsvpAttendees === "number" && (
                   <span className="d-mono mt-1 block text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-                    RSVP awal: {guest.rsvpAttendees} pax
+                    RSVP awal: {guest.rsvpAttendees} orang
                   </span>
                 )}
               </label>

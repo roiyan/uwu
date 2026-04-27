@@ -14,17 +14,17 @@ type SectionOption = {
 const SECTIONS: SectionOption[] = [
   {
     id: "kpi",
-    label: "Ringkasan KPI",
+    label: "Ringkasan Utama",
     description: "Total tamu, hadir, dibuka",
   },
   {
     id: "funnel",
-    label: "Funnel Konversi",
+    label: "Perjalanan Respons",
     description: "Diundang → Dibuka → RSVP → Hadir",
   },
   {
     id: "heatmap",
-    label: "Heatmap Aktivitas",
+    label: "Pola Aktivitas",
     description: "Pola bukaan per hari & jam",
   },
   {
@@ -34,13 +34,13 @@ const SECTIONS: SectionOption[] = [
   },
   {
     id: "messages",
-    label: "Ucapan Terbaik",
-    description: "2–3 ucapan dari tamu",
+    label: "Doa & Ucapan Terbaik",
+    description: "2–3 doa & ucapan tamu",
   },
   {
     id: "summary",
     label: "Status Ringkasan",
-    description: "Hadir / Tidak Hadir / Belum",
+    description: "Hadir / Berhalangan / Belum",
   },
 ];
 
@@ -350,7 +350,7 @@ function PickerStep({
           onClick={onToggleAll}
           className="d-mono text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:text-[var(--d-coral)]"
         >
-          {allSelected ? "Hapus semua" : "Pilih semua"}
+          {allSelected ? "Batal pilih semua" : "Pilih semua"}
         </button>
         <button
           type="button"

@@ -28,7 +28,7 @@ const STAGES: Stage[] = [
     label: "Diundang",
     color: "#F4B8A3",
     pctOf: "total",
-    hint: (d) => `${Math.max(0, d.total - d.invited)} belum kontak`,
+    hint: (d) => `${Math.max(0, d.total - d.invited)} belum diundang`,
   },
   {
     key: "opened",
@@ -95,7 +95,7 @@ export function FunnelChart({
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
-            Funnel Respons · {todayLabel()}
+            Perjalanan Respons · {todayLabel()}
           </p>
           <h2 className="d-serif mt-2 text-[24px] font-light leading-tight tracking-[-0.015em] text-[var(--d-ink)] lg:text-[26px]">
             Perjalanan{" "}
@@ -196,14 +196,14 @@ export function FunnelChart({
         {/* Sidebar */}
         <aside className="border-t border-dashed border-[var(--d-line-strong)] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
           <p className="d-mono text-[10px] uppercase tracking-[0.28em] text-[var(--d-ink-faint)]">
-            Konversi keseluruhan
+            Respons keseluruhan
           </p>
           <p className="d-serif mt-2 text-[52px] font-extralight leading-none tracking-[-0.028em] text-[var(--d-ink)] lg:text-[56px]">
             {conversionPct}
             <span className="text-[24px] text-[var(--d-ink-dim)]">%</span>
           </p>
           <p className="d-serif mt-2 text-[13px] italic leading-relaxed text-[var(--d-ink-dim)]">
-            dari total tamu berujung{" "}
+            dari total tamu akhirnya{" "}
             <em className="d-serif italic text-[var(--d-coral)]">hadir</em>.
           </p>
 
@@ -216,14 +216,14 @@ export function FunnelChart({
               }}
             >
               <p className="d-mono text-[9.5px] uppercase tracking-[0.24em] text-[var(--d-coral)]">
-                Insight
+                Temuan
               </p>
               <p className="d-serif mt-2 text-[13px] leading-[1.5] text-[var(--d-ink)]">
-                Drop-off terbesar di langkah{" "}
+                Penurunan terbesar di langkah{" "}
                 <em className="d-serif italic text-[var(--d-coral)]">
                   {insight.to}
                 </em>{" "}
-                — {insight.count} tamu {insight.from} tapi belum {insight.to}.
+                — {insight.count} tamu {insight.from} tapi belum lanjut.
               </p>
             </div>
           )}

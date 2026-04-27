@@ -170,7 +170,7 @@ export default async function PackagesPage() {
         </div>
         {orders.length === 0 ? (
           <p className="mt-5 text-[13px] text-[var(--d-ink-dim)]">
-            Belum ada pembayaran.
+            Belum ada riwayat pembayaran.
           </p>
         ) : (
           <div className="mt-5 d-card overflow-hidden">
@@ -178,7 +178,7 @@ export default async function PackagesPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[var(--d-line)]">
-                    <Th>Order ID</Th>
+                    <Th>ID Pesanan</Th>
                     <Th>Paket</Th>
                     <Th>Jumlah</Th>
                     <Th>Status</Th>

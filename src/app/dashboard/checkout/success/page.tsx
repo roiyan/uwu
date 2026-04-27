@@ -58,7 +58,7 @@ export default async function CheckoutSuccessPage({
         </h1>
         <p className="mt-2 text-sm text-[var(--d-ink-dim)]">
           {paid
-            ? `Paket ${row.pkg?.name} sudah aktif untuk acara Anda.`
+            ? `Paket ${row.pkg?.name} sudah aktif untuk acara kalian.`
             : "Kami akan memperbarui status secara otomatis setelah pembayaran diterima."}
         </p>
 
@@ -77,7 +77,7 @@ export default async function CheckoutSuccessPage({
             href="/dashboard"
             className="rounded-full bg-coral px-6 py-3 text-sm font-medium text-white transition-colors hover:opacity-90"
           >
-            Kembali ke Dashboard
+            Kembali ke Beranda
           </Link>
           <Link
             href="/dashboard/packages"

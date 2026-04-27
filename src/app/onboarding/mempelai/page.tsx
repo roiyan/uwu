@@ -18,7 +18,7 @@ export default function MempelaiStep() {
             </em>
           </>
         }
-        sub="Nama ini akan tampil di undangan dan dashboard Anda. Anda bisa mengubahnya kapan saja — tidak ada keputusan yang permanen di sini."
+        sub="Nama ini akan tampil di undangan dan beranda kalian. Bisa diubah kapan saja."
       />
 
       <Suspense

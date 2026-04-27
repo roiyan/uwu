@@ -113,7 +113,7 @@ function EnthusiastCard({ rows }: { rows: EnthusiastRow[] }) {
       {ranked.length === 0 ? (
         <div className="mt-5 rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.02)] px-4 py-8 text-center">
           <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
-            Belum ada tamu yang membuka undangan.
+            Undangan masih menunggu tamu pertamanya.
           </p>
         </div>
       ) : (
@@ -269,7 +269,7 @@ function SourceCard({
   }> = [
     {
       name: "WhatsApp",
-      sub: "Link broadcast",
+      sub: "Link undangan",
       count: source.whatsapp,
       color: "var(--d-green)",
       iconBg: "rgba(126,211,164,0.1)",
@@ -309,11 +309,11 @@ function SourceCard({
   const empty = totalGuests === 0 || denom === 0;
 
   return (
-    <CardShell eyebrow="Sumber Trafik" title="Dari mana mereka datang">
+    <CardShell eyebrow="Asal Tamu" title="Dari mana mereka datang">
       {empty && (
         <p className="d-serif text-[12.5px] italic text-[var(--d-ink-faint)]">
-          Belum ada bukaan tercatat — angka akan muncul setelah broadcast
-          pertama.
+          Belum ada jejak — angka akan muncul setelah undangan pertama
+          tersampaikan.
         </p>
       )}
       {rows.map((r) => (
@@ -343,10 +343,10 @@ function GroupCard({ groups }: { groups: GroupEngagementRow[] }) {
     .slice(0, 4);
 
   return (
-    <CardShell eyebrow="Engagement per Grup" title="Grup teratas">
+    <CardShell eyebrow="Keterlibatan per Grup" title="Grup teratas">
       {sorted.length === 0 && (
         <p className="d-serif text-[12.5px] italic text-[var(--d-ink-faint)]">
-          Belum ada grup. Buat grup di halaman Tamu untuk melihat engagement.
+          Belum ada grup. Buat grup di halaman Tamu untuk melihat antusiasme mereka.
         </p>
       )}
       {sorted.map((g) => (
@@ -362,7 +362,7 @@ function GroupCard({ groups }: { groups: GroupEngagementRow[] }) {
           name={g.name}
           sub={
             g.total === 0
-              ? "kosong"
+              ? "belum ada tamu"
               : `${g.attending}/${g.total} hadir`
           }
           pct={g.pct}

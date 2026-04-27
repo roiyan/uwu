@@ -51,7 +51,7 @@ const SIDEBAR_COPY: Record<
         </em>
       </>
     ),
-    lead: "Semua kepingan pertama sudah di tempatnya. Mari kita polish undangan kalian di dashboard.",
+    lead: "Semua kepingan pertama sudah di tempatnya. Mari kita poles undangan kalian di beranda.",
   },
 };
 

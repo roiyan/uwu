@@ -34,14 +34,14 @@ export function UcapanTamuCard({
     return (
       <section className="mt-8 rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 lg:p-8">
         <p className="d-mono text-[10px] uppercase tracking-[0.26em] text-[var(--d-coral)]">
-          Ucapan Tamu
+          Doa & Ucapan
         </p>
         <h2 className="d-serif mt-3 text-[20px] font-light text-[var(--d-ink)]">
-          Belum ada{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">ucapan</em>.
+          Menunggu{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">doa pertama</em>.
         </h2>
         <p className="d-serif mt-2 text-[12.5px] italic text-[var(--d-ink-faint)]">
-          Ucapan dari tamu akan muncul di sini saat mereka mengisi RSVP.
+          Doa dan ucapan tamu akan mengalir di sini setelah mereka merespons.
         </p>
       </section>
     );
@@ -53,7 +53,7 @@ export function UcapanTamuCard({
   return (
     <section className="mt-8 rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 lg:p-8">
       <p className="d-mono text-[10px] uppercase tracking-[0.26em] text-[var(--d-coral)]">
-        Ucapan Tamu
+        Doa & Ucapan
       </p>
       <h2 className="d-serif mt-3 text-[22px] font-light leading-[1.3] text-[var(--d-ink)] lg:text-[24px]">
         Kata-kata{" "}

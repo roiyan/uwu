@@ -151,7 +151,7 @@ export function PinGate({
   async function submitPin(pin: string) {
     if (pin.length !== 4 || verifying) return;
     if (!token) {
-      setPinError("Link tidak valid. Minta link baru ke pasangan.");
+      setPinError("Link tidak dikenali. Minta link baru dari pasangan.");
       return;
     }
     setVerifying(true);
@@ -164,7 +164,7 @@ export function PinGate({
       setVerifying(false);
       return;
     }
-    setPinError(res.ok ? "Verifikasi gagal. Coba lagi." : res.error);
+    setPinError(res.ok ? "Verifikasi belum berhasil. Coba lagi." : res.error);
     setPinDigits(["", "", "", ""]);
     inputRefs.current[0]?.focus();
     setVerifying(false);
