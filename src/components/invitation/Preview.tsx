@@ -1,6 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
+import {
+  DEFAULT_SECTION_ORDER,
+  type SectionId,
+} from "@/lib/theme/sections";
 import { formatDate, formatTimeRange } from "./formatting";
 import { ALL_SECTIONS_ON } from "./types";
 import type {
@@ -18,6 +22,11 @@ type Props = {
   schedules: ScheduleData[];
   guestName?: string;
   sections?: SectionFlags;
+  /** Bagian render order. Mirrors the public invitation's
+   *  sectionOrder prop so the editor preview reflects drag-drop
+   *  reorders in the section rail without a server round-trip.
+   *  Falls back to DEFAULT_SECTION_ORDER when omitted. */
+  sectionOrder?: readonly SectionId[];
   // When true, mutes scroll animations — useful for the live editor so the
   // preview doesn't animate every keystroke.
   staticMode?: boolean;
@@ -30,45 +39,86 @@ export function Preview({
   schedules,
   guestName = "Bpk/Ibu/Saudara/i",
   sections = ALL_SECTIONS_ON,
+  sectionOrder,
   staticMode = false,
 }: Props) {
+  // Resolve render order: caller-provided override (live drag-drop
+  // state from the editor) → canonical default. Order is the only
+  // axis that varies per render; visibility is still gated by the
+  // SectionFlags below so toggling a section off in the rail keeps
+  // working independently of where it sits in the list.
+  const order = sectionOrder ?? DEFAULT_SECTION_ORDER;
   return (
     <div
       className="min-h-screen font-body"
       style={{ background: palette.secondary, color: "#1A1A2E" }}
     >
-      <HeroSection
-        event={event}
-        palette={palette}
-        couple={couple}
-        guestName={guestName}
-        firstSchedule={schedules[0]}
-        staticMode={staticMode}
-      />
-
-      {sections.quote && couple?.quote && (
-        <QuoteSection quote={couple.quote} palette={palette} staticMode={staticMode} />
-      )}
-
-      {sections.couple && couple && (
-        <CoupleSection couple={couple} palette={palette} staticMode={staticMode} />
-      )}
-
-      {sections.story && couple?.story && (
-        <StorySection story={couple.story} palette={palette} staticMode={staticMode} />
-      )}
-
-      {sections.schedules && schedules.length > 0 && (
-        <SchedulesSection
-          schedules={schedules}
-          palette={palette}
-          staticMode={staticMode}
-        />
-      )}
-
-      {sections.rsvp && (
-        <RsvpPlaceholder palette={palette} />
-      )}
+      {order.map((id) => {
+        switch (id) {
+          case "foto-sampul":
+            return (
+              <HeroSection
+                key={id}
+                event={event}
+                palette={palette}
+                couple={couple}
+                guestName={guestName}
+                firstSchedule={schedules[0]}
+                staticMode={staticMode}
+              />
+            );
+          case "kutipan":
+            return sections.quote && couple?.quote ? (
+              <QuoteSection
+                key={id}
+                quote={couple.quote}
+                palette={palette}
+                staticMode={staticMode}
+              />
+            ) : null;
+          case "mempelai":
+            return sections.couple && couple ? (
+              <CoupleSection
+                key={id}
+                couple={couple}
+                palette={palette}
+                staticMode={staticMode}
+              />
+            ) : null;
+          case "cerita":
+            return sections.story && couple?.story ? (
+              <StorySection
+                key={id}
+                story={couple.story}
+                palette={palette}
+                staticMode={staticMode}
+              />
+            ) : null;
+          case "acara":
+            return sections.schedules && schedules.length > 0 ? (
+              <SchedulesSection
+                key={id}
+                schedules={schedules}
+                palette={palette}
+                staticMode={staticMode}
+              />
+            ) : null;
+          case "galeri":
+            return sections.gallery ? (
+              <GalleryPlaceholder key={id} palette={palette} />
+            ) : null;
+          case "rsvp":
+            return sections.rsvp ? (
+              <RsvpPlaceholder key={id} palette={palette} />
+            ) : null;
+          case "amplop":
+            return sections.gifts ? (
+              <GiftPlaceholder key={id} palette={palette} />
+            ) : null;
+          default:
+            return null;
+        }
+      })}
 
       <footer className="py-10 text-center text-xs opacity-70">
         <p>Dibuat dengan ♡ di uwu</p>
@@ -306,6 +356,47 @@ function RsvpPlaceholder({ palette }: { palette: Palette }) {
         </h2>
         <p className="mt-3 text-center text-sm text-ink-muted">
           Form RSVP tampil untuk tamu yang membuka tautan pribadi mereka.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+// Editor-only placeholders for sections whose data isn't piped into
+// the live preview yet. Keeping a visible block here means a couple
+// dragging "Galeri" or "Tanda Kasih" up/down still sees something
+// move — without the placeholder the section would silently
+// disappear from the preview and the reorder would feel broken.
+function GalleryPlaceholder({ palette }: { palette: Palette }) {
+  return (
+    <section className="px-6 py-14">
+      <div className="mx-auto max-w-2xl rounded-2xl bg-white/80 p-8 text-center backdrop-blur">
+        <h2
+          className="font-display text-3xl"
+          style={{ color: palette.primary }}
+        >
+          Galeri
+        </h2>
+        <p className="mt-3 text-sm text-ink-muted">
+          Foto pre-wedding tampil di sini saat tamu membuka undangan.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function GiftPlaceholder({ palette }: { palette: Palette }) {
+  return (
+    <section className="px-6 py-14">
+      <div className="mx-auto max-w-2xl rounded-2xl bg-white/80 p-8 text-center backdrop-blur">
+        <h2
+          className="font-display text-3xl"
+          style={{ color: palette.primary }}
+        >
+          Tanda Kasih
+        </h2>
+        <p className="mt-3 text-sm text-ink-muted">
+          Rekening + konfirmasi tamu tampil di sini saat undangan dibuka.
         </p>
       </div>
     </section>

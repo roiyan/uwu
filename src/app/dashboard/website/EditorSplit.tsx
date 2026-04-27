@@ -10,6 +10,7 @@ import { useToast } from "@/components/shared/Toast";
 import { PhotoUpload } from "@/components/shared/PhotoUpload";
 import { VenueMapField } from "@/components/shared/VenueMapField";
 import { Preview } from "@/components/invitation/Preview";
+import type { SectionId as CanonicalSectionId } from "@/lib/theme/sections";
 import { PhoneFrame, type Viewport } from "@/components/invitation/PhoneFrame";
 import type {
   CoupleData,
@@ -317,6 +318,13 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
       couple={couple}
       schedules={schedulesForPreview}
       sections={sections}
+      // Drive the live preview's render order off `orderedIds` —
+      // already updated optimistically in handleSectionDrop, so the
+      // preview snaps to the new order on drop without waiting for
+      // the server transition. The cast widens the local SectionId
+      // alias to the canonical one (same string union, just a
+      // different declaration site).
+      sectionOrder={orderedIds as readonly CanonicalSectionId[]}
       staticMode
     />
   );
