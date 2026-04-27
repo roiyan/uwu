@@ -332,7 +332,7 @@ function AcaraTab({
               className={inputClass}
             />
             <span className="mt-2 block text-[11px] text-[var(--d-ink-faint)]">
-              Musik akan muted secara default. Tamu dapat mengaktifkan manual.
+              Musik tidak aktif secara default. Tamu dapat mengaktifkan manual.
             </span>
           </label>
           <label className="block md:col-span-2">
@@ -353,7 +353,7 @@ function AcaraTab({
               <option value="America/New_York">EST · New York (UTC-5)</option>
             </select>
             <span className="d-serif mt-2 block text-[11px] italic text-[var(--d-ink-faint)]">
-              Digunakan untuk heatmap analytics dan jadwal broadcast.
+              Digunakan untuk pola aktivitas dan jadwal pengiriman.
             </span>
           </label>
         </div>
@@ -411,8 +411,8 @@ function AcaraTab({
               }}
             />
             {isPublished
-              ? "Undangan aktif dan dapat diakses publik melalui URL."
-              : "Undangan masih tersembunyi. Publikasikan untuk membagikan ke tamu."}
+              ? "Undangan sudah tayang dan bisa diakses melalui URL."
+              : "Undangan belum tayang. Tayangkan untuk membagikan ke tamu."}
           </p>
         </header>
         <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -427,7 +427,7 @@ function AcaraTab({
               }
               className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-6 py-2.5 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-50"
             >
-              {publishPending ? "Memproses…" : "Unpublish"}
+              {publishPending ? "Memproses…" : "Sembunyikan"}
             </button>
           ) : (
             <button
@@ -440,7 +440,7 @@ function AcaraTab({
               }
               className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {publishPending ? "Memproses…" : "Publikasikan Undangan"}
+              {publishPending ? "Memproses…" : "Tayangkan Undangan"}
             </button>
           )}
           <Link
@@ -485,13 +485,13 @@ function BudayaTab({
     {
       id: "umum",
       label: "Formal & Puitis",
-      description: "Tone netral formal. Musik default menyala. Template broadcast umum.",
+      description: "Nada netral formal. Musik default menyala. Template broadcast umum.",
     },
     {
       id: "islami",
       label: "Islami",
       description:
-        "Pembuka Assalamu'alaikum. Musik default mute. Label akad: Akad Nikah.",
+        "Pembuka Assalamu'alaikum. Musik default nonaktif. Label akad: Akad Nikah.",
     },
     {
       id: "custom",
@@ -509,8 +509,8 @@ function BudayaTab({
           <em className="d-serif italic text-[var(--d-coral)]">Budaya</em>
         </h2>
         <p className="mt-2 max-w-[58ch] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-          Pengaturan ini memengaruhi template broadcast WhatsApp, label
-          jadwal, dan tone AI copywriter.
+          Pengaturan ini memengaruhi template pesan WhatsApp, label
+          jadwal, dan nuansa undangan.
         </p>
       </header>
       <input type="hidden" name="title" value={event.title} />
@@ -680,7 +680,7 @@ function KolaboratorTab({
 
           {!hasAny && (
             <div className="rounded-[14px] border border-dashed border-[var(--d-line-strong)] bg-transparent p-6 text-center text-[13px] text-[var(--d-ink-dim)]">
-              Belum ada kolaborator. Undang pasangan Anda agar bisa
+              Belum ada kolaborator. Undang pasangan kalian agar bisa
               mengelola undangan bersama.
             </div>
           )}
@@ -697,16 +697,16 @@ function KolaboratorTab({
         open={confirmRevoke !== null}
         title={
           confirmRevoke
-            ? `Hapus akses ${
+            ? `Cabut akses ${
                 confirmRevoke.invitedName ?? confirmRevoke.invitedEmail ?? "pasangan"
               }?`
-            : "Hapus akses?"
+            : "Cabut akses?"
         }
         description="Mereka tidak akan bisa mengelola undangan lagi. Tindakan ini bisa dibatalkan dengan mengirim ulang undangan."
         loading={revokePending}
         onConfirm={handleRevokeConfirm}
         onCancel={() => setConfirmRevoke(null)}
-        confirmLabel="Hapus Akses"
+        confirmLabel="Cabut Akses"
       />
     </div>
   );
@@ -785,7 +785,7 @@ function CollaboratorCardRow({
             onClick={onRevoke}
             className="rounded-full border border-rose/30 px-3 py-1 text-xs font-medium text-[var(--d-coral)] transition-colors hover:border-rose hover:border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)]"
           >
-            🗑 Hapus Akses
+            🗑 Cabut Akses
           </button>
         }
       />
@@ -972,7 +972,7 @@ function InviteDialog({
       >
         <h2 className="font-display text-xl text-[var(--d-ink)]">Undang Pasangan</h2>
         <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
-          Kirim link undangan agar pasangan Anda bisa mengelola acara bersama.
+          Kirim link undangan agar pasangan kalian bisa mengelola acara bersama.
         </p>
         <div className="mt-5 space-y-4">
           <label className="block">

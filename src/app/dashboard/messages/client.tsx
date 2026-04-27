@@ -114,11 +114,11 @@ const HISTORY_STATUS_STYLE: Record<HistoryStatus, string> = {
 };
 
 const HISTORY_STATUS_LABEL: Record<HistoryStatus, string> = {
-  draft: "Draft",
+  draft: "Draf",
   queued: "Antri",
   sending: "Mengirim",
   completed: "Selesai",
-  failed: "Gagal",
+  failed: "Belum terkirim",
   scheduled: "Terjadwal",
   cancelled: "Dibatalkan",
 };
@@ -695,7 +695,7 @@ export function MessagesClient({
           {(channel === "email" || channel === "both") && (
             <label className="mt-5 block">
               <FieldLabel
-                label={channel === "both" ? "Subject Email" : "Subject"}
+                label={channel === "both" ? "Subjek Email" : "Subjek"}
                 hint="Tampil di inbox tamu"
               />
               <input

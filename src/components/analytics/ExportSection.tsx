@@ -42,7 +42,7 @@ const OPTIONS: ExportOpt[] = [
   },
   {
     key: "xlsx",
-    name: "Data Excel",
+    name: "Ringkasan Excel",
     sub: "3 sheet — ringkasan, daftar tamu, acara",
     iconColor: "var(--d-green)",
     iconBg: "rgba(126,211,164,0.14)",
@@ -56,7 +56,7 @@ const OPTIONS: ExportOpt[] = [
   {
     key: "png",
     name: "Infografis PNG",
-    sub: "Share-ready · 1200×1500",
+    sub: "Siap dibagikan · 1200×1500",
     iconColor: "var(--d-blue)",
     iconBg: "rgba(143,163,217,0.14)",
     icon: (
@@ -101,7 +101,7 @@ export function ExportSection({ eventId }: { eventId: string }) {
     // server action always returns it on the success path, so this
     // narrow is just for the type system.
     if (!res.data) {
-      toast.error("Data ekspor kosong. Coba muat ulang halaman.");
+      toast.error("Belum ada yang bisa diekspor. Coba muat ulang halaman.");
       return null;
     }
     setSnapshot(res.data);
@@ -122,7 +122,7 @@ export function ExportSection({ eventId }: { eventId: string }) {
           "@/lib/utils/analytics-export-pdf"
         );
         await exportAnalyticsPDF(PDF_TARGET_ID, data.coupleName);
-        toast.success("Laporan PDF terunduh.");
+        toast.success("Laporan PDF tersimpan.");
       } else if (format === "xlsx") {
         const data = await ensureSnapshot();
         if (!data) return;
@@ -130,7 +130,7 @@ export function ExportSection({ eventId }: { eventId: string }) {
           "@/lib/utils/analytics-export-excel"
         );
         await exportAnalyticsExcel(data);
-        toast.success("Data Excel terunduh.");
+        toast.success("Ringkasan Excel tersimpan.");
       } else {
         // PNG: open the share modal. The actual capture happens inside
         // `handlePngGenerate` once the operator picks their sections.
@@ -142,7 +142,7 @@ export function ExportSection({ eventId }: { eventId: string }) {
     } catch (err) {
       console.error("[analytics-export]", err);
       toast.error(
-        err instanceof Error ? err.message : "Gagal menyiapkan ekspor.",
+        err instanceof Error ? err.message : "Ups, ekspor belum berhasil. Coba lagi ya.",
       );
     } finally {
       setBusy(null);
@@ -177,8 +177,8 @@ export function ExportSection({ eventId }: { eventId: string }) {
               atau kirim ke vendor kalian.
             </h2>
             <p className="mt-2 max-w-[500px] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-              Semua metrik, funnel, dan daftar tamu dalam satu dokumen — siap
-              dicetak atau dibagikan.
+              Semua ringkasan dan daftar tamu dalam satu dokumen — siap
+              dicetak.
             </p>
           </div>
 

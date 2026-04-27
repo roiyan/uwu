@@ -77,7 +77,7 @@ export function StorySection() {
           </h2>
         </div>
         <p className="chapter-lead">
-          Bukan sekadar template. uwu adalah ruang kreatif Anda — dari desain,
+          Bukan sekadar template. uwu adalah ruang kreatif kalian — dari desain,
           manajemen tamu, hingga analytics — diciptakan berdua dari layar
           masing-masing.
         </p>
@@ -98,7 +98,7 @@ export function StorySection() {
             <h3>
               Cerminan sempurna
               <br />
-              <em>dari Anda berdua.</em>
+              <em>dari kalian berdua.</em>
             </h3>
             <p>
               Pilih dari koleksi tema profesional. Sesuaikan warna dan tipografi

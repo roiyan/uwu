@@ -207,7 +207,7 @@ export function HeroSection() {
               {cerita}
               <em>+</em>
             </div>
-            <div className="meta-label">Couple Terdaftar</div>
+            <div className="meta-label">Pasangan Terdaftar</div>
           </div>
           <div className="meta-item">
             <div className="meta-num">{rating}</div>
@@ -218,7 +218,7 @@ export function HeroSection() {
               {setup}
               <em>min</em>
             </div>
-            <div className="meta-label">Setup Cepat</div>
+            <div className="meta-label">Persiapan Cepat</div>
           </div>
           <div className="meta-item">
             <div className="meta-num">∞</div>

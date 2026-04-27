@@ -11,7 +11,7 @@ export function CheckinDisabledCard() {
   return (
     <section className="d-card mx-auto max-w-2xl p-8 text-center md:p-12">
       <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-gold)]">
-        Belum Diaktifkan
+        Belum Siap
       </p>
       <h2 className="d-serif mt-5 text-[26px] font-extralight leading-[1.2] text-[var(--d-ink)] md:text-[32px]">
         Stasiun penyambutan{" "}

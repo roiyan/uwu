@@ -30,7 +30,7 @@ export function ResponseFunnel({ data }: { data: FunnelData }) {
       <header>
         <p className="d-eyebrow">Respons</p>
         <h2 className="d-serif mt-2 text-[26px] font-extralight leading-tight text-[var(--d-ink)]">
-          Funnel{" "}
+          Perjalanan{" "}
           <em className="d-serif italic text-[var(--d-coral)]">respons</em>
         </h2>
         <p className="mt-1 text-[12.5px] text-[var(--d-ink-dim)]">

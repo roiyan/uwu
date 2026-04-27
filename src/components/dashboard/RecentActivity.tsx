@@ -20,15 +20,14 @@ export function RecentActivity({ items }: { items: ActivityRow[] }) {
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-[22px]">
       <header className="mb-4">
         <h3 className="d-serif text-[18px] font-light text-[var(--d-ink)]">
-          Aktivitas{" "}
+          Jejak{" "}
           <em className="d-serif italic text-[var(--d-coral)]">terbaru</em>
         </h3>
       </header>
 
       {items.length === 0 ? (
         <p className="text-[12px] leading-relaxed text-[var(--d-ink-dim)]">
-          Belum ada aktivitas. Setiap perubahan yang kalian lakukan akan
-          muncul di sini.
+          Belum ada jejak baru. Setiap langkah kalian akan muncul di sini.
         </p>
       ) : (
         <ul className="divide-y divide-[var(--d-line)]">

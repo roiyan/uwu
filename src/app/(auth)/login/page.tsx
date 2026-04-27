@@ -25,7 +25,7 @@ function LoginForm() {
         Selamat datang <em>kembali.</em>
       </h1>
       <p className="auth-sub">
-        Masuk untuk melanjutkan merangkai undangan pernikahan Anda.
+        Cerita kalian sudah menunggu di sini.
       </p>
 
       <form action={signInWithGoogleAction}>
@@ -82,7 +82,7 @@ function LoginForm() {
             disabled={pending}
             className="auth-btn auth-btn-primary"
           >
-            <span>{pending ? "Memproses..." : "Masuk"}</span>
+            <span>{pending ? "Sedang masuk..." : "Masuk"}</span>
           </button>
         </div>
       </form>
@@ -92,7 +92,7 @@ function LoginForm() {
           Lupa kata sandi?
         </Link>
         <span>
-          Belum punya akun? <Link href={registerHref}>Daftar gratis</Link>
+          Belum punya akun? <Link href={registerHref}>Mulai cerita</Link>
         </span>
       </div>
     </>

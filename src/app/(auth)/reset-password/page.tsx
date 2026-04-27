@@ -14,11 +14,10 @@ export default function ResetRequestPage() {
     return (
       <>
         <h1>
-          Email <em>terkirim.</em>
+          Cek email <em>Anda ✉️</em>
         </h1>
         <p className="auth-sub">
-          Kami telah mengirim tautan untuk mengatur ulang kata sandi ke email
-          Anda. Periksa inbox (dan folder spam).
+          Tautan sudah meluncur ke email Anda! Cek inbox (dan folder spam) ya.
         </p>
         <div className="auth-links">
           <Link href="/login">Kembali ke halaman masuk</Link>

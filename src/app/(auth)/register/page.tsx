@@ -54,7 +54,7 @@ function RegisterForm() {
             required
             minLength={2}
             autoComplete="name"
-            placeholder="Nama Anda"
+            placeholder="Nama lengkap Anda"
             className="auth-input"
           />
         </div>
@@ -89,7 +89,7 @@ function RegisterForm() {
             className="auth-input"
           />
           <span className="auth-input-hint">
-            Gunakan kombinasi huruf dan angka.
+            Huruf dan angka, supaya akun kalian aman.
           </span>
         </div>
 
@@ -101,7 +101,7 @@ function RegisterForm() {
             disabled={pending}
             className="auth-btn auth-btn-primary"
           >
-            <span>{pending ? "Memproses..." : "Daftar Gratis"}</span>
+            <span>{pending ? "Sedang masuk..." : "Mulai Cerita"}</span>
           </button>
         </div>
       </form>

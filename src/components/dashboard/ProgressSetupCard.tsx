@@ -31,7 +31,7 @@ export function ProgressSetupCard({ steps }: { steps: SetupStep[] }) {
               Semua siap.
             </h2>
             <p className="text-[13px] text-[var(--d-ink-dim)]">
-              Undangan Anda sudah lengkap dan siap dibagikan.
+              Sempurna! Undangan siap dibagikan.
             </p>
           </div>
         </div>

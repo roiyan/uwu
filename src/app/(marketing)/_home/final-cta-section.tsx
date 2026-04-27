@@ -46,7 +46,7 @@ export function FinalCtaSection() {
             </svg>
           </Link>
           <a href="#investment" className="btn btn-outline btn-large">
-            Booking Konsultasi
+            Jadwalkan Konsultasi
           </a>
         </div>
         <div className="final-cta-signature">— Tim UWU, Jakarta</div>

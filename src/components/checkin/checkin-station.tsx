@@ -174,7 +174,7 @@ export function CheckinStation({
         toast.error(res.error);
         throw new Error(res.error);
       }
-      toast.success(`✓ ${payload.name} dicatat sebagai walk-in.`);
+      toast.success(`✓ ${payload.name} dicatat sebagai tamu langsung.`);
       refresh();
     } finally {
       setBusy(false);
@@ -186,7 +186,7 @@ export function CheckinStation({
     if (busy || confirmTarget) return;
     const token = extractGuestToken(decoded);
     if (!token) {
-      toast.error("QR tidak dikenali. Coba lagi atau pakai mode Cari.");
+      toast.error("QR tidak dikenali. Coba lagi atau gunakan Cari Nama.");
       return;
     }
     const match = initialGuests.find((g) => g.token === token);
@@ -306,7 +306,7 @@ function ModeTabs({
   const tabs: { id: Mode; label: string; hint: string }[] = [
     { id: "scan", label: "Scan QR", hint: "Pindai kode dari undangan tamu" },
     { id: "search", label: "Cari Nama", hint: "Cari di daftar tamu" },
-    { id: "walkin", label: "Walk-in", hint: "Tamu di luar undangan" },
+    { id: "walkin", label: "Tamu Langsung", hint: "Tamu di luar undangan" },
   ];
   return (
     <div
@@ -360,8 +360,8 @@ function ScanPanel({
         tamu.
       </h3>
       <p className="mt-2 max-w-[44ch] text-[12.5px] leading-relaxed text-[var(--d-ink-dim)]">
-        Tamu yang sudah RSVP &ldquo;Hadir&rdquo; mendapat QR di halaman undangan
-        mereka — pindai untuk konfirmasi kehadiran. Acara: <code className="d-mono text-[11px] text-[var(--d-ink)]">/{invitationSlug}</code>
+        Tamu yang mengonfirmasi kehadiran mendapat QR di undangan mereka —
+        pindai saat mereka tiba. Acara: <code className="d-mono text-[11px] text-[var(--d-ink)]">/{invitationSlug}</code>
       </p>
 
       <div className="mt-5 max-w-md">
@@ -475,7 +475,7 @@ function StatsCard({ stats }: { stats: CheckinStats }) {
   return (
     <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
       <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
-        Live Counter
+        Tamu Saat Ini
       </p>
       <div className="mt-3 flex items-baseline gap-2">
         <span className="d-serif text-[44px] font-extralight leading-none text-[var(--d-ink)]">
@@ -486,7 +486,7 @@ function StatsCard({ stats }: { stats: CheckinStats }) {
         </span>
       </div>
       <p className="d-mono mt-1 text-[10px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
-        {stats.totalPax} pax · {stats.walkIns} walk-in · {stats.belumTiba} belum tiba
+        {stats.totalPax} orang · {stats.walkIns} tamu langsung · {stats.belumTiba} belum tiba
       </p>
     </div>
   );
@@ -538,7 +538,7 @@ function BreakdownCard({ groups }: { groups: GroupCheckinBreakdown[] }) {
   return (
     <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
       <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
-        Breakdown Grup
+        Per Grup
       </p>
       <ul className="mt-4 space-y-3">
         {groups.map((g) => {

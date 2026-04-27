@@ -166,7 +166,7 @@ async function Header({ userId }: { userId: string }) {
           rel="noreferrer"
           className="d-mono inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--d-line-strong)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:flex-none lg:px-5 lg:py-2 lg:text-[11px]"
         >
-          👁 Pratinjau
+          👁 Intip Undangan
         </Link>
         <Link
           href="/dashboard/website"
@@ -205,7 +205,7 @@ async function StatHero({ userId }: { userId: string }) {
         suffix=""
         bar={Math.min(100, liveGuests > 0 ? Math.max(8, liveGuests) : 0)}
         accent="var(--d-coral)"
-        foot={liveGuests > 0 ? "tamu di daftar Anda" : "belum ada tamu"}
+        foot={liveGuests > 0 ? "tamu di daftar Anda" : "menanti tamu pertama"}
       />
       <StatTile
         label="Undangan Dibuka"
@@ -216,11 +216,11 @@ async function StatHero({ userId }: { userId: string }) {
         foot={
           totalDibuka > 0
             ? `${Math.round((totalDibuka / Math.max(liveGuests, 1)) * 100)}% dari total`
-            : "menunggu tamu membuka link"
+            : "menanti tamu membuka undangan"
         }
       />
       <StatTile
-        label="RSVP Hadir"
+        label="Konfirmasi Hadir"
         value={statusCounts.hadir}
         suffix=""
         bar={
@@ -229,7 +229,7 @@ async function StatHero({ userId }: { userId: string }) {
             : 0
         }
         accent="var(--d-green)"
-        foot={`${confirmed} orang dikonfirmasi`}
+        foot={`${confirmed} tamu akan hadir`}
       />
       <StatTile
         label="Sisa Hari"
@@ -239,12 +239,12 @@ async function StatHero({ userId }: { userId: string }) {
         accent="var(--d-gold)"
         foot={
           sisaHari === null
-            ? "tanggal belum diisi"
+            ? "isi tanggal di pengaturan"
             : sisaHari > 0
               ? "menuju hari H"
               : sisaHari === 0
                 ? "hari ini"
-                : "hari sudah lewat"
+                : "acara sudah berlalu"
         }
       />
     </section>
@@ -311,8 +311,8 @@ async function ProgressBlock({ userId }: { userId: string }) {
   const steps: SetupStep[] = [
     {
       id: "couple",
-      label: "Detail mempelai",
-      description: "Nama, foto, dan cerita singkat tentang Anda berdua.",
+      label: "Tentang Kalian",
+      description: "Kenalkan diri kalian — nama, foto, dan cerita singkat.",
       href: "/dashboard/website#mempelai",
       done: Boolean(bundle.couple?.brideName && bundle.couple?.groomName),
     },
@@ -326,35 +326,35 @@ async function ProgressBlock({ userId }: { userId: string }) {
     {
       id: "theme",
       label: "Pilih tema",
-      description: "Tentukan tampilan visual undangan digital Anda.",
+      description: "Pilih tampilan undangan kalian.",
       href: "/dashboard/website/theme",
       done: Boolean(bundle.event.themeId),
     },
     {
       id: "story",
-      label: "Cerita & kutipan",
-      description: "Tambah kisah Anda dan kutipan favorit.",
+      label: "Kisah Cinta",
+      description: "Bagikan perjalanan cinta kalian.",
       href: "/dashboard/website#kutipan",
       done: hasCoupleStory,
     },
     {
       id: "cover",
       label: "Foto sampul",
-      description: "Unggah foto bersama sebagai latar utama.",
+      description: "Abadikan momen terbaik sebagai sampul.",
       href: "/dashboard/website#foto-sampul",
       done: hasCoverPhoto,
     },
     {
       id: "guests",
-      label: "Tambah tamu",
-      description: "Import atau tambah tamu satu per satu.",
+      label: "Daftar Tamu",
+      description: "Susun daftar orang-orang istimewa kalian.",
       href: "/dashboard/guests",
       done: guestCount > 0,
     },
     {
       id: "publish",
-      label: "Publikasikan undangan",
-      description: "Aktifkan undangan agar dapat dibagikan ke tamu.",
+      label: "Tayangkan Undangan",
+      description: "Biarkan dunia melihat undangan kalian.",
       href: "/dashboard/settings?tab=acara",
       done: bundle.event.isPublished,
     },
@@ -372,7 +372,7 @@ async function RsvpDetailCard({ userId }: { userId: string }) {
 
   return (
     <section className="d-card p-6">
-      <p className="d-eyebrow">RSVP Detail</p>
+      <p className="d-eyebrow">Detail Respons</p>
       <p className="d-serif mt-3 text-[28px] font-extralight leading-none text-[var(--d-ink)]">
         {statusCounts.hadir}{" "}
         <span className="d-serif text-[14px] text-[var(--d-ink-dim)]">
@@ -380,7 +380,7 @@ async function RsvpDetailCard({ userId }: { userId: string }) {
         </span>
       </p>
       <p className="d-mono mt-1 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-        {confirmedAttendees} orang dikonfirmasi
+        {confirmedAttendees} tamu akan hadir
       </p>
       <dl className="mt-5 space-y-2 text-[12px]">
         <RsvpRow
@@ -389,7 +389,7 @@ async function RsvpDetailCard({ userId }: { userId: string }) {
           dot="var(--d-green)"
         />
         <RsvpRow
-          label="Tidak Hadir"
+          label="Berhalangan"
           value={statusCounts.tidak_hadir}
           dot="var(--d-coral)"
         />
@@ -408,7 +408,7 @@ async function RsvpDetailCard({ userId }: { userId: string }) {
         href="/dashboard/analytics"
         className="d-mono mt-5 inline-block text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)]"
       >
-        Lihat analytics →
+        Lihat jejak →
       </Link>
     </section>
   );
@@ -459,13 +459,13 @@ async function PublishStatCard({ userId }: { userId: string }) {
           }}
         />
         <p className="d-serif text-[20px] font-light text-[var(--d-ink)]">
-          {isPublished ? "Dipublikasikan" : "Belum dipublikasikan"}
+          {isPublished ? "Sudah tayang" : "Belum tayang"}
         </p>
       </div>
       <p className="mt-2 text-[12px] text-[var(--d-ink-dim)]">
         {isPublished
           ? "Undangan dapat diakses tamu Anda."
-          : "Undangan masih tersembunyi dari publik."}
+          : "Undangan masih disimpan untuk kalian berdua."}
       </p>
       <Link
         href="/dashboard/settings?tab=acara"
@@ -630,7 +630,7 @@ async function ChartBlock({ userId }: { userId: string }) {
     const readiness: ReadinessStep[] = [
       {
         id: "couple",
-        label: "Detail mempelai",
+        label: "Tentang Kalian",
         href: "/dashboard/website#mempelai",
         done: Boolean(
           bundle.couple?.brideName && bundle.couple?.groomName,
@@ -650,7 +650,7 @@ async function ChartBlock({ userId }: { userId: string }) {
       },
       {
         id: "story",
-        label: "Cerita & kutipan",
+        label: "Kisah Cinta",
         href: "/dashboard/website#kutipan",
         done: hasCoupleStory,
       },

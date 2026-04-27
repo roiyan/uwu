@@ -14,7 +14,7 @@ export default function ResetConfirmPage() {
       <h1>
         Atur <em>kata sandi</em> baru.
       </h1>
-      <p className="auth-sub">Masukkan kata sandi baru Anda di bawah ini.</p>
+      <p className="auth-sub">Masukkan kata sandi baru untuk akun kalian.</p>
 
       <form action={formAction}>
         <div className="auth-field">
@@ -44,7 +44,7 @@ export default function ResetConfirmPage() {
             disabled={pending}
             className="auth-btn auth-btn-primary"
           >
-            <span>{pending ? "Menyimpan..." : "Simpan kata sandi"}</span>
+            <span>{pending ? "Menyimpan..." : "Simpan & Lanjutkan"}</span>
           </button>
         </div>
       </form>

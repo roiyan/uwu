@@ -116,12 +116,12 @@ export function ActivityHeatmap({ buckets }: { buckets: HeatmapBucket[] }) {
         </div>
         {peak ? (
           <p className="d-mono text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-coral)]">
-            Peak: {DAY_LABELS[peak.day]} · {String(peak.hour).padStart(2, "0")}
+            Puncak: {DAY_LABELS[peak.day]} · {String(peak.hour).padStart(2, "0")}
             :00 WIB · {peak.count} bukaan
           </p>
         ) : (
           <p className="d-serif text-[12.5px] italic text-[var(--d-ink-faint)]">
-            Belum ada bukaan tercatat.
+            Jejak belum dimulai.
           </p>
         )}
       </div>

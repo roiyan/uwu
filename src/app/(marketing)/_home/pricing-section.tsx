@@ -43,7 +43,7 @@ export function PricingSection() {
         <article className="price-card">
           <h3 className="price-name">Silk</h3>
           <p className="price-tagline">
-            Untuk intimate wedding hingga 100 tamu.
+            Untuk pernikahan intim hingga 100 tamu.
           </p>
           <div className="price-amt">
             <span className="price-currency">Rp</span>
@@ -83,7 +83,7 @@ export function PricingSection() {
             Velvet <em>Edition</em>
           </h3>
           <p className="price-tagline">
-            Pilihan 78% couple kami. Lengkap &amp; cinematic.
+            Pilihan 78% pasangan kami. Lengkap &amp; sinematik.
           </p>
           <div className="price-amt">
             <span className="price-currency">Rp</span>
@@ -109,7 +109,7 @@ export function PricingSection() {
             </li>
             <li>
               <Check />
-              Digital amplop (QRIS)
+              Tanda kasih digital (QRIS)
             </li>
             <li>
               <Check />
@@ -143,7 +143,7 @@ export function PricingSection() {
             </li>
             <li>
               <Check />
-              Art director dedicated
+              Art director pribadi
             </li>
             <li>
               <Check />
@@ -155,7 +155,7 @@ export function PricingSection() {
             </li>
             <li>
               <Check />
-              Revisi unlimited
+              Revisi tanpa batas
             </li>
             <li>
               <Check />

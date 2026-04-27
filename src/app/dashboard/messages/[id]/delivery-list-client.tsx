@@ -31,7 +31,7 @@ const STATUS_LABEL: Record<DeliveryStatus, string> = {
   sent: "Terkirim",
   delivered: "Terkirim",
   read: "Dibaca",
-  failed: "Gagal",
+  failed: "Belum terkirim",
 };
 
 export function DeliveryListClient({

@@ -6,11 +6,11 @@ import { getBroadcastDetail } from "@/lib/actions/broadcast";
 import { DeliveryListClient } from "./delivery-list-client";
 
 const HISTORY_STATUS_LABEL: Record<string, string> = {
-  draft: "Draft",
+  draft: "Draf",
   queued: "Antri",
   sending: "Mengirim",
   completed: "Selesai",
-  failed: "Gagal",
+  failed: "Belum terkirim",
   scheduled: "Terjadwal",
   cancelled: "Dibatalkan",
 };
@@ -85,12 +85,12 @@ export default async function BroadcastDetailPage({
           accent="#3B7A57"
         />
         <StatCard
-          label="Gagal"
+          label="Belum terkirim"
           value={counts.failed}
           accent="#C0392B"
         />
         <StatCard
-          label="Dibuka Undangan"
+          label="Undangan Dibuka"
           value={counts.opened}
           accent="#3949AB"
         />
@@ -100,7 +100,7 @@ export default async function BroadcastDetailPage({
         <section className="lg:col-span-2">
           {msg.subject && (
             <div className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-              <h3 className="text-sm font-medium text-[var(--d-ink)]">Subject</h3>
+              <h3 className="text-sm font-medium text-[var(--d-ink)]">Subjek</h3>
               <p className="mt-2 whitespace-pre-line text-sm text-[var(--d-ink-dim)]">
                 {msg.subject}
               </p>
