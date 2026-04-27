@@ -364,7 +364,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
 
   function handleSectionDragStart(
     id: string,
-    e: React.DragEvent<HTMLLIElement>,
+    e: React.DragEvent<HTMLElement>,
   ) {
     setDraggingId(id);
     e.dataTransfer.effectAllowed = "move";
@@ -433,6 +433,45 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
     persistOrder(next);
   }
 
+  // Mobile drag-and-drop for the section pills. iOS Safari ignores
+  // HTML5 DnD on touch, so we feed the same draggingId / dragOverId
+  // state from raw touch events and look up the target pill via
+  // document.elementFromPoint(). The synthetic click that fires
+  // after a touch drag gets suppressed (suppressNextClickRef) so a
+  // drop doesn't also flip the active section.
+  const suppressNextClickRef = useRef(false);
+  function handlePillTouchStart(id: string) {
+    setDraggingId(id);
+    setDragOverId(null);
+    suppressNextClickRef.current = false;
+  }
+  function handlePillTouchMove(e: React.TouchEvent<HTMLButtonElement>) {
+    if (!draggingId) return;
+    const t = e.touches[0];
+    if (!t) return;
+    const el = document.elementFromPoint(
+      t.clientX,
+      t.clientY,
+    ) as HTMLElement | null;
+    const pill = el?.closest<HTMLElement>("[data-pill-id]");
+    const targetId = pill?.dataset.pillId;
+    if (targetId && targetId !== draggingId) {
+      if (dragOverId !== targetId) setDragOverId(targetId);
+      // Once the gesture has actually moved to a different pill,
+      // treat it as a drag — the upcoming synthetic click should
+      // not switch sections.
+      suppressNextClickRef.current = true;
+    }
+  }
+  function handlePillTouchEnd() {
+    if (draggingId && dragOverId && draggingId !== dragOverId) {
+      handleSectionDrop(dragOverId);
+    } else {
+      setDraggingId(null);
+      setDragOverId(null);
+    }
+  }
+
   const enabledCount = SECTIONS.reduce((acc, s) => {
     if (s.comingSoon) return acc;
     if (!s.flag) return acc + 1; // always-on sections
@@ -460,86 +499,82 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
 
         {/* Mobile section pills — inside sticky so they ride along
             with the TopBar instead of scrolling out of view. The
-            active pill grows a vertical ▲▼ pair on the left so a
-            mobile user can reorder without dragging on a scrolling
-            strip (HTML5 DnD on touch is unreliable). */}
-        <nav className="flex gap-2 overflow-x-auto px-5 pb-3 pt-1 lg:hidden">
-          {orderedSections.map((s, idx) => {
-            const isActive = activeSection === s.id;
-            const upDisabled = idx === 0;
-            const downDisabled = idx === orderedSections.length - 1;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setActiveSection(s.id)}
-                className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-colors ${
-                  isActive
-                    ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
-                    : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
-                }`}
-              >
-                {isActive && (
-                  <span className="flex flex-col gap-px leading-none">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Pindahkan ${s.title} ke kiri`}
-                      aria-disabled={upDisabled}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!upDisabled) handleMoveUp(idx);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (!upDisabled) handleMoveUp(idx);
-                        }
-                      }}
-                      className="px-0.5 text-[8px] leading-none"
-                      style={{
-                        color: upDisabled
-                          ? "var(--d-ink-faint)"
-                          : "var(--d-coral)",
-                        cursor: upDisabled ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      ▲
-                    </span>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Pindahkan ${s.title} ke kanan`}
-                      aria-disabled={downDisabled}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (!downDisabled) handleMoveDown(idx);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (!downDisabled) handleMoveDown(idx);
-                        }
-                      }}
-                      className="px-0.5 text-[8px] leading-none"
-                      style={{
-                        color: downDisabled
-                          ? "var(--d-ink-faint)"
-                          : "var(--d-coral)",
-                        cursor: downDisabled ? "not-allowed" : "pointer",
-                      }}
-                    >
-                      ▼
-                    </span>
-                  </span>
-                )}
-                <span>{s.title}</span>
-              </button>
-            );
-          })}
-        </nav>
+            pills are draggable on both desktop (HTML5 DnD with a
+            mouse) and mobile (touch). On touch we walk pointer
+            position with elementFromPoint() because plain HTML5 DnD
+            is unreliable on iOS Safari. */}
+        <div className="lg:hidden">
+          <nav className="flex gap-2 overflow-x-auto px-5 pb-2 pt-1">
+            {orderedSections.map((s, idx) => {
+              const isActive = activeSection === s.id;
+              const isDragging = draggingId === s.id;
+              const isDragOver =
+                dragOverId === s.id && draggingId !== s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  data-pill-index={idx}
+                  data-pill-id={s.id}
+                  draggable
+                  onDragStart={(e) => handleSectionDragStart(s.id, e)}
+                  onDragOver={(e) => {
+                    if (!draggingId || draggingId === s.id) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverId !== s.id) setDragOverId(s.id);
+                  }}
+                  onDragLeave={() =>
+                    setDragOverId((cur) => (cur === s.id ? null : cur))
+                  }
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleSectionDrop(s.id);
+                  }}
+                  onDragEnd={handleSectionDragEnd}
+                  onTouchStart={() => handlePillTouchStart(s.id)}
+                  onTouchMove={handlePillTouchMove}
+                  onTouchEnd={handlePillTouchEnd}
+                  onClick={() => {
+                    // Suppress the synthetic click that follows a
+                    // touch drag — without this, releasing on a
+                    // non-self pill would both reorder AND switch
+                    // the active section.
+                    if (suppressNextClickRef.current) {
+                      suppressNextClickRef.current = false;
+                      return;
+                    }
+                    setActiveSection(s.id);
+                  }}
+                  className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-all duration-150 ${
+                    isActive
+                      ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
+                      : isDragOver
+                        ? "border-[var(--d-coral)] text-[var(--d-coral)]"
+                        : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
+                  }`}
+                  style={{
+                    opacity: isDragging ? 0.5 : 1,
+                    transform: isDragging ? "scale(0.95)" : "scale(1)",
+                    // Block the browser's native horizontal-scroll
+                    // gesture *on the pill* so a horizontal swipe
+                    // means "drag this pill", not "scroll the
+                    // strip". The strip can still be scrolled by
+                    // touching the gap between pills (or vertically
+                    // through the page).
+                    touchAction: "none",
+                    cursor: "grab",
+                  }}
+                >
+                  {s.title}
+                </button>
+              );
+            })}
+          </nav>
+          <p className="d-mono px-5 pb-2 text-center text-[9px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+            Tahan & geser untuk ubah urutan
+          </p>
+        </div>
       </div>
 
       {/* 3-panel grid: section list | form editor | phone preview.
@@ -928,8 +963,8 @@ function SectionListItem({
   onToggle?: () => void;
   isDragging?: boolean;
   isDragOver?: boolean;
-  onDragStart?: (e: React.DragEvent<HTMLLIElement>) => void;
-  onDragOver?: (e: React.DragEvent<HTMLLIElement>) => void;
+  onDragStart?: (e: React.DragEvent<HTMLElement>) => void;
+  onDragOver?: (e: React.DragEvent<HTMLElement>) => void;
   onDragLeave?: () => void;
   onDrop?: () => void;
   onDragEnd?: () => void;
@@ -1304,20 +1339,24 @@ function CoupleBlock({
           onChange={(v) => onChange(motherKey as keyof CoupleData, v)}
         />
         <div className="md:col-span-2">
-          {/* Picker reads from the central media library — operator
-              uploads once, picks across mempelai/cover/galeri without
-              re-uploading. Same { value, onChange } shape as the old
-              PhotoUpload so callers don't need to reshape data. */}
-          <MediaPicker
-            eventId={eventId}
-            label={`Foto ${title.toLowerCase()}`}
-            helper="Pilih atau unggah ke perpustakaan"
-            aspectRatio="3 / 4"
-            value={(couple[photoKey] as string | null) ?? null}
-            onChange={(v) =>
-              onChange(photoKey as keyof CoupleData, (v ?? null) as never)
-            }
-          />
+          {/* Constrain to a portrait thumbnail (120 mobile, 160 desktop).
+              Without the width cap MediaPicker's `w-full` button stretched
+              the 3:4 aspect ratio across the entire two-column row, which
+              made the upload tile look like a hero image. The picker
+              still triggers the same library modal — only its on-screen
+              footprint changed. */}
+          <div className="w-[120px] md:w-[160px]">
+            <MediaPicker
+              eventId={eventId}
+              label={`Foto ${title.toLowerCase()}`}
+              helper="Pilih atau unggah ke perpustakaan"
+              aspectRatio="3 / 4"
+              value={(couple[photoKey] as string | null) ?? null}
+              onChange={(v) =>
+                onChange(photoKey as keyof CoupleData, (v ?? null) as never)
+              }
+            />
+          </div>
         </div>
       </div>
     </div>
