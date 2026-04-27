@@ -200,6 +200,10 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
   );
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  // Camera-icon button in TopBar opens this — manager view of the
+  // central media library so the operator can review/delete assets
+  // without scrolling into a section editor.
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [viewport, setViewport] = useState<Viewport>("mobile");
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
