@@ -412,6 +412,11 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
           savedAt={savedAt}
           onSave={handleSave}
           onMobilePreview={() => setMobilePreviewOpen(true)}
+          onOpenMedia={
+            defaults.event.id
+              ? () => setMediaLibraryOpen(true)
+              : undefined
+          }
         />
 
         {/* Mobile section pills — inside sticky so they ride along
