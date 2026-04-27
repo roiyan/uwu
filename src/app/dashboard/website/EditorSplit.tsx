@@ -661,12 +661,16 @@ function TopBar({
   savedAt,
   onSave,
   onMobilePreview,
+  onOpenMedia,
 }: {
   dirty: boolean;
   pending: boolean;
   savedAt: Date | null;
   onSave: () => void;
   onMobilePreview: () => void;
+  // Optional — only wired when the event has been persisted (id !=
+  // null). Without it the camera button is hidden.
+  onOpenMedia?: () => void;
 }) {
   return (
     <div>
