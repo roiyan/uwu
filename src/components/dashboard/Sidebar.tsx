@@ -197,18 +197,20 @@ export function Sidebar({
   // Width morphs between 280px (expanded) and 68px (collapsed). Mobile
   // drawer (responsive=false) keeps the full 280px so the drawer's
   // labels stay readable.
-  const widthClass = responsive
-    ? isCollapsed
-      ? "lg:w-[68px]"
-      : "lg:w-[280px]"
-    : "w-[280px]";
+  //
+  // CRITICAL: width is set via inline `style.width`, NOT a Tailwind
+  // class. Earlier we used `lg:w-[68px]` / `lg:w-[280px]` in a ternary
+  // and Tailwind 4's content scanner dropped both rules from the
+  // build output, so the sidebar never resized in production. Inline
+  // style sidesteps the JIT entirely and renders the value straight
+  // from React state.
   const sidebarClass = [
-    "relative flex-col overflow-hidden transition-[width] duration-200 ease-out",
-    widthClass,
+    "relative flex-col overflow-hidden",
     responsive
       ? "hidden lg:sticky lg:top-0 lg:flex lg:h-screen"
-      : "flex h-full w-[280px]",
+      : "flex h-full",
   ].join(" ");
+  const sidebarWidth = responsive ? (isCollapsed ? 68 : 280) : 280;
 
   const couple = splitCoupleLabel(coupleLabel ?? "Cerita belum dimulai");
   const metaLabel = [themeLabel, packageLabel]
@@ -219,7 +221,12 @@ export function Sidebar({
   return (
     <aside
       className={sidebarClass}
-      style={{ background: "var(--d-bg-1)", color: "var(--d-ink)" }}
+      style={{
+        background: "var(--d-bg-1)",
+        color: "var(--d-ink)",
+        width: `${sidebarWidth}px`,
+        transition: "width 200ms ease-out",
+      }}
     >
       {/* Top-left coral glow per design ref */}
       <div
