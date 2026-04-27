@@ -304,6 +304,17 @@ export async function updateThemeConfigAction(
 
   if (result.ok) {
     revalidatePath("/dashboard/website/theme");
+    // Same ISR gap as the section reorder action — palette + font
+    // changes also live in the public invitation render path, so they
+    // need to invalidate the static slug cache too.
+    const [evtRow] = await db
+      .select({ slug: events.slug })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1);
+    if (evtRow?.slug) {
+      revalidatePath(`/${evtRow.slug}`);
+    }
     await logActivity({
       eventId,
       action: "update_theme",
@@ -334,15 +345,21 @@ export async function updateSectionOrderAction(
     return { ok: false, error: "Urutan bagian tidak valid." };
   }
 
+  // Slug lives on the event row and never changes once published, so
+  // capturing it during the auth/save round-trip lets us hand it back
+  // to the path-revalidation block below without a second query.
+  let invitationSlug: string | null = null;
+
   const result = await withAuth(eventId, "editor", async () => {
     const [eventRow] = await db
-      .select({ themeId: events.themeId })
+      .select({ themeId: events.themeId, slug: events.slug })
       .from(events)
       .where(eq(events.id, eventId))
       .limit(1);
     if (!eventRow?.themeId) {
       throw new Error("Pilih tema terlebih dahulu sebelum mengubah urutan.");
     }
+    invitationSlug = eventRow.slug;
     const [existing] = await db
       .select({ config: eventThemeConfigs.config })
       .from(eventThemeConfigs)
@@ -376,6 +393,13 @@ export async function updateSectionOrderAction(
   if (result.ok) {
     revalidatePath("/dashboard/website");
     revalidatePath("/dashboard/website/theme");
+    // CRITICAL: bust the public invitation's ISR cache (revalidate=300,
+    // force-static). Without this the new order keeps serving the
+    // pre-save HTML for up to 5 minutes — which reads as "reorder is
+    // broken" to anyone testing in a fresh tab.
+    if (invitationSlug) {
+      revalidatePath(`/${invitationSlug}`);
+    }
   }
   return result;
 }
