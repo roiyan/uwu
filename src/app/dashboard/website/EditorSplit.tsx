@@ -714,6 +714,15 @@ function TopBar({
             </button>
           </div>
           <div className="flex gap-2 sm:contents">
+            {onOpenMedia && (
+              <button
+                type="button"
+                onClick={onOpenMedia}
+                className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)] sm:order-2 sm:flex-initial"
+              >
+                📷 Media
+              </button>
+            )}
             <Link
               href="/dashboard/website/theme"
               className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[rgba(212,184,150,0.35)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-gold)] transition-colors hover:bg-[rgba(212,184,150,0.08)] sm:order-2 sm:flex-initial"
