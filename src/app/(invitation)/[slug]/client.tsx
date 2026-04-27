@@ -18,6 +18,10 @@ import { RsvpForm } from "./rsvp-form";
 import { GiftSection } from "./gift-section";
 import type { PublicGiftAccount } from "@/lib/actions/gift";
 import { GallerySection, type PublicGalleryImage } from "./gallery-section";
+import {
+  DEFAULT_SECTION_ORDER,
+  type SectionId,
+} from "@/lib/theme/sections";
 
 type Palette = { primary: string; secondary: string; accent: string };
 
@@ -65,6 +69,9 @@ export function InvitationClient(props: {
   schedules: Schedule[];
   giftAccounts?: PublicGiftAccount[];
   galleryImages?: PublicGalleryImage[];
+  /** Persisted render order from `eventThemeConfigs.config.sectionOrder`.
+   *  Falls back to the canonical default when omitted. */
+  sectionOrder?: readonly SectionId[];
 }) {
   return (
     <Suspense fallback={<Skeleton palette={props.palette} />}>
@@ -97,6 +104,7 @@ function InvitationInner({
   schedules,
   giftAccounts,
   galleryImages,
+  sectionOrder,
 }: {
   event: {
     id: string;
@@ -110,6 +118,7 @@ function InvitationInner({
   schedules: Schedule[];
   giftAccounts?: PublicGiftAccount[];
   galleryImages?: PublicGalleryImage[];
+  sectionOrder?: readonly SectionId[];
 }) {
   const searchParams = useSearchParams();
   const token = searchParams.get("to");
@@ -167,45 +176,78 @@ function InvitationInner({
         )}
       </AnimatePresence>
 
-      <HeroSection
-        event={event}
-        palette={palette}
-        couple={couple}
-        guestName={guestName}
-        firstSchedule={schedules[0]}
-      />
-
-      {couple?.quote && <QuoteSection quote={couple.quote} palette={palette} />}
-
-      {couple && <CoupleSection couple={couple} palette={palette} />}
-
-      {couple?.story && <StorySection story={couple.story} palette={palette} />}
-
-      <SchedulesSection
-        schedules={schedules}
-        palette={palette}
-        eventTitle={event.title}
-      />
-
-      {galleryImages && galleryImages.length > 0 && (
-        <GallerySection images={galleryImages} palette={palette} />
-      )}
-
-      <RsvpSection
-        token={token}
-        guest={guest}
-        guestResolved={guestResolved}
-        isExistingRsvp={isExistingRsvp}
-        palette={palette}
-      />
-
-      {giftAccounts && giftAccounts.length > 0 && (
-        <GiftSection
-          eventId={event.id}
-          accounts={giftAccounts}
-          palette={palette}
-        />
-      )}
+      {/* Reorderable bagian — driven by the persisted sectionOrder
+          override from the Website Editor. Each ID resolves to a
+          render branch below; missing data per section short-circuits
+          to null so empty bagian don't leave gaps. The default order
+          matches the historic hardcoded sequence so unconfigured
+          events render identically. */}
+      {(sectionOrder ?? DEFAULT_SECTION_ORDER).map((id) => {
+        switch (id) {
+          case "foto-sampul":
+            return (
+              <HeroSection
+                key={id}
+                event={event}
+                palette={palette}
+                couple={couple}
+                guestName={guestName}
+                firstSchedule={schedules[0]}
+              />
+            );
+          case "kutipan":
+            return couple?.quote ? (
+              <QuoteSection key={id} quote={couple.quote} palette={palette} />
+            ) : null;
+          case "mempelai":
+            return couple ? (
+              <CoupleSection key={id} couple={couple} palette={palette} />
+            ) : null;
+          case "cerita":
+            return couple?.story ? (
+              <StorySection key={id} story={couple.story} palette={palette} />
+            ) : null;
+          case "acara":
+            return (
+              <SchedulesSection
+                key={id}
+                schedules={schedules}
+                palette={palette}
+                eventTitle={event.title}
+              />
+            );
+          case "galeri":
+            return galleryImages && galleryImages.length > 0 ? (
+              <GallerySection
+                key={id}
+                images={galleryImages}
+                palette={palette}
+              />
+            ) : null;
+          case "rsvp":
+            return (
+              <RsvpSection
+                key={id}
+                token={token}
+                guest={guest}
+                guestResolved={guestResolved}
+                isExistingRsvp={isExistingRsvp}
+                palette={palette}
+              />
+            );
+          case "amplop":
+            return giftAccounts && giftAccounts.length > 0 ? (
+              <GiftSection
+                key={id}
+                eventId={event.id}
+                accounts={giftAccounts}
+                palette={palette}
+              />
+            ) : null;
+          default:
+            return null;
+        }
+      })}
 
       {/* Tiket kehadiran — only renders when the couple has enabled
           check-in AND this guest has RSVP'd "hadir". The QR encodes
