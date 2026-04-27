@@ -30,6 +30,13 @@ export type EditorDefaults = {
   palette: Palette;
   couple: CoupleData;
   schedules: ScheduleData[];
+  /**
+   * Persisted left-rail section order. The page already projects any
+   * dirty stored value back onto a clean canonical permutation via
+   * `resolveSectionOrder`, so we trust the caller and treat this as
+   * authoritative. Consumed by the DnD UI in a follow-up commit.
+   */
+  sectionOrder: string[];
 };
 
 type ScheduleDraft = {
