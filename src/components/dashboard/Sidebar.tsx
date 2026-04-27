@@ -270,15 +270,15 @@ export function Sidebar({
           When collapsed the rail is 68px wide so we center the pill
           horizontally instead of pinning it to the right.
           Mobile drawer hides this — it has its own close button. */}
-      {responsive && (
+      {responsive && !isCollapsed && (
         <button
           type="button"
           onClick={toggleCollapse}
-          aria-label={isCollapsed ? "Perbesar menu" : "Perkecil menu"}
-          aria-pressed={isCollapsed}
-          title={isCollapsed ? "Perbesar menu" : "Perkecil menu"}
+          aria-label="Perkecil menu"
+          aria-pressed={false}
+          title="Perkecil menu"
           className={[
-            "absolute top-[58px] z-10",
+            "absolute right-[16px] top-[58px] z-10",
             "hidden h-8 w-8 items-center justify-center",
             "rounded-full border border-[var(--d-coral)]",
             "bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]",
@@ -286,12 +286,9 @@ export function Sidebar({
             "group-hover:opacity-100",
             "hover:scale-105 hover:bg-[rgba(240,160,156,0.18)]",
             "lg:flex",
-            isCollapsed
-              ? "left-1/2 -translate-x-1/2"
-              : "right-[16px]",
           ].join(" ")}
         >
-          <ChevronIcon direction={isCollapsed ? "right" : "left"} />
+          <ChevronIcon direction="left" />
         </button>
       )}
 
@@ -361,6 +358,27 @@ export function Sidebar({
             isCollapsed ? "px-2" : "px-3"
           }`}
         >
+          {/* Expand-toggle row — only in collapsed mode. Renders in
+              normal flow at the top of the nav list so it can't
+              visually overlap the page content (the previous absolute
+              "left-1/2" pill nudged outside the 68px rail clipping
+              rect on some browser zoom levels). Full-width tap
+              target, 44px tall to match touch guidelines. */}
+          {responsive && isCollapsed && (
+            <div className="mb-1.5 border-b border-[var(--d-line)] pb-2">
+              <button
+                type="button"
+                onClick={toggleCollapse}
+                aria-label="Perbesar menu"
+                aria-pressed
+                title="Perbesar menu"
+                className="flex w-full items-center justify-center rounded-[10px] py-2.5 text-[var(--d-coral)] transition-colors hover:bg-[rgba(240,160,156,0.10)]"
+              >
+                <ChevronIcon direction="right" />
+              </button>
+            </div>
+          )}
+
           {dashboardNav.map((item, idx) => {
             const active =
               pathname === item.href ||
