@@ -5,9 +5,15 @@ import {
   selectThemeAction,
   updateThemeConfigAction,
 } from "@/lib/actions/event";
+import {
+  defaultPalette6For,
+  mergePalette6,
+  type Palette6,
+} from "@/lib/theme/palette";
 
 type ThemeOption = {
   id: string;
+  slug: string;
   name: string;
   tier: string;
   description: string | null;
@@ -21,25 +27,59 @@ const tierLabel: Record<string, string> = {
   premium: "Pro",
 };
 
-function defaultPalette(config: Record<string, unknown>) {
-  const palette = (config?.palette ?? {}) as Record<string, string>;
-  return {
-    primary: palette.primary ?? "#C06070",
-    secondary: palette.secondary ?? "#FAF6F1",
-    accent: palette.accent ?? "#D4A574",
-  };
-}
+// Six color slots the couple can recolour, ordered the way the design
+// brief presents them: structural slots (background / text) first,
+// then the three brand accents. `desc` is rendered under the swatch
+// label so the slot purpose stays self-documenting.
+const COLOR_FIELDS: Array<{
+  key: keyof Palette6;
+  label: string;
+  desc: string;
+}> = [
+  {
+    key: "background",
+    label: "Latar Belakang",
+    desc: "Warna dasar undangan",
+  },
+  {
+    key: "headingText",
+    label: "Teks Judul",
+    desc: "Nama mempelai, judul section",
+  },
+  {
+    key: "bodyText",
+    label: "Teks Isi",
+    desc: "Paragraf, deskripsi, detail",
+  },
+  {
+    key: "brandPrimary",
+    label: "Aksen Utama",
+    desc: "Tombol, link, highlight",
+  },
+  {
+    key: "brandLight",
+    label: "Aksen Terang",
+    desc: "Background card, badge",
+  },
+  {
+    key: "brandDark",
+    label: "Aksen Gelap",
+    desc: "Footer, kontras",
+  },
+];
 
 export function ThemeEditor({
   eventId,
   themes,
   selectedId,
-  paletteOverride,
+  paletteOverride6,
 }: {
   eventId: string;
   themes: ThemeOption[];
   selectedId: string | null;
-  paletteOverride: Record<string, string>;
+  // The persisted 6-slot override read from `eventThemeConfigs.config.palette6`.
+  // Empty object on first render — fields fall back to the theme default.
+  paletteOverride6: Partial<Palette6>;
 }) {
   const boundSelect = selectThemeAction.bind(null, eventId);
   const boundPalette = updateThemeConfigAction.bind(null, eventId);
@@ -51,14 +91,30 @@ export function ThemeEditor({
     [themes, selectedId],
   );
 
-  const base = selectedTheme ? defaultPalette(selectedTheme.config) : null;
-  const initPrimary = paletteOverride.primary ?? base?.primary ?? "#C06070";
-  const initSecondary = paletteOverride.secondary ?? base?.secondary ?? "#FAF6F1";
-  const initAccent = paletteOverride.accent ?? base?.accent ?? "#D4A574";
+  // Compose the editing palette: theme defaults beneath, persisted
+  // override on top. Recomputed only when the selected theme changes.
+  const themeDefault: Palette6 = useMemo(
+    () =>
+      defaultPalette6For(
+        selectedTheme?.slug ?? null,
+        selectedTheme?.config ?? null,
+      ),
+    [selectedTheme],
+  );
+  const initial: Palette6 = useMemo(
+    () => mergePalette6(themeDefault, paletteOverride6),
+    [themeDefault, paletteOverride6],
+  );
 
-  const [primary, setPrimary] = useState(initPrimary);
-  const [secondary, setSecondary] = useState(initSecondary);
-  const [accent, setAccent] = useState(initAccent);
+  const [palette, setPalette] = useState<Palette6>(initial);
+
+  function updateSlot(key: keyof Palette6, value: string) {
+    setPalette((cur) => ({ ...cur, [key]: value }));
+  }
+
+  function resetToThemeDefault() {
+    setPalette(themeDefault);
+  }
 
   return (
     <div className="space-y-10">
@@ -66,7 +122,7 @@ export function ThemeEditor({
         <h2 className="font-display text-xl text-[var(--d-ink)]">Pilih Tema</h2>
         <form action={selectAction} className="mt-4 grid gap-4 md:grid-cols-3">
           {themes.map((t) => {
-            const palette = defaultPalette(t.config);
+            const preview = defaultPalette6For(t.slug, t.config);
             const isPicked = selectedId === t.id;
             return (
               <label
@@ -80,11 +136,11 @@ export function ThemeEditor({
                 <input type="radio" name="themeId" value={t.id} defaultChecked={isPicked} className="sr-only" />
                 <div
                   className="flex h-36 items-center justify-center"
-                  style={{ background: palette.secondary }}
+                  style={{ background: preview.background }}
                 >
                   <div
                     className="flex h-20 w-20 items-center justify-center rounded-full text-3xl text-white shadow-ghost-md"
-                    style={{ background: palette.primary }}
+                    style={{ background: preview.brandPrimary }}
                   >
                     ♡
                   </div>
@@ -94,7 +150,7 @@ export function ThemeEditor({
                     <h3 className="font-display text-lg text-[var(--d-ink)]">{t.name}</h3>
                     <span
                       className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide"
-                      style={{ background: palette.accent, color: "#1A1A2E" }}
+                      style={{ background: preview.brandLight, color: preview.brandDark }}
                     >
                       {tierLabel[t.tier] ?? t.tier}
                     </span>
@@ -125,93 +181,191 @@ export function ThemeEditor({
 
       {selectedTheme && (
         <section className="rounded-2xl bg-[var(--d-bg-card)] p-6 shadow-ghost-sm">
-          <h2 className="font-display text-xl text-[var(--d-ink)]">Kustomisasi Warna</h2>
-          <p className="mt-1 text-sm text-[var(--d-ink-dim)]">
-            Sesuaikan palet untuk tema <span className="font-medium">{selectedTheme.name}</span>.
+          <p
+            className="text-[10px] uppercase"
+            style={{
+              fontFamily:
+                '"JetBrains Mono", ui-monospace, monospace',
+              letterSpacing: "0.26em",
+              color: "var(--d-coral)",
+            }}
+          >
+            Palet Warna
+          </p>
+          <h2
+            className="d-serif mt-2 text-[22px] font-extralight"
+            style={{ color: "var(--d-ink)" }}
+          >
+            Sesuaikan{" "}
+            <em className="d-serif italic" style={{ color: "var(--d-coral)" }}>
+              warna
+            </em>{" "}
+            undangan.
+          </h2>
+          <p
+            className="d-serif mt-1 text-[12.5px] italic"
+            style={{ color: "var(--d-ink-dim)" }}
+          >
+            Setiap tema punya palet default — sesuaikan sesuai selera kalian.
           </p>
 
-          <div className="mt-6 grid gap-6 md:grid-cols-[1fr_280px]">
-            <form action={paletteAction} className="space-y-4">
-              <input type="hidden" name="themeId" value={selectedTheme.id} />
-              <ColorField label="Warna utama" name="palette_primary" value={primary} onChange={setPrimary} />
-              <ColorField label="Latar belakang" name="palette_secondary" value={secondary} onChange={setSecondary} />
-              <ColorField label="Aksen" name="palette_accent" value={accent} onChange={setAccent} />
+          <form
+            action={paletteAction}
+            className="mt-6 grid gap-6 md:grid-cols-[1fr_280px]"
+          >
+            <input type="hidden" name="themeId" value={selectedTheme.id} />
+            {/* Hidden inputs carrying the live palette state. The form
+                handler in updateThemeConfigAction reads `palette6_*`
+                keys; legacy `palette_*` keys are left empty so the
+                action derives them from the 6-color set. */}
+            {COLOR_FIELDS.map((f) => (
+              <input
+                key={f.key}
+                type="hidden"
+                name={`palette6_${f.key}`}
+                value={palette[f.key]}
+              />
+            ))}
 
-              {paletteState && !paletteState.ok && (
-                <p className="text-sm text-[var(--d-coral)]">{paletteState.error}</p>
-              )}
-              {paletteState && paletteState.ok && (
-                <p className="text-sm text-[var(--d-gold)]">Warna tersimpan.</p>
-              )}
-
-              <button
-                type="submit"
-                disabled={palettePending}
-                className="rounded-full bg-[var(--d-bg-2)] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--d-bg-1)] disabled:opacity-60"
-              >
-                {palettePending ? "Menyimpan..." : "Simpan Warna"}
-              </button>
-            </form>
-
-            <div
-              className="flex h-64 flex-col items-center justify-center rounded-2xl p-6 text-center"
-              style={{ background: secondary }}
-            >
-              <div
-                className="flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white shadow-ghost-md"
-                style={{ background: primary }}
-              >
-                ♡
+            <div className="space-y-3">
+              <div className="grid gap-3 md:grid-cols-2">
+                {COLOR_FIELDS.map((f) => (
+                  <ColorSlotCard
+                    key={f.key}
+                    label={f.label}
+                    desc={f.desc}
+                    value={palette[f.key]}
+                    onChange={(v) => updateSlot(f.key, v)}
+                  />
+                ))}
               </div>
-              <p className="mt-3 font-display text-lg" style={{ color: "#1A1A2E" }}>
-                The Wedding of
-              </p>
-              <p className="font-display text-xl" style={{ color: primary }}>
-                Anisa &amp; Rizky
-              </p>
-              <span
-                className="mt-3 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-wide"
-                style={{ background: accent, color: "#1A1A2E" }}
-              >
-                Pratinjau Warna
-              </span>
+
+              <div className="flex items-center justify-between gap-4 pt-2">
+                <button
+                  type="button"
+                  onClick={resetToThemeDefault}
+                  className="d-mono text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)] underline-offset-4 transition-colors hover:text-[var(--d-coral)] hover:underline"
+                >
+                  ↺ Reset ke default tema
+                </button>
+
+                {paletteState && !paletteState.ok && (
+                  <p className="text-sm text-[var(--d-coral)]">
+                    {paletteState.error}
+                  </p>
+                )}
+                {paletteState && paletteState.ok && (
+                  <p className="text-sm text-[var(--d-gold)]">
+                    Warna tersimpan.
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={palettePending}
+                  className="d-mono inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-7 py-2.5 text-[11px] font-medium uppercase tracking-[0.22em] text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {palettePending ? "Menyimpan..." : "Simpan Warna"}
+                </button>
+              </div>
             </div>
-          </div>
+
+            {/* Live mini-preview rendered with the in-flight palette so
+                the couple sees changes before saving. */}
+            <PreviewCard palette={palette} />
+          </form>
         </section>
       )}
     </div>
   );
 }
 
-function ColorField({
+function ColorSlotCard({
   label,
-  name,
+  desc,
   value,
   onChange,
 }: {
   label: string;
-  name: string;
+  desc: string;
   value: string;
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="flex items-center gap-3">
-      <input
-        type="color"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-14 cursor-pointer rounded-md border border-[var(--d-line-strong)]"
-      />
-      <div className="flex flex-1 flex-col">
-        <span className="text-sm font-medium text-[var(--d-ink)]">{label}</span>
+    <label
+      className="flex items-center gap-3 rounded-xl border p-3 transition-colors"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        borderColor: "var(--d-line)",
+      }}
+    >
+      <span
+        className="relative inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg"
+        style={{
+          background: value,
+          border: "2px solid var(--d-line-strong)",
+        }}
+      >
         <input
-          name={name}
+          type="color"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          pattern="^#[0-9A-Fa-f]{6}$"
-          className="mt-1 w-full rounded-lg border border-[var(--d-line-strong)] bg-[var(--d-bg-card)] px-3 py-2 text-sm font-mono outline-none focus:border-[var(--d-coral)] focus:shadow-[var(--focus-ring-navy)]"
+          aria-label={label}
+          className="absolute inset-[-4px] cursor-pointer opacity-0"
         />
-      </div>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13px] text-[var(--d-ink)]">{label}</span>
+        <span
+          className="mt-0.5 block truncate text-[10.5px] text-[var(--d-ink-faint)]"
+          style={{
+            fontFamily: '"JetBrains Mono", ui-monospace, monospace',
+            letterSpacing: "0.04em",
+          }}
+        >
+          {value.toUpperCase()}
+        </span>
+        <span className="mt-1 block truncate text-[10.5px] text-[var(--d-ink-dim)]">
+          {desc}
+        </span>
+      </span>
     </label>
+  );
+}
+
+function PreviewCard({ palette }: { palette: Palette6 }) {
+  return (
+    <div
+      className="flex h-64 flex-col items-center justify-center rounded-2xl p-6 text-center"
+      style={{ background: palette.background }}
+    >
+      <div
+        className="flex h-16 w-16 items-center justify-center rounded-full text-2xl text-white shadow-ghost-md"
+        style={{ background: palette.brandPrimary }}
+      >
+        ♡
+      </div>
+      <p
+        className="mt-3 font-display text-lg"
+        style={{ color: palette.headingText }}
+      >
+        The Wedding of
+      </p>
+      <p
+        className="font-display text-xl"
+        style={{ color: palette.brandPrimary }}
+      >
+        Anisa &amp; Rizky
+      </p>
+      <p className="mt-2 text-[12px]" style={{ color: palette.bodyText }}>
+        Kepada Yth. Bpk/Ibu/Saudara/i
+      </p>
+      <span
+        className="mt-3 rounded-full px-3 py-1 text-[10px] font-medium uppercase tracking-wide"
+        style={{ background: palette.brandLight, color: palette.brandDark }}
+      >
+        Pratinjau Warna
+      </span>
+    </div>
   );
 }

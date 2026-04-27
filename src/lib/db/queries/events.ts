@@ -124,7 +124,12 @@ export const getPublishedEventBySlug = cache(async function getPublishedEventByS
     .limit(1);
   if (!row) return null;
 
-  const [couple, schedules] = await Promise.all([
+  // Couple, schedules, and the per-event theme override all read from
+  // tables keyed by event id and have no inter-deps — fan them out.
+  // The themeConfig is what powers per-couple palette/font/section
+  // customisation on the public invitation; without it the invitation
+  // would render only the theme's seeded defaults.
+  const [couple, schedules, themeConfig] = await Promise.all([
     db
       .select()
       .from(couples)
@@ -136,6 +141,19 @@ export const getPublishedEventBySlug = cache(async function getPublishedEventByS
       .from(eventSchedules)
       .where(eq(eventSchedules.eventId, row.event.id))
       .orderBy(asc(eventSchedules.sortOrder), asc(eventSchedules.eventDate)),
+    row.event.themeId
+      ? db
+          .select()
+          .from(eventThemeConfigs)
+          .where(
+            and(
+              eq(eventThemeConfigs.eventId, row.event.id),
+              eq(eventThemeConfigs.themeId, row.event.themeId),
+            ),
+          )
+          .limit(1)
+          .then((r) => r[0] ?? null)
+      : Promise.resolve(null),
   ]);
 
   return {
@@ -143,6 +161,7 @@ export const getPublishedEventBySlug = cache(async function getPublishedEventByS
     theme: row.theme,
     couple,
     schedules,
+    themeConfig,
   };
 });
 

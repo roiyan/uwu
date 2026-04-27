@@ -27,12 +27,25 @@ export async function generateMetadata({
   };
 }
 
-function extractPalette(config: Record<string, unknown> | null | undefined) {
-  const palette = (config?.palette ?? {}) as Record<string, string>;
+// Resolve the public invitation palette by layering, in order of
+// precedence: the per-event override (`eventThemeConfigs.config`) on
+// top of the theme default, falling back to a hard-coded ivory palette
+// when neither is set. The override is what the Website Editor's
+// "Kustomisasi Warna" panel writes — without merging it here the
+// public invitation would always render the theme's seeded defaults.
+function resolvePalette(
+  themeConfig: Record<string, unknown> | null | undefined,
+  override: Record<string, unknown> | null | undefined,
+) {
+  const themePalette = (themeConfig?.palette ?? {}) as Record<string, string>;
+  const overridePalette = (override?.palette ?? {}) as Record<string, string>;
   return {
-    primary: palette.primary ?? "#C06070",
-    secondary: palette.secondary ?? "#FAF6F1",
-    accent: palette.accent ?? "#D4A574",
+    primary:
+      overridePalette.primary ?? themePalette.primary ?? "#C06070",
+    secondary:
+      overridePalette.secondary ?? themePalette.secondary ?? "#FAF6F1",
+    accent:
+      overridePalette.accent ?? themePalette.accent ?? "#D4A574",
   };
 }
 
@@ -45,7 +58,10 @@ export default async function InvitationPage({
   const bundle = await getPublishedEventBySlug(slug);
   if (!bundle) notFound();
 
-  const palette = extractPalette(bundle.theme?.config ?? null);
+  const palette = resolvePalette(
+    bundle.theme?.config ?? null,
+    bundle.themeConfig?.config ?? null,
+  );
   const [giftAccounts, galleryImages] = await Promise.all([
     listPublicGiftAccountsAction(bundle.event.id),
     listPublicGalleryImages(bundle.event.id),
