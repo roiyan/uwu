@@ -9,7 +9,10 @@ import {
 import { useToast } from "@/components/shared/Toast";
 import { VenueMapField } from "@/components/shared/VenueMapField";
 import { Preview } from "@/components/invitation/Preview";
-import type { SectionId as CanonicalSectionId } from "@/lib/theme/sections";
+import {
+  DEFAULT_SECTION_ORDER,
+  type SectionId as CanonicalSectionId,
+} from "@/lib/theme/sections";
 import { PhoneFrame, type Viewport } from "@/components/invitation/PhoneFrame";
 import { MediaLibraryModal } from "@/components/media/MediaLibraryModal";
 import { MediaPicker } from "@/components/media/MediaPicker";
@@ -384,12 +387,15 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
     if (from === -1 || to === -1) return;
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
+    persistOrder(next);
+  }
+
+  // Centralised optimistic-update + persist helper used by drag-drop,
+  // mobile ▲▼ buttons, and the header reset ↺. Always sets state
+  // before firing the action so the preview re-renders immediately;
+  // rolls back to the last persisted order if the server rejects.
+  function persistOrder(next: string[]) {
     setOrderedIds(next);
-    // event.id is typed optional on InvitationEvent because the live
-    // editor preview can render before the event row is persisted.
-    // The /dashboard/website page only mounts the editor once the
-    // event exists, so a missing id here would be a programming error
-    // — guard defensively and skip the save instead of throwing.
     const eventId = defaults.event.id;
     if (!eventId) return;
     startTransition(async () => {
@@ -399,6 +405,32 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
         setOrderedIds(defaults.sectionOrder);
       }
     });
+  }
+
+  // True when the live order diverges from the canonical default.
+  // Drives the visibility of the reset ↺ button in the rail header.
+  // The two arrays have a fixed 8-element shape, so a same-length
+  // index walk is fine — JSON.stringify works too but allocates.
+  const isOrderChanged =
+    orderedIds.length !== DEFAULT_SECTION_ORDER.length ||
+    orderedIds.some((id, i) => id !== DEFAULT_SECTION_ORDER[i]);
+
+  function handleResetOrder() {
+    persistOrder([...DEFAULT_SECTION_ORDER]);
+  }
+
+  function handleMoveUp(index: number) {
+    if (index <= 0) return;
+    const next = [...orderedIds];
+    [next[index - 1], next[index]] = [next[index], next[index - 1]];
+    persistOrder(next);
+  }
+
+  function handleMoveDown(index: number) {
+    if (index >= orderedIds.length - 1) return;
+    const next = [...orderedIds];
+    [next[index + 1], next[index]] = [next[index], next[index + 1]];
+    persistOrder(next);
   }
 
   const enabledCount = SECTIONS.reduce((acc, s) => {
@@ -427,10 +459,15 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
         />
 
         {/* Mobile section pills — inside sticky so they ride along
-            with the TopBar instead of scrolling out of view. */}
+            with the TopBar instead of scrolling out of view. The
+            active pill grows a vertical ▲▼ pair on the left so a
+            mobile user can reorder without dragging on a scrolling
+            strip (HTML5 DnD on touch is unreliable). */}
         <nav className="flex gap-2 overflow-x-auto px-5 pb-3 pt-1 lg:hidden">
-          {orderedSections.map((s) => {
+          {orderedSections.map((s, idx) => {
             const isActive = activeSection === s.id;
+            const upDisabled = idx === 0;
+            const downDisabled = idx === orderedSections.length - 1;
             return (
               <button
                 key={s.id}
@@ -442,7 +479,62 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                     : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
                 }`}
               >
-                <span>{s.number}</span>
+                {isActive && (
+                  <span className="flex flex-col gap-px leading-none">
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Pindahkan ${s.title} ke kiri`}
+                      aria-disabled={upDisabled}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!upDisabled) handleMoveUp(idx);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!upDisabled) handleMoveUp(idx);
+                        }
+                      }}
+                      className="px-0.5 text-[8px] leading-none"
+                      style={{
+                        color: upDisabled
+                          ? "var(--d-ink-faint)"
+                          : "var(--d-coral)",
+                        cursor: upDisabled ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      ▲
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Pindahkan ${s.title} ke kanan`}
+                      aria-disabled={downDisabled}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!downDisabled) handleMoveDown(idx);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (!downDisabled) handleMoveDown(idx);
+                        }
+                      }}
+                      className="px-0.5 text-[8px] leading-none"
+                      style={{
+                        color: downDisabled
+                          ? "var(--d-ink-faint)"
+                          : "var(--d-coral)",
+                        cursor: downDisabled ? "not-allowed" : "pointer",
+                      }}
+                    >
+                      ▼
+                    </span>
+                  </span>
+                )}
                 <span>{s.title}</span>
               </button>
             );
@@ -461,9 +553,22 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
               <p className="d-mono text-[10px] uppercase tracking-[0.32em] text-[var(--d-ink-dim)]">
                 Bagian
               </p>
-              <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
-                {enabledCount} aktif
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+                  {enabledCount} aktif
+                </p>
+                {isOrderChanged && (
+                  <button
+                    type="button"
+                    onClick={handleResetOrder}
+                    title="Reset urutan ke default"
+                    aria-label="Reset urutan bagian ke default"
+                    className="d-mono inline-flex h-6 w-6 items-center justify-center rounded-md border border-[var(--d-line)] text-[12px] text-[var(--d-ink-faint)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
+                  >
+                    ↺
+                  </button>
+                )}
+              </div>
             </header>
             <ul>
               {orderedSections.map((s) => (
@@ -887,9 +992,6 @@ function SectionListItem({
           </svg>
         </span>
       )}
-      <span className="d-mono shrink-0 pt-0.5 text-[12px] text-[var(--d-coral)]">
-        {def.number}
-      </span>
       <div className="min-w-0 flex-1">
         <p className="d-serif text-[15px] leading-tight text-[var(--d-ink)]">
           {def.title}
