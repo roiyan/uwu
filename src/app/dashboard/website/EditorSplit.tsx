@@ -11,6 +11,7 @@ import { PhotoUpload } from "@/components/shared/PhotoUpload";
 import { VenueMapField } from "@/components/shared/VenueMapField";
 import { Preview } from "@/components/invitation/Preview";
 import { PhoneFrame, type Viewport } from "@/components/invitation/PhoneFrame";
+import { MediaLibraryModal } from "@/components/media/MediaLibraryModal";
 import type {
   CoupleData,
   InvitationEvent,
@@ -198,6 +199,10 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
   );
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  // Camera-icon button in TopBar opens this — read-only manager view
+  // of the central media library so the operator can review/delete
+  // assets without scrolling into a section editor.
+  const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
   const [viewport, setViewport] = useState<Viewport>("mobile");
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -406,6 +411,11 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
           savedAt={savedAt}
           onSave={handleSave}
           onMobilePreview={() => setMobilePreviewOpen(true)}
+          onOpenMedia={
+            defaults.event.id
+              ? () => setMediaLibraryOpen(true)
+              : undefined
+          }
         />
 
         {/* Mobile section pills — inside sticky so they ride along
@@ -619,6 +629,18 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
           </div>
         </div>
       )}
+
+      {/* Centralised media library — opened from the camera button in
+          TopBar. Read-only mode (no onSelect) so this surface is for
+          managing the library; section editors use MediaPicker which
+          mounts the same modal in picker mode. */}
+      {defaults.event.id && (
+        <MediaLibraryModal
+          eventId={defaults.event.id}
+          open={mediaLibraryOpen}
+          onClose={() => setMediaLibraryOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -650,12 +672,15 @@ function TopBar({
   savedAt,
   onSave,
   onMobilePreview,
+  onOpenMedia,
 }: {
   dirty: boolean;
   pending: boolean;
   savedAt: Date | null;
   onSave: () => void;
   onMobilePreview: () => void;
+  // Optional — only wired when the event has been persisted.
+  onOpenMedia?: () => void;
 }) {
   return (
     <div>
@@ -699,6 +724,15 @@ function TopBar({
             </button>
           </div>
           <div className="flex gap-2 sm:contents">
+            {onOpenMedia && (
+              <button
+                type="button"
+                onClick={onOpenMedia}
+                className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)] sm:order-2 sm:flex-initial"
+              >
+                📷 Media
+              </button>
+            )}
             <Link
               href="/dashboard/website/theme"
               className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[rgba(212,184,150,0.35)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-gold)] transition-colors hover:bg-[rgba(212,184,150,0.08)] sm:order-2 sm:flex-initial"

@@ -3,7 +3,10 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
-import { countLiveGuests } from "@/lib/db/queries/guests";
+import {
+  countLiveGuests,
+  getEventPackageLimit,
+} from "@/lib/db/queries/guests";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { BottomTab } from "@/components/dashboard/BottomTab";
 import { MobileTopBar } from "@/components/dashboard/MobileTopBar";
@@ -113,11 +116,11 @@ async function SidebarHost() {
 }
 
 async function MobileTopBarHost() {
-  const { coupleLabel, themeLabel, tamuCount } = await resolveSidebarData();
+  const { coupleLabel, packageLabel, tamuCount } = await resolveSidebarData();
   return (
     <MobileTopBar
       coupleLabel={coupleLabel}
-      themeLabel={themeLabel}
+      packageLabel={packageLabel}
       previewHref="/preview"
       tamuCount={tamuCount}
     />
