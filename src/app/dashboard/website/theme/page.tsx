@@ -17,9 +17,20 @@ export default async function ThemeEditorPage() {
 
   const themes = await listThemes();
 
-  const paletteOverride =
-    (bundle.themeConfig?.config as { palette?: Record<string, string> } | null)?.palette ??
-    {};
+  // Read both the legacy 3-color override (kept for older callers) and
+  // the new 6-color override. The editor only consumes the 6-color one;
+  // the action layer derives the legacy palette on save.
+  const themeConfig = bundle.themeConfig?.config as
+    | {
+        palette?: Record<string, string>;
+        palette6?: Record<string, string>;
+      }
+    | null
+    | undefined;
+  const paletteOverride6 = (themeConfig?.palette6 ?? {}) as Record<
+    string,
+    string
+  >;
 
   return (
     <main className="flex-1 px-5 py-8 lg:px-12 lg:py-12">
@@ -57,9 +68,10 @@ export default async function ThemeEditorPage() {
       <ThemeEditor
         eventId={bundle.event.id}
         selectedId={bundle.event.themeId}
-        paletteOverride={paletteOverride}
+        paletteOverride6={paletteOverride6}
         themes={themes.map((t) => ({
           id: t.id,
+          slug: t.slug,
           name: t.name,
           tier: t.tier,
           description: t.description,

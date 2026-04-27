@@ -204,17 +204,48 @@ export async function updateThemeConfigAction(
   _: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
+  // The editor posts the rich 6-slot palette as `palette6_<key>`. We
+  // also derive the legacy 3-slot palette from the same submission so
+  // the public invitation renderer (which still reads `palette`) stays
+  // in lockstep until every consumer has migrated to `palette6`.
+  const palette6Input = {
+    background: emptyToNull(formData.get("palette6_background")) ?? undefined,
+    headingText: emptyToNull(formData.get("palette6_headingText")) ?? undefined,
+    bodyText: emptyToNull(formData.get("palette6_bodyText")) ?? undefined,
+    brandPrimary:
+      emptyToNull(formData.get("palette6_brandPrimary")) ?? undefined,
+    brandLight: emptyToNull(formData.get("palette6_brandLight")) ?? undefined,
+    brandDark: emptyToNull(formData.get("palette6_brandDark")) ?? undefined,
+  };
   const parsed = themeConfigSchema.safeParse({
     themeId: formData.get("themeId"),
+    // Legacy 3-color (still accepted from older callers, otherwise
+    // derived below from the 6-color submission).
     palette: {
       primary: emptyToNull(formData.get("palette_primary")) ?? undefined,
       secondary: emptyToNull(formData.get("palette_secondary")) ?? undefined,
       accent: emptyToNull(formData.get("palette_accent")) ?? undefined,
     },
+    palette6: palette6Input,
   });
   if (!parsed.success) {
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Input tidak valid" };
   }
+
+  // Derive a legacy 3-color palette from the 6-color one when the
+  // caller hasn't supplied an explicit `palette_*`.
+  const p6 = parsed.data.palette6 ?? {};
+  const legacy = parsed.data.palette ?? {};
+  const mergedLegacy = {
+    primary: legacy.primary ?? p6.brandPrimary,
+    secondary: legacy.secondary ?? p6.background,
+    accent: legacy.accent ?? p6.brandLight,
+  };
+
+  const config = {
+    palette: mergedLegacy,
+    palette6: parsed.data.palette6 ?? {},
+  };
 
   const result = await withAuth(eventId, "editor", async () => {
     await db
@@ -222,12 +253,12 @@ export async function updateThemeConfigAction(
       .values({
         eventId,
         themeId: parsed.data.themeId,
-        config: { palette: parsed.data.palette ?? {} },
+        config,
       })
       .onConflictDoUpdate({
         target: [eventThemeConfigs.eventId, eventThemeConfigs.themeId],
         set: {
-          config: { palette: parsed.data.palette ?? {} },
+          config,
           updatedAt: new Date(),
         },
       });
