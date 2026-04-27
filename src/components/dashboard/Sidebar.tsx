@@ -218,8 +218,24 @@ export function Sidebar({
     .join(" · ")
     .toUpperCase();
 
+  // Publish the width to the layout via a CSS variable on the
+  // document root. The skeleton fallback (rendered before this
+  // component hydrates, and re-rendered on every server stream)
+  // reads `var(--sidebar-w)` so it matches the persisted preference
+  // instead of snapping back to 280px on every navigation. The
+  // matching <script> in layout.tsx initializes the var
+  // synchronously before first paint.
+  useEffect(() => {
+    if (!responsive) return;
+    document.documentElement.style.setProperty(
+      "--sidebar-w",
+      `${sidebarWidth}px`,
+    );
+  }, [responsive, sidebarWidth]);
+
   return (
     <aside
+      data-collapsed={isCollapsed ? "true" : "false"}
       className={sidebarClass}
       style={{
         background: "var(--d-bg-1)",

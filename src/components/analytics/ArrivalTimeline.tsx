@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export type ArrivalRow = {
   id: string;
@@ -80,6 +80,33 @@ export function ArrivalTimeline({
   timezone: string;
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
+  // Track whether the chart wrapper is wider than its viewport so we
+  // can show a "← geser →" affordance only when scrolling is actually
+  // needed. Updated via ResizeObserver on the wrapper + inner.
+  const scrollWrapRef = useRef<HTMLDivElement | null>(null);
+  const [overflowing, setOverflowing] = useState(false);
+  // Hook ordering rule: this effect must live BEFORE any conditional
+  // early return below. It reads the wrapper's scroll vs client width
+  // each time it changes (which already covers slot-count changes,
+  // sidebar collapse, viewport resize). When the wrapper isn't
+  // mounted yet (effect runs even when `return null` will fire below)
+  // it's a no-op.
+  useEffect(() => {
+    const el = scrollWrapRef.current;
+    if (!el) return;
+    const update = () => setOverflowing(el.scrollWidth > el.clientWidth + 1);
+    update();
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(update)
+        : null;
+    ro?.observe(el);
+    window.addEventListener("resize", update);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  });
 
   // Pre-bucket arrivals by their schedule date — gives us a fast
   // lookup keyed off the "YYYY-MM-DD" the schedule lives on.
@@ -237,8 +264,20 @@ export function ArrivalTimeline({
           Force a 36px-per-slot minimum and let the operator scroll if
           the chart outgrows the card. Navigator + legend + footer
           sit OUTSIDE this scroll region so peak/total stay visible.
-          .custom-scroll wires the thin ink-faint scrollbar (globals.css). */}
-      <div className="custom-scroll mt-5 -mx-1 overflow-x-auto px-1">
+          .custom-scroll wires the thin ink-faint scrollbar (globals.css).
+
+          The hint pill ("← geser →") only renders when the inner
+          minWidth genuinely exceeds the wrapper's clientWidth, so a
+          chart that already fits doesn't get a misleading prompt. */}
+      {overflowing && (
+        <p className="d-mono mt-3 text-center text-[9px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+          ← geser untuk lihat lebih banyak →
+        </p>
+      )}
+      <div
+        ref={scrollWrapRef}
+        className="custom-scroll mt-2 -mx-1 overflow-x-auto px-1"
+      >
         <div
           className="flex h-[140px] items-end gap-[2px]"
           style={{ minWidth: `${Math.max(slots.length * 36, 0)}px` }}
