@@ -14,6 +14,7 @@ import {
   formatTimeRange,
 } from "@/components/invitation/formatting";
 import { GuestQrCode } from "@/components/invitation/guest-qr-code";
+import { QuickQrButton } from "@/components/invitation/quick-qr-button";
 import { RsvpForm } from "./rsvp-form";
 import { GiftSection } from "./gift-section";
 import type { PublicGiftAccount } from "@/lib/actions/gift";
@@ -220,6 +221,29 @@ function InvitationInner({
             guestName={guest.name}
             attendees={guest.rsvpAttendees}
             palette={palette}
+          />
+        )}
+
+      {/* Floating quick-access QR — only on the wedding-day window
+          (H-1 … H+1) for guests already RSVP'd hadir. Lets the guest
+          pull up the QR at the door without scrolling the embedded
+          ticket card into view. Auto-flips to a "tercatat" badge once
+          the operator has checked them in. */}
+      {event.checkinEnabled &&
+        token &&
+        guest?.rsvpStatus === "hadir" && (
+          <QuickQrButton
+            slug={event.slug}
+            token={token}
+            guest={{
+              name: guest.name,
+              groupName: guest.groupName,
+              pax: guest.rsvpAttendees,
+              checkedInAt: guest.checkedInAt,
+            }}
+            palette={palette}
+            eventDate={schedules[0]?.eventDate}
+            eventTimezone={schedules[0]?.timezone}
           />
         )}
 
