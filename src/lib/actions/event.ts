@@ -21,6 +21,7 @@ import {
   isAllowedBodyFont,
   isAllowedHeadingFont,
 } from "@/lib/theme/fonts";
+import { normaliseSectionOrder } from "@/lib/theme/sections";
 import { logActivity } from "./activity";
 
 function emptyToNull(v: FormDataEntryValue | null) {
@@ -307,6 +308,79 @@ export async function updateThemeConfigAction(
       eventId,
       action: "update_theme",
       summary: "Memperbarui tampilan tema",
+    });
+  }
+  return result;
+}
+
+/**
+ * Persist the couple's preferred section render order. Single-purpose
+ * action so the editor's drag-and-drop affordance can fire-and-forget
+ * after each drop without resubmitting palette/fonts. The action
+ * read-modify-writes `eventThemeConfigs.config` to preserve siblings
+ * (palette, palette6, fonts) across saves.
+ *
+ * Authorization: requires the standard "editor" role for the event.
+ * The event must already be linked to a theme — without a themeId
+ * there's no eventThemeConfigs row to upsert against, and creating a
+ * "themeless" override would ghost-write a config that no read path
+ * could resolve.
+ */
+export async function updateSectionOrderAction(
+  eventId: string,
+  orderedIds: string[],
+): Promise<ActionResult> {
+  const cleaned = normaliseSectionOrder(orderedIds);
+  if (cleaned.length === 0) {
+    return { ok: false, error: "Urutan bagian tidak valid." };
+  }
+
+  const result = await withAuth(eventId, "editor", async () => {
+    const [eventRow] = await db
+      .select({ themeId: events.themeId })
+      .from(events)
+      .where(eq(events.id, eventId))
+      .limit(1);
+    if (!eventRow?.themeId) {
+      throw new Error("Pilih tema terlebih dahulu sebelum mengubah urutan.");
+    }
+    const [existing] = await db
+      .select({ config: eventThemeConfigs.config })
+      .from(eventThemeConfigs)
+      .where(
+        and(
+          eq(eventThemeConfigs.eventId, eventId),
+          eq(eventThemeConfigs.themeId, eventRow.themeId),
+        ),
+      )
+      .limit(1);
+    const merged = {
+      ...((existing?.config as Record<string, unknown>) ?? {}),
+      sectionOrder: cleaned,
+    };
+    await db
+      .insert(eventThemeConfigs)
+      .values({
+        eventId,
+        themeId: eventRow.themeId,
+        config: merged,
+      })
+      .onConflictDoUpdate({
+        target: [eventThemeConfigs.eventId, eventThemeConfigs.themeId],
+        set: {
+          config: merged,
+          updatedAt: new Date(),
+        },
+      });
+  });
+
+  if (result.ok) {
+    revalidatePath("/dashboard/website");
+    revalidatePath("/dashboard/website/theme");
+    await logActivity({
+      eventId,
+      action: "update_section_order",
+      summary: "Mengubah urutan bagian undangan",
     });
   }
   return result;

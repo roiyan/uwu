@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
+import { resolveSectionOrder } from "@/lib/theme/sections";
 import { EditorSplit, type EditorDefaults } from "./EditorSplit";
 
 function extractPalette(config: Record<string, unknown> | null | undefined) {
@@ -19,6 +20,16 @@ export default async function WebsiteEditorPage() {
   const bundle = await getEventBundle(current.event.id);
   if (!bundle?.couple) redirect("/onboarding");
 
+  // Resolve the persisted section order; falls back to the default
+  // permutation when no override is set or the stored value is dirty.
+  const themeConfigRaw = bundle.themeConfig?.config as
+    | { sectionOrder?: unknown }
+    | null
+    | undefined;
+  const sectionOrder = [
+    ...resolveSectionOrder(themeConfigRaw?.sectionOrder),
+  ];
+
   const defaults: EditorDefaults = {
     event: {
       id: bundle.event.id,
@@ -26,6 +37,7 @@ export default async function WebsiteEditorPage() {
       slug: bundle.event.slug,
       musicUrl: bundle.event.musicUrl,
     },
+    sectionOrder,
     palette: extractPalette(bundle.theme?.config ?? null),
     couple: {
       brideName: bundle.couple.brideName,

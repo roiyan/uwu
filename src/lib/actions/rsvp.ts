@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { guests } from "@/lib/db/schema";
+import { guests, guestGroups } from "@/lib/db/schema";
 import type { ActionResult } from "@/lib/auth-guard";
 import { rsvpInputSchema } from "@/lib/schemas/guest";
 
@@ -82,6 +82,11 @@ export type ResolvedGuest = {
   rsvpStatus: "baru" | "diundang" | "dibuka" | "hadir" | "tidak_hadir";
   rsvpAttendees: number | null;
   rsvpMessage: string | null;
+  // Surfaced so the public invitation can flip the floating QR button
+  // into a "Kehadiran tercatat" badge once the operator has scanned at
+  // the venue. Returned as ISO string for plain-JSON transit.
+  checkedInAt: string | null;
+  groupName: string | null;
 };
 
 export async function resolveGuestByTokenAction(
@@ -95,8 +100,11 @@ export async function resolveGuestByTokenAction(
       rsvpStatus: guests.rsvpStatus,
       rsvpAttendees: guests.rsvpAttendees,
       rsvpMessage: guests.rsvpMessage,
+      checkedInAt: guests.checkedInAt,
+      groupName: guestGroups.name,
     })
     .from(guests)
+    .leftJoin(guestGroups, eq(guests.groupId, guestGroups.id))
     .where(
       and(
         eq(guests.token, token),
@@ -105,5 +113,13 @@ export async function resolveGuestByTokenAction(
       ),
     )
     .limit(1);
-  return row ?? null;
+  if (!row) return null;
+  return {
+    name: row.name,
+    rsvpStatus: row.rsvpStatus,
+    rsvpAttendees: row.rsvpAttendees,
+    rsvpMessage: row.rsvpMessage,
+    checkedInAt: row.checkedInAt ? row.checkedInAt.toISOString() : null,
+    groupName: row.groupName,
+  };
 }
