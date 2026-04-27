@@ -1195,13 +1195,18 @@ function CoupleBlock({
           onChange={(v) => onChange(motherKey as keyof CoupleData, v)}
         />
         <div className="md:col-span-2">
-          <PhotoUpload
+          {/* Picker reads from the central media library — operator
+              uploads once, picks across mempelai/cover/galeri without
+              re-uploading. Same { value, onChange } shape as the old
+              PhotoUpload so callers don't need to reshape data. */}
+          <MediaPicker
             eventId={eventId}
-            slot={isBride ? "bride-photo" : "groom-photo"}
             label={`Foto ${title.toLowerCase()}`}
-            value={(couple[photoKey] as string | null) ?? ""}
+            helper="Pilih atau unggah ke perpustakaan"
+            aspectRatio="3 / 4"
+            value={(couple[photoKey] as string | null) ?? null}
             onChange={(v) =>
-              onChange(photoKey as keyof CoupleData, (v || null) as never)
+              onChange(photoKey as keyof CoupleData, (v ?? null) as never)
             }
           />
         </div>
