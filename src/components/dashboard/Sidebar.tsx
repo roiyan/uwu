@@ -205,7 +205,10 @@ export function Sidebar({
   // style sidesteps the JIT entirely and renders the value straight
   // from React state.
   const sidebarClass = [
-    "relative flex-col overflow-hidden",
+    // `group` enables `group-hover:opacity-100` on the toggle button
+    // — keeps the chevron faint by default but lights up the moment
+    // the operator's cursor enters the rail.
+    "group relative flex-col overflow-hidden",
     responsive
       ? "hidden lg:sticky lg:top-0 lg:flex lg:h-screen"
       : "flex h-full",
@@ -260,16 +263,33 @@ export function Sidebar({
         }}
       />
 
-      {/* Collapse toggle — only on desktop. Floats on the right edge so
-          it doesn't compete with the brand block. Mobile drawer hides
-          it (the drawer has its own close button instead). */}
+      {/* Collapse toggle — only on desktop. Bigger (32px) coral-bordered
+          pill INSIDE the rail rather than floating on the edge so it's
+          easier to discover and click. Faint by default (opacity-40);
+          lights up on hover anywhere over the sidebar via group-hover.
+          When collapsed the rail is 68px wide so we center the pill
+          horizontally instead of pinning it to the right.
+          Mobile drawer hides this — it has its own close button. */}
       {responsive && (
         <button
           type="button"
           onClick={toggleCollapse}
-          aria-label={isCollapsed ? "Lebarkan sidebar" : "Sempitkan sidebar"}
+          aria-label={isCollapsed ? "Perbesar menu" : "Perkecil menu"}
           aria-pressed={isCollapsed}
-          className="absolute right-[-12px] top-[58px] z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)] lg:flex"
+          title={isCollapsed ? "Perbesar menu" : "Perkecil menu"}
+          className={[
+            "absolute top-[58px] z-10",
+            "hidden h-8 w-8 items-center justify-center",
+            "rounded-full border border-[var(--d-coral)]",
+            "bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]",
+            "opacity-40 transition-all duration-200",
+            "group-hover:opacity-100",
+            "hover:scale-105 hover:bg-[rgba(240,160,156,0.18)]",
+            "lg:flex",
+            isCollapsed
+              ? "left-1/2 -translate-x-1/2"
+              : "right-[16px]",
+          ].join(" ")}
         >
           <ChevronIcon direction={isCollapsed ? "right" : "left"} />
         </button>
@@ -453,8 +473,8 @@ export function Sidebar({
 function ChevronIcon({ direction }: { direction: "left" | "right" }) {
   return (
     <svg
-      width="12"
-      height="12"
+      width="14"
+      height="14"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
