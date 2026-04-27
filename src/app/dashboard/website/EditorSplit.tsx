@@ -11,6 +11,8 @@ import { PhotoUpload } from "@/components/shared/PhotoUpload";
 import { VenueMapField } from "@/components/shared/VenueMapField";
 import { Preview } from "@/components/invitation/Preview";
 import { PhoneFrame, type Viewport } from "@/components/invitation/PhoneFrame";
+import { MediaLibraryModal } from "@/components/media/MediaLibraryModal";
+import { MediaPicker } from "@/components/media/MediaPicker";
 import type {
   CoupleData,
   InvitationEvent,
