@@ -15,6 +15,11 @@ import {
   runBroadcastAction,
 } from "@/lib/actions/broadcast";
 import dynamic from "next/dynamic";
+import {
+  saveDraftAction,
+  deleteDraftAction,
+  type DraftRow,
+} from "@/lib/actions/broadcast-draft";
 import { renderTemplate, type MessageTemplate } from "@/lib/templates/messages";
 import { buildInvitationUrl } from "@/lib/utils/invitation-url";
 import { TemplateChipEditor } from "./template-chip-editor";
@@ -191,6 +196,7 @@ export function MessagesClient({
   recipientSample,
   eventContext,
   presetGroupId,
+  drafts: initialDrafts,
 }: {
   eventId: string;
   isPublished: boolean;
@@ -207,7 +213,12 @@ export function MessagesClient({
   recipientSample: RecipientSample[];
   eventContext: EventContext;
   presetGroupId: string | null;
+  drafts: DraftRow[];
 }) {
+  // Drafts are seeded from the server props but mutated client-side
+  // when the user saves or deletes — avoids a refetch round-trip.
+  const [drafts, setDrafts] = useState<DraftRow[]>(initialDrafts);
+  const [draftSavePending, startSaveDraft] = useTransition();
   const [channel, setChannel] = useState<Channel>("whatsapp");
   // For "both", the editable body uses WA templates; the email half
   // uses its matching template body unmodified at submit time.
@@ -482,8 +493,16 @@ export function MessagesClient({
   //   manual_queue  — Antrian Manual (in-progress WA manual sends)
   //   ai_templates  — Template AI (inline UWU Studio)
   const [activeTab, setActiveTab] = useState<
-    "compose" | "history" | "manual_queue" | "ai_templates"
+    "compose" | "history" | "manual_queue"
   >("compose");
+  // Inline AI panel toggle — replaces the deprecated "Template AI" tab.
+  const [showAiPanel, setShowAiPanel] = useState(false);
+  // Saved-draft picker dropdown.
+  const [showDraftPicker, setShowDraftPicker] = useState(false);
+  // Schedule popup — bottom sheet on mobile, centered modal on
+  // desktop. Replaces the always-visible "Jadwalkan pengiriman email"
+  // checkbox; the user now opts in via a CTA in the action bar.
+  const [showSchedulePopup, setShowSchedulePopup] = useState(false);
 
   // Manual queue = WA broadcasts that are queued or actively sending.
   // These are the rows that the user is currently working through with
@@ -538,13 +557,8 @@ export function MessagesClient({
           <TabButton
             active={activeTab === "manual_queue"}
             onClick={() => setActiveTab("manual_queue")}
-            label="Antrian Manual"
+            label="Antrian"
             count={manualQueue.length}
-          />
-          <TabButton
-            active={activeTab === "ai_templates"}
-            onClick={() => setActiveTab("ai_templates")}
-            label="Template AI"
           />
         </div>
       </div>
@@ -571,20 +585,6 @@ export function MessagesClient({
         }}
       >
         <ManualQueuePanel queue={manualQueue} eventId={eventId} />
-      </div>
-      <div
-        style={{
-          display: activeTab === "ai_templates" ? undefined : "none",
-        }}
-      >
-        <AiTemplatesPanel
-          eventContext={eventContext}
-          aiAvailable={providers.aiAvailable}
-          onUseMessage={(text) => {
-            setBody(text);
-            setActiveTab("compose");
-          }}
-        />
       </div>
       <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
     {/* Single-column compose layout. Riwayat lives on its own tab now,
@@ -709,6 +709,56 @@ export function MessagesClient({
             </label>
           )}
 
+          {/* AI Bantu Tulis — replaces the deprecated Template AI tab.
+              Inline expandable panel sits between the channel/audience
+              picker and the body editor, so the AI knobs live next to
+              the text they populate. The legacy "Bantu Tulis" pill in
+              the editor header is kept for the email body in `both`
+              channel and as a fallback to the modal flow. */}
+          {providers.aiAvailable && (
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => setShowAiPanel((v) => !v)}
+                className={`d-mono flex w-full items-center gap-2 rounded-[10px] border px-4 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
+                  showAiPanel
+                    ? "border-[rgba(184,157,212,0.4)] bg-[rgba(184,157,212,0.06)] text-[var(--d-lilac)]"
+                    : "border-[var(--d-line)] text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)]"
+                }`}
+                aria-expanded={showAiPanel}
+              >
+                <span aria-hidden>✨</span>
+                Bantu Tulis dengan AI
+                <span className="d-mono ml-2 rounded-full bg-[rgba(184,157,212,0.16)] px-2 py-0.5 text-[8.5px] tracking-[0.18em] text-[var(--d-lilac)]">
+                  BETA
+                </span>
+                <span className="ml-auto text-[12px]">
+                  {showAiPanel ? "▲" : "▼"}
+                </span>
+              </button>
+              {showAiPanel && (
+                <div className="mt-3 rounded-[14px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-4">
+                  <AiStudioInline
+                    channel={channel === "email" ? "email" : "whatsapp"}
+                    eventContext={{
+                      coupleName: `${eventContext.bride} & ${eventContext.groom}`,
+                      brideName: eventContext.bride,
+                      groomName: eventContext.groom,
+                      eventDate: eventContext.date,
+                      venue: eventContext.venue,
+                      slug: eventContext.slug,
+                    }}
+                    onUseMessage={(text) => {
+                      setBody(text);
+                      setShowAiPanel(false);
+                      toast.success("Pesan AI dimuat ke editor");
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mt-5">
             <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
               <span className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-ink-faint)]">
@@ -722,6 +772,60 @@ export function MessagesClient({
                 <span className="d-serif hidden text-[11px] italic text-[var(--d-ink-faint)] sm:inline">
                   Variabel diisi otomatis per tamu
                 </span>
+                {drafts.length > 0 && (
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowDraftPicker((v) => !v)}
+                      className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[var(--d-line)] bg-transparent px-3 py-1 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)]"
+                    >
+                      📋 Pakai Template ▾
+                    </button>
+                    {showDraftPicker && (
+                      <div className="absolute right-0 top-[calc(100%+4px)] z-50 min-w-[240px] rounded-[12px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.3)]">
+                        {drafts.map((d) => (
+                          <div
+                            key={d.id}
+                            className="group flex items-center gap-1 rounded-[8px] hover:bg-[rgba(255,255,255,0.04)]"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (d.waMessage) setBody(d.waMessage);
+                                if (d.emailSubject) setSubject(d.emailSubject);
+                                if (d.emailBody) setEmailBody(d.emailBody);
+                                setShowDraftPicker(false);
+                                toast.success(`Template "${d.name}" dimuat`);
+                              }}
+                              className="flex flex-1 items-center justify-between gap-2 rounded-[8px] px-3 py-2 text-left text-[13px] text-[var(--d-ink)]"
+                            >
+                              <span className="truncate">{d.name}</span>
+                              <span className="d-mono shrink-0 text-[9px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+                                {d.channel}
+                              </span>
+                            </button>
+                            <button
+                              type="button"
+                              aria-label={`Hapus draft ${d.name}`}
+                              onClick={async () => {
+                                const res = await deleteDraftAction(eventId, d.id);
+                                if (res.ok) {
+                                  setDrafts((prev) => prev.filter((x) => x.id !== d.id));
+                                  toast.success("Draft dihapus");
+                                } else {
+                                  toast.error(res.error);
+                                }
+                              }}
+                              className="d-mono shrink-0 rounded-[6px] px-2 py-1 text-[11px] text-[var(--d-ink-faint)] opacity-0 transition-opacity hover:text-[var(--d-coral)] group-hover:opacity-100"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
                 {providers.aiAvailable && (
                   <button
                     type="button"
@@ -776,47 +880,10 @@ export function MessagesClient({
             </div>
           )}
 
-          {(channel === "email" || channel === "both") && (
-            <div className="mt-5 rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-4">
-              <label className="flex cursor-pointer items-start gap-2.5">
-                <input
-                  type="checkbox"
-                  checked={scheduleEnabled}
-                  onChange={(e) => setScheduleEnabled(e.target.checked)}
-                  className="mt-1 h-4 w-4 cursor-pointer accent-[var(--d-coral)]"
-                />
-                <span>
-                  <span className="d-serif block text-[14px] text-[var(--d-ink)]">
-                    Jadwalkan pengiriman email
-                  </span>
-                  <span className="mt-0.5 block text-[12px] text-[var(--d-ink-dim)]">
-                    Email akan otomatis terkirim pada waktu yang Anda pilih.
-                    Jika tidak dicentang, email dikirim segera setelah Anda
-                    tekan tombol kirim.
-                  </span>
-                </span>
-              </label>
-              {scheduleEnabled && (
-                <div className="mt-3 pl-7">
-                  <label className="d-mono block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-                    Waktu kirim
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={scheduledLocal}
-                    onChange={(e) => setScheduledLocal(e.target.value)}
-                    min={nowPlusMinutes(5)}
-                    className="mt-2 w-full rounded-xl border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] px-4 py-2.5 text-[13px] text-[var(--d-ink)] outline-none transition-colors focus:border-[var(--d-coral)]"
-                  />
-                  <p className="mt-2 text-[11px] text-[var(--d-ink-faint)]">
-                    Cron menjalankan pengiriman setiap hari pukul 09:00 UTC
-                    (16:00 WIB). Email akan terkirim pada cron berikutnya
-                    setelah waktu yang Anda pilih lewat.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          {/* Inline schedule UI removed — opt-in moved to the Schedule
+              popup triggered from the action bar. The hidden input
+              still posts the chosen ISO so the server action stays
+              backward-compatible with the existing schema. */}
           <input type="hidden" name="scheduledAt" value={scheduledAtIso} />
 
           <div className="mt-6">
@@ -1209,55 +1276,80 @@ export function MessagesClient({
                 opens the fallback or fires runBroadcastAction once the
                 broadcast row is saved. Conditional Email/Cancel/run-
                 again buttons live in a separate row below the bar. */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              <button
-                type="submit"
-                disabled={pending || !isPublished}
-                title={
-                  !isPublished
-                    ? "Publikasikan undangan dulu di Pengaturan."
-                    : undefined
-                }
-                onClick={() => setAutoSendWa(false)}
-                className="inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-transparent px-[18px] py-[11px] text-[13px] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
-              >
-                {pending && !autoSendWa ? "Menyimpan…" : "Simpan Draft"}
-              </button>
-
+            <div className="flex w-full flex-col-reverse items-stretch gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:flex-wrap">
               <button
                 type="button"
                 onClick={() => {
-                  if (channel === "email" || channel === "both") {
-                    setScheduleEnabled((v) => !v);
-                  } else {
-                    toast.info(
-                      "Jadwal otomatis tersedia saat kanal Email atau Keduanya dipilih.",
-                    );
-                  }
+                  // Persist the current compose state as a reusable
+                  // template. Server enforces the 10-draft cap; we
+                  // optimistically refresh the list on success so the
+                  // picker dropdown reflects the new entry without a
+                  // round-trip refetch.
+                  startSaveDraft(async () => {
+                    const res = await saveDraftAction(eventId, {
+                      channel,
+                      waMessage: body,
+                      emailSubject:
+                        channel === "email" || channel === "both"
+                          ? subject
+                          : null,
+                      emailBody:
+                        channel === "email"
+                          ? body
+                          : channel === "both"
+                            ? emailBody
+                            : null,
+                    });
+                    if (res.ok && res.data) {
+                      setDrafts((prev) => [
+                        {
+                          id: res.data!.draftId,
+                          name: `Draft ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`,
+                          channel,
+                          waMessage: body,
+                          emailSubject:
+                            channel === "email" || channel === "both"
+                              ? subject
+                              : null,
+                          emailBody:
+                            channel === "email"
+                              ? body
+                              : channel === "both"
+                                ? emailBody
+                                : null,
+                          aiTone: null,
+                          aiLanguage: null,
+                          aiCulture: null,
+                          aiLength: null,
+                        },
+                        ...prev,
+                      ]);
+                      toast.success("Draft tersimpan");
+                    } else if (!res.ok) {
+                      toast.error(res.error);
+                    }
+                  });
                 }}
-                aria-pressed={
-                  scheduleEnabled && (channel === "email" || channel === "both")
-                }
-                className={`inline-flex items-center gap-2 rounded-full border px-[18px] py-[11px] text-[13px] transition-colors ${
-                  scheduleEnabled && (channel === "email" || channel === "both")
-                    ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
-                    : "border-[var(--d-line-strong)] bg-transparent text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
-                }`}
+                disabled={draftSavePending}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-transparent px-[18px] py-[11px] text-[13px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  className="h-3.5 w-3.5"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" />
-                  <path d="M16 2v4M8 2v4M3 10h18" />
-                </svg>
-                {scheduleEnabled && (channel === "email" || channel === "both")
-                  ? "Jadwal aktif"
-                  : "Jadwalkan"}
+                💾 {draftSavePending ? "Menyimpan…" : "Simpan Draft"}
               </button>
+
+              {(channel === "email" || channel === "both") && (
+                <button
+                  type="button"
+                  onClick={() => setShowSchedulePopup(true)}
+                  aria-pressed={Boolean(scheduledAtIso)}
+                  className={`inline-flex items-center justify-center gap-2 rounded-full border px-[18px] py-[11px] text-[13px] transition-colors ${
+                    scheduledAtIso
+                      ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
+                      : "border-[var(--d-line-strong)] bg-transparent text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
+                  }`}
+                >
+                  📅 {scheduledAtIso ? "Jadwal aktif" : "Jadwalkan"}
+                </button>
+              )}
 
               <button
                 type="submit"
@@ -1268,15 +1360,19 @@ export function MessagesClient({
                     : undefined
                 }
                 onClick={() => setAutoSendWa(true)}
-                className="inline-flex items-center gap-2 rounded-full px-[18px] py-[11px] text-[13px] font-medium text-white transition-shadow hover:shadow-[0_10px_30px_rgba(37,211,102,0.3)] disabled:opacity-60"
-                style={{ background: "#25D366" }}
+                className="inline-flex items-center justify-center gap-2 rounded-full px-[18px] py-[11px] text-[13px] font-medium text-white transition-shadow hover:shadow-[0_10px_30px_rgba(37,211,102,0.3)] disabled:opacity-60"
+                style={{ background: channel === "email" ? "linear-gradient(135deg, #F0A09C, #F4B8A3)" : "#25D366", color: channel === "email" ? "#0B0B15" : "#fff" }}
               >
-                <WhatsAppGlyph />
+                {channel !== "email" && <WhatsAppGlyph />}
                 {pending && autoSendWa
                   ? "Menyimpan…"
                   : runPending
                     ? "Mengirim…"
-                    : "Mulai Kirim WhatsApp →"}
+                    : channel === "email"
+                      ? "Mulai Kirim Email →"
+                      : channel === "both"
+                        ? "Mulai Kirim Keduanya →"
+                        : "Mulai Kirim WhatsApp →"}
               </button>
             </div>
           </div>
@@ -1368,6 +1464,25 @@ export function MessagesClient({
             <p className="mt-3 text-sm text-[var(--d-coral)]">{runError}</p>
           )}
         </form>
+
+        {showSchedulePopup && (
+          <ScheduleSheet
+            value={scheduledLocal}
+            onChange={setScheduledLocal}
+            onConfirm={() => {
+              setScheduleEnabled(true);
+              setShowSchedulePopup(false);
+            }}
+            onClear={() => {
+              setScheduleEnabled(false);
+              setShowSchedulePopup(false);
+            }}
+            onClose={() => setShowSchedulePopup(false)}
+            timezoneLabel="WIB (UTC+7)"
+            isActive={Boolean(scheduledAtIso)}
+            minLocal={nowPlusMinutes(5)}
+          />
+        )}
 
         {/* AI assistant modal. The target tells us which textarea to
             populate when the user clicks "Pakai Pesan Ini". The
@@ -1773,6 +1888,97 @@ function ManualQueuePanel({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+function ScheduleSheet({
+  value,
+  onChange,
+  onConfirm,
+  onClear,
+  onClose,
+  timezoneLabel,
+  isActive,
+  minLocal,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  onConfirm: () => void;
+  onClear: () => void;
+  onClose: () => void;
+  timezoneLabel: string;
+  isActive: boolean;
+  minLocal: string;
+}) {
+  // Mobile-first: anchored to the bottom of the viewport with a drag
+  // handle. Desktop: centred modal via items-center + max-width.
+  // Tap outside the sheet → close (handled on the backdrop button).
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Jadwalkan pengiriman"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full rounded-t-[20px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6 sm:max-w-[420px] sm:rounded-[18px]"
+      >
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--d-line)] sm:hidden" />
+        <h3 className="d-serif text-[20px] font-light text-[var(--d-ink)]">
+          Jadwalkan{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">pengiriman</em>
+        </h3>
+        <p className="d-serif mt-1.5 text-[12.5px] italic text-[var(--d-ink-dim)]">
+          Email akan dikirim otomatis pada waktu yang dipilih.
+        </p>
+        <label className="d-mono mt-5 block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+          Waktu pengiriman
+        </label>
+        <input
+          type="datetime-local"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          min={minLocal}
+          className="mt-2 w-full rounded-[10px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.04)] px-3.5 py-3 text-[14px] text-[var(--d-ink)] outline-none transition-colors focus:border-[var(--d-coral)] [color-scheme:dark]"
+        />
+        <p className="d-serif mt-2 text-[11px] italic text-[var(--d-ink-faint)]">
+          Zona waktu: {timezoneLabel}
+        </p>
+        <div className="mt-5 flex items-center gap-2.5">
+          {isActive ? (
+            <button
+              type="button"
+              onClick={onClear}
+              className="flex-1 rounded-[10px] border border-[var(--d-line)] bg-transparent px-4 py-3 text-[13px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)]"
+            >
+              Hapus jadwal
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 rounded-[10px] border border-[var(--d-line)] bg-transparent px-4 py-3 text-[13px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)]"
+            >
+              Batal
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={!value}
+            onClick={onConfirm}
+            className="flex-[2] rounded-[10px] px-4 py-3 text-[13px] font-medium text-[#0B0B15] transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background:
+                "linear-gradient(135deg, #F0A09C, #F4B8A3)",
+            }}
+          >
+            Jadwalkan
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
