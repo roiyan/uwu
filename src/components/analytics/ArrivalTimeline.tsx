@@ -208,6 +208,11 @@ export function ArrivalTimeline({
   const hasMultipleSchedules = visibleSchedules.length > 1;
   const canPrev = activeIdx > 0;
   const canNext = activeIdx < visibleSchedules.length - 1;
+  // No arrivals on the active schedule's date → show an empty state
+  // where the bars would be. Multi-schedule events can land here when
+  // the operator navigates to a date that hasn't started yet (e.g.
+  // viewing tomorrow's Resepsi while only Akad has tamu so far).
+  const hasDayArrivals = dayArrivals.length > 0;
 
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7">
@@ -259,24 +264,55 @@ export function ArrivalTimeline({
         </div>
       )}
 
-      {/* Horizontal-scroll wrapper. When slots > ~12 the bars would
-          otherwise squeeze to <2px each on mobile / cramped widths.
-          Force a 36px-per-slot minimum and let the operator scroll if
-          the chart outgrows the card. Navigator + legend + footer
-          sit OUTSIDE this scroll region so peak/total stay visible.
-          .custom-scroll wires the thin ink-faint scrollbar (globals.css).
+      {!hasDayArrivals ? (
+        // Empty state — replaces the bars row when the active schedule
+        // hasn't started receiving check-ins yet. Navigator + legend +
+        // footer below stay visible so the operator can still swipe to
+        // another schedule and the feature affordance is clear.
+        <div className="mt-6 flex flex-col items-center px-4 py-10 text-center">
+          <span
+            aria-hidden
+            className="flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(240,160,156,0.18)]"
+            style={{ background: "rgba(240,160,156,0.06)" }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--d-coral)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ opacity: 0.5 }}
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+          </span>
+          <p className="d-serif mt-4 text-[16px] font-light text-[var(--d-ink)]">
+            Menunggu tamu{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">pertama</em>
+          </p>
+          <p className="d-serif mt-1 text-[12px] italic text-[var(--d-ink-dim)]">
+            Data kedatangan akan muncul di sini saat hari H.
+          </p>
+        </div>
+      ) : null}
 
-          The hint pill ("← geser →") only renders when the inner
-          minWidth genuinely exceeds the wrapper's clientWidth, so a
-          chart that already fits doesn't get a misleading prompt. */}
-      {overflowing && (
-        <p className="d-mono mt-3 text-center text-[9px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+      {/* Bars + labels — only when the active schedule has arrivals.
+          Horizontal-scroll wrapper enforces a 36px-per-slot minimum;
+          on overflow the pill nudges the operator to scroll. */}
+      {hasDayArrivals && overflowing && (
+        <p className="d-mono mt-3 text-center text-[9px] uppercase tracking-[0.18em] text-[var(--d-coral)]">
           ← geser untuk lihat lebih banyak →
         </p>
       )}
       <div
         ref={scrollWrapRef}
-        className="custom-scroll mt-2 -mx-1 overflow-x-auto px-1"
+        className={`custom-scroll mt-2 -mx-1 overflow-x-auto px-1 ${
+          hasDayArrivals ? "" : "hidden"
+        }`}
       >
         <div
           className="flex h-[140px] items-end gap-[2px]"
