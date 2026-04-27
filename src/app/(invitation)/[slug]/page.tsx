@@ -8,6 +8,7 @@ import {
   resolveFonts,
   type ThemeFonts,
 } from "@/lib/theme/fonts";
+import { resolveSectionOrder } from "@/lib/theme/sections";
 import { InvitationClient } from "./client";
 
 // Static shell revalidates every 5 min; guest personalisation is fetched per
@@ -75,6 +76,13 @@ export default async function InvitationPage({
     bundle.theme?.config ?? null,
     bundle.themeConfig?.config ?? null,
   );
+  // Resolve persisted section render order (override on top of theme
+  // default; falls back to canonical ordering when both are missing).
+  const themeOverride = bundle.themeConfig?.config as
+    | { sectionOrder?: unknown }
+    | null
+    | undefined;
+  const sectionOrder = resolveSectionOrder(themeOverride?.sectionOrder);
   const [giftAccounts, galleryImages] = await Promise.all([
     listPublicGiftAccountsAction(bundle.event.id),
     listPublicGalleryImages(bundle.event.id),
@@ -106,6 +114,7 @@ export default async function InvitationPage({
         <InvitationClient
           giftAccounts={giftAccounts}
           galleryImages={galleryImages}
+          sectionOrder={sectionOrder}
           event={{
             id: bundle.event.id,
             title: bundle.event.title,

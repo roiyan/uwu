@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { saveWebsiteDraftAction } from "@/lib/actions/event";
+import {
+  saveWebsiteDraftAction,
+  updateSectionOrderAction,
+} from "@/lib/actions/event";
 import { useToast } from "@/components/shared/Toast";
 import { PhotoUpload } from "@/components/shared/PhotoUpload";
 import { VenueMapField } from "@/components/shared/VenueMapField";
@@ -30,6 +33,13 @@ export type EditorDefaults = {
   palette: Palette;
   couple: CoupleData;
   schedules: ScheduleData[];
+  /**
+   * Persisted left-rail section order. The page already projects any
+   * dirty stored value back onto a clean canonical permutation via
+   * `resolveSectionOrder`, so we trust the caller and treat this as
+   * authoritative. Consumed by the DnD UI in a follow-up commit.
+   */
+  sectionOrder: string[];
 };
 
 type ScheduleDraft = {
@@ -180,6 +190,14 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
     defaults.schedules.map(fromSchedule),
   );
   const [sections, setSections] = useState<SectionFlags>(ALL_SECTIONS_ON);
+  // Section order — driven by the persisted override the page hands
+  // us. Mutated optimistically on drop; the server action fires in a
+  // detached transition so the drag flow stays snappy.
+  const [orderedIds, setOrderedIds] = useState<string[]>(
+    defaults.sectionOrder,
+  );
+  const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [viewport, setViewport] = useState<Viewport>("mobile");
   const [mobilePreviewOpen, setMobilePreviewOpen] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -307,6 +325,69 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
   const activeFlagOn = activeDef.flag ? sections[activeDef.flag] : true;
   const activeIdx = SECTIONS.findIndex((s) => s.id === activeSection);
 
+  // Project the canonical SECTIONS metadata onto the live order so
+  // the left rail renders in the user's preferred order while every
+  // SECTIONS-by-index lookup site (activeIdx, prev/next) keeps
+  // working unchanged.
+  const orderedSections = useMemo(() => {
+    const byId = new Map<string, SectionDef>(SECTIONS.map((s) => [s.id, s]));
+    const out: SectionDef[] = [];
+    const seen = new Set<string>();
+    for (const id of orderedIds) {
+      const def = byId.get(id);
+      if (def && !seen.has(id)) {
+        out.push(def);
+        seen.add(id);
+      }
+    }
+    for (const s of SECTIONS) {
+      if (!seen.has(s.id)) out.push(s);
+    }
+    return out;
+  }, [orderedIds]);
+
+  function handleSectionDragStart(
+    id: string,
+    e: React.DragEvent<HTMLLIElement>,
+  ) {
+    setDraggingId(id);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", id);
+  }
+
+  function handleSectionDragEnd() {
+    setDraggingId(null);
+    setDragOverId(null);
+  }
+
+  function handleSectionDrop(targetId: string) {
+    const sourceId = draggingId;
+    setDragOverId(null);
+    setDraggingId(null);
+    if (!sourceId || sourceId === targetId) return;
+    const next = [...orderedIds];
+    const from = next.indexOf(sourceId);
+    const to = next.indexOf(targetId);
+    if (from === -1 || to === -1) return;
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setOrderedIds(next);
+    // event.id is typed optional on InvitationEvent because the live
+    // editor preview can render before the event row is persisted.
+    // The /dashboard/website page only mounts the editor once the
+    // event exists, so a missing id here would be a programming error
+    // — guard defensively and skip the save instead of throwing.
+    const eventId = defaults.event.id;
+    if (!eventId) return;
+    startTransition(async () => {
+      const res = await updateSectionOrderAction(eventId, next);
+      if (!res.ok) {
+        toast.error(res.error);
+        setOrderedIds(defaults.sectionOrder);
+      }
+    });
+  }
+
   const enabledCount = SECTIONS.reduce((acc, s) => {
     if (s.comingSoon) return acc;
     if (!s.flag) return acc + 1; // always-on sections
@@ -330,7 +411,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
         {/* Mobile section pills — inside sticky so they ride along
             with the TopBar instead of scrolling out of view. */}
         <nav className="flex gap-2 overflow-x-auto px-5 pb-3 pt-1 lg:hidden">
-          {SECTIONS.map((s) => {
+          {orderedSections.map((s) => {
             const isActive = activeSection === s.id;
             return (
               <button
@@ -367,7 +448,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
               </p>
             </header>
             <ul>
-              {SECTIONS.map((s) => (
+              {orderedSections.map((s) => (
                 <SectionListItem
                   key={s.id}
                   def={s}
@@ -377,6 +458,20 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                   onToggle={
                     s.flag ? () => toggleSection(s.flag!) : undefined
                   }
+                  isDragging={draggingId === s.id}
+                  isDragOver={dragOverId === s.id}
+                  onDragStart={(e) => handleSectionDragStart(s.id, e)}
+                  onDragOver={(e) => {
+                    if (!draggingId || draggingId === s.id) return;
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverId !== s.id) setDragOverId(s.id);
+                  }}
+                  onDragLeave={() =>
+                    setDragOverId((cur) => (cur === s.id ? null : cur))
+                  }
+                  onDrop={() => handleSectionDrop(s.id)}
+                  onDragEnd={handleSectionDragEnd}
                 />
               ))}
             </ul>
@@ -670,13 +765,30 @@ function SectionListItem({
   enabled,
   onSelect,
   onToggle,
+  isDragging,
+  isDragOver,
+  onDragStart,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onDragEnd,
 }: {
   def: SectionDef;
   active: boolean;
   enabled: boolean;
   onSelect: () => void;
   onToggle?: () => void;
+  isDragging?: boolean;
+  isDragOver?: boolean;
+  onDragStart?: (e: React.DragEvent<HTMLLIElement>) => void;
+  onDragOver?: (e: React.DragEvent<HTMLLIElement>) => void;
+  onDragLeave?: () => void;
+  onDrop?: () => void;
+  onDragEnd?: () => void;
 }) {
+  // Layered styling: base for the active row, a coral wash for the
+  // current drop target, and a dim for the dragged row so the rail
+  // clearly shows what's moving.
   const baseStyle: React.CSSProperties = active
     ? {
         borderLeft: "2px solid var(--d-coral)",
@@ -684,17 +796,54 @@ function SectionListItem({
           "linear-gradient(90deg, rgba(240,160,156,0.10) 0%, transparent 100%)",
       }
     : {};
+  const dropStyle: React.CSSProperties = isDragOver
+    ? {
+        background: "rgba(240,160,156,0.10)",
+        outline: "1px dashed var(--d-coral)",
+        outlineOffset: "-2px",
+      }
+    : {};
 
   return (
     <li
-      className={`relative flex items-start gap-3 px-5 py-3 transition-colors ${
-        active
-          ? "cursor-pointer"
-          : "cursor-pointer hover:bg-[var(--d-bg-2)]/40"
-      }`}
-      style={baseStyle}
+      draggable={Boolean(onDragStart)}
+      onDragStart={onDragStart}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={
+        onDrop
+          ? (e) => {
+              e.preventDefault();
+              onDrop();
+            }
+          : undefined
+      }
+      onDragEnd={onDragEnd}
+      className={`group relative flex items-start gap-3 px-5 py-3 transition-colors ${
+        onDragStart
+          ? "cursor-grab active:cursor-grabbing"
+          : active
+            ? "cursor-pointer"
+            : "cursor-pointer hover:bg-[var(--d-bg-2)]/40"
+      } ${isDragging ? "opacity-40" : ""}`}
+      style={{ ...baseStyle, ...dropStyle }}
       onClick={onSelect}
     >
+      {onDragStart && (
+        <span
+          aria-hidden
+          className="mt-1 shrink-0 text-[var(--d-ink-faint)] opacity-60 transition-opacity group-hover:opacity-100"
+        >
+          <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+            <circle cx="2" cy="2" r="1.2" />
+            <circle cx="8" cy="2" r="1.2" />
+            <circle cx="2" cy="7" r="1.2" />
+            <circle cx="8" cy="7" r="1.2" />
+            <circle cx="2" cy="12" r="1.2" />
+            <circle cx="8" cy="12" r="1.2" />
+          </svg>
+        </span>
+      )}
       <span className="d-mono shrink-0 pt-0.5 text-[12px] text-[var(--d-coral)]">
         {def.number}
       </span>
