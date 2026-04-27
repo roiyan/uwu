@@ -7,11 +7,12 @@ import {
   updateSectionOrderAction,
 } from "@/lib/actions/event";
 import { useToast } from "@/components/shared/Toast";
-import { PhotoUpload } from "@/components/shared/PhotoUpload";
 import { VenueMapField } from "@/components/shared/VenueMapField";
 import { Preview } from "@/components/invitation/Preview";
 import type { SectionId as CanonicalSectionId } from "@/lib/theme/sections";
 import { PhoneFrame, type Viewport } from "@/components/invitation/PhoneFrame";
+import { MediaLibraryModal } from "@/components/media/MediaLibraryModal";
+import { MediaPicker } from "@/components/media/MediaPicker";
 import type {
   CoupleData,
   InvitationEvent,
@@ -418,6 +419,11 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
           savedAt={savedAt}
           onSave={handleSave}
           onMobilePreview={() => setMobilePreviewOpen(true)}
+          onOpenMedia={
+            defaults.event.id
+              ? () => setMediaLibraryOpen(true)
+              : undefined
+          }
         />
 
         {/* Mobile section pills — inside sticky so they ride along
@@ -631,6 +637,18 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
           </div>
         </div>
       )}
+
+      {/* Centralised media library — opened from the camera button in
+          TopBar. Manager mode (no onSelect): tiles are delete-only.
+          Section editors call MediaPicker which mounts the same modal
+          in picker mode. */}
+      {defaults.event.id && (
+        <MediaLibraryModal
+          eventId={defaults.event.id}
+          open={mediaLibraryOpen}
+          onClose={() => setMediaLibraryOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -662,12 +680,16 @@ function TopBar({
   savedAt,
   onSave,
   onMobilePreview,
+  onOpenMedia,
 }: {
   dirty: boolean;
   pending: boolean;
   savedAt: Date | null;
   onSave: () => void;
   onMobilePreview: () => void;
+  // Optional — only wired when the event has been persisted (id !=
+  // null). Without it the camera button is hidden.
+  onOpenMedia?: () => void;
 }) {
   return (
     <div>
@@ -711,6 +733,15 @@ function TopBar({
             </button>
           </div>
           <div className="flex gap-2 sm:contents">
+            {onOpenMedia && (
+              <button
+                type="button"
+                onClick={onOpenMedia}
+                className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)] sm:order-2 sm:flex-initial"
+              >
+                📷 Media
+              </button>
+            )}
             <Link
               href="/dashboard/website/theme"
               className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[rgba(212,184,150,0.35)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-gold)] transition-colors hover:bg-[rgba(212,184,150,0.08)] sm:order-2 sm:flex-initial"
@@ -1171,13 +1202,18 @@ function CoupleBlock({
           onChange={(v) => onChange(motherKey as keyof CoupleData, v)}
         />
         <div className="md:col-span-2">
-          <PhotoUpload
+          {/* Picker reads from the central media library — operator
+              uploads once, picks across mempelai/cover/galeri without
+              re-uploading. Same { value, onChange } shape as the old
+              PhotoUpload so callers don't need to reshape data. */}
+          <MediaPicker
             eventId={eventId}
-            slot={isBride ? "bride-photo" : "groom-photo"}
             label={`Foto ${title.toLowerCase()}`}
-            value={(couple[photoKey] as string | null) ?? ""}
+            helper="Pilih atau unggah ke perpustakaan"
+            aspectRatio="3 / 4"
+            value={(couple[photoKey] as string | null) ?? null}
             onChange={(v) =>
-              onChange(photoKey as keyof CoupleData, (v || null) as never)
+              onChange(photoKey as keyof CoupleData, (v ?? null) as never)
             }
           />
         </div>
@@ -1195,14 +1231,17 @@ function FotoSampulForm({
   url: string;
   onChange: (v: string) => void;
 }) {
+  // Cover photo is wider (16:9 hero crop) than the couple portraits.
+  // Empty string sentinel kept so the existing onChange signature
+  // (string, not string | null) stays unchanged.
   return (
-    <PhotoUpload
+    <MediaPicker
       eventId={eventId}
-      slot="cover-photo"
       label="Foto sampul"
-      aspect="wide"
-      value={url}
-      onChange={onChange}
+      helper="Tampil di hero undangan"
+      aspectRatio="16 / 9"
+      value={url || null}
+      onChange={(v) => onChange(v ?? "")}
     />
   );
 }
