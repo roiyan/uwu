@@ -1224,14 +1224,17 @@ function FotoSampulForm({
   url: string;
   onChange: (v: string) => void;
 }) {
+  // Cover photo is wider (16:9 hero crop) than the couple portraits.
+  // Empty string sentinel kept so the existing onChange signature
+  // (string, not string | null) stays unchanged.
   return (
-    <PhotoUpload
+    <MediaPicker
       eventId={eventId}
-      slot="cover-photo"
       label="Foto sampul"
-      aspect="wide"
-      value={url}
-      onChange={onChange}
+      helper="Tampil di hero undangan"
+      aspectRatio="16 / 9"
+      value={url || null}
+      onChange={(v) => onChange(v ?? "")}
     />
   );
 }
