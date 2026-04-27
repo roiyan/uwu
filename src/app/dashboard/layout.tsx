@@ -94,21 +94,25 @@ async function resolveSidebarData() {
     couple.brideNickname && couple.groomNickname
       ? `${couple.brideNickname} & ${couple.groomNickname}`
       : bundle.event.title;
-  const themeLabel = bundle.theme?.name ?? null;
+  // Soft-fail to null on both fans so a slow/failing query still
+  // renders the sidebar without a badge instead of breaking the layout.
+  const [tamuCount, pkg] = await Promise.all([
+    countLiveGuests(bundle.event.id).catch(() => null),
+    getEventPackageLimit(bundle.event.id).catch(
+      () => ({ packageName: null as string | null }),
+    ),
+  ]);
+  const packageLabel = pkg?.packageName ?? null;
 
-  // Soft-fail to null so a slow/failing query still renders the
-  // sidebar without a badge instead of breaking the layout.
-  const tamuCount = await countLiveGuests(bundle.event.id).catch(() => null);
-
-  return { coupleLabel, themeLabel, tamuCount };
+  return { coupleLabel, packageLabel, tamuCount };
 }
 
 async function SidebarHost() {
-  const { coupleLabel, themeLabel, tamuCount } = await resolveSidebarData();
+  const { coupleLabel, packageLabel, tamuCount } = await resolveSidebarData();
   return (
     <Sidebar
       coupleLabel={coupleLabel}
-      themeLabel={themeLabel}
+      packageLabel={packageLabel}
       previewHref="/preview"
       tamuCount={tamuCount}
     />
