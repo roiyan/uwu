@@ -221,10 +221,11 @@ export function Sidebar({
   const sidebarWidth = responsive ? (isCollapsed ? 68 : 280) : 280;
 
   const couple = splitCoupleLabel(coupleLabel ?? "Cerita belum dimulai");
-  const metaLabel = [themeLabel, packageLabel]
-    .filter(Boolean)
-    .join(" · ")
-    .toUpperCase();
+  // Badge under the couple label is the package tier ("Starter", "Silk",
+  // ...) — what the couple paid for. We used to surface the theme name
+  // instead, but that was redundant with the in-context theme picker
+  // and read confusingly as if the theme were the active subscription.
+  const metaLabel = (packageLabel ?? "").toUpperCase();
 
   // Publish the width to the layout via a CSS variable on the
   // document root. The skeleton fallback (rendered before this

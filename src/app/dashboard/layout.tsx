@@ -3,7 +3,10 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { getSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
-import { countLiveGuests } from "@/lib/db/queries/guests";
+import {
+  countLiveGuests,
+  getEventPackageLimit,
+} from "@/lib/db/queries/guests";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { BottomTab } from "@/components/dashboard/BottomTab";
 import { MobileTopBar } from "@/components/dashboard/MobileTopBar";
@@ -91,27 +94,31 @@ async function resolveSidebarData() {
     couple.brideNickname && couple.groomNickname
       ? `${couple.brideNickname} & ${couple.groomNickname}`
       : bundle.event.title;
-  const themeLabel = bundle.theme?.name ?? null;
-
-  // Soft-fail to null so a slow/failing query still renders the
-  // sidebar without a badge instead of breaking the layout.
-  const tamuCount = await countLiveGuests(bundle.event.id).catch(() => null);
+  // Soft-fail to null on both fans so a slow/failing query still
+  // renders the sidebar without a badge instead of breaking the layout.
+  const [tamuCount, pkg] = await Promise.all([
+    countLiveGuests(bundle.event.id).catch(() => null),
+    getEventPackageLimit(bundle.event.id).catch(
+      () => ({ packageName: null as string | null }),
+    ),
+  ]);
+  const packageLabel = pkg?.packageName ?? null;
 
   return {
     coupleLabel,
-    themeLabel,
+    packageLabel,
     tamuCount,
     isPublished: bundle.event.isPublished,
   };
 }
 
 async function SidebarHost() {
-  const { coupleLabel, themeLabel, tamuCount, isPublished } =
+  const { coupleLabel, packageLabel, tamuCount, isPublished } =
     await resolveSidebarData();
   return (
     <Sidebar
       coupleLabel={coupleLabel}
-      themeLabel={themeLabel}
+      packageLabel={packageLabel}
       previewHref="/preview"
       tamuCount={tamuCount}
       isPublished={isPublished}
@@ -120,11 +127,11 @@ async function SidebarHost() {
 }
 
 async function MobileTopBarHost() {
-  const { coupleLabel, themeLabel, tamuCount } = await resolveSidebarData();
+  const { coupleLabel, packageLabel, tamuCount } = await resolveSidebarData();
   return (
     <MobileTopBar
       coupleLabel={coupleLabel}
-      themeLabel={themeLabel}
+      packageLabel={packageLabel}
       previewHref="/preview"
       tamuCount={tamuCount}
     />
