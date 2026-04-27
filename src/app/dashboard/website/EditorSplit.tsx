@@ -315,14 +315,41 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
 
   return (
     <div className="flex-1">
-      {/* Sticky top action bar */}
-      <TopBar
-        dirty={dirty}
-        pending={pending}
-        savedAt={savedAt}
-        onSave={handleSave}
-        onMobilePreview={() => setMobilePreviewOpen(true)}
-      />
+      {/* Sticky top action bar — TopBar + mobile section pills share
+          one sticky container so the pills sit flush under the bar
+          on mobile without measuring its dynamic height. */}
+      <div className="sticky top-0 z-30 border-b border-[var(--d-line)] bg-[var(--d-bg-0)]/95 backdrop-blur">
+        <TopBar
+          dirty={dirty}
+          pending={pending}
+          savedAt={savedAt}
+          onSave={handleSave}
+          onMobilePreview={() => setMobilePreviewOpen(true)}
+        />
+
+        {/* Mobile section pills — inside sticky so they ride along
+            with the TopBar instead of scrolling out of view. */}
+        <nav className="flex gap-2 overflow-x-auto px-5 pb-3 pt-1 lg:hidden">
+          {SECTIONS.map((s) => {
+            const isActive = activeSection === s.id;
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => setActiveSection(s.id)}
+                className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-colors ${
+                  isActive
+                    ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
+                    : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
+                }`}
+              >
+                <span>{s.number}</span>
+                <span>{s.title}</span>
+              </button>
+            );
+          })}
+        </nav>
+      </div>
 
       {/* 3-panel grid: section list | form editor | phone preview.
           Below 1080px the section list collapses into a horizontal
@@ -355,28 +382,6 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             </ul>
           </div>
         </aside>
-
-        {/* Mobile section pills (lg-) */}
-        <nav className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 lg:hidden">
-          {SECTIONS.map((s) => {
-            const isActive = activeSection === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setActiveSection(s.id)}
-                className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-colors ${
-                  isActive
-                    ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
-                    : "border-[var(--d-line)] text-[var(--d-ink-dim)]"
-                }`}
-              >
-                <span>{s.number}</span>
-                <span>{s.title}</span>
-              </button>
-            );
-          })}
-        </nav>
 
         {/* Center panel — form editor */}
         <section className="min-w-0">
@@ -558,7 +563,7 @@ function TopBar({
   onMobilePreview: () => void;
 }) {
   return (
-    <div className="sticky top-0 z-30 border-b border-[var(--d-line)] bg-[var(--d-bg-0)]/90 backdrop-blur">
+    <div>
       <div className="mx-auto flex max-w-[1480px] flex-wrap items-center justify-between gap-3 px-5 py-5 lg:px-8">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
@@ -578,35 +583,41 @@ function TopBar({
             kalian
           </h1>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <SaveIndicator dirty={dirty} savedAt={savedAt} />
-          <Link
-            href="/dashboard/website/theme"
-            className="d-mono inline-flex items-center gap-2 rounded-full border border-[rgba(212,184,150,0.35)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-gold)] transition-colors hover:bg-[rgba(212,184,150,0.08)]"
-          >
-            ✨ Tema
-          </Link>
-          <button
-            type="button"
-            onClick={onMobilePreview}
-            className="d-mono inline-flex items-center gap-2 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] xl:hidden"
-          >
-            👁 Pratinjau
-          </button>
-          <button
-            type="button"
-            onClick={onSave}
-            disabled={pending}
-            className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[12px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {pending && (
-              <span
-                aria-hidden
-                className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
-              />
-            )}
-            <span>{pending ? "Menyimpan…" : "Simpan Perubahan"}</span>
-          </button>
+        {/* Mobile: status + Simpan share row 1; Tema + Pratinjau on row 2.
+            Desktop (sm+): everything inline in one flex-wrap row. */}
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+          <div className="flex items-center justify-between gap-2 sm:order-1 sm:contents">
+            <SaveIndicator dirty={dirty} savedAt={savedAt} />
+            <button
+              type="button"
+              onClick={onSave}
+              disabled={pending}
+              className="inline-flex items-center gap-2 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-6 py-2.5 text-[12px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:order-4"
+            >
+              {pending && (
+                <span
+                  aria-hidden
+                  className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                />
+              )}
+              <span>{pending ? "Menyimpan…" : "Simpan Perubahan"}</span>
+            </button>
+          </div>
+          <div className="flex gap-2 sm:contents">
+            <Link
+              href="/dashboard/website/theme"
+              className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[rgba(212,184,150,0.35)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-gold)] transition-colors hover:bg-[rgba(212,184,150,0.08)] sm:order-2 sm:flex-initial"
+            >
+              ✨ Tema
+            </Link>
+            <button
+              type="button"
+              onClick={onMobilePreview}
+              className="d-mono inline-flex flex-1 items-center justify-center gap-2 rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] sm:order-3 sm:flex-initial xl:hidden"
+            >
+              👁 Pratinjau
+            </button>
+          </div>
         </div>
       </div>
     </div>

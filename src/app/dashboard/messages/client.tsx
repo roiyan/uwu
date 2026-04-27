@@ -519,29 +519,33 @@ export function MessagesClient({
         />
       </div>
       {!isPublished && <UnpublishedBanner />}
-      <div className="mb-7 inline-flex flex-wrap rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1">
-        <TabButton
-          active={activeTab === "compose"}
-          onClick={() => setActiveTab("compose")}
-          label="Kirim Baru"
-        />
-        <TabButton
-          active={activeTab === "history"}
-          onClick={() => setActiveTab("history")}
-          label="Riwayat"
-          count={history.length}
-        />
-        <TabButton
-          active={activeTab === "manual_queue"}
-          onClick={() => setActiveTab("manual_queue")}
-          label="Antrian Manual"
-          count={manualQueue.length}
-        />
-        <TabButton
-          active={activeTab === "ai_templates"}
-          onClick={() => setActiveTab("ai_templates")}
-          label="Template AI"
-        />
+      {/* Mobile: horizontal-scroll tab strip (no wrap, no clipped pills).
+          Desktop (sm+): inline-flex pill rail like before. */}
+      <div className="mb-7 -mx-5 overflow-x-auto px-5 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="inline-flex w-max min-w-full gap-1 rounded-full border border-[var(--d-line)] bg-[rgba(255,255,255,0.025)] p-1 sm:min-w-0">
+          <TabButton
+            active={activeTab === "compose"}
+            onClick={() => setActiveTab("compose")}
+            label="Kirim Baru"
+          />
+          <TabButton
+            active={activeTab === "history"}
+            onClick={() => setActiveTab("history")}
+            label="Riwayat"
+            count={history.length}
+          />
+          <TabButton
+            active={activeTab === "manual_queue"}
+            onClick={() => setActiveTab("manual_queue")}
+            label="Antrian Manual"
+            count={manualQueue.length}
+          />
+          <TabButton
+            active={activeTab === "ai_templates"}
+            onClick={() => setActiveTab("ai_templates")}
+            label="Template AI"
+          />
+        </div>
       </div>
 
       {/* Render both panels and toggle visibility instead of swapping
@@ -1705,7 +1709,7 @@ function TabButton({
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`d-mono inline-flex items-center gap-2 rounded-full px-5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
+      className={`d-mono inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-5 py-1.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
         active
           ? "bg-[var(--d-coral)] text-[#0B0B15]"
           : "text-[var(--d-ink-dim)] hover:text-[var(--d-ink)]"
