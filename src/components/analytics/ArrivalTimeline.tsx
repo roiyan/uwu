@@ -232,50 +232,65 @@ export function ArrivalTimeline({
         </div>
       )}
 
-      <div className="mt-5 flex h-[140px] items-end gap-[2px] px-1">
-        {slots.map((slot, i) => {
-          const heightPct =
-            slot.pax > 0 ? Math.max((slot.pax / maxPax) * 100, 8) : 0;
-          return (
+      {/* Horizontal-scroll wrapper. When slots > ~12 the bars would
+          otherwise squeeze to <2px each on mobile / cramped widths.
+          Force a 36px-per-slot minimum and let the operator scroll if
+          the chart outgrows the card. Navigator + legend + footer
+          sit OUTSIDE this scroll region so peak/total stay visible.
+          .custom-scroll wires the thin ink-faint scrollbar (globals.css). */}
+      <div className="custom-scroll mt-5 -mx-1 overflow-x-auto px-1">
+        <div
+          className="flex h-[140px] items-end gap-[2px]"
+          style={{ minWidth: `${Math.max(slots.length * 36, 0)}px` }}
+        >
+          {slots.map((slot, i) => {
+            const heightPct =
+              slot.pax > 0 ? Math.max((slot.pax / maxPax) * 100, 8) : 0;
+            return (
+              <div
+                key={i}
+                className="relative flex h-full flex-1 items-end justify-center"
+                title={`${slot.label} — ${slot.pax} orang (${slot.count} tamu)`}
+              >
+                <div
+                  className="w-full max-w-[28px] rounded-t-[4px] transition-[height] duration-300"
+                  style={{
+                    height: `${heightPct}%`,
+                    background:
+                      slot.pax === 0
+                        ? "transparent"
+                        : slot.inSchedule
+                          ? "linear-gradient(to top, rgba(240,160,156,0.6), rgba(240,160,156,0.3))"
+                          : "linear-gradient(to top, rgba(240,160,156,0.3), rgba(240,160,156,0.15))",
+                  }}
+                />
+                {slot.pax > 0 && (
+                  <span className="d-mono pointer-events-none absolute -top-[18px] w-full text-center text-[9px] text-[var(--d-ink-dim)]">
+                    {slot.pax}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          className="mt-1 flex gap-[2px]"
+          style={{ minWidth: `${Math.max(slots.length * 36, 0)}px` }}
+        >
+          {slots.map((slot, i) => (
             <div
               key={i}
-              className="relative flex h-full flex-1 items-end justify-center"
-              title={`${slot.label} — ${slot.pax} orang (${slot.count} tamu)`}
+              className="d-mono flex-1 text-center text-[8.5px] text-[var(--d-ink-faint)]"
+              style={{
+                visibility:
+                  slot.time % HOURS_LABEL_INTERVAL === 0 ? "visible" : "hidden",
+              }}
             >
-              <div
-                className="w-full max-w-[28px] rounded-t-[4px] transition-[height] duration-300"
-                style={{
-                  height: `${heightPct}%`,
-                  background:
-                    slot.pax === 0
-                      ? "transparent"
-                      : slot.inSchedule
-                        ? "linear-gradient(to top, rgba(240,160,156,0.6), rgba(240,160,156,0.3))"
-                        : "linear-gradient(to top, rgba(240,160,156,0.3), rgba(240,160,156,0.15))",
-                }}
-              />
-              {slot.pax > 0 && (
-                <span className="d-mono pointer-events-none absolute -top-[18px] w-full text-center text-[9px] text-[var(--d-ink-dim)]">
-                  {slot.pax}
-                </span>
-              )}
+              {slot.label}
             </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-1 flex gap-[2px]">
-        {slots.map((slot, i) => (
-          <div
-            key={i}
-            className="d-mono flex-1 text-center text-[8.5px] text-[var(--d-ink-faint)]"
-            style={{
-              visibility: slot.time % HOURS_LABEL_INTERVAL === 0 ? "visible" : "hidden",
-            }}
-          >
-            {slot.label}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className="d-mono mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] uppercase tracking-[0.14em] text-[var(--d-ink-faint)]">

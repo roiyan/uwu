@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { dashboardNav } from "@/lib/nav/dashboard-items";
 import { signOutAction } from "@/lib/actions/auth";
 import { BrandLogo } from "@/components/shared/BrandLogo";
+
+const COLLAPSE_STORAGE_KEY = "uwu-sidebar-collapsed";
 
 type SidebarProps = {
   coupleLabel?: string | null;
@@ -165,15 +168,46 @@ export function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname();
 
-  // On desktop the sidebar pins to the viewport with `sticky top-0
-  // h-screen` so the page main column scrolls beneath it. The mobile
-  // drawer variant doesn't apply that — the drawer overlay
-  // positions itself absolutely and manages its own height.
+  // Desktop-only collapse. Mobile drawer (responsive=false) ignores
+  // this and always renders full-width. Hydrate from localStorage in
+  // an effect so the SSR markup matches the initial CSR markup
+  // (always expanded), then snap to the persisted preference.
+  const [collapsed, setCollapsed] = useState(false);
+  useEffect(() => {
+    if (!responsive) return;
+    try {
+      setCollapsed(window.localStorage.getItem(COLLAPSE_STORAGE_KEY) === "true");
+    } catch {
+      // Private browsing throws on storage access — fall through.
+    }
+  }, [responsive]);
+  const toggleCollapse = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(COLLAPSE_STORAGE_KEY, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+  const isCollapsed = responsive && collapsed;
+
+  // Width morphs between 280px (expanded) and 68px (collapsed). Mobile
+  // drawer (responsive=false) keeps the full 280px so the drawer's
+  // labels stay readable.
+  const widthClass = responsive
+    ? isCollapsed
+      ? "lg:w-[68px]"
+      : "lg:w-[280px]"
+    : "w-[280px]";
   const sidebarClass = [
-    "relative w-[280px] flex-col overflow-hidden",
+    "relative flex-col overflow-hidden transition-[width] duration-200 ease-out",
+    widthClass,
     responsive
       ? "hidden lg:sticky lg:top-0 lg:flex lg:h-screen"
-      : "flex h-full",
+      : "flex h-full w-[280px]",
   ].join(" ");
 
   const couple = splitCoupleLabel(coupleLabel ?? "Cerita belum dimulai");
@@ -203,6 +237,21 @@ export function Sidebar({
         }}
       />
 
+      {/* Collapse toggle — only on desktop. Floats on the right edge so
+          it doesn't compete with the brand block. Mobile drawer hides
+          it (the drawer has its own close button instead). */}
+      {responsive && (
+        <button
+          type="button"
+          onClick={toggleCollapse}
+          aria-label={isCollapsed ? "Lebarkan sidebar" : "Sempitkan sidebar"}
+          aria-pressed={isCollapsed}
+          className="absolute right-[-12px] top-[58px] z-10 hidden h-6 w-6 items-center justify-center rounded-full border border-[var(--d-line)] bg-[var(--d-bg-card)] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)] lg:flex"
+        >
+          <ChevronIcon direction={isCollapsed ? "right" : "left"} />
+        </button>
+      )}
+
       <div className="relative flex h-full flex-col">
         {onCloseMobile && (
           <button
@@ -216,38 +265,59 @@ export function Sidebar({
           </button>
         )}
 
-        {/* Brand section */}
-        <div className="border-b border-[var(--d-line)] px-6 pb-6 pt-7">
-          <div className="flex items-center gap-2">
-            <BrandLogo href="/dashboard" size="md" />
+        {/* Brand section. In collapsed mode we shrink to a centered
+            BrandLogo (icon variant) and hide the couple + meta labels
+            so the rail can sit at 68px. */}
+        <div
+          className={`border-b border-[var(--d-line)] ${
+            isCollapsed ? "px-3 pb-4 pt-5" : "px-6 pb-6 pt-7"
+          }`}
+        >
+          <div
+            className={`flex items-center gap-2 ${
+              isCollapsed ? "justify-center" : ""
+            }`}
+          >
+            <BrandLogo
+              href="/dashboard"
+              size={isCollapsed ? "sm" : "md"}
+            />
           </div>
-          <p className="mt-4 truncate text-[20px] leading-tight">
-            <span className="font-light text-[var(--d-ink)]">
-              {couple.left}
-            </span>
-            {couple.right && (
-              <span className="d-serif italic text-[var(--d-coral)]">
-                {" "}
-                {couple.right}
-              </span>
-            )}
-          </p>
-          {metaLabel && (
-            <div className="mt-2 flex items-center gap-2">
-              <span
-                aria-hidden
-                className="h-1.5 w-1.5 rounded-full"
-                style={{ background: "var(--d-gold)" }}
-              />
-              <p className="d-mono truncate text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
-                {metaLabel}
+          {!isCollapsed && (
+            <>
+              <p className="mt-4 truncate text-[20px] leading-tight">
+                <span className="font-light text-[var(--d-ink)]">
+                  {couple.left}
+                </span>
+                {couple.right && (
+                  <span className="d-serif italic text-[var(--d-coral)]">
+                    {" "}
+                    {couple.right}
+                  </span>
+                )}
               </p>
-            </div>
+              {metaLabel && (
+                <div className="mt-2 flex items-center gap-2">
+                  <span
+                    aria-hidden
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ background: "var(--d-gold)" }}
+                  />
+                  <p className="d-mono truncate text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
+                    {metaLabel}
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-5">
+        <nav
+          className={`flex-1 space-y-0.5 overflow-y-auto py-5 ${
+            isCollapsed ? "px-2" : "px-3"
+          }`}
+        >
           {dashboardNav.map((item, idx) => {
             const active =
               pathname === item.href ||
@@ -279,14 +349,34 @@ export function Sidebar({
 
             return (
               <div key={item.href}>
-                {showHariSeparator && <NavSeparator label="Hari H" />}
-                {showAccountSeparator && <NavSeparator label="Akun" />}
+                {/* Section separators are decorative labels — drop the
+                    text in collapsed mode but keep a thin divider so
+                    the visual rhythm is preserved. */}
+                {showHariSeparator &&
+                  (isCollapsed ? (
+                    <div
+                      className="mx-3 my-3 h-px bg-[var(--d-line)]"
+                      aria-hidden
+                    />
+                  ) : (
+                    <NavSeparator label="Hari H" />
+                  ))}
+                {showAccountSeparator &&
+                  (isCollapsed ? (
+                    <div
+                      className="mx-3 my-3 h-px bg-[var(--d-line)]"
+                      aria-hidden
+                    />
+                  ) : (
+                    <NavSeparator label="Akun" />
+                  ))}
                 <NavItem
                   href={item.href}
                   label={item.label}
                   badge={badgeNode}
                   disabled={item.disabled}
                   active={active}
+                  collapsed={isCollapsed}
                   onClick={onCloseMobile}
                 />
               </div>
@@ -295,33 +385,67 @@ export function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="space-y-3 border-t border-[var(--d-line)] px-5 py-5">
+        <div
+          className={`space-y-3 border-t border-[var(--d-line)] ${
+            isCollapsed ? "px-2 py-4" : "px-5 py-5"
+          }`}
+        >
           <Link
             href={previewHref ?? "#"}
             target={previewHref ? "_blank" : undefined}
             rel={previewHref ? "noreferrer" : undefined}
             aria-disabled={!previewHref}
             onClick={onCloseMobile}
-            className={`flex w-full items-center justify-center gap-2 rounded-[10px] border px-4 py-2.5 text-[12.5px] transition-colors ${
+            title={isCollapsed ? "Intip Undangan" : undefined}
+            className={`flex w-full items-center justify-center gap-2 rounded-[10px] border ${
+              isCollapsed ? "py-2" : "px-4 py-2.5"
+            } text-[12.5px] transition-colors ${
               previewHref
                 ? "border-[var(--d-line-strong)] text-[var(--d-ink)] hover:bg-[var(--d-bg-2)]"
                 : "cursor-not-allowed border-[var(--d-line)] text-[var(--d-ink-faint)]"
             }`}
           >
             <EyeIcon />
-            Intip Undangan
+            {!isCollapsed && "Intip Undangan"}
           </Link>
           <form action={signOutAction}>
             <button
               type="submit"
-              className="d-mono w-full rounded-full px-4 py-1 text-center text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)] transition-colors hover:text-[var(--d-coral)]"
+              title={isCollapsed ? "Keluar" : undefined}
+              className={`d-mono w-full rounded-full text-center transition-colors ${
+                isCollapsed
+                  ? "py-1.5 text-[10px] text-[var(--d-ink-faint)] hover:text-[var(--d-coral)]"
+                  : "px-4 py-1 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)] hover:text-[var(--d-coral)]"
+              }`}
             >
-              Keluar
+              {isCollapsed ? "↩" : "Keluar"}
             </button>
           </form>
         </div>
       </div>
     </aside>
+  );
+}
+
+function ChevronIcon({ direction }: { direction: "left" | "right" }) {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      {direction === "right" ? (
+        <path d="M9 18l6-6-6-6" />
+      ) : (
+        <path d="M15 18l-6-6 6-6" />
+      )}
+    </svg>
   );
 }
 
@@ -339,6 +463,7 @@ function NavItem({
   badge,
   disabled,
   active,
+  collapsed = false,
   onClick,
 }: {
   href: string;
@@ -346,28 +471,50 @@ function NavItem({
   badge?: React.ReactNode;
   disabled?: boolean;
   active: boolean;
+  collapsed?: boolean;
   onClick?: () => void;
 }) {
   // Active row: 2px coral left border + gradient bg + coral icon.
-  // Border eats 2px so we shave the left padding to keep alignment.
+  // In collapsed mode the row centers a single icon at 44px height
+  // and drops the text + left-border affordance (border would be
+  // visually noisy on a 52px-wide rail).
   const base =
-    "group relative flex items-center justify-between rounded-[10px] py-2.5 text-[13px] transition-colors";
-  const padding = active ? "pl-[14px] pr-3" : "pl-4 pr-3";
+    "group relative flex items-center rounded-[10px] text-[13px] transition-colors";
+  const layout = collapsed
+    ? "justify-center py-2.5"
+    : "justify-between py-2.5";
+  const padding = collapsed
+    ? "px-0"
+    : active
+      ? "pl-[14px] pr-3"
+      : "pl-4 pr-3";
   const stateClass = disabled
     ? "cursor-not-allowed text-[var(--d-ink-faint)]"
     : active
       ? "text-[var(--d-ink)]"
       : "text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)] hover:text-[var(--d-ink)]";
 
-  const activeStyle: React.CSSProperties | undefined = active
-    ? {
-        borderLeft: "2px solid var(--d-coral)",
-        background:
-          "linear-gradient(90deg, rgba(240,160,156,0.12) 0%, transparent 100%)",
-      }
-    : undefined;
+  const activeStyle: React.CSSProperties | undefined =
+    active && !collapsed
+      ? {
+          borderLeft: "2px solid var(--d-coral)",
+          background:
+            "linear-gradient(90deg, rgba(240,160,156,0.12) 0%, transparent 100%)",
+        }
+      : active && collapsed
+        ? {
+            background: "rgba(240,160,156,0.12)",
+          }
+        : undefined;
 
-  const inner = (
+  const inner = collapsed ? (
+    <span
+      className="flex items-center justify-center"
+      style={{ color: active ? "var(--d-coral)" : undefined }}
+    >
+      <NavIcon href={href} active={active} />
+    </span>
+  ) : (
     <>
       <span
         className="flex items-center gap-3"
@@ -387,8 +534,9 @@ function NavItem({
   if (disabled) {
     return (
       <span
-        className={`${base} ${padding} ${stateClass}`}
+        className={`${base} ${layout} ${padding} ${stateClass}`}
         style={activeStyle}
+        title={collapsed ? label : undefined}
         aria-disabled
       >
         {inner}
@@ -400,8 +548,9 @@ function NavItem({
     <Link
       href={href}
       onClick={onClick}
-      className={`${base} ${padding} ${stateClass}`}
+      className={`${base} ${layout} ${padding} ${stateClass}`}
       style={activeStyle}
+      title={collapsed ? label : undefined}
     >
       {inner}
     </Link>
