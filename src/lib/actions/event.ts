@@ -608,14 +608,26 @@ export async function saveWebsiteDraftAction(
 export async function publishEventAction(
   eventId: string,
 ): Promise<ActionResult> {
+  // Slug captured during the DB write so the post-success block can
+  // bust the public invitation's ISR cache without a second query.
+  let invitationSlug: string | null = null;
   const result = await withAuth(eventId, "admin", async () => {
-    await db
+    const [eventRow] = await db
       .update(events)
       .set({ isPublished: true, publishedAt: new Date(), updatedAt: new Date() })
-      .where(eq(events.id, eventId));
+      .where(eq(events.id, eventId))
+      .returning({ slug: events.slug });
+    invitationSlug = eventRow?.slug ?? null;
   });
   if (result.ok) {
     revalidatePath("/dashboard", "layout");
+    // CRITICAL: bust the public invitation's force-static / 5-min ISR
+    // cache so guests start seeing the live page immediately. Without
+    // this, the previously-cached 404/old HTML keeps serving for up
+    // to 5 minutes after publish.
+    if (invitationSlug) {
+      revalidatePath(`/${invitationSlug}`);
+    }
     await logActivity({
       eventId,
       action: "publish_event",
@@ -628,14 +640,25 @@ export async function publishEventAction(
 export async function unpublishEventAction(
   eventId: string,
 ): Promise<ActionResult> {
+  let invitationSlug: string | null = null;
   const result = await withAuth(eventId, "admin", async () => {
-    await db
+    const [eventRow] = await db
       .update(events)
       .set({ isPublished: false, updatedAt: new Date() })
-      .where(eq(events.id, eventId));
+      .where(eq(events.id, eventId))
+      .returning({ slug: events.slug });
+    invitationSlug = eventRow?.slug ?? null;
   });
   if (result.ok) {
     revalidatePath("/dashboard", "layout");
+    // CRITICAL: bust the public invitation's force-static / 5-min ISR
+    // cache so the page starts 404'ing immediately. Without this,
+    // guests can still load the live HTML for up to 5 minutes after
+    // the couple hits "Sembunyikan", which silently breaks the
+    // intended "hide from public" semantics.
+    if (invitationSlug) {
+      revalidatePath(`/${invitationSlug}`);
+    }
     await logActivity({
       eventId,
       action: "unpublish_event",

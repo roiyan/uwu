@@ -281,6 +281,24 @@ function AcaraTab({
     else if (state && !state.ok) toast.error(state.error);
   }, [state, toast]);
 
+  // Anchor scroll for #publikasi — same pattern as operator-link-card.
+  // The Publikasi section only mounts after this client tab renders,
+  // so the browser's native fragment-scroll fires too early to find
+  // the target. The 300ms delay covers both initial hydration and the
+  // soft-navigation case where the URL is updated via pushState (no
+  // native scroll fires at all). Sidebar's "Sudah tayang / Belum
+  // tayang" link relies on this to land users at the publish toggle.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash !== "#publikasi") return;
+    const t = window.setTimeout(() => {
+      document
+        .getElementById("publikasi")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+    return () => window.clearTimeout(t);
+  }, []);
+
   return (
     <div className="space-y-6">
       <form action={formAction} className="d-card space-y-7 p-7 md:p-9">
