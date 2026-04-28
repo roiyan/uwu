@@ -17,7 +17,14 @@ const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MO
 const MAX_RETRIES = 3;
 
 export type GenerateResult =
-  | { ok: true; message: string }
+  | {
+      ok: true;
+      /** Body of the message (WA: full text; email: body without subject). */
+      message: string;
+      /** Email subject line, parsed from the model's `SUBJECT:` prefix.
+       *  Always undefined for the WhatsApp channel. */
+      subject?: string;
+    }
   | { ok: false; error: string };
 
 type GeminiResponse = {
@@ -50,13 +57,19 @@ export async function generateBroadcastMessage(
 
   const { system, user: userPrompt } = buildPrompt(input);
 
+  // Output budget: WA messages cap around 7-10 lines, email bodies
+  // around 14 lines + a short subject. 400 / 600 tokens cover both
+  // with headroom; pushing higher just bills the user for tokens
+  // the prompt explicitly asks the model not to emit.
+  const maxOutputTokens = input.channel === "email" ? 600 : 400;
+
   let body: GeminiResponse;
   try {
     body = await callGeminiWithRetry(apiKey, {
       systemInstruction: { parts: [{ text: system }] },
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
       generationConfig: {
-        maxOutputTokens: 600,
+        maxOutputTokens,
         temperature: 0.8,
         topP: 0.95,
       },
@@ -83,6 +96,22 @@ export async function generateBroadcastMessage(
   if (!text) {
     console.error("[ai-message] empty response", body);
     return { ok: false, error: "AI tidak menghasilkan pesan. Coba lagi." };
+  }
+
+  // Email prompt asks for a `SUBJECT:` / `BODY:` framed output so the
+  // composer can populate the two fields independently. Fall back to
+  // treating the whole text as body when the model ignores the
+  // framing — keeps WhatsApp-only flows untouched.
+  if (input.channel === "email") {
+    const subjectMatch = text.match(/^\s*SUBJECT:\s*(.+?)\s*$/im);
+    const bodyMatch = text.match(/^\s*BODY:\s*([\s\S]+)$/im);
+    const subject = subjectMatch?.[1]?.trim();
+    const messageBody = bodyMatch?.[1]?.trim() ?? text;
+    return {
+      ok: true,
+      message: messageBody,
+      subject: subject || undefined,
+    };
   }
 
   return { ok: true, message: text };

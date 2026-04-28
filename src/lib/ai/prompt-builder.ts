@@ -3,298 +3,194 @@ import {
   type AiMessageInput,
 } from "@/lib/schemas/ai-message";
 
-const TONE_RULES: Record<AiMessageInput["tone"], string> = {
-  formal: `NADA FORMAL:
-- Gunakan sapaan resmi: "Dengan hormat" / "Yang terhormat" / sapaan budaya yang setara
-- Struktur: salam → undangan → detail acara → link → penutup doa
-- Bahasa baku, tidak ada singkatan, tidak ada emoji (kecuali channel WhatsApp boleh 1-2 emoji sopan)
-- Cocok untuk: atasan, keluarga besar, relasi formal`,
-  santai: `NADA SANTAI:
-- Sapaan akrab: "Hai" / "Halo" / nama langsung
-- Struktur bebas tapi tetap sopan
-- Boleh pakai emoji secukupnya (max 3-4 untuk WhatsApp)
-- Bahasa sehari-hari, boleh campur formal-informal
-- Cocok untuk: teman dekat, sahabat, komunitas`,
-  puitis: `NADA PUITIS:
-- Buka dengan metafora atau imagery: "Di antara bintang dan doa..."
-- Gunakan bahasa figuratif: perumpamaan, personifikasi
-- Rhythm dan flow penting — setiap kalimat punya irama
-- Tetap ada informasi praktis (tanggal, link) tapi dibungkus indah
-- Cocok untuk: semua, terutama undangan yang ingin berkesan`,
+// Slim prompt builders for the broadcast AI helper. The previous
+// implementation rendered ~3 kB of bullet-point ruleset per call
+// (every tone × every relation × every culture × etc.), which on
+// `gemini-2.5-flash` translates to ~3 000 input tokens for a single
+// generation. Most of that bulk was redundant — the model already
+// handles tone / register from a one-line cue. The builders below
+// target ~400 tokens for WhatsApp and ~600 for email.
+//
+// Public API stays the same — `buildPrompt(input)` returns
+// `{ system, user }` — so the action layer is unchanged.
+
+const TONE_LINES: Record<AiMessageInput["tone"], string> = {
+  formal: "formal dan sopan",
+  santai: "santai dan akrab",
+  puitis: "puitis dan romantis",
 };
 
-const RELATION_RULES: Record<AiMessageInput["recipientRelation"], string> = {
-  keluarga: `PENERIMA KELUARGA:
-- Gunakan sapaan kekeluargaan: "Bapak/Ibu", "Om/Tante", "Kakak/Adik"
-- Sertakan permohonan doa restu
-- Tone lebih hangat dan personal
-- Boleh menyebut hubungan: "sebagai keluarga yang kami cintai"`,
-  teman_dekat: `PENERIMA TEMAN DEKAT:
-- Boleh lebih casual dan personal
-- Bisa reference shared memories secara generic
-- Emoji lebih bebas (WhatsApp)
-- "Kamu harus datang ya!" energy`,
-  rekan_kerja: `PENERIMA REKAN KERJA:
-- Professional tapi hangat
-- Sapaan: "Bapak/Ibu [nama]" atau "Rekan"
-- Tidak terlalu personal, tidak terlalu kaku
-- Singkat dan clear`,
-  atasan: `PENERIMA ATASAN:
-- Sangat sopan dan formal
-- "Yang kami hormati Bapak/Ibu..."
-- Permohonan kehadiran sebagai kehormatan
-- Tidak boleh casual sama sekali`,
-  kenalan: `PENERIMA KENALAN:
-- Netral dan sopan
-- Tidak terlalu personal
-- "Bapak/Ibu/Saudara/i"
-- Straight to the point`,
-  umum: `PENERIMA UMUM (satu pesan untuk semua):
-- Gunakan sapaan universal: "Bapak/Ibu/Saudara/i"
-- Harus cocok dibaca oleh siapapun
-- Tidak terlalu formal, tidak terlalu santai — tengah-tengah
-- Variabel {panggilan} akan di-replace per tamu`,
+const LENGTH_WA: Record<AiMessageInput["length"], string> = {
+  singkat: "2–3 baris (langsung inti, untuk reminder)",
+  sedang: "4–6 baris (salam + inti + link + penutup)",
+  lengkap: "7–10 baris (lengkap, untuk undangan utama)",
 };
 
-const LENGTH_RULES: Record<AiMessageInput["length"], string> = {
-  singkat: `PANJANG SINGKAT (~3-4 baris body):
-- Salam + 1 kalimat undangan + link + penutup
-- Tanpa basa-basi, langsung inti
-- Ideal untuk WhatsApp reminder atau follow-up`,
-  sedang: `PANJANG SEDANG (~5-6 baris body):
-- Salam + undangan + detail acara + link + doa penutup
-- Balance antara informatif dan ringkas
-- Paling versatile, cocok untuk semua konteks`,
-  lengkap: `PANJANG LENGKAP (~8-10 baris body):
-- Salam + intro personal + undangan resmi + detail acara lengkap + link + doa + penutup
-- Untuk undangan utama / pertama kali kirim
-- Boleh lebih elaborate dan emosional`,
+const LENGTH_EMAIL: Record<AiMessageInput["length"], string> = {
+  singkat: "1 paragraf (3–4 kalimat)",
+  sedang: "2–3 paragraf (6–8 kalimat total)",
+  lengkap: "3–4 paragraf (10–14 kalimat total)",
 };
 
-const CULTURE_MAPPINGS: Record<string, string> = {
-  Islam: `ISLAM:
-- Buka: "Assalamu'alaikum Warahmatullahi Wabarakatuh"
-- Tutup: "Wassalamu'alaikum Warahmatullahi Wabarakatuh"
-- Sisipkan: "Dengan memohon rahmat dan ridha Allah SWT"
-- Doa: "Semoga Allah memberkahi" / "Barakallahu lakuma"
-- JANGAN gunakan salam Kristen/Hindu`,
-  "Kristen Protestan": `KRISTEN PROTESTAN:
-- Buka: "Salam sejahtera dalam kasih Tuhan"
-- Sisipkan: "Dengan mengucap syukur atas anugerah-Nya"
-- Doa: "Tuhan memberkati" / "God bless"
-- Kutipan Alkitab boleh (singkat)
-- JANGAN gunakan salam Islam`,
-  Katolik: `KATOLIK:
-- Buka: "Dengan rahmat Tuhan Yang Maha Esa"
-- Sisipkan: "Dengan penuh sukacita dan syukur"
-- Doa: "Semoga Tuhan memberkati perjalanan kami"
-- Lebih formal dari Protestan umumnya
-- JANGAN gunakan salam Islam`,
-  "Hindu Bali": `HINDU BALI:
-- Buka: "Om Swastyastu"
-- Tutup: "Om Shanti Shanti Shanti Om"
-- Sisipkan: "Dengan asung kertha wara nugraha Ida Sang Hyang Widhi Wasa"
-- Nuansa: kekhidmatan dan rasa syukur kepada Sang Hyang Widhi`,
-  Buddha: `BUDDHA:
-- Buka: "Namo Buddhaya"
-- Sisipkan: "Dengan penuh rasa syukur"
-- Tone: tenang, penuh kesadaran
-- Sederhana dan bermakna`,
-  Konghucu: `KONGHUCU:
-- Buka: "Dengan rasa syukur kepada Tian"
-- Nuansa: hormat kepada leluhur, keharmonisan keluarga
-- Nilai: ren (kasih), li (tata krama), xiao (bakti)`,
-  "Adat Jawa": `ADAT JAWA:
-- Nuansa: halus, penuh unggah-ungguh
-- Boleh sisipkan: "Dengan segala kerendahan hati"
-- Frasa khas: "ngaturaken", "rawuh", "among tamu"
-- Jika bahasa Jawa Krama: gunakan krama inggil
-- Mencerminkan: kehalusan dan tata krama Jawa`,
-  "Adat Sunda": `ADAT SUNDA:
-- Nuansa: ramah, hangat, someah hade ka semah
-- Boleh sisipkan frasa Sunda: "Wilujeng" (selamat)
-- Mencerminkan: keramahan dan kehangatan khas Sunda`,
-  "Adat Batak": `ADAT BATAK:
-- Nuansa: tegas, penuh harga diri, kekeluargaan kuat
-- Bisa sebut marga jika relevan
-- Dalihan na tolu: somba (hormat), elek (kasih), manat (hati-hati)
-- Frasa: "Horas!" sebagai salam`,
-  "Adat Minang": `ADAT MINANG:
-- Nuansa: santun, penuh petuah, adat basandi syarak
-- Boleh sisipkan pepatah Minang yang relevan
-- "Adat basandi syarak, syarak basandi Kitabullah"
-- Mencerminkan: kebijaksanaan dan adat yang kuat`,
-  "Adat Bugis/Makassar": `ADAT BUGIS/MAKASSAR:
-- Nuansa: kehormatan (siri'), keberanian, kekeluargaan
-- Nilai: siri' na pacce (harga diri dan empati)
-- Formal dan penuh penghormatan`,
-  "Adat Bali": `ADAT BALI (non-Hindu):
-- Nuansa: keharmonisan, tri hita karana
-- Keseimbangan: manusia-manusia, manusia-alam, manusia-Tuhan
-- Hangat dan penuh makna spiritual`,
-  Umum: `UMUM/NETRAL:
-- Tidak ada nuansa agama spesifik
-- Sapaan universal: "Dengan hormat" atau langsung nama
-- Cocok untuk undangan multi-agama/multi-budaya`,
+const RELATION_LINES: Record<AiMessageInput["recipientRelation"], string> = {
+  umum: "sapaan universal Bapak/Ibu/Saudara/i, tengah-tengah formalitas",
+  keluarga: "sapaan kekeluargaan, hangat, sertakan permohonan doa restu",
+  teman_dekat: "casual personal, energi 'kamu harus datang'",
+  rekan_kerja: "profesional tapi hangat, singkat dan jelas",
+  atasan: "sangat sopan, kehadiran sebagai kehormatan, tanpa casual",
+  kenalan: "netral, sopan, langsung ke inti",
 };
 
-function buildCultureMap(cultures: string[], custom?: string): string {
-  if (cultures.length === 0 && !custom) {
-    return `BUDAYA: Umum/netral — tidak ada nuansa agama atau adat khusus.`;
+// Compress 13 cultures into 4 buckets — model already knows the
+// nuances; we just need to flag which register to use. Adat-only
+// entries get a one-liner so the unggah-ungguh / siri / horas cue
+// still lands.
+function cultureCue(cultures: string[], custom?: string): string {
+  const list = cultures.length > 0 ? cultures : ["Umum"];
+  const lines: string[] = [];
+
+  for (const c of list) {
+    if (c === "Islam") {
+      lines.push(
+        "Islam: buka 'Assalamu'alaikum Warahmatullahi Wabarakatuh', tutup 'Wassalamu'alaikum…', sisipkan doa islami (insyaAllah / barakallah).",
+      );
+    } else if (c === "Kristen Protestan") {
+      lines.push(
+        "Kristen Protestan: salam 'Salam sejahtera dalam kasih Tuhan', tutup 'Tuhan memberkati'.",
+      );
+    } else if (c === "Katolik") {
+      lines.push(
+        "Katolik: buka 'Dengan rahmat Tuhan Yang Maha Esa', tutup berkat Tuhan, sedikit lebih formal dari Protestan.",
+      );
+    } else if (c === "Hindu Bali") {
+      lines.push(
+        "Hindu Bali: buka 'Om Swastyastu', tutup 'Om Shanti Shanti Shanti Om'.",
+      );
+    } else if (c === "Buddha") {
+      lines.push("Buddha: buka 'Namo Buddhaya', tone tenang dan bermakna.");
+    } else if (c === "Konghucu") {
+      lines.push(
+        "Konghucu: rasa syukur kepada Tian, hormat leluhur, tone harmonis.",
+      );
+    } else if (c.startsWith("Adat ")) {
+      const adat = c.replace("Adat ", "");
+      lines.push(
+        `Adat ${adat}: gunakan unggah-ungguh / sapaan khas ${adat} (mis. Jawa: ngaturaken/rawuh; Sunda: wilujeng; Batak: horas; Minang: pepatah). Tetap sopan dan natural.`,
+      );
+    } else if (c === "Umum") {
+      lines.push("Umum: netral, tanpa nuansa agama spesifik, cocok semua kalangan.");
+    } else {
+      lines.push(`${c}: gunakan sapaan dan nuansa khas ${c} secara natural.`);
+    }
   }
 
-  const parts = cultures
-    .map(
-      (c) =>
-        CULTURE_MAPPINGS[c] ??
-        `${c}: gunakan sapaan dan nuansa yang sesuai dengan budaya ${c}.`,
-    )
-    .join("\n\n");
+  if (custom?.trim()) {
+    lines.push(`Tambahan: ${custom.trim()}.`);
+  }
+  if (list.length > 1) {
+    lines.push(
+      "Pernikahan campuran: blend natural, prioritas salam dari budaya pertama.",
+    );
+  }
+  return lines.join("\n");
+}
 
-  const customPart = custom?.trim()
-    ? `\nBUDAYA TAMBAHAN: ${custom.trim()} — gunakan sapaan dan nuansa yang sesuai, blend secara natural dengan budaya lain yang dipilih.`
+function eventTypeLine(types: AiMessageInput["eventTypes"]): string {
+  const labels = types.map((t) =>
+    t === "akad" ? "Akad/Pemberkatan" : t === "resepsi" ? "Resepsi" : "Akad + Resepsi",
+  );
+  return labels.join(", ");
+}
+
+function languageLine(input: AiMessageInput): string {
+  const custom = input.customLanguage?.trim();
+  return custom ? `${input.language} + ${custom}` : input.language;
+}
+
+function commonContext(input: AiMessageInput): string {
+  const ec = input.eventContext;
+  const bride = ec.brideName ?? "(mempelai wanita)";
+  const groom = ec.groomName ?? "(mempelai pria)";
+  const date = ec.eventDate ?? "(tanggal menyusul)";
+  const venue = ec.venue ?? "(lokasi menyusul)";
+  const relation = RECIPIENT_RELATION_LABEL[input.recipientRelation] ?? "Umum";
+
+  return `DATA ACARA:
+- Mempelai: ${bride} & ${groom}
+- Acara: ${eventTypeLine(input.eventTypes)}
+- Tanggal: ${date}
+- Lokasi: ${venue}
+
+PENERIMA: ${relation} — ${RELATION_LINES[input.recipientRelation]}
+
+FORMAT:
+- Bahasa: ${languageLine(input)}
+- Nada: ${TONE_LINES[input.tone]}
+- Budaya: ${cultureCue(input.cultures, input.customCulture)}`;
+}
+
+const VARIABLE_RULES = `VARIABEL (HANYA INI):
+- {panggilan} → sapaan personal tamu — WAJIB minimal 1×
+- {link_undangan} → link undangan digital — WAJIB minimal 1×
+- {nama}, {bride}, {groom}, {date}, {venue} → opsional
+DILARANG: tulis nama mempelai/tanggal/lokasi langsung (gunakan variabel), buat variabel baru, output dalam HURUF KAPITAL semua.`;
+
+function buildWaPrompt(input: AiMessageInput): string {
+  const customNote = input.customNotes?.trim()
+    ? `\n- Catatan khusus: ${input.customNotes.trim().slice(0, 200)}`
     : "";
 
-  const blendNote =
-    cultures.length > 1
-      ? `\nPERNIKAHAN CAMPURAN (${cultures.join(" + ")}):
-Blend kedua/semua nuansa budaya secara NATURAL. Jangan terasa dipaksakan.
-Prioritaskan salam dari budaya pertama yang dipilih, sisipkan nuansa budaya lain di body.
-Contoh Islam + Jawa: Salam Islam + body dengan kehalusan Jawa.`
-      : "";
+  return `Tulis pesan undangan pernikahan untuk WhatsApp.
 
-  return [parts, customPart, blendNote].filter(Boolean).join("\n");
+${commonContext(input)}
+- Panjang: ${LENGTH_WA[input.length]}${customNote}
+
+CHANNEL WA:
+- Line breaks untuk readability, bukan paragraf panjang.
+- Bold pakai *teks*, italic pakai _teks_.
+- Emoji secukupnya (formal max 2, santai max 5, puitis max 3).
+- Link plain URL.
+
+${VARIABLE_RULES}
+
+OUTPUT: pesan saja, langsung dari salam pertama. Tanpa pembuka penjelasan, tanpa code block.`;
 }
 
-function buildLanguageLine(input: AiMessageInput): string {
-  const custom = input.customLanguage?.trim();
-  if (custom) return `BAHASA: ${input.language} + ${custom}`;
-  return `BAHASA: ${input.language}`;
-}
+function buildEmailPrompt(input: AiMessageInput): string {
+  const customNote = input.customNotes?.trim()
+    ? `\n- Catatan khusus: ${input.customNotes.trim().slice(0, 200)}`
+    : "";
 
-function buildEventTypeLine(input: AiMessageInput): string {
-  const labels = input.eventTypes.map((t) =>
-    t === "akad"
-      ? "Akad/Pemberkatan"
-      : t === "resepsi"
-        ? "Resepsi"
-        : "Keduanya (Akad + Resepsi)",
-  );
-  return `JENIS ACARA: ${labels.join(", ")}`;
+  return `Tulis email undangan pernikahan.
+
+${commonContext(input)}
+- Panjang isi: ${LENGTH_EMAIL[input.length]}${customNote}
+
+CHANNEL EMAIL:
+- Format formal terstruktur, paragraf rapi (line breaks antar paragraf).
+- TIDAK ada emoji.
+- Link bisa dibungkus "Buka undangan: {link_undangan}".
+
+${VARIABLE_RULES}
+
+OUTPUT FORMAT (wajib persis):
+SUBJECT: [subject line, max 60 karakter, menarik]
+BODY:
+[isi email]`;
 }
 
 export function buildPrompt(input: AiMessageInput): {
   system: string;
   user: string;
 } {
-  const bride = input.eventContext.brideName ?? "(mempelai wanita)";
-  const groom = input.eventContext.groomName ?? "(mempelai pria)";
-  const date = input.eventContext.eventDate ?? "(belum ditentukan)";
-  const venue = input.eventContext.venue ?? "(lokasi menyusul)";
-  const channelLabel = input.channel === "whatsapp" ? "WhatsApp" : "email";
-  const relationLabel =
-    RECIPIENT_RELATION_LABEL[input.recipientRelation] ?? "Umum";
+  // System prompt is now a single sentence — the model already
+  // knows how to write Indonesian wedding invitations; the heavy
+  // lifting happens in the user prompt's structured cues.
+  const system =
+    "Kamu adalah penulis undangan pernikahan Indonesia yang berpengalaman. Pilih kata yang tepat untuk konteks penerima dan budaya yang diminta.";
 
-  const identity = `Kamu adalah penulis undangan pernikahan Indonesia yang berpengalaman 20 tahun.
-Kamu memahami 1.300+ suku dan budaya Indonesia secara mendalam.
-Kamu menulis seperti penyair yang juga memahami etika sosial —
-setiap kata dipilih bukan hanya karena indah, tapi karena TEPAT untuk konteks penerima.`;
-
-  const context = `DATA PERNIKAHAN (sudah pasti, JANGAN minta ulang):
-- Mempelai wanita: ${bride}
-- Mempelai pria: ${groom}
-- Nama couple: ${input.eventContext.coupleName}
-- Tanggal: ${date}
-- Lokasi: ${venue}
-- Channel: ${channelLabel}
-- Hubungan penerima: ${relationLabel}`;
-
-  const cultureMap = buildCultureMap(input.cultures, input.customCulture);
-  const toneRule = TONE_RULES[input.tone] ?? TONE_RULES.formal;
-  const relationRule =
-    RELATION_RULES[input.recipientRelation] ?? RELATION_RULES.umum;
-  const lengthRule = LENGTH_RULES[input.length] ?? LENGTH_RULES.sedang;
-  const languageLine = buildLanguageLine(input);
-  const eventTypeLine = buildEventTypeLine(input);
-
-  const channelRules =
-    input.channel === "whatsapp"
-      ? `CHANNEL WHATSAPP:
-- Gunakan line breaks untuk readability (bukan paragraf panjang)
-- Emoji boleh sesuai tone (formal: max 2, santai: max 5, puitis: max 3)
-- Bold pakai *teks* untuk penekanan
-- Link cukup plain URL, tidak perlu hyperlink text
-- Total panjang: jangan lebih dari 1 layar scroll HP`
-      : `CHANNEL EMAIL:
-- Format lebih formal dan terstruktur
-- TIDAK ada emoji
-- Paragraf proper (indent, spacing)
-- Link bisa dibungkus "Buka undangan di sini: {link_undangan}"
-- Boleh lebih panjang dari WhatsApp`;
-
-  const variableRules = `VARIABEL YANG TERSEDIA (HANYA INI, TIDAK ADA LAIN):
-- {panggilan} → sapaan personal tamu (WAJIB digunakan minimal 1×)
-- {nama} → nama lengkap tamu (opsional)
-- {bride} → nama mempelai wanita: ${bride}
-- {groom} → nama mempelai pria: ${groom}
-- {date} → tanggal acara: ${date}
-- {venue} → lokasi acara: ${venue}
-- {link_undangan} → link undangan digital (WAJIB digunakan minimal 1×)
-
-ATURAN KETAT:
-1. WAJIB sertakan {panggilan} dan {link_undangan}
-2. BOLEH sertakan {nama}, {bride}, {groom}, {date}, {venue}
-3. DILARANG membuat variabel baru seperti {nama_acara}, {waktu}, dll
-4. DILARANG menulis nama mempelai langsung — HARUS pakai {bride} dan {groom}
-5. DILARANG menulis tanggal langsung — HARUS pakai {date}
-6. DILARANG menulis lokasi langsung — HARUS pakai {venue}
-7. Tulis variabel PERSIS seperti format di atas (dengan kurung kurawal)`;
-
-  const antiPatterns = `HINDARI (anti-pattern yang sering terjadi):
-- Jangan mulai dengan "Kepada Yth." — terlalu kaku untuk WhatsApp
-- Jangan copy-paste template generik — setiap output harus UNIK
-- Jangan gunakan "kami yang berbahagia" — klise
-- Jangan tulis "tanpa mengurangi rasa hormat" — filler
-- Jangan gunakan bahasa hukum/notaris: "bersama ini kami bermaksud..."
-- Jangan campur bahasa daerah jika user tidak memilihnya
-- Jangan gunakan "Bismillah" atau salam agama jika budaya = "Umum"
-- Jangan tulis seluruh pesan dalam HURUF KAPITAL`;
-
-  const quality = `KRITERIA KUALITAS (self-check sebelum output):
-✓ Apakah pesan ini terasa PERSONAL, bukan template?
-✓ Apakah {panggilan} dan {link_undangan} sudah ada?
-✓ Apakah tone konsisten dari awal sampai akhir?
-✓ Apakah budaya tercermin natural, bukan dipaksakan?
-✓ Apakah penerima akan merasa DIHARGAI membaca ini?
-✓ Apakah ada call-to-action yang jelas (buka link + konfirmasi)?
-✓ Apakah panjang sesuai permintaan?`;
-
-  const customNotes = input.customNotes?.trim()
-    ? `CATATAN TAMBAHAN DARI USER:\n${input.customNotes.trim().slice(0, 200)}`
-    : "";
-
-  const system = [
-    identity,
-    context,
-    languageLine,
-    eventTypeLine,
-    cultureMap,
-    toneRule,
-    relationRule,
-    lengthRule,
-    channelRules,
-    variableRules,
-    antiPatterns,
-    quality,
-    customNotes,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
-
-  const user = `Tulis pesan undangan pernikahan sesuai semua instruksi di atas.
-
-OUTPUT: Langsung tulis pesannya saja. TANPA pembuka, TANPA penjelasan, TANPA markdown code block.
-Mulai langsung dari salam atau sapaan pertama.`;
+  const user =
+    input.channel === "email" ? buildEmailPrompt(input) : buildWaPrompt(input);
 
   return { system, user };
 }

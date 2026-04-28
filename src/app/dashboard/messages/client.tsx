@@ -1537,6 +1537,12 @@ export function MessagesClient({
               }
               setAiTarget(null);
             }}
+            onUseSubject={(s) => {
+              // Email-only: parsed `SUBJECT:` line populates the
+              // composer's subject field so the operator doesn't have
+              // to retype it. WA flow never receives this.
+              if (aiTarget === "email") setSubject(s);
+            }}
           />
         )}
       </section>

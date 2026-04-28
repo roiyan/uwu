@@ -46,10 +46,14 @@ export function AiStudioInline({
   channel,
   eventContext,
   onUseMessage,
+  onUseSubject,
 }: {
   channel: "whatsapp" | "email";
   eventContext: StudioEventContext;
+  /** Body text. For email, excludes the parsed subject. */
   onUseMessage: (text: string) => void;
+  /** Email-only: parsed `SUBJECT:` line. Composer wires to setSubject. */
+  onUseSubject?: (subject: string) => void;
 }) {
   const [tone, setTone] = useState<Tone>("formal");
   const [language, setLanguage] = useState<string>(LANGUAGE_OPTIONS[0].id);
@@ -61,6 +65,7 @@ export function AiStudioInline({
 
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<string | null>(null);
+  const [resultSubject, setResultSubject] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function generate() {
@@ -81,9 +86,11 @@ export function AiStudioInline({
       const res = await generateBroadcastMessage(payload);
       if (res.ok) {
         setResult(res.message);
+        setResultSubject(res.subject ?? null);
       } else {
         setError(res.error);
         setResult(null);
+        setResultSubject(null);
       }
     });
   }
@@ -256,6 +263,16 @@ export function AiStudioInline({
             <p className="d-mono mb-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
               Hasil
             </p>
+            {resultSubject && (
+              <div className="mb-2 rounded-xl border border-[var(--d-line)] bg-[rgba(0,0,0,0.3)] p-3">
+                <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+                  Subject
+                </p>
+                <p className="mt-1 text-[13px] text-[var(--d-ink)]">
+                  {resultSubject}
+                </p>
+              </div>
+            )}
             <pre className="d-mono max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl border border-[var(--d-line)] bg-[rgba(0,0,0,0.3)] p-4 text-[12.5px] leading-[1.7] text-[var(--d-ink-dim)]">
               {result}
             </pre>
@@ -270,7 +287,10 @@ export function AiStudioInline({
               </button>
               <button
                 type="button"
-                onClick={() => onUseMessage(result)}
+                onClick={() => {
+                  onUseMessage(result);
+                  if (resultSubject && onUseSubject) onUseSubject(resultSubject);
+                }}
                 className="d-mono rounded-full px-4 py-1.5 text-[11px] font-medium uppercase tracking-[0.16em] text-[#0B0B15] transition-transform hover:-translate-y-px hover:shadow-[0_10px_24px_rgba(184,157,212,0.3)]"
                 style={{
                   background:
