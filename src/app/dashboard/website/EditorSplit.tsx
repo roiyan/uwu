@@ -554,7 +554,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             position with elementFromPoint() because plain HTML5 DnD
             is unreliable on iOS Safari. */}
         <div className="lg:hidden">
-          <nav className="flex gap-2 overflow-x-auto px-5 pb-2 pt-1">
+          <nav className="flex gap-1.5 overflow-x-auto px-4 pb-2 pt-1">
             {orderedSections.map((s, idx) => {
               const isActive = activeSection === s.id;
               const isDragging = draggingId === s.id;
@@ -596,7 +596,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                     }
                     setActiveSection(s.id);
                   }}
-                  className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] transition-all duration-150 ${
+                  className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-all duration-150 ${
                     isActive
                       ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
                       : isDragOver
@@ -622,7 +622,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
               );
             })}
           </nav>
-          <p className="d-mono px-5 pb-2 text-center text-[9px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+          <p className="d-mono px-4 pb-2 text-center text-[8.5px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)]">
             Tahan 0,5 detik lalu geser untuk ubah urutan
           </p>
         </div>
