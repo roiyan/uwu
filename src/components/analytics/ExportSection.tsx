@@ -169,12 +169,12 @@ export function ExportSection({ eventId }: { eventId: string }) {
         <div className="relative grid items-center gap-7 lg:grid-cols-[1fr_auto] lg:gap-10">
           <div>
             <p className="d-mono text-[10.5px] uppercase tracking-[0.26em] text-[var(--d-coral)]">
-              Ekspor Laporan
+              Simpan Kenangan
             </p>
             <h2 className="d-serif mt-3 max-w-[520px] text-[22px] font-light leading-[1.2] tracking-[-0.015em] text-[var(--d-ink)] lg:text-[26px]">
-              Simpan ringkasan ini sebagai{" "}
-              <em className="d-serif italic text-[var(--d-coral)]">kenangan</em>,
-              atau kirim ke vendor kalian.
+              Unduh perjalanan undangan kalian — untuk{" "}
+              <em className="d-serif italic text-[var(--d-coral)]">dikenang</em>{" "}
+              atau dibagikan.
             </h2>
             <p className="mt-2 max-w-[500px] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
               Semua ringkasan dan daftar tamu dalam satu dokumen — siap

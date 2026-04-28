@@ -80,7 +80,7 @@ export function TimeSeriesChart({
             Jejak · 7 Hari Terakhir
           </p>
           <h2 className="d-serif mt-2 text-[24px] font-light leading-tight tracking-[-0.015em] text-[var(--d-ink)] lg:text-[26px]">
-            Bukaan vs RSVP per hari
+            Bukaan vs Konfirmasi per hari
           </h2>
           <p className="d-serif mt-1.5 text-[13px] italic text-[var(--d-ink-dim)]">
             Jejak undangan sepanjang pekan — titik puncak{" "}
@@ -95,7 +95,7 @@ export function TimeSeriesChart({
             dashed={false}
           />
           <Legend
-            label="RSVP"
+            label="Konfirmasi"
             color="var(--d-blue)"
             value={totalRsvp}
             dashed

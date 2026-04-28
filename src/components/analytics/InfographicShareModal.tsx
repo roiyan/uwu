@@ -20,7 +20,7 @@ const SECTIONS: SectionOption[] = [
   {
     id: "funnel",
     label: "Perjalanan Respons",
-    description: "Diundang → Dibuka → RSVP → Hadir",
+    description: "Diundang → Dibuka → Konfirmasi → Hadir",
   },
   {
     id: "heatmap",
