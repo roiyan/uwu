@@ -30,13 +30,19 @@ export function AiMessageModal({
   eventContext,
   initialNotes,
   onUseMessage,
+  onUseSubject,
 }: {
   open: boolean;
   onClose: () => void;
   channel: "whatsapp" | "email";
   eventContext: EventContext;
   initialNotes?: string;
+  /** Fired with the body text. For email, the body excludes the
+   *  parsed subject line. */
   onUseMessage: (text: string) => void;
+  /** Email-only: fired alongside `onUseMessage` when the model
+   *  emitted a `SUBJECT:` line. Composer wires this to setSubject. */
+  onUseSubject?: (subject: string) => void;
 }) {
   const [tone, setTone] = useState<Tone>("formal");
   const [cultures, setCultures] = useState<string[]>(["Umum"]);
@@ -52,6 +58,7 @@ export function AiMessageModal({
 
   const [pending, startTransition] = useTransition();
   const [result, setResult] = useState<string | null>(null);
+  const [resultSubject, setResultSubject] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // ESC closes the dialog when not in the middle of a generation.
@@ -107,9 +114,11 @@ export function AiMessageModal({
       const res = await generateBroadcastMessage(payload);
       if (res.ok) {
         setResult(res.message);
+        setResultSubject(res.subject ?? null);
       } else {
         setError(res.error);
         setResult(null);
+        setResultSubject(null);
       }
     });
   }
@@ -295,6 +304,16 @@ export function AiMessageModal({
         {result && (
           <div className="mt-5">
             <div className="text-sm font-medium text-[var(--d-ink)]">Hasil</div>
+            {resultSubject && (
+              <div className="mt-2 rounded-xl bg-[var(--d-bg-2)] p-3">
+                <p className="d-mono text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+                  Subject
+                </p>
+                <p className="mt-1 text-[13px] text-[var(--d-ink)]">
+                  {resultSubject}
+                </p>
+              </div>
+            )}
             <pre className="mt-2 max-h-72 overflow-y-auto whitespace-pre-wrap rounded-xl bg-[var(--d-bg-2)] p-3 font-mono text-[12.5px] leading-relaxed text-[var(--d-ink)]">
               {result}
             </pre>
@@ -311,6 +330,8 @@ export function AiMessageModal({
                 type="button"
                 onClick={() => {
                   onUseMessage(result);
+                  if (resultSubject && onUseSubject)
+                    onUseSubject(resultSubject);
                 }}
                 className="rounded-full bg-[var(--d-bg-2)] px-5 py-2 text-sm font-medium text-white hover:bg-[var(--d-bg-1)]"
               >
