@@ -108,6 +108,48 @@ export async function listDraftsAction(
   }) as Promise<ActionResult<DraftRow[]>>;
 }
 
+/**
+ * Overwrite an existing draft in place — used by the Save Draft modal
+ * when the user picks "replace template lama". Atomic UPDATE keeps the
+ * draft's id stable so any open dropdown rendering this row doesn't
+ * have to remount.
+ */
+export async function updateDraftAction(
+  eventId: string,
+  draftId: string,
+  input: DraftInput,
+): Promise<ActionResult> {
+  return withAuth(eventId, "editor", async () => {
+    const fallbackName =
+      input.name?.trim() ||
+      `Draft ${new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+      })}`;
+    await db
+      .update(broadcastDrafts)
+      .set({
+        name: fallbackName.slice(0, 100),
+        channel: input.channel,
+        waMessage: input.waMessage ?? null,
+        emailSubject: input.emailSubject ?? null,
+        emailBody: input.emailBody ?? null,
+        aiTone: input.aiTone ?? null,
+        aiLanguage: input.aiLanguage ?? null,
+        aiCulture: input.aiCulture ?? null,
+        aiLength: input.aiLength ?? null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(broadcastDrafts.id, draftId),
+          eq(broadcastDrafts.eventId, eventId),
+        ),
+      );
+    revalidatePath("/dashboard/messages");
+  });
+}
+
 export async function deleteDraftAction(
   eventId: string,
   draftId: string,
