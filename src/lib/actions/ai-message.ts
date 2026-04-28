@@ -7,11 +7,12 @@ import {
   type AiMessageInput,
 } from "@/lib/schemas/ai-message";
 
-// Gemini 2.0 Flash was returning empty / 4xx responses on this
-// project's API key tier — fall back to the stable 1.5 Flash GA
-// model, which has the same JSON shape so the parser below stays
-// unchanged.
-const MODEL = "gemini-1.5-flash";
+// `gemini-1.5-flash` is end-of-life as of late 2025 — calls now
+// 404 with `models/gemini-1.5-flash is not found for API version
+// v1beta`. Switch to the current GA fast model. Response JSON
+// shape is identical across 1.5 / 2.0 / 2.5, so the parser below
+// stays unchanged.
+const MODEL = "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const MAX_RETRIES = 3;
 
@@ -123,6 +124,11 @@ async function callGeminiWithRetry(
       console.error("[ai-message] non-2xx", res.status, errText.slice(0, 400));
       if (res.status === 403)
         throw new Error("API key belum aktif. Hubungi admin.");
+      if (res.status === 404)
+        // Hits when Google retires the configured model (e.g. 1.5
+        // sunset late 2025). User can't fix this — surface it
+        // clearly so the operator pings us instead of guessing.
+        throw new Error("Model AI tidak tersedia. Hubungi admin.");
       if (res.status === 400)
         throw new Error("Ada yang kurang — pastikan semua opsi dipilih.");
       if (res.status >= 500) {
