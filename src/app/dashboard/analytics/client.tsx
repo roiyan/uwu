@@ -13,7 +13,6 @@ import {
   type SourceData,
 } from "@/components/analytics/BreakdownCards";
 import { FunnelChart } from "@/components/analytics/FunnelChart";
-import { StatusDonut } from "@/components/analytics/StatusDonut";
 import {
   ActivityHeatmap,
   type HeatmapBucket,
@@ -101,6 +100,48 @@ function fmtTimestamp(d: Date | null): string {
     minute: "2-digit",
   });
 }
+
+
+function BabHeader({
+  number,
+  title,
+  subtitle,
+}: {
+  number: number;
+  title: React.ReactNode;
+  subtitle: string;
+}) {
+  return (
+    <div className="mt-6">
+      <div className="flex items-center gap-2">
+        <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
+        <span className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-ink-faint)]">
+          BAB {number}
+        </span>
+      </div>
+      <h2 className="d-serif mt-2 text-[24px] font-light leading-[1.2] tracking-[-0.015em] text-[var(--d-ink)] lg:text-[28px]">
+        {title}
+      </h2>
+      <p className="d-serif mt-1.5 text-[12.5px] italic text-[var(--d-ink-dim)]">
+        {subtitle}
+      </p>
+    </div>
+  );
+}
+
+function BabSeparator() {
+  return (
+    <div
+      aria-hidden
+      className="my-10 h-px w-full"
+      style={{
+        background:
+          "linear-gradient(90deg, transparent 0%, var(--d-line) 50%, transparent 100%)",
+      }}
+    />
+  );
+}
+
 
 export function AnalyticsClient({
   eventId,
@@ -319,7 +360,7 @@ export function AnalyticsClient({
       // Denominator is total guests (not "invited") so the percentage
       // can never exceed 100%. Direct-link opens land in `opened` even
       // when sendCount is 0, which used to push the ratio above 100.
-      suffix: `·${fnPct(filteredFunnel.opened, Math.max(total, 1))}%`,
+      suffix: `${fnPct(filteredFunnel.opened, Math.max(total, 1))}%`,
       delta: deltaOf(sparkOpened),
       compare: "dari total tamu",
       spark: sparkOpened,
@@ -327,9 +368,9 @@ export function AnalyticsClient({
     {
       dot: "var(--d-lilac)",
       color: "#B89DD4",
-      label: "RSVP",
+      label: "Konfirmasi",
       value: filteredFunnel.responded,
-      suffix: `·${fnPct(filteredFunnel.responded, Math.max(filteredFunnel.opened, 1))}%`,
+      suffix: `${fnPct(filteredFunnel.responded, Math.max(filteredFunnel.opened, 1))}%`,
       delta: deltaOf(sparkRsvped),
       compare: "dari yang membuka",
       spark: sparkRsvped,
@@ -339,9 +380,9 @@ export function AnalyticsClient({
       color: "#7ED3A4",
       label: "Hadir",
       value: filteredFunnel.attending,
-      suffix: `· ${confirmedAttendees} pax`,
+      suffix: `${confirmedAttendees} orang`,
       delta: deltaOf(sparkAttending),
-      deltaUnit: "pax",
+      deltaUnit: "orang",
       compare: `paket ${packageName}`,
       spark: sparkAttending,
     },
@@ -407,6 +448,70 @@ export function AnalyticsClient({
     Math.max(total, 1),
   );
 
+  // Date-bucket comparison for Bab 3 visibility — pre-event shows the
+  // empty state, live/post shows the actual data. Falls back to null
+  // when no schedule is set yet so the bab simply hides.
+  const firstScheduleDate = schedules[0]?.eventDate ?? null;
+  const daysToEvent = (() => {
+    if (!firstScheduleDate) return null;
+    const [y, m, d] = firstScheduleDate
+      .split("-")
+      .map((n) => parseInt(n, 10));
+    if (!y || !m || !d) return null;
+    const target = Date.UTC(y, m - 1, d);
+    const today = new Date();
+    const todayUtc = Date.UTC(
+      today.getUTCFullYear(),
+      today.getUTCMonth(),
+      today.getUTCDate(),
+    );
+    return Math.round((target - todayUtc) / 86_400_000);
+  })();
+  const showHariH =
+    checkinStats.actualCheckin > 0 ||
+    (daysToEvent !== null && daysToEvent <= 0);
+
+  // Insight → action bridge for Bab 1. Each entry surfaces a specific
+  // gap in the funnel and points the couple at the screen that
+  // resolves it. Only the most pressing is shown so we don't overwhelm.
+  const insights = (() => {
+    const items: { id: string; message: string; href: string; cta: string }[] = [];
+    const notInvited = Math.max(0, total - filteredFunnel.invited);
+    const notOpened = Math.max(
+      0,
+      filteredFunnel.invited - filteredFunnel.opened,
+    );
+    const notConfirmed = Math.max(
+      0,
+      filteredFunnel.opened - filteredFunnel.responded,
+    );
+    if (notInvited > 0) {
+      items.push({
+        id: "not-invited",
+        message: `${notInvited} tamu terdaftar tapi belum dikirimi undangan.`,
+        href: "/dashboard/messages",
+        cta: "Kirim undangan",
+      });
+    }
+    if (notOpened > 0) {
+      items.push({
+        id: "not-opened",
+        message: `${notOpened} tamu belum membuka — mereka mungkin belum sempat.`,
+        href: "/dashboard/messages",
+        cta: "Ingatkan mereka",
+      });
+    }
+    if (notConfirmed > 0) {
+      items.push({
+        id: "not-confirmed",
+        message: `${notConfirmed} sudah membuka tapi belum konfirmasi kehadiran.`,
+        href: "/dashboard/messages",
+        cta: "Kirim pengingat",
+      });
+    }
+    return items.slice(0, 1);
+  })();
+
   return (
     <main className="flex-1 overflow-x-hidden px-5 py-8 lg:px-12 lg:py-12">
       <Header
@@ -420,66 +525,163 @@ export function AnalyticsClient({
           include. ExportSection is rendered OUTSIDE this wrapper so
           the PDF doesn't show the "Ekspor Laporan" buttons themselves. */}
       <div id="analytics-pdf-target">
-      {/* 1. KPI strip */}
-      <div className="mt-7">
+
+      {/* ═══ BAB 1 — RINGKASAN ═══ */}
+      <BabHeader
+        number={1}
+        title={
+          <>
+            Ringkasan{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">perjalanan</em>
+          </>
+        }
+        subtitle="Sekilas cerita undangan kalian — dari pengiriman hingga kehadiran."
+      />
+      <div className="mt-5">
         <KpiCards cards={kpiCards} />
       </div>
-
-      {/* 2. Time-series chart */}
-      <div className="mt-6">
-        <TimeSeriesChart series={series} />
-      </div>
-
-      {/* 2b. Check-in surfaces — only mount when at least one guest has
-              checked in. Show-up rate sits left, arrival timeline
-              right (timeline gets the wider column for the bar chart). */}
-      {checkinStats.actualCheckin > 0 && (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_2fr]">
-          <ShowUpRateCard stats={checkinStats} />
-          <ArrivalTimeline
-            arrivals={arrivals}
-            schedules={schedules}
-            timezone={eventTimezone}
-          />
+      {insights.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
+          style={{
+            background: "rgba(240,160,156,0.04)",
+            borderColor: "rgba(240,160,156,0.12)",
+          }}
+        >
+          <span className="d-serif text-[13px] italic text-[var(--d-ink-dim)]">
+            💡 {insights[0].message}
+          </span>
+          <a
+            href={insights[0].href}
+            className="d-mono shrink-0 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-coral)] hover:text-[var(--d-peach)]"
+          >
+            {insights[0].cta} →
+          </a>
         </div>
       )}
+      <details className="mt-4 rounded-[14px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-5 [&[open]>summary>span:first-child]:rotate-90">
+        <summary className="d-mono flex cursor-pointer list-none items-center gap-2 text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] [&::-webkit-details-marker]:hidden">
+          <span className="inline-block transition-transform">▸</span>
+          Detail perjalanan respons
+        </summary>
+        <div className="mt-5">
+          <FunnelChart
+            data={filteredFunnel}
+            groups={groups}
+            groupFilter={groupFilter}
+            onGroupChange={setGroupFilter}
+          />
+        </div>
+      </details>
 
-      {/* 3. 3-column breakdowns */}
-      <div className="mt-6">
+      <BabSeparator />
+
+      {/* ═══ BAB 2 — PERILAKU TAMU ═══ */}
+      <BabHeader
+        number={2}
+        title={
+          <>
+            Perilaku{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">tamu</em>
+          </>
+        }
+        subtitle="Bagaimana dan kapan tamu berinteraksi dengan undangan kalian."
+      />
+      <div className="mt-5 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+        <TimeSeriesChart series={series} />
         <BreakdownCards
           source={trafficSource}
           groups={groupEngagement}
           totalGuests={total}
           enthusiasts={enthusiasts}
+          variant="source-only"
         />
       </div>
-
-      {/* 4. Funnel + Donut */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <FunnelChart
-          data={filteredFunnel}
-          groups={groups}
-          groupFilter={groupFilter}
-          onGroupChange={setGroupFilter}
-        />
-        <StatusDonut slices={donutSlices} total={total} />
-      </div>
-
-      {/* 5. Heatmap (full-width) — Top openers card removed; the
-             "Tamu Paling Antusias" card on the breakdown row above
-             already surfaces the most engaged guests with a richer
-             ranking, so a separate top-opener list was duplicative. */}
       <div className="mt-6">
         <ActivityHeatmap buckets={filteredHeatmap} />
       </div>
 
-      {/* 6. Response table — placed above Ekspor so the operator can
-          review the raw list (and copy individual rows out) before
-          deciding which export bundle they need. */}
+      {showHariH && (
+        <>
+          <BabSeparator />
+          {/* ═══ BAB 3 — HARI H ═══ */}
+          <BabHeader
+            number={3}
+            title={
+              <>
+                Hari{" "}
+                <em className="d-serif italic text-[var(--d-coral)]">H</em>
+              </>
+            }
+            subtitle={
+              daysToEvent === null
+                ? "Bagaimana hari besar kalian berjalan."
+                : daysToEvent > 0
+                  ? "Bab ini akan terisi saat hari H tiba."
+                  : daysToEvent === 0
+                    ? "Hari ini — data terisi secara langsung."
+                    : "Hari besar sudah berlalu — ini ringkasannya."
+            }
+          />
+          {checkinStats.actualCheckin > 0 ? (
+            <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_2fr]">
+              <ShowUpRateCard stats={checkinStats} />
+              <ArrivalTimeline
+                arrivals={arrivals}
+                schedules={schedules}
+                timezone={eventTimezone}
+              />
+            </div>
+          ) : (
+            <div className="mt-5 rounded-[18px] border border-dashed border-[var(--d-line)] bg-[var(--d-bg-card)] px-6 py-12 text-center">
+              <div
+                className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
+                style={{
+                  background: "rgba(240,160,156,0.06)",
+                  border: "1px solid rgba(240,160,156,0.15)",
+                }}
+              >
+                <span className="text-[20px] opacity-60" aria-hidden>⏱</span>
+              </div>
+              <p className="d-serif text-[16px] text-[var(--d-ink)]">
+                Menunggu hari{" "}
+                <em className="d-serif italic text-[var(--d-coral)]">H</em>
+              </p>
+              <p className="d-serif mt-1 text-[12.5px] italic text-[var(--d-ink-dim)]">
+                Data kehadiran akan muncul di sini saat acara berlangsung.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      <BabSeparator />
+
+      {/* ═══ BAB 4 — DETAIL & AKSI ═══ */}
+      <BabHeader
+        number={showHariH ? 4 : 3}
+        title={
+          <>
+            Lebih{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">dalam</em>
+          </>
+        }
+        subtitle="Siapa melakukan apa — dan aksi selanjutnya."
+      />
+      <div className="mt-5">
+        <BreakdownCards
+          source={trafficSource}
+          groups={groupEngagement}
+          totalGuests={total}
+          enthusiasts={enthusiasts}
+          variant="enthusiasts-and-groups"
+        />
+      </div>
+
+      {/* Daftar Lengkap — semantic <th scope="col"> + horizontal mobile scroll. */}
       <section className="mt-6 overflow-hidden rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)]">
         <header className="border-b border-[var(--d-line)] px-7 py-5">
           <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
-            Daftar Respons
+            Daftar Lengkap
           </p>
           <h2 className="d-serif mt-2 text-[22px] font-light tracking-[-0.015em] text-[var(--d-ink)]">
             {filteredResponses.length} tamu, diurutkan dari respons{" "}
@@ -487,14 +689,14 @@ export function AnalyticsClient({
           </h2>
         </header>
         <div className="max-h-[400px] overflow-y-auto overflow-x-auto custom-scroll">
-          <table className="w-full text-[13px]">
+          <table className="w-full min-w-[500px] text-[13px]">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-[var(--d-line)] bg-[var(--d-bg-card)] backdrop-blur-sm">
-                <Th>Nama</Th>
-                <Th>Status</Th>
-                <Th>Dibuka</Th>
-                <Th>Direspons</Th>
-                <Th>Via</Th>
+                <Th scope="col">Nama</Th>
+                <Th scope="col">Status</Th>
+                <Th scope="col">Dibuka</Th>
+                <Th scope="col">Dikonfirmasi</Th>
+                <Th scope="col">Asal</Th>
               </tr>
             </thead>
             <tbody>
@@ -673,9 +875,18 @@ function Header({
   );
 }
 
-function Th({ children }: { children: React.ReactNode }) {
+function Th({
+  children,
+  scope = "col",
+}: {
+  children: React.ReactNode;
+  scope?: "col" | "row";
+}) {
   return (
-    <th className="d-mono px-6 py-3.5 text-left text-[9.5px] font-normal uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+    <th
+      scope={scope}
+      className="d-mono px-6 py-3.5 text-left text-[9.5px] font-normal uppercase tracking-[0.22em] text-[var(--d-ink-faint)]"
+    >
       {children}
     </th>
   );

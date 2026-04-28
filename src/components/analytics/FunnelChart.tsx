@@ -43,17 +43,17 @@ const BASE_STAGES: Stage[] = [
   },
   {
     key: "responded",
-    label: "RSVP",
+    label: "Konfirmasi",
     color: "#B89DD4",
     pctOf: "opened",
     hint: () => "dari dibuka",
   },
   {
     key: "attending",
-    label: "Hadir (RSVP)",
+    label: "Hadir (terkonfirmasi)",
     color: "#7ED3A4",
     pctOf: "responded",
-    hint: () => "dari RSVP",
+    hint: () => "dari yang konfirmasi",
   },
 ];
 
@@ -62,15 +62,15 @@ const CHECKIN_STAGE: Stage = {
   label: "Tiba di Lokasi",
   color: "#8FA3D9",
   pctOf: "attending",
-  hint: () => "dari yang RSVP hadir",
+  hint: () => "dari yang konfirmasi hadir",
 };
 
 const STAGE_LABEL: Record<keyof FunnelData, string> = {
   total: "total",
   invited: "diundang",
   opened: "dibuka",
-  responded: "RSVP",
-  attending: "RSVP hadir",
+  responded: "konfirmasi",
+  attending: "konfirmasi hadir",
   checkedIn: "tiba di lokasi",
 };
 

@@ -38,12 +38,31 @@ export function BreakdownCards({
   groups,
   totalGuests,
   enthusiasts,
+  variant = "all",
 }: {
   source: SourceData;
   groups: GroupEngagementRow[];
   totalGuests: number;
   enthusiasts: EnthusiastRow[];
+  /** Optional split rendering — Bab 2 mounts only the source card,
+   *  Bab 4 mounts the leaderboard + group engagement. */
+  variant?: "all" | "source-only" | "enthusiasts-and-groups";
 }) {
+  if (variant === "source-only") {
+    return (
+      <section>
+        <SourceCard source={source} totalGuests={totalGuests} />
+      </section>
+    );
+  }
+  if (variant === "enthusiasts-and-groups") {
+    return (
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <EnthusiastCard rows={enthusiasts} />
+        <GroupCard groups={groups} />
+      </section>
+    );
+  }
   return (
     <section className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
       <EnthusiastCard rows={enthusiasts} />
@@ -62,10 +81,10 @@ export function BreakdownCards({
 function rsvpSpeedLabel(opened: Date | null, rsvped: Date | null): string {
   if (!opened || !rsvped) return "";
   const diff = (new Date(rsvped).getTime() - new Date(opened).getTime()) / 60000;
-  if (diff < 1) return "RSVP langsung";
-  if (diff < 60) return `RSVP ${Math.round(diff)} menit setelah buka`;
-  if (diff < 1440) return `RSVP ${Math.round(diff / 60)} jam setelah buka`;
-  return `RSVP ${Math.round(diff / 1440)} hari setelah buka`;
+  if (diff < 1) return "Konfirmasi langsung";
+  if (diff < 60) return `Konfirmasi ${Math.round(diff)} menit setelah buka`;
+  if (diff < 1440) return `Konfirmasi ${Math.round(diff / 60)} jam setelah buka`;
+  return `Konfirmasi ${Math.round(diff / 1440)} hari setelah buka`;
 }
 
 function scoreEnthusiast(g: EnthusiastRow): number {
@@ -123,7 +142,7 @@ function EnthusiastCard({ rows }: { rows: EnthusiastRow[] }) {
             const meta = [
               speed,
               g.rsvpAttendees && g.rsvpAttendees > 1
-                ? `${g.rsvpAttendees} pax`
+                ? `${g.rsvpAttendees} orang`
                 : null,
               g.rsvpMessage ? "💬" : null,
             ]
