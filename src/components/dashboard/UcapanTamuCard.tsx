@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
 type Wish = {
@@ -30,6 +33,11 @@ export function UcapanTamuCard({
   totalWishes: number;
   totalGuests: number;
 }) {
+  // Hooks must run unconditionally — keep the state declaration above
+  // any early return so the empty-state path stays compatible with
+  // the React hooks rules.
+  const [open, setOpen] = useState(totalWishes >= 3);
+
   if (wishes.length === 0) {
     return (
       <section className="mt-8 rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 lg:p-8">
@@ -52,17 +60,35 @@ export function UcapanTamuCard({
 
   return (
     <section className="mt-8 rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 lg:p-8">
-      <p className="d-mono text-[10px] uppercase tracking-[0.26em] text-[var(--d-coral)]">
-        Doa & Ucapan
-      </p>
-      <h2 className="d-serif mt-3 text-[22px] font-light leading-[1.3] text-[var(--d-ink)] lg:text-[24px]">
-        Kata-kata{" "}
-        <em className="d-serif italic text-[var(--d-coral)]">terindah</em> dari
-        mereka yang mendoakan.
-      </h2>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="ucapan-body"
+        className="flex w-full items-start justify-between gap-3 text-left"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="d-mono text-[10px] uppercase tracking-[0.26em] text-[var(--d-coral)]">
+            Doa & Ucapan
+          </p>
+          <h2 className="d-serif mt-3 text-[22px] font-light leading-[1.3] text-[var(--d-ink)] lg:text-[24px]">
+            Kata-kata{" "}
+            <em className="d-serif italic text-[var(--d-coral)]">terindah</em>{" "}
+            dari mereka yang mendoakan.
+          </h2>
+        </div>
+        <span
+          aria-hidden
+          className="d-mono mt-1 shrink-0 text-[12px] text-[var(--d-ink-faint)]"
+        >
+          {open ? "▲" : "▼"}
+        </span>
+      </button>
 
+      {open && (
+        <div id="ucapan-body" className="mt-5">
       <article
-        className="mt-5 rounded-[14px] border border-[var(--d-line)] px-5 py-5 lg:px-6 lg:py-6"
+        className="rounded-[14px] border border-[var(--d-line)] px-5 py-5 lg:px-6 lg:py-6"
         style={{ background: "rgba(255,255,255,0.02)" }}
       >
         <p className="d-serif text-[15px] italic leading-[1.6] text-[var(--d-ink)] lg:text-[16px]">
@@ -118,6 +144,9 @@ export function UcapanTamuCard({
               />
             </article>
           ))}
+        </div>
+      )}
+
         </div>
       )}
 
