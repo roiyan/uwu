@@ -32,19 +32,6 @@ import {
   UcapanTamuSkeleton,
 } from "@/components/dashboard/UcapanTamuCard";
 
-function daysUntil(iso: string): number | null {
-  const [y, m, d] = iso.split("-").map((x) => parseInt(x, 10));
-  if (!y || !m || !d) return null;
-  const target = Date.UTC(y, m - 1, d);
-  const today = new Date();
-  const todayUtc = Date.UTC(
-    today.getUTCFullYear(),
-    today.getUTCMonth(),
-    today.getUTCDate(),
-  );
-  return Math.round((target - todayUtc) / 86_400_000);
-}
-
 // Page shell paints immediately. Each data-heavy section streams in
 // independently via Suspense boundaries so one slow query doesn't
 // block the entire page.
@@ -161,26 +148,19 @@ async function Hero({ userId }: { userId: string }) {
 async function JourneyKpiBlock({ userId }: { userId: string }) {
   const current = await getCurrentEventForUser(userId);
   if (!current) return null;
-  const bundle = await getEventBundle(current.event.id);
-  if (!bundle) return null;
-
-  const [liveGuests, statusCounts, confirmed] = await Promise.all([
-    countLiveGuests(bundle.event.id),
-    countGuestsByStatus(bundle.event.id),
-    sumAttendees(bundle.event.id),
-  ]);
-  const totalDibuka =
-    statusCounts.dibuka + statusCounts.hadir + statusCounts.tidak_hadir;
-  const firstSchedule = bundle.schedules[0];
-  const sisaHari = firstSchedule ? daysUntil(firstSchedule.eventDate) : null;
-  const notOpened = statusCounts.baru + statusCounts.diundang;
+  // Single SQL aggregate covers all four funnel tiers in one
+  // round-trip — total / invited (sendCount > 0) / opened / responded.
+  // sumAttendees lives on the Tamu card now; not wanted here because
+  // it's a pax sum that breaks funnel monotonicity.
+  const funnel = await getResponseFunnel(current.event.id);
+  const notOpened = Math.max(0, funnel.invited - funnel.opened);
 
   return (
     <JourneyKpi
-      totalGuests={liveGuests}
-      opened={totalDibuka}
-      confirmed={confirmed}
-      daysLeft={sisaHari}
+      total={funnel.total}
+      invited={funnel.invited}
+      opened={funnel.opened}
+      responded={funnel.responded}
       notOpenedCount={notOpened}
     />
   );
@@ -306,15 +286,22 @@ async function FunnelBlock({ userId }: { userId: string }) {
 async function TamuBlock({ userId }: { userId: string }) {
   const current = await getCurrentEventForUser(userId);
   if (!current) return null;
-  const [count, packageInfo] = await Promise.all([
+  const [count, packageInfo, attendingPax, statusCounts] = await Promise.all([
     countLiveGuests(current.event.id),
     getEventPackageLimit(current.event.id),
+    // sumAttendees is the pax sum — moved off the journey card and
+    // surfaced here as a "total kehadiran" detail line for catering
+    // headcount.
+    sumAttendees(current.event.id),
+    countGuestsByStatus(current.event.id),
   ]);
   return (
     <TamuStatCard
       count={count}
       limit={packageInfo.limit}
       packageName={packageInfo.packageName}
+      attendingPax={attendingPax}
+      attendingGuests={statusCounts.hadir}
     />
   );
 }
