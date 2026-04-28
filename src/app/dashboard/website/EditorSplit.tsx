@@ -554,7 +554,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
             position with elementFromPoint() because plain HTML5 DnD
             is unreliable on iOS Safari. */}
         <div className="lg:hidden">
-          <nav className="flex gap-1.5 overflow-x-auto px-4 pb-2 pt-1">
+          <nav className="flex gap-2 overflow-x-auto px-4 pb-2 pt-1">
             {orderedSections.map((s, idx) => {
               const isActive = activeSection === s.id;
               const isDragging = draggingId === s.id;
@@ -596,7 +596,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                     }
                     setActiveSection(s.id);
                   }}
-                  className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1 text-[9px] uppercase tracking-[0.16em] transition-all duration-150 ${
+                  className={`d-mono inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-[11px] uppercase tracking-[0.14em] transition-all duration-150 ${
                     isActive
                       ? "border-[var(--d-coral)] bg-[rgba(240,160,156,0.08)] text-[var(--d-coral)]"
                       : isDragOver
@@ -606,14 +606,19 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
                   style={{
                     opacity: isDragging ? 0.5 : 1,
                     transform: isDragging ? "scale(0.95)" : "scale(1)",
-                    // Default `pan-y` lets the browser handle vertical
-                    // page scroll + horizontal pill-strip scroll
-                    // normally. Once the long-press timer fires we
-                    // promote the held pill to `touchAction: 'none'`
-                    // so the upcoming move is treated as a drag, not
-                    // a scroll.
+                    // Default `auto` lets the parent's overflow-x-auto
+                    // pick up horizontal swipes for pill-strip scroll,
+                    // while vertical swipes escalate to the document
+                    // for page scroll. The previous `pan-y` set on
+                    // each pill blocked horizontal pan at the pill
+                    // itself — and since pills sit flush with no
+                    // realistic gap to grab, the parent's horizontal
+                    // overflow scroll never received touchmove events.
+                    // Once the 500ms long-press confirms drag mode we
+                    // switch to `none` so the drag isn't hijacked back
+                    // into scroll.
                     touchAction:
-                      pillDragId === s.id ? "none" : "pan-y",
+                      pillDragId === s.id ? "none" : "auto",
                     cursor: "grab",
                   }}
                 >
@@ -622,7 +627,7 @@ export function EditorSplit({ defaults }: { defaults: EditorDefaults }) {
               );
             })}
           </nav>
-          <p className="d-mono px-4 pb-2 text-center text-[8.5px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)]">
+          <p className="d-mono px-4 pb-2 text-center text-[10px] uppercase tracking-[0.14em] text-[var(--d-ink-faint)]">
             Tahan 0,5 detik lalu geser untuk ubah urutan
           </p>
         </div>
