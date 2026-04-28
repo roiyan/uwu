@@ -7,7 +7,11 @@ import {
   type AiMessageInput,
 } from "@/lib/schemas/ai-message";
 
-const MODEL = "gemini-2.0-flash";
+// Gemini 2.0 Flash was returning empty / 4xx responses on this
+// project's API key tier — fall back to the stable 1.5 Flash GA
+// model, which has the same JSON shape so the parser below stays
+// unchanged.
+const MODEL = "gemini-1.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const MAX_RETRIES = 3;
 
