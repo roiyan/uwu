@@ -17,6 +17,7 @@ import {
 import dynamic from "next/dynamic";
 import {
   saveDraftAction,
+  updateDraftAction,
   deleteDraftAction,
   type DraftRow,
 } from "@/lib/actions/broadcast-draft";
@@ -495,8 +496,10 @@ export function MessagesClient({
   const [activeTab, setActiveTab] = useState<
     "compose" | "history" | "manual_queue"
   >("compose");
-  // Inline AI panel toggle — replaces the deprecated "Template AI" tab.
-  const [showAiPanel, setShowAiPanel] = useState(false);
+  // Save Draft modal — collects a name + optional overwrite target
+  // before persisting. Replaces the previous one-click save path so
+  // the "Pakai Template" picker reads with meaningful labels.
+  const [showSaveDraftModal, setShowSaveDraftModal] = useState(false);
   // Saved-draft picker dropdown.
   const [showDraftPicker, setShowDraftPicker] = useState(false);
   // Schedule popup — bottom sheet on mobile, centered modal on
@@ -557,8 +560,8 @@ export function MessagesClient({
           <TabButton
             active={activeTab === "manual_queue"}
             onClick={() => setActiveTab("manual_queue")}
-            label="Antrian"
-            count={manualQueue.length}
+            label="Template"
+            count={drafts.length}
           />
         </div>
       </div>
@@ -577,6 +580,18 @@ export function MessagesClient({
           with React Server Action submissions; `display:none` is
           layout-only and lets the form's submit click propagate. */}
       <div style={{ display: activeTab === "history" ? undefined : "none" }}>
+        {/* Antrian Manual moves into Riwayat as a sub-section so the
+            third tab can be repurposed for templates. The sub-section
+            is suppressed when there's nothing in the queue so the
+            history list still leads with the most recent broadcasts. */}
+        {manualQueue.length > 0 && (
+          <div className="mb-6">
+            <p className="d-mono mb-3 text-[10px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+              Antrian Manual · {manualQueue.length}
+            </p>
+            <ManualQueuePanel queue={manualQueue} eventId={eventId} />
+          </div>
+        )}
         <HistoryListPanel history={history} eventId={eventId} />
       </div>
       <div
@@ -584,7 +599,25 @@ export function MessagesClient({
           display: activeTab === "manual_queue" ? undefined : "none",
         }}
       >
-        <ManualQueuePanel queue={manualQueue} eventId={eventId} />
+        <TemplatesPanel
+          drafts={drafts}
+          onUse={(d) => {
+            if (d.waMessage) setBody(d.waMessage);
+            if (d.emailSubject) setSubject(d.emailSubject);
+            if (d.emailBody) setEmailBody(d.emailBody);
+            setActiveTab("compose");
+            toast.success(`Template "${d.name}" dimuat`);
+          }}
+          onDelete={async (d) => {
+            const res = await deleteDraftAction(eventId, d.id);
+            if (res.ok) {
+              setDrafts((prev) => prev.filter((x) => x.id !== d.id));
+              toast.success("Template dihapus");
+            } else {
+              toast.error(res.error);
+            }
+          }}
+        />
       </div>
       <div style={{ display: activeTab === "compose" ? undefined : "none" }}>
     {/* Single-column compose layout. Riwayat lives on its own tab now,
@@ -709,56 +742,6 @@ export function MessagesClient({
             </label>
           )}
 
-          {/* AI Bantu Tulis — replaces the deprecated Template AI tab.
-              Inline expandable panel sits between the channel/audience
-              picker and the body editor, so the AI knobs live next to
-              the text they populate. The legacy "Bantu Tulis" pill in
-              the editor header is kept for the email body in `both`
-              channel and as a fallback to the modal flow. */}
-          {providers.aiAvailable && (
-            <div className="mt-5">
-              <button
-                type="button"
-                onClick={() => setShowAiPanel((v) => !v)}
-                className={`d-mono flex w-full items-center gap-2 rounded-[10px] border px-4 py-2.5 text-[11px] uppercase tracking-[0.18em] transition-colors ${
-                  showAiPanel
-                    ? "border-[rgba(184,157,212,0.4)] bg-[rgba(184,157,212,0.06)] text-[var(--d-lilac)]"
-                    : "border-[var(--d-line)] text-[var(--d-ink-dim)] hover:bg-[var(--d-bg-2)]"
-                }`}
-                aria-expanded={showAiPanel}
-              >
-                <span aria-hidden>✨</span>
-                Bantu Tulis dengan AI
-                <span className="d-mono ml-2 rounded-full bg-[rgba(184,157,212,0.16)] px-2 py-0.5 text-[8.5px] tracking-[0.18em] text-[var(--d-lilac)]">
-                  BETA
-                </span>
-                <span className="ml-auto text-[12px]">
-                  {showAiPanel ? "▲" : "▼"}
-                </span>
-              </button>
-              {showAiPanel && (
-                <div className="mt-3 rounded-[14px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-4">
-                  <AiStudioInline
-                    channel={channel === "email" ? "email" : "whatsapp"}
-                    eventContext={{
-                      coupleName: `${eventContext.bride} & ${eventContext.groom}`,
-                      brideName: eventContext.bride,
-                      groomName: eventContext.groom,
-                      eventDate: eventContext.date,
-                      venue: eventContext.venue,
-                      slug: eventContext.slug,
-                    }}
-                    onUseMessage={(text) => {
-                      setBody(text);
-                      setShowAiPanel(false);
-                      toast.success("Pesan AI dimuat ke editor");
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
           <div className="mt-5">
             <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
               <span className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-ink-faint)]">
@@ -832,7 +815,7 @@ export function MessagesClient({
                     onClick={() => setAiTarget("primary")}
                     className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(184,157,212,0.3)] bg-[rgba(184,157,212,0.06)] px-3 py-1 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-lilac)] transition-colors hover:border-[var(--d-lilac)] hover:bg-[rgba(184,157,212,0.12)]"
                   >
-                    <span aria-hidden>✦</span> Bantu Tulis
+                    <span aria-hidden>✦</span> Bantu Tulis dengan AI
                   </button>
                 )}
               </div>
@@ -863,7 +846,7 @@ export function MessagesClient({
                     onClick={() => setAiTarget("email")}
                     className="d-mono inline-flex items-center gap-1.5 rounded-full border border-[rgba(184,157,212,0.3)] bg-[rgba(184,157,212,0.06)] px-3 py-1 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-lilac)] transition-colors hover:border-[var(--d-lilac)] hover:bg-[rgba(184,157,212,0.12)]"
                   >
-                    <span aria-hidden>✦</span> Bantu Tulis
+                    <span aria-hidden>✦</span> Bantu Tulis dengan AI
                   </button>
                 )}
               </div>
@@ -1279,61 +1262,10 @@ export function MessagesClient({
             <div className="flex w-full flex-col-reverse items-stretch gap-2.5 sm:w-auto sm:flex-row sm:items-center sm:flex-wrap">
               <button
                 type="button"
-                onClick={() => {
-                  // Persist the current compose state as a reusable
-                  // template. Server enforces the 10-draft cap; we
-                  // optimistically refresh the list on success so the
-                  // picker dropdown reflects the new entry without a
-                  // round-trip refetch.
-                  startSaveDraft(async () => {
-                    const res = await saveDraftAction(eventId, {
-                      channel,
-                      waMessage: body,
-                      emailSubject:
-                        channel === "email" || channel === "both"
-                          ? subject
-                          : null,
-                      emailBody:
-                        channel === "email"
-                          ? body
-                          : channel === "both"
-                            ? emailBody
-                            : null,
-                    });
-                    if (res.ok && res.data) {
-                      setDrafts((prev) => [
-                        {
-                          id: res.data!.draftId,
-                          name: `Draft ${new Date().toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`,
-                          channel,
-                          waMessage: body,
-                          emailSubject:
-                            channel === "email" || channel === "both"
-                              ? subject
-                              : null,
-                          emailBody:
-                            channel === "email"
-                              ? body
-                              : channel === "both"
-                                ? emailBody
-                                : null,
-                          aiTone: null,
-                          aiLanguage: null,
-                          aiCulture: null,
-                          aiLength: null,
-                        },
-                        ...prev,
-                      ]);
-                      toast.success("Draft tersimpan");
-                    } else if (!res.ok) {
-                      toast.error(res.error);
-                    }
-                  });
-                }}
-                disabled={draftSavePending}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-transparent px-[18px] py-[11px] text-[13px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)] disabled:opacity-60"
+                onClick={() => setShowSaveDraftModal(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[var(--d-line-strong)] bg-transparent px-[18px] py-[11px] text-[13px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)]"
               >
-                💾 {draftSavePending ? "Menyimpan…" : "Simpan Draft"}
+                💾 Simpan Draft
               </button>
 
               {(channel === "email" || channel === "both") && (
@@ -1464,6 +1396,95 @@ export function MessagesClient({
             <p className="mt-3 text-sm text-[var(--d-coral)]">{runError}</p>
           )}
         </form>
+
+        {showSaveDraftModal && (
+          <SaveDraftModal
+            existingDrafts={drafts}
+            defaultName={(() => {
+              const ch =
+                channel === "email"
+                  ? "Email"
+                  : channel === "both"
+                    ? "WA + Email"
+                    : "WhatsApp";
+              return `${ch} · ${new Date().toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+              })}`;
+            })()}
+            pending={draftSavePending}
+            onClose={() => setShowSaveDraftModal(false)}
+            onSubmit={(name, overwriteId) => {
+              const payload = {
+                name,
+                channel,
+                waMessage: body,
+                emailSubject:
+                  channel === "email" || channel === "both"
+                    ? subject
+                    : null,
+                emailBody:
+                  channel === "email"
+                    ? body
+                    : channel === "both"
+                      ? emailBody
+                      : null,
+              };
+              startSaveDraft(async () => {
+                if (overwriteId) {
+                  const res = await updateDraftAction(
+                    eventId,
+                    overwriteId,
+                    payload,
+                  );
+                  if (res.ok) {
+                    setDrafts((prev) =>
+                      prev.map((d) =>
+                        d.id === overwriteId
+                          ? {
+                              ...d,
+                              name: payload.name,
+                              channel: payload.channel,
+                              waMessage: payload.waMessage,
+                              emailSubject: payload.emailSubject,
+                              emailBody: payload.emailBody,
+                            }
+                          : d,
+                      ),
+                    );
+                    toast.success("Template diperbarui");
+                    setShowSaveDraftModal(false);
+                  } else {
+                    toast.error(res.error);
+                  }
+                } else {
+                  const res = await saveDraftAction(eventId, payload);
+                  if (res.ok && res.data) {
+                    setDrafts((prev) => [
+                      {
+                        id: res.data!.draftId,
+                        name: payload.name,
+                        channel: payload.channel,
+                        waMessage: payload.waMessage,
+                        emailSubject: payload.emailSubject,
+                        emailBody: payload.emailBody,
+                        aiTone: null,
+                        aiLanguage: null,
+                        aiCulture: null,
+                        aiLength: null,
+                      },
+                      ...prev,
+                    ]);
+                    toast.success("Template tersimpan");
+                    setShowSaveDraftModal(false);
+                  } else if (!res.ok) {
+                    toast.error(res.error);
+                  }
+                }
+              });
+            }}
+          />
+        )}
 
         {showSchedulePopup && (
           <ScheduleSheet
@@ -1979,6 +2000,226 @@ function ScheduleSheet({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SaveDraftModal({
+  existingDrafts,
+  defaultName,
+  pending,
+  onClose,
+  onSubmit,
+}: {
+  existingDrafts: DraftRow[];
+  defaultName: string;
+  pending: boolean;
+  onClose: () => void;
+  onSubmit: (name: string, overwriteId: string | null) => void;
+}) {
+  const [name, setName] = useState(defaultName);
+  const [overwriteId, setOverwriteId] = useState<string | null>(null);
+  const [confirmOverwrite, setConfirmOverwrite] = useState(false);
+
+  const trimmed = name.trim();
+  const replaceTarget = overwriteId
+    ? existingDrafts.find((d) => d.id === overwriteId) ?? null
+    : null;
+
+  function handleSubmit() {
+    if (!trimmed) return;
+    if (overwriteId && !confirmOverwrite) {
+      setConfirmOverwrite(true);
+      return;
+    }
+    onSubmit(trimmed, overwriteId);
+  }
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Simpan template"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 sm:items-center sm:p-4"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full rounded-t-[20px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6 sm:max-w-[440px] sm:rounded-[18px]"
+      >
+        <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-[var(--d-line)] sm:hidden" />
+        <h3 className="d-serif text-[20px] font-light text-[var(--d-ink)]">
+          Simpan sebagai{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">template</em>
+        </h3>
+        <p className="d-serif mt-1.5 text-[12.5px] italic text-[var(--d-ink-dim)]">
+          Beri nama supaya mudah dipanggil lewat &ldquo;Pakai Template&rdquo;.
+        </p>
+
+        <label className="d-mono mt-5 block text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+          Nama template
+        </label>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            setConfirmOverwrite(false);
+          }}
+          placeholder="Mis. Undangan Resmi WA"
+          maxLength={100}
+          autoFocus
+          className="mt-2 w-full rounded-[10px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.04)] px-3.5 py-3 text-[14px] text-[var(--d-ink)] outline-none transition-colors focus:border-[var(--d-coral)]"
+        />
+
+        {existingDrafts.length > 0 && (
+          <>
+            <p className="d-mono mt-5 mb-2 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+              Atau replace template lama
+            </p>
+            <div className="max-h-[200px] overflow-y-auto rounded-[10px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] p-1.5">
+              <label className="flex cursor-pointer items-center gap-2.5 rounded-[8px] px-3 py-2 text-[13px] text-[var(--d-ink-dim)] hover:bg-[rgba(255,255,255,0.04)]">
+                <input
+                  type="radio"
+                  name="overwrite"
+                  checked={overwriteId === null}
+                  onChange={() => {
+                    setOverwriteId(null);
+                    setConfirmOverwrite(false);
+                  }}
+                  className="accent-[var(--d-coral)]"
+                />
+                <span>Buat baru</span>
+              </label>
+              {existingDrafts.map((d) => (
+                <label
+                  key={d.id}
+                  className="flex cursor-pointer items-center gap-2.5 rounded-[8px] px-3 py-2 text-[13px] text-[var(--d-ink)] hover:bg-[rgba(255,255,255,0.04)]"
+                >
+                  <input
+                    type="radio"
+                    name="overwrite"
+                    checked={overwriteId === d.id}
+                    onChange={() => {
+                      setOverwriteId(d.id);
+                      setConfirmOverwrite(false);
+                      setName(d.name);
+                    }}
+                    className="accent-[var(--d-coral)]"
+                  />
+                  <span className="flex-1 truncate">{d.name}</span>
+                  <span className="d-mono shrink-0 text-[9.5px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)]">
+                    {d.channel}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </>
+        )}
+
+        {confirmOverwrite && replaceTarget && (
+          <p className="mt-3 rounded-[8px] border border-[rgba(240,160,156,0.3)] bg-[rgba(240,160,156,0.08)] px-3 py-2 text-[12px] leading-relaxed text-[var(--d-coral)]">
+            Yakin replace &ldquo;{replaceTarget.name}&rdquo;? Klik
+            &ldquo;Simpan Template&rdquo; sekali lagi untuk mengonfirmasi.
+          </p>
+        )}
+
+        <div className="mt-5 flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-[10px] border border-[var(--d-line)] bg-transparent px-4 py-3 text-[13px] text-[var(--d-ink-dim)] transition-colors hover:bg-[var(--d-bg-2)]"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={!trimmed || pending}
+            className="flex-[2] rounded-[10px] px-4 py-3 text-[13px] font-medium text-[#0B0B15] transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+            style={{
+              background:
+                "linear-gradient(135deg, #F0A09C, #F4B8A3)",
+            }}
+          >
+            {pending
+              ? "Menyimpan…"
+              : confirmOverwrite
+                ? "Konfirmasi Replace"
+                : "Simpan Template"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TemplatesPanel({
+  drafts,
+  onUse,
+  onDelete,
+}: {
+  drafts: DraftRow[];
+  onUse: (d: DraftRow) => void;
+  onDelete: (d: DraftRow) => void;
+}) {
+  if (drafts.length === 0) {
+    return (
+      <div className="rounded-[18px] border border-dashed border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] px-6 py-12 text-center">
+        <p className="d-serif text-[18px] italic text-[var(--d-ink-dim)]">
+          Belum ada template tersimpan.
+        </p>
+        <p className="mt-2 text-[12.5px] text-[var(--d-ink-faint)]">
+          Susun pesan di tab &ldquo;Kirim Baru&rdquo;, lalu tekan{" "}
+          <em className="not-italic text-[var(--d-coral)]">Simpan Draft</em> di
+          bawah editor untuk menambahkannya ke daftar ini.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)]">
+      <header className="flex items-baseline justify-between border-b border-[var(--d-line)] px-6 py-4">
+        <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
+          Template Tersimpan · {drafts.length}/10
+        </p>
+        <p className="d-serif text-[11.5px] italic text-[var(--d-ink-faint)]">
+          Maks 10 template per acara
+        </p>
+      </header>
+      <ul className="divide-y divide-[var(--d-line)]">
+        {drafts.map((d) => (
+          <li
+            key={d.id}
+            className="flex flex-col gap-2 px-6 py-4 sm:flex-row sm:items-center sm:gap-4"
+          >
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[14px] font-medium text-[var(--d-ink)]">
+                {d.name}
+              </p>
+              <p className="d-mono mt-0.5 truncate text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+                {d.channel}
+              </p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onUse(d)}
+                className="d-mono rounded-full bg-[var(--d-coral)] px-4 py-2 text-[10.5px] font-medium uppercase tracking-[0.18em] text-[#0B0B15] transition-opacity hover:opacity-90"
+              >
+                Pakai
+              </button>
+              <button
+                type="button"
+                onClick={() => onDelete(d)}
+                className="d-mono rounded-full border border-[var(--d-line-strong)] px-4 py-2 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-ink-dim)] transition-colors hover:border-[var(--d-coral)] hover:text-[var(--d-coral)]"
+              >
+                Hapus
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
