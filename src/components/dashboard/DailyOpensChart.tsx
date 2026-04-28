@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 export type DailyOpenPoint = {
   /** YYYY-MM-DD UTC date string from the server. */
@@ -118,7 +118,6 @@ function pointsToArea(points: { x: number; y: number }[]): string {
   return `${line} L ${last.x.toFixed(1)} ${baselineY} L ${first.x.toFixed(1)} ${baselineY} Z`;
 }
 
-const INFO_KEY = "uwu:dashboard:bukaan-info-dismissed";
 
 export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
   const series = useMemo(() => buildSeries(data), [data]);
@@ -133,28 +132,9 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
     | null
   >(null);
 
-  // Info banner explaining what the chart tracks. Persists dismiss
-  // state in localStorage so users only see it the first time. SSR-
-  // safe — defaults to "shown" until the effect reads localStorage.
-  const [infoDismissed, setInfoDismissed] = useState(false);
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      if (window.localStorage.getItem(INFO_KEY) === "true") {
-        setInfoDismissed(true);
-      }
-    } catch {
-      // private mode — fall through, banner will keep showing
-    }
-  }, []);
-  function dismissInfo() {
-    setInfoDismissed(true);
-    try {
-      window.localStorage.setItem(INFO_KEY, "true");
-    } catch {
-      // ignore quota / private-mode errors
-    }
-  }
+  // Info-banner state previously gated by localStorage (INFO_KEY).
+  // Now rendered as a hover-only "i" pill in the header; no
+  // dismissed state needed.
 
   const totalActual = series.actual.reduce((acc, p) => acc + p.count, 0);
   const isEmpty = totalActual === 0;
@@ -165,7 +145,20 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="d-eyebrow">Bukaan</p>
+          <div className="flex items-center gap-2">
+            <p className="d-eyebrow">Bukaan</p>
+            {/* Replaced the dismissable info banner with a hover-only
+                "i" pill — same explanation, zero vertical real estate. */}
+            <span
+              role="img"
+              aria-label="Setiap kali tamu membuka link undangan, kami mencatatnya di sini. Gunakan untuk tahu kapan waktu terbaik mengirim undangan berikutnya."
+              title="Setiap kali tamu membuka link undangan, kami mencatatnya di sini. Gunakan untuk tahu kapan waktu terbaik mengirim undangan berikutnya."
+              className="inline-flex h-[14px] w-[14px] cursor-help items-center justify-center rounded-full border text-[8.5px] text-[var(--d-ink-faint)]"
+              style={{ borderColor: "var(--d-line-strong)" }}
+            >
+              i
+            </span>
+          </div>
           <h2 className="d-serif mt-2 text-[26px] font-extralight leading-tight text-[var(--d-ink)]">
             Bukaan{" "}
             <em className="d-serif italic text-[var(--d-coral)]">per hari</em>
@@ -176,38 +169,6 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
         </div>
         <Legend />
       </header>
-
-      {!infoDismissed && (
-        <div className="relative mt-5 flex items-start gap-3 rounded-xl border border-[rgba(143,163,217,0.18)] bg-[rgba(143,163,217,0.06)] px-4 py-3">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            className="mt-0.5 shrink-0"
-            style={{ color: "var(--d-blue)" }}
-            aria-hidden
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
-          </svg>
-          <p className="flex-1 text-[12px] leading-relaxed text-[var(--d-ink-dim)]">
-            Setiap kali tamu membuka link undangan, kami mencatatnya di sini.
-            Gunakan untuk tahu kapan waktu terbaik mengirim undangan
-            berikutnya.
-          </p>
-          <button
-            type="button"
-            onClick={dismissInfo}
-            aria-label="Tutup info"
-            className="d-mono shrink-0 rounded text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)] transition-colors hover:text-[var(--d-ink)]"
-          >
-            ✕
-          </button>
-        </div>
-      )}
 
       <div className="relative mt-5">
         <svg
