@@ -7,6 +7,7 @@ import { requireSessionUserFast } from "@/lib/auth-guard";
 import { getCurrentEventForUser, getEventBundle } from "@/lib/db/queries/events";
 import { listGuestGroups } from "@/lib/db/queries/guests";
 import { getBroadcastHistory } from "@/lib/actions/broadcast";
+import { listDraftsAction } from "@/lib/actions/broadcast-draft";
 import { MESSAGE_TEMPLATES } from "@/lib/templates/messages";
 import { isWhatsAppConfigured } from "@/lib/providers/whatsapp";
 import { isEmailConfigured } from "@/lib/providers/email";
@@ -83,6 +84,12 @@ export default async function MessagesPage({
   const countByGroupId = new Map(
     groupCounts.map((r) => [r.groupId!, r.liveCount]),
   );
+
+  // Saved drafts for the "Pakai Template" picker. Soft-fail to []
+  // so a slow auth check on this auxiliary fetch never blocks the
+  // primary compose surface.
+  const draftsRes = await listDraftsAction(current.event.id);
+  const drafts = draftsRes.ok && draftsRes.data ? draftsRes.data : [];
   const alreadySentCount = alreadySentRow[0]?.total ?? 0;
 
   const cp = bundle.event.culturalPreference;
@@ -168,6 +175,7 @@ export default async function MessagesPage({
         alreadySentCount={alreadySentCount}
         recipientSample={recipientSample}
         eventContext={eventContext}
+        drafts={drafts}
         history={history.map((h) => {
           // Resolve a friendly audience label so the riwayat list can
           // show "Grup: VIP, Keluarga" instead of raw JSON.

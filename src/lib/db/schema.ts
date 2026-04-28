@@ -573,3 +573,32 @@ export type EventGalleryRow = typeof eventGallery.$inferSelect;
 export type EventMedia = typeof eventMedia.$inferSelect;
 export type GiftAccount = typeof giftAccounts.$inferSelect;
 export type GiftConfirmation = typeof giftConfirmations.$inferSelect;
+
+
+// ---------- broadcast drafts ----------
+
+/**
+ * Reusable broadcast templates the couple can save while composing
+ * (max 10 per event, enforced server-side). Lets them iterate without
+ * re-typing — a "Pakai Template" picker on the Kirim Baru tab loads
+ * the saved body/subject + AI knobs into the editor in one click.
+ */
+export const broadcastDrafts = pgTable("broadcast_drafts", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  eventId: uuid("event_id")
+    .notNull()
+    .references(() => events.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 100 }).notNull().default("Draft"),
+  channel: varchar("channel", { length: 20 }).notNull().default("whatsapp"),
+  waMessage: text("wa_message"),
+  emailSubject: varchar("email_subject", { length: 255 }),
+  emailBody: text("email_body"),
+  aiTone: varchar("ai_tone", { length: 20 }),
+  aiLanguage: varchar("ai_language", { length: 20 }),
+  aiCulture: varchar("ai_culture", { length: 20 }),
+  aiLength: varchar("ai_length", { length: 20 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+});
+
+export type BroadcastDraft = typeof broadcastDrafts.$inferSelect;
