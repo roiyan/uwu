@@ -2,45 +2,41 @@ import Link from "next/link";
 
 // Single unified KPI card. Replaces the four-tile StatHero —
 // glanceable numbers preserved, but now connected by a journey
-// line (rsvp funnel as a horizontal progression) plus a contextual
-// benchmark + reminder CTA. The numbers stay big because that's
-// what the operator scans first.
+// line rendering the actual RSVP funnel (Terdaftar → Dikirimi →
+// Membuka → Konfirmasi). Numbers are always unique-guest counts so
+// the funnel reads monotonically descending; the pax-sum lives on
+// the Tamu card now.
 
 type Props = {
-  totalGuests: number;
+  /** Total live guests on the event (= countLiveGuests). */
+  total: number;
+  /** Guests with at least one broadcast send (sendCount > 0). */
+  invited: number;
+  /** Guests with openedAt set — unique opens. */
   opened: number;
-  confirmed: number;
-  daysLeft: number | null;
+  /** Guests whose rsvpStatus is in ('hadir','tidak_hadir'). */
+  responded: number;
+  /** Subset of `total` that haven't opened yet — drives the
+   *  "Ingatkan N tamu" CTA. */
   notOpenedCount: number;
 };
 
 export function JourneyKpi({
-  totalGuests,
+  total,
+  invited,
   opened,
-  confirmed,
-  daysLeft,
+  responded,
   notOpenedCount,
 }: Props) {
-  const openRate =
-    totalGuests > 0 ? Math.round((opened / totalGuests) * 100) : 0;
+  const openRate = total > 0 ? Math.round((opened / total) * 100) : 0;
 
-  // Segment progress for the journey line. Step 1: invited→opened.
-  // Step 2: opened→confirmed. Step 3: confirmed→hari H (counts down
-  // visually as daysLeft shrinks).
-  const seg1 = totalGuests > 0 ? (opened / totalGuests) * 100 : 0;
-  const seg2 = opened > 0 ? (confirmed / opened) * 100 : 0;
-  const seg3 =
-    daysLeft === null
-      ? 0
-      : daysLeft <= 0
-        ? 100
-        : daysLeft <= 2
-          ? 80
-          : daysLeft <= 7
-            ? 60
-            : daysLeft <= 30
-              ? 30
-              : 10;
+  // Each segment fills relative to the previous step. Cap at 100%
+  // for the case where the link spreads organically (opened >
+  // invited): we still display the raw numbers, but the line never
+  // overflows visually.
+  const seg1 = pct(invited, total);
+  const seg2 = pct(opened, invited);
+  const seg3 = pct(responded, opened);
 
   return (
     <section className="d-card p-7 lg:p-8">
@@ -51,55 +47,51 @@ export function JourneyKpi({
       {/* Numbers — 2×2 on mobile, 4-up on tablet+. Big serif numerals
           stay so the operator can glance the headline counts. */}
       <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-4">
-        <KpiNumber
-          value={totalGuests}
-          label="Terdaftar"
-          accent="var(--d-coral)"
-        />
+        <KpiNumber value={total} label="Terdaftar" accent="var(--d-coral)" />
+        <KpiNumber value={invited} label="Dikirimi" accent="var(--d-blue)" />
         <KpiNumber
           value={opened}
-          sub={totalGuests > 0 ? `${openRate}%` : undefined}
+          sub={total > 0 ? `${openRate}%` : undefined}
           label="Membuka"
           accent="var(--d-lilac)"
         />
         <KpiNumber
-          value={confirmed}
-          label="Hadir"
+          value={responded}
+          label="Konfirmasi"
           accent="var(--d-green)"
-        />
-        <KpiNumber
-          value={daysLeft ?? "—"}
-          label={daysLeft === null ? "Tanggal TBD" : "Hari Lagi"}
-          accent="var(--d-gold)"
         />
       </div>
 
       {/* Journey line — dot ─ line ─ dot ─ line ─ dot ─ line ─ dot.
-          Each line fills as that step's progress increases. Active
-          dots glow coral; inactive dots stay grey. */}
+          Line widths reflect each step's ratio against the previous
+          one; capped to keep the bar inside the card when organic
+          shares push opens above invites. */}
       <div className="mt-7 flex items-center gap-0 px-1">
         <Dot active />
         <Line progress={seg1} />
-        <Dot active={opened > 0} />
+        <Dot active={invited > 0} />
         <Line progress={seg2} />
-        <Dot active={confirmed > 0} />
+        <Dot active={opened > 0} />
         <Line progress={seg3} />
-        <Dot active={daysLeft !== null && daysLeft <= 0} />
+        <Dot active={responded > 0} />
       </div>
 
       {/* Benchmark line + CTA — only meaningful once there are guests. */}
-      {totalGuests > 0 && (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
+      {total > 0 && (
+        <div
+          className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
           style={{
             background: "rgba(240,160,156,0.04)",
             borderColor: "rgba(240,160,156,0.12)",
           }}
         >
           <p className="d-serif min-w-0 flex-1 text-[12.5px] italic text-[var(--d-ink-dim)]">
-            <span aria-hidden className="mr-2">💡</span>
+            <span aria-hidden className="mr-2">
+              💡
+            </span>
             {openRate >= 55
               ? `${openRate}% sudah membuka — di atas rata-rata undangan digital.`
-              : `${openRate}% sudah membuka — rata-rata undangan digital ${55}%.`}
+              : `${openRate}% sudah membuka — rata-rata undangan digital 55%.`}
           </p>
           {notOpenedCount > 0 && (
             <Link
@@ -113,6 +105,11 @@ export function JourneyKpi({
       )}
     </section>
   );
+}
+
+function pct(num: number, denom: number): number {
+  if (denom <= 0) return 0;
+  return Math.max(0, Math.min(100, (num / denom) * 100));
 }
 
 function KpiNumber({
@@ -162,7 +159,6 @@ function Dot({ active }: { active?: boolean }) {
 }
 
 function Line({ progress }: { progress: number }) {
-  const w = Math.max(0, Math.min(100, progress));
   return (
     <span
       aria-hidden
@@ -172,7 +168,7 @@ function Line({ progress }: { progress: number }) {
       <span
         className="absolute left-0 top-0 h-full rounded-full"
         style={{
-          width: `${w}%`,
+          width: `${progress}%`,
           background: "var(--d-coral)",
           transition: "width 0.5s ease",
         }}
