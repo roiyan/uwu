@@ -129,21 +129,32 @@ FORMAT:
 - Budaya: ${cultureCue(input.cultures, input.customCulture)}`;
 }
 
-// `{date}` and `{venue}` were marked optional in earlier iterations
-// and the model often dropped them entirely on shorter outputs —
-// users complained that the generated message "tidak ada tanggal /
-// lokasi". They're now WAJIB on `sedang` / `lengkap` because every
-// proper wedding invitation needs the where-and-when. Substitution
-// happens server-side before sending each guest's message (see the
-// broadcast pipeline), so the AI's job here is just to leave the
-// placeholders in the right spots.
-const VARIABLE_RULES = `VARIABEL (HANYA INI — placeholder template, akan diganti otomatis saat kirim):
-- {panggilan} → sapaan personal tamu — WAJIB minimal 1×
-- {link_undangan} → link undangan digital — WAJIB minimal 1×
-- {date} → tanggal acara — WAJIB minimal 1× untuk panjang sedang & lengkap
-- {venue} → lokasi acara — WAJIB minimal 1× untuk panjang sedang & lengkap
-- {nama}, {bride}, {groom} → opsional
-DILARANG: tulis nama mempelai / tanggal / lokasi sebagai teks biasa (HARUS pakai variabel di atas), buat variabel baru, output dalam HURUF KAPITAL semua, atau menulis ulang label kurung kurawal seperti "[Nama]" / "[Tanggal]".`;
+// Earlier iterations told the model to emit {bride}/{groom}/{date}/
+// {venue} as template placeholders so per-guest substitution could
+// fill them in at send time. Two practical problems with that:
+//   1. Operators saw the literal "{date}" / "{venue}" in the AI
+//      preview and reported it as "data tidak terisi".
+//   2. The model often DROPPED the optional placeholders entirely
+//      on shorter outputs, so the rendered message had no where-
+//      and-when at all.
+// The new contract: event-level data is inlined directly from the
+// DATA PERNIKAHAN block above. Only per-guest variables (the tamu's
+// salutation and their personalised invitation link) stay as
+// templates because those genuinely need substitution per recipient.
+const VARIABLE_RULES = `VARIABEL TEMPLATE (HANYA dua ini, akan diganti otomatis per tamu saat kirim):
+- {panggilan} → sapaan personal tamu (mis. "Bpk Hadi") — WAJIB minimal 1×
+- {link_undangan} → link undangan personal tamu — WAJIB minimal 1×
+
+DATA EVENT (INLINE — tulis nilainya langsung di pesan, JANGAN pakai placeholder):
+- Nama mempelai → tulis nama lengkap dari DATA PERNIKAHAN di atas
+- Tanggal acara → tulis tanggal yang sebenarnya (mis. "Sabtu, 15 November 2025") — WAJIB ada untuk panjang sedang & lengkap
+- Lokasi → tulis nama venue yang sebenarnya — WAJIB ada untuk panjang sedang & lengkap
+
+DILARANG:
+- Pakai placeholder kurung kurawal {bride}, {groom}, {date}, {venue}, {nama} — gunakan nilai sebenarnya.
+- Pakai placeholder kurung siku [Nama], [Tanggal], [Lokasi] — itu salah, gunakan nilai sebenarnya.
+- Buat variabel template baru di luar {panggilan} dan {link_undangan}.
+- Output dalam HURUF KAPITAL semua.`;
 
 function buildWaPrompt(input: AiMessageInput): string {
   const customNote = input.customNotes?.trim()

@@ -57,13 +57,20 @@ export async function generateBroadcastMessage(
 
   const { system, user: userPrompt } = buildPrompt(input);
 
-  // Output budget — Indonesian wedding invitations + the salam +
-  // doa stack run long. The previous 400/600 cap routinely truncated
-  // "lengkap" outputs mid-sentence ("Assalamu'alaikum Warahmatullahi
-  // Wabarakatuh,\n\nDengan mem"). 2048 covers the longest form
-  // (7–10 lines WA / 14-line email body + subject) with headroom;
-  // we still pay only for what the model actually emits.
-  const maxOutputTokens = 2048;
+  // Output budget — Gemini 2.5 Flash has internal "thinking" tokens
+  // ENABLED BY DEFAULT, and those count against maxOutputTokens.
+  // A 2048 budget can be quietly consumed by ~1500 thinking tokens
+  // followed by a truncated 500-token answer — exactly the
+  // "Pesan AI terpotong di tengah" symptom the user reported even
+  // after the previous 400→2048 bump. Two changes here:
+  //
+  //   1. thinkingBudget: 0 disables the chain-of-thought entirely.
+  //      Wedding-invitation copy is template-style writing — the
+  //      model doesn't need to "reason" to produce it.
+  //   2. maxOutputTokens: 4096 leaves headroom even on the longest
+  //      "lengkap" + Islamic + multi-paragraph composition. We
+  //      still pay only for what the model actually emits.
+  const maxOutputTokens = 4096;
 
   let body: GeminiResponse;
   try {
@@ -74,6 +81,9 @@ export async function generateBroadcastMessage(
         maxOutputTokens,
         temperature: 0.8,
         topP: 0.95,
+        // Gemini 2.5-specific: turn off CoT thinking so the entire
+        // output budget goes to the actual message.
+        thinkingConfig: { thinkingBudget: 0 },
       },
     });
   } catch (err) {
