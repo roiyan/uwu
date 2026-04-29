@@ -638,12 +638,31 @@ function NavItem({
         : undefined;
 
   const inner = collapsed ? (
-    <span
-      className="flex items-center justify-center"
-      style={{ color: active ? "var(--d-coral)" : undefined }}
-    >
-      <NavIcon href={href} active={active} />
-    </span>
+    <>
+      <span
+        className="flex items-center justify-center"
+        style={{ color: active ? "var(--d-coral)" : undefined }}
+      >
+        <NavIcon href={href} active={active} />
+      </span>
+      {/* Visible-on-hover tooltip — sighted users with a collapsed
+          rail need to know what each icon does. Native `title` is
+          unreliable on touch devices and doesn't render on focus,
+          so we ship our own pill. pointer-events-none keeps it from
+          stealing clicks when the icon is hovered. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute left-full top-1/2 ml-3 -translate-y-1/2 whitespace-nowrap rounded-md border bg-[var(--d-bg-1)] px-2.5 py-1 text-[11px] font-medium opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100"
+        style={{
+          borderColor: "var(--d-line)",
+          color: "var(--d-ink)",
+          boxShadow: "0 6px 18px rgba(0,0,0,0.32)",
+          zIndex: 50,
+        }}
+      >
+        {label}
+      </span>
+    </>
   ) : (
     <>
       <span
@@ -664,8 +683,11 @@ function NavItem({
   if (disabled) {
     return (
       <span
-        className={`${base} ${layout} ${padding} ${stateClass}`}
+        className={`${base} ${layout} ${padding} ${stateClass} ${
+          collapsed ? "min-h-[44px]" : ""
+        }`}
         style={activeStyle}
+        aria-label={collapsed ? label : undefined}
         title={collapsed ? label : undefined}
         aria-disabled
       >
@@ -678,8 +700,11 @@ function NavItem({
     <Link
       href={href}
       onClick={onClick}
-      className={`${base} ${layout} ${padding} ${stateClass}`}
+      className={`${base} ${layout} ${padding} ${stateClass} ${
+        collapsed ? "min-h-[44px]" : ""
+      }`}
       style={activeStyle}
+      aria-label={collapsed ? label : undefined}
       title={collapsed ? label : undefined}
     >
       {inner}

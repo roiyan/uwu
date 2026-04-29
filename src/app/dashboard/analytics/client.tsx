@@ -119,7 +119,7 @@ function BabHeader({
     <div className="mt-6">
       <div className="flex items-center gap-2">
         <span aria-hidden className="h-px w-7 bg-[var(--d-coral)]" />
-        <span className="d-mono text-[9.5px] uppercase tracking-[0.26em] text-[var(--d-ink-faint)]">
+        <span className="d-mono text-[11px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)]">
           BAB {number}
         </span>
       </div>
@@ -569,12 +569,20 @@ export function AnalyticsClient({
               <em className="d-serif italic text-[var(--d-coral)]">perjalanan</em>
             </>
           }
-          subtitle="Sekilas cerita undangan kalian — dari pengiriman hingga pelukan."
+          subtitle={
+            daysToEvent === null || daysToEvent > 0
+              ? "Sekilas cerita undangan kalian — dari pengiriman hingga pelukan."
+              : daysToEvent === 0
+                ? "Cerita undangan kalian — hari ini babak terakhirnya ditulis."
+                : checkinStats.actualCheckin > 0
+                  ? `Dari pengiriman hingga pelukan yang sudah terjadi — ${checkinStats.actualCheckin} orang hadir menemani kalian. ✨`
+                  : "Dari pengiriman hingga pelukan yang sudah terjadi ✨"
+          }
         />
         <div className="mt-5">
           <KpiCards cards={kpiCards} />
         </div>
-      {insights.length > 0 && (
+      {insights.length > 0 && (daysToEvent === null || daysToEvent >= 0) && (
         <div
           className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
           style={{
@@ -697,7 +705,7 @@ export function AnalyticsClient({
                   Saat Sambut Tamu diaktifkan, halaman ini akan merekam setiap
                   kedatangan secara live.
                 </p>
-                {daysToEvent !== null && daysToEvent <= 1 && daysToEvent >= 0 && (
+                {daysToEvent !== null && daysToEvent <= 2 && daysToEvent >= 0 && (
                   <Link
                     href="/dashboard/checkin"
                     className="d-mono mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--d-coral)] px-5 py-2.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)] transition-colors hover:bg-[var(--d-coral)] hover:text-[#0B0B15]"
@@ -747,8 +755,8 @@ export function AnalyticsClient({
             <em className="d-serif italic text-[var(--d-coral)]">terbaru</em>.
           </h2>
         </header>
-        <div className="max-h-[400px] overflow-y-auto overflow-x-auto custom-scroll">
-          <table className="w-full min-w-[500px] text-[13px]">
+        <div className="max-h-[400px] overflow-y-auto overflow-x-auto custom-scroll [-webkit-overflow-scrolling:touch]">
+          <table className="w-full min-w-[640px] text-[13px]">
             <thead className="sticky top-0 z-10">
               <tr className="border-b border-[var(--d-line)] bg-[var(--d-bg-card)] backdrop-blur-sm">
                 <Th scope="col">Nama</Th>
