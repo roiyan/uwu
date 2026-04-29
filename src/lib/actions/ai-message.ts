@@ -57,11 +57,13 @@ export async function generateBroadcastMessage(
 
   const { system, user: userPrompt } = buildPrompt(input);
 
-  // Output budget: WA messages cap around 7-10 lines, email bodies
-  // around 14 lines + a short subject. 400 / 600 tokens cover both
-  // with headroom; pushing higher just bills the user for tokens
-  // the prompt explicitly asks the model not to emit.
-  const maxOutputTokens = input.channel === "email" ? 600 : 400;
+  // Output budget — Indonesian wedding invitations + the salam +
+  // doa stack run long. The previous 400/600 cap routinely truncated
+  // "lengkap" outputs mid-sentence ("Assalamu'alaikum Warahmatullahi
+  // Wabarakatuh,\n\nDengan mem"). 2048 covers the longest form
+  // (7–10 lines WA / 14-line email body + subject) with headroom;
+  // we still pay only for what the model actually emits.
+  const maxOutputTokens = 2048;
 
   let body: GeminiResponse;
   try {
@@ -96,6 +98,22 @@ export async function generateBroadcastMessage(
   if (!text) {
     console.error("[ai-message] empty response", body);
     return { ok: false, error: "AI tidak menghasilkan pesan. Coba lagi." };
+  }
+
+  // Surface MAX_TOKENS truncation. With the budget bumped to 2048
+  // this should never trigger in practice, but if a future prompt
+  // ever blows past it we'd rather the operator see a clear retry
+  // hint than a half-formed message they assume is the AI output.
+  const finishReason = body.candidates?.[0]?.finishReason;
+  if (finishReason && finishReason !== "STOP") {
+    console.warn("[ai-message] non-STOP finishReason", finishReason);
+    if (finishReason === "MAX_TOKENS") {
+      return {
+        ok: false,
+        error:
+          "Pesan AI terpotong di tengah. Coba pilih panjang yang lebih singkat lalu generate ulang.",
+      };
+    }
   }
 
   // Email prompt asks for a `SUBJECT:` / `BODY:` framed output so the

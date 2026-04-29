@@ -129,11 +129,21 @@ FORMAT:
 - Budaya: ${cultureCue(input.cultures, input.customCulture)}`;
 }
 
-const VARIABLE_RULES = `VARIABEL (HANYA INI):
+// `{date}` and `{venue}` were marked optional in earlier iterations
+// and the model often dropped them entirely on shorter outputs —
+// users complained that the generated message "tidak ada tanggal /
+// lokasi". They're now WAJIB on `sedang` / `lengkap` because every
+// proper wedding invitation needs the where-and-when. Substitution
+// happens server-side before sending each guest's message (see the
+// broadcast pipeline), so the AI's job here is just to leave the
+// placeholders in the right spots.
+const VARIABLE_RULES = `VARIABEL (HANYA INI — placeholder template, akan diganti otomatis saat kirim):
 - {panggilan} → sapaan personal tamu — WAJIB minimal 1×
 - {link_undangan} → link undangan digital — WAJIB minimal 1×
-- {nama}, {bride}, {groom}, {date}, {venue} → opsional
-DILARANG: tulis nama mempelai/tanggal/lokasi langsung (gunakan variabel), buat variabel baru, output dalam HURUF KAPITAL semua.`;
+- {date} → tanggal acara — WAJIB minimal 1× untuk panjang sedang & lengkap
+- {venue} → lokasi acara — WAJIB minimal 1× untuk panjang sedang & lengkap
+- {nama}, {bride}, {groom} → opsional
+DILARANG: tulis nama mempelai / tanggal / lokasi sebagai teks biasa (HARUS pakai variabel di atas), buat variabel baru, output dalam HURUF KAPITAL semua, atau menulis ulang label kurung kurawal seperti "[Nama]" / "[Tanggal]".`;
 
 function buildWaPrompt(input: AiMessageInput): string {
   const customNote = input.customNotes?.trim()
