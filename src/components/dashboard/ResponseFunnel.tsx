@@ -82,15 +82,21 @@ export function ResponseFunnel({ total, hadir, tidakHadir }: Props) {
 
       {belum > 0 && (
         <div
-          className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
+          className="mt-5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 rounded-[12px] border px-4 py-3"
           style={{
             background: "rgba(240,160,156,0.04)",
             borderColor: "rgba(240,160,156,0.12)",
           }}
         >
-          <p className="d-serif min-w-0 flex-1 text-[12.5px] italic text-[var(--d-ink-dim)]">
+          {/* basis-full keeps the message on its own row when the column
+              is narrow, so the link wraps below cleanly instead of the
+              text reflowing one word per line. The shortened copy
+              ("8 belum menjawab — kirim pengingat.") fits the typical
+              ResponseFunnel cell at 320 px without help, but the
+              wrapping safety net is still here for very narrow rails. */}
+          <p className="d-serif min-w-0 basis-full text-[12.5px] italic text-[var(--d-ink-dim)] sm:basis-auto sm:flex-1">
             <span aria-hidden className="mr-2">💡</span>
-            {belum} tamu belum menjawab — kirim pengingat sebelum hari H.
+            {belum} belum menjawab — kirim pengingat.
           </p>
           <Link
             href="/dashboard/messages?tab=kirim-baru"

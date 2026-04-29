@@ -79,7 +79,7 @@ export function UcapanTamuCard({
   if (wishes.length === 0) {
     return (
       <section className="mt-8 rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7 lg:p-8">
-        <p className="d-mono text-[10px] uppercase tracking-[0.26em] text-[var(--d-coral)]">
+        <p className="d-mono text-[12px] uppercase tracking-[0.18em] text-[var(--d-coral)] opacity-70">
           Doa & Ucapan
         </p>
         <h2 className="d-serif mt-3 text-[20px] font-light text-[var(--d-ink)]">
@@ -189,14 +189,14 @@ export function UcapanTamuCard({
       )}
 
       <div className="mt-5 flex items-center justify-between border-t border-[var(--d-line)] pt-3.5">
-        <span className="d-mono text-[10px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)]">
+        <span className="d-mono text-[12px] uppercase tracking-[0.10em] text-[var(--d-ink-faint)] opacity-70">
           {totalWishes} ucapan dari{" "}
           <em className="not-italic text-[var(--d-coral)]">{totalGuests}</em>{" "}
           tamu
         </span>
         <Link
           href="/dashboard/guests?tab=ucapan"
-          className="d-mono text-[10px] uppercase tracking-[0.16em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-ink)]"
+          className="d-mono text-[12px] uppercase tracking-[0.10em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-ink)]"
         >
           Lihat semua →
         </Link>

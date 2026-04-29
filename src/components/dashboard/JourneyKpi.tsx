@@ -50,9 +50,6 @@ export function JourneyKpi({
         <KpiNumber
           value={total}
           sub={quotaPct !== null ? `${quotaPct}%` : undefined}
-          subSmall={
-            guestQuota && guestQuota > 0 ? `dari ${guestQuota}` : undefined
-          }
           label="Terdaftar"
           accent="var(--d-coral)"
         />
