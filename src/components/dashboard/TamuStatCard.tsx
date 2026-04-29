@@ -3,26 +3,25 @@ import Link from "next/link";
 export function TamuStatCard({
   count,
   limit,
-  packageName,
   attendingPax,
   attendingGuests,
+  invitedCount,
 }: {
   count: number;
   limit: number;
-  packageName: string;
-  /** Sum of `rsvp_attendees` across guests with status `hadir`.
-   *  Surfaced here (and not in the journey card) because it's a
-   *  detail breakdown — useful for catering headcount, not a funnel
-   *  step. Optional: when undefined, the line is hidden. */
+  packageName?: string;
+  /** Sum of `rsvp_attendees` across guests with status `hadir`. */
   attendingPax?: number;
-  /** Unique guest count whose status is `hadir` — paired with
-   *  `attendingPax` so the line reads "9 orang dari 6 tamu yang
-   *  konfirmasi hadir". */
+  /** Unique guest count whose status is `hadir`. */
   attendingGuests?: number;
+  /** Guests with at least one broadcast send. */
+  invitedCount?: number;
 }) {
-  // Treat very high limits as "unlimited" — Couture-tier packages can
-  // have a numeric limit far above realistic guest counts.
   const isUnlimited = limit >= 9999;
+  const pendamping =
+    typeof attendingPax === "number" && typeof attendingGuests === "number"
+      ? Math.max(0, attendingPax - attendingGuests)
+      : 0;
 
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
@@ -44,26 +43,29 @@ export function TamuStatCard({
           </span>
         )}
       </p>
-      <p className="mt-3 text-[12px] text-[var(--d-ink-dim)]">
-        Total tamu terdaftar dari paket{" "}
-        <span className="text-[var(--d-ink)]">{packageName}</span>.
-      </p>
+      <p className="mt-2 text-[12px] text-[var(--d-ink-dim)]">Tamu terdaftar</p>
 
-      {attendingPax !== undefined &&
-        attendingGuests !== undefined &&
-        attendingGuests > 0 && (
-          <div className="mt-4 border-t border-[var(--d-line)] pt-3">
-            <p className="d-serif text-[13px] text-[var(--d-ink-dim)]">
-              Total kehadiran:{" "}
-              <strong className="font-medium text-[var(--d-ink)]">
-                {attendingPax} orang
-              </strong>
+      {typeof invitedCount === "number" && count > 0 && (
+        <p className="d-serif mt-3 text-[12px] italic text-[var(--d-ink-faint)]">
+          {invitedCount} dari {count} sudah dikirimi undangan
+        </p>
+      )}
+
+      {typeof attendingGuests === "number" && attendingGuests > 0 && (
+        <div className="mt-4 border-t border-[var(--d-line)] pt-3">
+          <p className="d-serif text-[15px] text-[var(--d-ink)]">
+            <strong className="font-medium">{attendingGuests}</strong> konfirmasi hadir
+          </p>
+          {pendamping > 0 && (
+            <p
+              className="d-serif mt-0.5 text-[11.5px] italic"
+              style={{ color: "var(--d-ink-faint)", opacity: 0.85 }}
+            >
+              Bersama {pendamping} pendamping — total {attendingPax} orang
             </p>
-            <p className="d-serif mt-0.5 text-[11px] italic text-[var(--d-ink-faint)]">
-              dari {attendingGuests} tamu yang konfirmasi hadir
-            </p>
-          </div>
-        )}
+          )}
+        </div>
+      )}
 
       <Link
         href="/dashboard/guests"

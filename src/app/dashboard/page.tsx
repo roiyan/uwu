@@ -158,7 +158,6 @@ async function JourneyKpiBlock({ userId }: { userId: string }) {
   return (
     <JourneyKpi
       total={funnel.total}
-      invited={funnel.invited}
       opened={funnel.opened}
       responded={funnel.responded}
       notOpenedCount={notOpened}
@@ -239,10 +238,10 @@ async function ChecklistBlock({ userId }: { userId: string }) {
   if (hasBroadcast && notOpened > 0) {
     items.push({
       id: "reminder",
-      label: `${notOpened} tamu belum membuka — mereka mungkin belum sempat`,
+      label: `${notOpened} tamu belum membuka — mungkin butuh pengingat kecil`,
       done: false,
       href: "/dashboard/messages?tab=kirim-baru",
-      cta: "Ingatkan →",
+      cta: "Kirim Pengingat →",
     });
   }
   items.push({
@@ -279,29 +278,37 @@ async function ChartBlock({ userId }: { userId: string }) {
 async function FunnelBlock({ userId }: { userId: string }) {
   const current = await getCurrentEventForUser(userId);
   if (!current) return null;
-  const data = await getResponseFunnel(current.event.id);
-  return <ResponseFunnel data={data} />;
+  const [statusCounts, total] = await Promise.all([
+    countGuestsByStatus(current.event.id),
+    countLiveGuests(current.event.id),
+  ]);
+  return (
+    <ResponseFunnel
+      total={total}
+      hadir={statusCounts.hadir}
+      tidakHadir={statusCounts.tidak_hadir}
+    />
+  );
 }
 
 async function TamuBlock({ userId }: { userId: string }) {
   const current = await getCurrentEventForUser(userId);
   if (!current) return null;
-  const [count, packageInfo, attendingPax, statusCounts] = await Promise.all([
-    countLiveGuests(current.event.id),
-    getEventPackageLimit(current.event.id),
-    // sumAttendees is the pax sum — moved off the journey card and
-    // surfaced here as a "total kehadiran" detail line for catering
-    // headcount.
-    sumAttendees(current.event.id),
-    countGuestsByStatus(current.event.id),
-  ]);
+  const [count, packageInfo, attendingPax, statusCounts, funnel] =
+    await Promise.all([
+      countLiveGuests(current.event.id),
+      getEventPackageLimit(current.event.id),
+      sumAttendees(current.event.id),
+      countGuestsByStatus(current.event.id),
+      getResponseFunnel(current.event.id),
+    ]);
   return (
     <TamuStatCard
       count={count}
       limit={packageInfo.limit}
-      packageName={packageInfo.packageName}
       attendingPax={attendingPax}
       attendingGuests={statusCounts.hadir}
+      invitedCount={funnel.invited}
     />
   );
 }

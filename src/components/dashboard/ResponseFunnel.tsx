@@ -1,47 +1,54 @@
-type FunnelData = {
+import Link from "next/link";
+
+type Props = {
+  /** Total live guests on the event. Bar percentages are relative to this. */
   total: number;
-  invited: number;
-  opened: number;
-  responded: number;
-  attending: number;
+  /** Unique guests with rsvpStatus = 'hadir'. */
+  hadir: number;
+  /** Unique guests with rsvpStatus = 'tidak_hadir'. */
+  tidakHadir: number;
 };
 
-const ROWS: {
-  key: keyof FunnelData;
-  label: string;
-  color: string;
-}[] = [
-  { key: "total", label: "Total Tamu", color: "var(--d-coral)" },
-  { key: "invited", label: "Diundang", color: "var(--d-peach)" },
-  { key: "opened", label: "Dibuka", color: "var(--d-gold)" },
-  { key: "responded", label: "Merespons", color: "var(--d-lilac)" },
-  { key: "attending", label: "Hadir", color: "var(--d-green)" },
-];
-
-export function ResponseFunnel({ data }: { data: FunnelData }) {
-  // Percentages all relative to `total`. When total is zero we render
-  // empty bars but still keep the row labels so the user sees what's
-  // tracked.
+/**
+ * Ringkasan Konfirmasi — replaced the old 5-row "Perjalanan respons"
+ * funnel that duplicated data already shown in the JourneyKpi card.
+ * Three bars only — Hadir / Tidak Hadir / Belum Menjawab — answers
+ * the actual question the couple asks at this point in the page.
+ */
+export function ResponseFunnel({ total, hadir, tidakHadir }: Props) {
+  const belum = Math.max(0, total - hadir - tidakHadir);
   const pct = (n: number) =>
-    data.total > 0 ? Math.round((n / data.total) * 100) : 0;
+    total > 0 ? Math.round((n / total) * 100) : 0;
+
+  const rows: { key: string; label: string; value: number; color: string }[] = [
+    { key: "hadir", label: "Hadir", value: hadir, color: "var(--d-green)" },
+    {
+      key: "tidak_hadir",
+      label: "Tidak Hadir",
+      value: tidakHadir,
+      color: "var(--d-line-strong)",
+    },
+    {
+      key: "belum",
+      label: "Belum Menjawab",
+      value: belum,
+      color: "var(--d-coral)",
+    },
+  ];
 
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7">
       <header>
-        <p className="d-eyebrow">Respons</p>
+        <p className="d-eyebrow">Konfirmasi</p>
         <h2 className="d-serif mt-2 text-[26px] font-extralight leading-tight text-[var(--d-ink)]">
-          Perjalanan{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">respons</em>
+          Siapa yang sudah{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">menjawab</em>?
         </h2>
-        <p className="mt-1 text-[12.5px] text-[var(--d-ink-dim)]">
-          Perjalanan tamu — dari undangan ke kehadiran.
-        </p>
       </header>
 
       <ul className="mt-6 space-y-4">
-        {ROWS.map((row) => {
-          const value = data[row.key];
-          const percent = pct(value);
+        {rows.map((row) => {
+          const percent = pct(row.value);
           return (
             <li key={row.key}>
               <div className="flex items-center justify-between text-[13px]">
@@ -53,13 +60,8 @@ export function ResponseFunnel({ data }: { data: FunnelData }) {
                   />
                   {row.label}
                 </span>
-                <span className="flex items-baseline gap-2">
-                  <span className="d-serif text-[18px] font-light text-[var(--d-ink)]">
-                    {value}
-                  </span>
-                  <span className="d-mono text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
-                    {percent}%
-                  </span>
+                <span className="d-serif text-[15px] font-light text-[var(--d-ink)]">
+                  {row.value} <span className="text-[12px] text-[var(--d-ink-faint)]">orang</span>
                 </span>
               </div>
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[var(--d-bg-2)]">
@@ -68,7 +70,6 @@ export function ResponseFunnel({ data }: { data: FunnelData }) {
                   style={{
                     width: `${percent}%`,
                     background: row.color,
-                    boxShadow: `0 0 12px ${row.color}`,
                     transformOrigin: "left center",
                     transform: `scaleX(${percent / 100})`,
                   }}
@@ -78,6 +79,27 @@ export function ResponseFunnel({ data }: { data: FunnelData }) {
           );
         })}
       </ul>
+
+      {belum > 0 && (
+        <div
+          className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
+          style={{
+            background: "rgba(240,160,156,0.04)",
+            borderColor: "rgba(240,160,156,0.12)",
+          }}
+        >
+          <p className="d-serif min-w-0 flex-1 text-[12.5px] italic text-[var(--d-ink-dim)]">
+            <span aria-hidden className="mr-2">💡</span>
+            {belum} tamu belum menjawab — kirim pengingat sebelum hari H.
+          </p>
+          <Link
+            href="/dashboard/messages?tab=kirim-baru"
+            className="d-mono shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.16em] text-[var(--d-coral)] hover:text-[var(--d-peach)]"
+          >
+            Kirim pengingat →
+          </Link>
+        </div>
+      )}
     </section>
   );
 }

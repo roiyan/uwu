@@ -1,17 +1,14 @@
 import Link from "next/link";
 
-// Single unified KPI card. Replaces the four-tile StatHero —
-// glanceable numbers preserved, but now connected by a journey
-// line rendering the actual RSVP funnel (Terdaftar → Dikirimi →
-// Membuka → Konfirmasi). Numbers are always unique-guest counts so
-// the funnel reads monotonically descending; the pax-sum lives on
-// the Tamu card now.
+// Single unified KPI card. Three-stage funnel: Terdaftar → Membuka →
+// Konfirmasi. The "Dikirimi" count moved off this card to the Tamu
+// detail card because send count is a process metric, not a guest
+// progress signal — and tracking it as a funnel stage made the chart
+// look like the link was failing when sends were paused.
 
 type Props = {
   /** Total live guests on the event (= countLiveGuests). */
   total: number;
-  /** Guests with at least one broadcast send (sendCount > 0). */
-  invited: number;
   /** Guests with openedAt set — unique opens. */
   opened: number;
   /** Guests whose rsvpStatus is in ('hadir','tidak_hadir'). */
@@ -21,22 +18,12 @@ type Props = {
   notOpenedCount: number;
 };
 
-export function JourneyKpi({
-  total,
-  invited,
-  opened,
-  responded,
-  notOpenedCount,
-}: Props) {
+export function JourneyKpi({ total, opened, responded, notOpenedCount }: Props) {
   const openRate = total > 0 ? Math.round((opened / total) * 100) : 0;
+  const respondRate = total > 0 ? Math.round((responded / total) * 100) : 0;
 
-  // Each segment fills relative to the previous step. Cap at 100%
-  // for the case where the link spreads organically (opened >
-  // invited): we still display the raw numbers, but the line never
-  // overflows visually.
-  const seg1 = pct(invited, total);
-  const seg2 = pct(opened, invited);
-  const seg3 = pct(responded, opened);
+  const seg1 = pct(opened, total);
+  const seg2 = pct(responded, opened);
 
   return (
     <section className="d-card p-7 lg:p-8">
@@ -44,11 +31,10 @@ export function JourneyKpi({
         Perjalanan undangan
       </p>
 
-      {/* Numbers — 2×2 on mobile, 4-up on tablet+. Big serif numerals
-          stay so the operator can glance the headline counts. */}
-      <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-4 sm:gap-4">
-        <KpiNumber value={total} label="Terdaftar" accent="var(--d-coral)" />
-        <KpiNumber value={invited} label="Dikirimi" accent="var(--d-blue)" />
+      {/* Numbers — 3-up. Big serif numerals stay so the operator can
+          glance the headline counts. */}
+      <div className="mt-5 grid grid-cols-3 gap-4">
+        <KpiNumber value={total} sub="100%" label="Terdaftar" accent="var(--d-coral)" />
         <KpiNumber
           value={opened}
           sub={total > 0 ? `${openRate}%` : undefined}
@@ -57,22 +43,18 @@ export function JourneyKpi({
         />
         <KpiNumber
           value={responded}
+          sub={total > 0 ? `${respondRate}%` : undefined}
           label="Konfirmasi"
           accent="var(--d-green)"
         />
       </div>
 
-      {/* Journey line — dot ─ line ─ dot ─ line ─ dot ─ line ─ dot.
-          Line widths reflect each step's ratio against the previous
-          one; capped to keep the bar inside the card when organic
-          shares push opens above invites. */}
+      {/* Journey line — 3 dots + 2 segments. */}
       <div className="mt-7 flex items-center gap-0 px-1">
         <Dot active />
         <Line progress={seg1} />
-        <Dot active={invited > 0} />
-        <Line progress={seg2} />
         <Dot active={opened > 0} />
-        <Line progress={seg3} />
+        <Line progress={seg2} />
         <Dot active={responded > 0} />
       </div>
 
@@ -90,15 +72,15 @@ export function JourneyKpi({
               💡
             </span>
             {openRate >= 55
-              ? `${openRate}% sudah membuka — di atas rata-rata undangan digital.`
-              : `${openRate}% sudah membuka — rata-rata undangan digital 55%.`}
+              ? `${openRate}% sudah membuka — di atas rata-rata di Indonesia.`
+              : `${openRate}% sudah membuka — rata-rata di Indonesia 55%.`}
           </p>
           {notOpenedCount > 0 && (
             <Link
               href="/dashboard/messages?tab=kirim-baru"
-              className="d-mono shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.16em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)]"
+              className="d-mono shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.16em] text-[var(--d-coral)] underline-offset-4 transition-colors hover:text-[var(--d-peach)] hover:underline"
             >
-              Ingatkan {notOpenedCount} tamu →
+              Kirim pengingat →
             </Link>
           )}
         </div>

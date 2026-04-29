@@ -146,18 +146,18 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <p className="d-eyebrow">Bukaan</p>
+            <p className="d-eyebrow">Jejak Bukaan</p>
             {/* Replaced the dismissable info banner with a hover-only
                 "i" pill — same explanation, zero vertical real estate. */}
-            <span
-              role="img"
-              aria-label="Setiap kali tamu membuka link undangan, kami mencatatnya di sini. Gunakan untuk tahu kapan waktu terbaik mengirim undangan berikutnya."
+            <button
+              type="button"
+              aria-label="Informasi tentang grafik bukaan"
               title="Setiap kali tamu membuka link undangan, kami mencatatnya di sini. Gunakan untuk tahu kapan waktu terbaik mengirim undangan berikutnya."
-              className="inline-flex h-[14px] w-[14px] cursor-help items-center justify-center rounded-full border text-[8.5px] text-[var(--d-ink-faint)]"
+              className="inline-flex h-[14px] w-[14px] cursor-help items-center justify-center rounded-full border bg-transparent text-[8.5px] text-[var(--d-ink-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--d-coral)]"
               style={{ borderColor: "var(--d-line-strong)" }}
             >
               i
-            </span>
+            </button>
           </div>
           <h2 className="d-serif mt-2 text-[26px] font-extralight leading-tight text-[var(--d-ink)]">
             Bukaan{" "}
