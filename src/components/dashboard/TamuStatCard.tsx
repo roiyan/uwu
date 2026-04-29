@@ -25,7 +25,7 @@ export function TamuStatCard({
 
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-6">
-      <p className="d-mono text-[10px] uppercase tracking-[0.24em] text-[var(--d-ink-faint)]">
+      <p className="d-mono text-[12px] uppercase tracking-[0.18em] text-[var(--d-ink-faint)] opacity-70">
         Tamu
       </p>
       <p className="mt-3 leading-none">
@@ -54,7 +54,7 @@ export function TamuStatCard({
             <Link
               href="/dashboard/messages?tab=kirim-baru"
               aria-label={`Kirim undangan ke ${count - invitedCount} tamu yang belum menerima`}
-              className="d-mono mt-1 inline-block text-[10.5px] uppercase tracking-[0.16em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)]"
+              className="d-mono mt-1 inline-block text-[12px] uppercase tracking-[0.12em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)]"
             >
               Kirim ke {count - invitedCount} lainnya →
             </Link>
@@ -80,7 +80,7 @@ export function TamuStatCard({
 
       <Link
         href="/dashboard/guests"
-        className="d-mono mt-4 inline-flex items-center gap-1.5 text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-coral)] transition-all hover:gap-2.5 hover:text-[var(--d-peach)]"
+        className="d-mono mt-4 inline-flex items-center gap-1.5 text-[12px] uppercase tracking-[0.16em] text-[var(--d-coral)] transition-all hover:gap-2.5 hover:text-[var(--d-peach)]"
       >
         Kelola Tamu <span aria-hidden>→</span>
       </Link>

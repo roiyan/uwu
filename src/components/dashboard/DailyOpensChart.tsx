@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 export type DailyOpenPoint = {
   /** YYYY-MM-DD UTC date string from the server. */
@@ -303,14 +304,30 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
         )}
 
         {isEmpty && (
-          <p className="d-mono mt-3 text-center text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink-faint)]">
+          <p className="d-mono mt-3 text-center text-[12px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)] opacity-70">
             Belum ada jejak bukaan · Tayangkan undangan untuk mulai melihat jejaknya.
           </p>
         )}
       </div>
 
-      <p className="d-serif mt-4 rounded-[10px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] px-4 py-3 text-[12.5px] italic text-[var(--d-ink-dim)]">
-        💡 {buildBukaanInsight(series.actual)}
+      {/* Insight + action: when the auto-picked insight is the
+          "flat" or "no-opens" branch we already nudge toward
+          sending a reminder, so we surface that as an inline link
+          right inside the same callout. The other branches don't
+          have a corresponding direct action, so the link only
+          renders when `bukaanInsightSuggestsReminder` agrees. */}
+      <p className="d-serif mt-4 flex flex-wrap items-baseline gap-x-2 gap-y-1 rounded-[10px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] px-4 py-3 text-[12.5px] italic text-[var(--d-ink-dim)]">
+        <span className="min-w-0 flex-1">
+          💡 {buildBukaanInsight(series.actual)}
+        </span>
+        {bukaanInsightSuggestsReminder(series.actual) && (
+          <Link
+            href="/dashboard/messages?tab=kirim-baru"
+            className="d-mono not-italic shrink-0 text-[12px] uppercase tracking-[0.10em] text-[var(--d-coral)] hover:text-[var(--d-peach)]"
+          >
+            Kirim pengingat →
+          </Link>
+        )}
       </p>
     </section>
   );
@@ -381,4 +398,17 @@ function Legend() {
       </span>
     </div>
   );
+}
+
+// Returns true when buildBukaanInsight would surface a "send a
+// reminder" framing — keeps the inline CTA above in lockstep with
+// the message below it, without duplicating the date math twice.
+function bukaanInsightSuggestsReminder(
+  actual: { date: string; count: number }[],
+): boolean {
+  if (!actual || actual.length === 0) return false;
+  const total = actual.reduce((s, p) => s + p.count, 0);
+  if (total === 0) return false;
+  const recent = actual.slice(-3);
+  return recent.length >= 2 && recent.every((p) => p.count <= 1);
 }
