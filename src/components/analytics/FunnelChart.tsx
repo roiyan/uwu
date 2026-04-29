@@ -16,16 +16,28 @@ type Stage = {
   key: keyof FunnelData;
   label: string;
   color: string;
+  /** Stage whose value is the percentage denominator. `undefined` =
+   *  use the per-stage `denomOverride` (currently only Terdaftar uses
+   *  it to show "X% dari kuota"). */
   pctOf?: keyof FunnelData;
-  hint: (data: FunnelData) => string;
+  hint: (data: FunnelData, ctx: StageCtx) => string;
+};
+
+// Per-render context for things stages need but FunnelData doesn't
+// carry — quota, etc. Kept narrow so adding a new field stays cheap.
+type StageCtx = {
+  guestQuota: number;
 };
 
 const BASE_STAGES: Stage[] = [
   {
     key: "total",
-    label: "Total",
+    label: "Terdaftar",
     color: "#F0A09C",
-    hint: () => "baseline",
+    // No pctOf — Terdaftar is denominated by the package quota, not
+    // by another funnel stage. Resolved in the legend with a custom
+    // branch below.
+    hint: (_d, ctx) => `dari ${ctx.guestQuota} kuota`,
   },
   {
     key: "invited",
@@ -36,7 +48,7 @@ const BASE_STAGES: Stage[] = [
   },
   {
     key: "opened",
-    label: "Dibuka",
+    label: "Membuka",
     color: "#D4B896",
     pctOf: "invited",
     hint: () => "dari yang dikirimi",
@@ -46,14 +58,14 @@ const BASE_STAGES: Stage[] = [
     label: "Konfirmasi",
     color: "#B89DD4",
     pctOf: "opened",
-    hint: () => "dari dibuka",
+    hint: () => "dari yang membuka",
   },
   {
     key: "attending",
-    label: "Hadir (terkonfirmasi)",
+    label: "Hadir",
     color: "#7ED3A4",
     pctOf: "responded",
-    hint: () => "dari yang konfirmasi",
+    hint: () => "dari yang konfirmasi hadir",
   },
 ];
 
@@ -66,22 +78,43 @@ const CHECKIN_STAGE: Stage = {
 };
 
 const STAGE_LABEL: Record<keyof FunnelData, string> = {
-  total: "total",
+  total: "terdaftar",
   invited: "dikirimi",
-  opened: "dibuka",
+  opened: "membuka",
   responded: "konfirmasi",
   attending: "konfirmasi hadir",
   checkedIn: "tiba di lokasi",
 };
 
-function resolveStages(d: FunnelData): Stage[] {
-  return d.checkedIn != null && d.checkedIn >= 0 && d.attending > 0
+/**
+ * "Tiba di Lokasi" only adds signal once the event has started or
+ * someone has actually been checked in. Pre-event with zero check-ins
+ * the row would always read "0% dari yang konfirmasi hadir" — pure
+ * noise that crowds the more useful stages — so we hide it.
+ */
+function shouldShowArrival(
+  d: FunnelData,
+  daysRemaining: number | null,
+): boolean {
+  if (d.checkedIn == null) return false;
+  if (d.checkedIn > 0) return true;
+  return daysRemaining !== null && daysRemaining <= 0;
+}
+
+function resolveStages(
+  d: FunnelData,
+  daysRemaining: number | null,
+): Stage[] {
+  return shouldShowArrival(d, daysRemaining)
     ? [...BASE_STAGES, CHECKIN_STAGE]
     : BASE_STAGES;
 }
 
-function generateInsight(d: FunnelData): { from: string; to: string; count: number } | null {
-  const stages = resolveStages(d);
+function generateInsight(
+  d: FunnelData,
+  daysRemaining: number | null,
+): { from: string; to: string; count: number } | null {
+  const stages = resolveStages(d, daysRemaining);
   let biggest: { from: string; to: string; count: number } | null = null;
   for (let i = 0; i < stages.length - 1; i++) {
     const a = stages[i].key;
@@ -101,28 +134,38 @@ export function FunnelChart({
   groups,
   groupFilter,
   onGroupChange,
+  guestQuota,
+  daysRemaining = null,
 }: {
   data: FunnelData;
   groups: { id: string; name: string }[];
   groupFilter: string;
   onGroupChange: (id: string) => void;
+  /** Package's guest cap (Starter=25, Lite=100, etc.) — drives the
+   *  Terdaftar stage's "X% dari kuota" hint. Defaults to 25 if the
+   *  caller can't resolve it; the rendered ratio degrades gracefully. */
+  guestQuota?: number;
+  /** Days until the wedding (negative = post-event). When null, the
+   *  arrival stage is gated only by checkedIn > 0. */
+  daysRemaining?: number | null;
 }) {
-  const max = Math.max(1, data.total);
+  const quota = guestQuota && guestQuota > 0 ? guestQuota : 25;
+  const ctx: StageCtx = { guestQuota: quota };
   const conversionPct =
     data.total > 0 ? Math.round((data.attending / data.total) * 100) : 0;
-  const insight = generateInsight(data);
-  const stages = resolveStages(data);
-  const stageGridClass =
-    stages.length === 6
-      ? "grid-cols-3 sm:grid-cols-6"
-      : "grid-cols-5";
+  const insight = generateInsight(data, daysRemaining);
+  const stages = resolveStages(data, daysRemaining);
+  // Bar-magnitude denominator. Each row's bar is sized as `v / max`
+  // so the longest bar always fills its track — gives the legend a
+  // proper horizontal-bar feel even when totals are small.
+  const max = Math.max(1, ...stages.map((s) => data[s.key] ?? 0));
 
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-7">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="d-mono text-[10.5px] uppercase tracking-[0.28em] text-[var(--d-coral)]">
-            Perjalanan Respons · {todayLabel()}
+            Perjalanan Konfirmasi · {todayLabel()}
           </p>
           <h2 className="d-serif mt-2 text-[24px] font-light leading-tight tracking-[-0.015em] text-[var(--d-ink)] lg:text-[26px]">
             Perjalanan{" "}
@@ -150,58 +193,27 @@ export function FunnelChart({
       </header>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_200px] lg:gap-10">
-        {/* Visualization */}
-        <div>
-          <div className="flex h-[220px] items-end gap-3.5">
-            {stages.map((s) => {
-              const v = data[s.key] ?? 0;
-              const heightPct = (v / max) * 100;
-              return (
-                <div
-                  key={s.key}
-                  className="group/bar relative flex flex-1 flex-col justify-end transition-transform hover:-translate-y-1"
-                >
-                  <span
-                    className="d-serif absolute left-1/2 -translate-x-1/2 text-[22px] font-extralight leading-none text-[var(--d-ink)]"
-                    style={{
-                      bottom: `calc(${Math.max(heightPct, 4)}% + 6px)`,
-                    }}
-                  >
-                    {v}
-                  </span>
-                  <div
-                    className="relative w-full overflow-hidden rounded-t-[8px]"
-                    style={{
-                      height: `${Math.max(heightPct, 4)}%`,
-                      minHeight: "8px",
-                      background: `linear-gradient(180deg, ${s.color} 0%, ${s.color}77 100%)`,
-                    }}
-                  >
-                    <span
-                      aria-hidden
-                      className="absolute inset-x-0 top-0 h-1/2"
-                      style={{
-                        background:
-                          "linear-gradient(180deg, rgba(255,255,255,0.14), transparent 70%)",
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Axis legend */}
-          <div className={`mt-5 grid ${stageGridClass} gap-3.5 border-t border-[var(--d-line)] pt-4`}>
-            {stages.map((s) => {
-              const v = data[s.key] ?? 0;
-              const denomRaw = s.pctOf ? data[s.pctOf] : data.total;
-              const denom = denomRaw ?? 0;
-              const pct =
-                denom > 0 ? Math.round((v / Math.max(1, denom)) * 100) : 0;
-              return (
-                <div key={s.key} className="flex flex-col items-start gap-1">
-                  <span className="flex items-center gap-1.5 text-[11.5px] text-[var(--d-ink-dim)]">
+        {/* Stage rows. The previous version stacked a vertical bar
+            chart on top of this grid — those bars looked empty when
+            totals were small (220px container, 8px min-height bars =
+            wasted space) so we collapsed everything into a single
+            horizontal-bar legend. Each row carries label + count +
+            percentage + a magnitude bar. */}
+        <div className="flex flex-col gap-4">
+          {stages.map((s) => {
+            const v = data[s.key] ?? 0;
+            // Terdaftar uses the package quota as denominator;
+            // every other stage compares against its `pctOf`.
+            const denomRaw = s.key === "total" ? quota : s.pctOf ? data[s.pctOf] : data.total;
+            const denom = denomRaw ?? 0;
+            const pct =
+              denom > 0 ? Math.round((v / Math.max(1, denom)) * 100) : 0;
+            const widthPct = (v / max) * 100;
+            const isOverflow = pct > 100;
+            return (
+              <div key={s.key} className="flex flex-col gap-1.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="flex items-center gap-2 text-[12px] text-[var(--d-ink)]">
                     <span
                       aria-hidden
                       className="h-1.5 w-1.5 rounded-full"
@@ -209,28 +221,45 @@ export function FunnelChart({
                     />
                     {s.label}
                   </span>
-                  <span className="d-mono text-[10.5px] tracking-[0.04em] text-[var(--d-ink)]">
+                  <span className="d-serif text-[18px] font-extralight leading-none text-[var(--d-ink)]">
+                    {v}
+                  </span>
+                </div>
+                {/* Magnitude bar — width relative to the largest stage
+                    in this funnel, so the funnel narrowing reads at a
+                    glance. Min 4px so 0/near-0 stages still show a tick. */}
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-[rgba(255,255,255,0.04)]">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.max(widthPct, v > 0 ? 4 : 0)}%`,
+                      background: `linear-gradient(90deg, ${s.color} 0%, ${s.color}99 100%)`,
+                    }}
+                  />
+                </div>
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="d-mono text-[10px] tracking-[0.04em] text-[var(--d-ink-faint)]">
+                    {s.hint(data, ctx)}
+                  </span>
+                  <span className="d-mono text-[10.5px] tracking-[0.04em] text-[var(--d-ink-dim)]">
                     {pct}%
                   </span>
-                  <span className="d-mono text-[9.5px] tracking-[0.04em] text-[var(--d-ink-faint)]">
-                    {s.hint(data)}
-                  </span>
-                  {pct > 100 && (
-                    <span className="d-mono text-[9px] tracking-[0.02em] text-[var(--d-ink-faint)] opacity-70">
-                      Bisa &gt; 100% — undangan kalian menyebar organik di luar
-                      daftar kirim.
-                    </span>
-                  )}
                 </div>
-              );
-            })}
-          </div>
+                {isOverflow && (
+                  <span className="d-mono text-[9px] tracking-[0.02em] text-[var(--d-ink-faint)] opacity-70">
+                    Bisa &gt; 100% — undangan kalian menyebar organik di luar
+                    daftar kirim.
+                  </span>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Sidebar */}
         <aside className="border-t border-dashed border-[var(--d-line-strong)] pt-7 lg:border-l lg:border-t-0 lg:pl-8 lg:pt-0">
           <p className="d-mono text-[10px] uppercase tracking-[0.28em] text-[var(--d-ink-faint)]">
-            Respons keseluruhan
+            Konfirmasi keseluruhan
           </p>
           <p className="d-serif mt-2 text-[52px] font-extralight leading-none tracking-[-0.028em] text-[var(--d-ink)] lg:text-[56px]">
             {conversionPct}
