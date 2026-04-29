@@ -24,6 +24,8 @@ function formatShortDate(date: Date | string | null): string | null {
   return `${d.getDate()} ${MONTHS_ID[d.getMonth()]}`;
 }
 
+import { isTestName } from "@/lib/utils/test-name-filter";
+
 const TEST_BLOCKLIST = new Set([
   "test",
   "tes",
@@ -39,11 +41,24 @@ function isTestWish(message: string | null): boolean {
   if (!message) return true;
   const trimmed = message.trim();
   if (TEST_BLOCKLIST.has(trimmed.toLowerCase())) return true;
-  // Reject very short noise (less than 10 chars AND less than 3 words).
-  if (trimmed.length < 10 && trimmed.split(/\s+/).filter(Boolean).length < 3) {
+  // Tightened from "< 10 + < 3 words" — the old gate let through
+  // short throwaway lines from test accounts. < 5 chars is always
+  // noise; sub-10-char single-word fragments still get filtered.
+  if (trimmed.length < 5) return true;
+  if (
+    trimmed.length < 10 &&
+    trimmed.split(/\s+/).filter(Boolean).length < 3
+  ) {
     return true;
   }
   return false;
+}
+
+// Either gate (name OR message) is enough to reject the wish.
+function isVisibleWish(name: string | null, message: string | null): boolean {
+  if (isTestName(name)) return false;
+  if (isTestWish(message)) return false;
+  return true;
 }
 
 export function UcapanTamuCard({
@@ -55,7 +70,7 @@ export function UcapanTamuCard({
   totalWishes: number;
   totalGuests: number;
 }) {
-  const wishes = rawWishes.filter((w) => !isTestWish(w.message));
+  const wishes = rawWishes.filter((w) => isVisibleWish(w.name, w.message));
   // Hooks must run unconditionally — keep the state declaration above
   // any early return so the empty-state path stays compatible with
   // the React hooks rules.

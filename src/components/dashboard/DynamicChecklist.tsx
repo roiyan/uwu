@@ -6,6 +6,10 @@ export type ChecklistItem = {
   done: boolean;
   href?: string;
   cta?: string;
+  /** Override the CTA's accessible name. Useful when two visible CTAs
+   *  share the same text on the same page — without this, screen
+   *  readers announce both links identically. */
+  ariaLabel?: string;
 };
 
 /**
@@ -82,6 +86,7 @@ export function DynamicChecklist({ items }: { items: ChecklistItem[] }) {
             {!item.done && item.href && item.cta && (
               <Link
                 href={item.href}
+                aria-label={item.ariaLabel}
                 className="d-mono inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[8px] border px-3.5 py-1.5 text-[11px] uppercase tracking-[0.12em] transition-all hover:bg-[var(--d-coral)] hover:text-[#0B0B15]"
                 style={{
                   borderColor: "var(--d-coral)",

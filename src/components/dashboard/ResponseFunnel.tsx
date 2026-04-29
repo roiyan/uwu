@@ -94,6 +94,7 @@ export function ResponseFunnel({ total, hadir, tidakHadir }: Props) {
           </p>
           <Link
             href="/dashboard/messages?tab=kirim-baru"
+            aria-label="Kirim pengingat ke tamu yang belum menjawab dari ringkasan konfirmasi"
             className="d-mono shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.16em] text-[var(--d-coral)] hover:text-[var(--d-peach)]"
           >
             Kirim pengingat →

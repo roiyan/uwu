@@ -308,8 +308,56 @@ export function DailyOpensChart({ data }: { data: DailyOpenPoint[] }) {
           </p>
         )}
       </div>
+
+      <p className="d-serif mt-4 rounded-[10px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] px-4 py-3 text-[12.5px] italic text-[var(--d-ink-dim)]">
+        💡 {buildBukaanInsight(series.actual)}
+      </p>
     </section>
   );
+}
+
+const HARI_ID = [
+  "Minggu",
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+];
+
+function buildBukaanInsight(
+  actual: { date: string; count: number }[],
+): string {
+  if (!actual || actual.length === 0) {
+    return "Data bukaan akan muncul setelah undangan dipublikasikan.";
+  }
+  const total = actual.reduce((s, p) => s + p.count, 0);
+  if (total === 0) {
+    return "Belum ada bukaan — bagikan link undangan ke tamu untuk memulai.";
+  }
+  const recent = actual.slice(-3);
+  const isFlat = recent.length >= 2 && recent.every((p) => p.count <= 1);
+  const isRising =
+    recent.length >= 2 &&
+    recent[recent.length - 1].count > recent[0].count + 1;
+  if (isFlat) {
+    return "Bukaan melambat beberapa hari terakhir — pengingat bisa membantu meningkatkannya.";
+  }
+  if (isRising) {
+    return "Bukaan meningkat menjelang hari H — tamu kalian mulai bersiap!";
+  }
+  const peak = actual.reduce(
+    (max, p) => (p.count > max.count ? p : max),
+    actual[0],
+  );
+  if (peak.count > 0) {
+    const d = new Date(peak.date + "T00:00:00Z");
+    if (!Number.isNaN(d.getTime())) {
+      return `Bukaan tertinggi di hari ${HARI_ID[d.getUTCDay()]} — tamu kalian paling aktif di hari itu.`;
+    }
+  }
+  return "Pantau grafik ini untuk melihat kapan tamu paling aktif membuka undangan.";
 }
 
 function Legend() {

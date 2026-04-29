@@ -16,25 +16,46 @@ type Props = {
   /** Subset of `total` that haven't opened yet — drives the
    *  "Ingatkan N tamu" CTA. */
   notOpenedCount: number;
+  /** Guest cap from the active package. When provided, the first
+   *  cell shows `total / quota` rather than a flat 100%. */
+  guestQuota?: number | null;
 };
 
-export function JourneyKpi({ total, opened, responded, notOpenedCount }: Props) {
+export function JourneyKpi({
+  total,
+  opened,
+  responded,
+  notOpenedCount,
+  guestQuota,
+}: Props) {
   const openRate = total > 0 ? Math.round((opened / total) * 100) : 0;
   const respondRate = total > 0 ? Math.round((responded / total) * 100) : 0;
+  const quotaPct =
+    guestQuota && guestQuota > 0
+      ? Math.round((total / guestQuota) * 100)
+      : null;
 
   const seg1 = pct(opened, total);
   const seg2 = pct(responded, opened);
 
   return (
     <section className="d-card p-7 lg:p-8">
-      <p className="d-mono text-[9.5px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
+      <p className="d-mono text-[12px] uppercase tracking-[0.16em] text-[var(--d-coral)]">
         Perjalanan undangan
       </p>
 
       {/* Numbers — 3-up. Big serif numerals stay so the operator can
           glance the headline counts. */}
       <div className="mt-5 grid grid-cols-3 gap-4">
-        <KpiNumber value={total} sub="100%" label="Terdaftar" accent="var(--d-coral)" />
+        <KpiNumber
+          value={total}
+          sub={quotaPct !== null ? `${quotaPct}%` : undefined}
+          subSmall={
+            guestQuota && guestQuota > 0 ? `dari ${guestQuota}` : undefined
+          }
+          label="Terdaftar"
+          accent="var(--d-coral)"
+        />
         <KpiNumber
           value={opened}
           sub={total > 0 ? `${openRate}%` : undefined}
@@ -98,11 +119,15 @@ function KpiNumber({
   value,
   label,
   sub,
+  subSmall,
   accent,
 }: {
   value: number | string;
   label: string;
   sub?: string;
+  /** Tertiary line — used by the Terdaftar cell to render
+   *  "dari 25" (the package quota denominator). */
+  subSmall?: string;
   accent: string;
 }) {
   return (
@@ -115,12 +140,19 @@ function KpiNumber({
           {sub}
         </p>
       )}
+      {subSmall && (
+        <p className="d-mono mt-0.5 text-[9px] text-[var(--d-ink-faint)] opacity-70">
+          {subSmall}
+        </p>
+      )}
       <span
         aria-hidden
         className="mx-auto mt-2.5 block h-[2px] w-6 rounded-full"
         style={{ background: accent }}
       />
-      <p className="d-mono mt-2 text-[9px] uppercase tracking-[0.16em] text-[var(--d-ink-dim)]">
+      {/* WCAG 1.4.3 — bumped from 9px / faded ink-dim to 12px /
+          inked opacity-70 for >= 4.5:1 contrast on the surface. */}
+      <p className="d-mono mt-2 text-[12px] uppercase tracking-[0.10em] text-[var(--d-ink)] opacity-70">
         {label}
       </p>
     </div>
