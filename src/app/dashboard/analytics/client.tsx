@@ -618,6 +618,8 @@ export function AnalyticsClient({
               groups={groups}
               groupFilter={groupFilter}
               onGroupChange={setGroupFilter}
+              guestQuota={guestLimit}
+              daysRemaining={daysToEvent}
             />
           </div>
         </details>
