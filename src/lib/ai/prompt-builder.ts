@@ -115,11 +115,17 @@ function commonContext(input: AiMessageInput): string {
   const venue = ec.venue ?? "(lokasi menyusul)";
   const relation = RECIPIENT_RELATION_LABEL[input.recipientRelation] ?? "Umum";
 
-  return `DATA ACARA:
-- Mempelai: ${bride} & ${groom}
-- Acara: ${eventTypeLine(input.eventTypes)}
-- Tanggal: ${date}
-- Lokasi: ${venue}
+  // Data event dikirim sebagai REFERENSI saja — model harus
+  // menulisnya kembali sebagai placeholder ({bride}/{groom}/{date}/
+  // {venue}), bukan diinline. Mapping di sini membuat hubungan
+  // "nilai sebenarnya → placeholder" eksplisit sehingga model tidak
+  // bingung antara keduanya.
+  return `REFERENSI ACARA (untuk konteks penulisan saja — JANGAN tulis nilai ini langsung, gunakan placeholder yang ditunjukkan):
+- Mempelai wanita: ${bride}              → gunakan {bride}
+- Mempelai pria: ${groom}                → gunakan {groom}
+- Tanggal: ${date}                       → gunakan {date}
+- Lokasi: ${venue}                       → gunakan {venue}
+- Jenis acara: ${eventTypeLine(input.eventTypes)}
 
 PENERIMA: ${relation} — ${RELATION_LINES[input.recipientRelation]}
 
