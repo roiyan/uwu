@@ -42,7 +42,42 @@ function getHMinus(iso: string | null): number | null {
   return Math.round((target - todayUtc) / 86_400_000);
 }
 
-type Content = { eyebrow: string; title: ReactNode; subtitle: string };
+type Cta = {
+  label: string;
+  href: string;
+  /** When true, hide the secondary "Lihat Undangan" button — the
+   *  primary CTA already points at the public preview, two buttons
+   *  to the same place reads as redundant. */
+  hideSecondary?: boolean;
+};
+
+type Content = {
+  eyebrow: string;
+  title: ReactNode;
+  subtitle: string;
+  cta: Cta;
+};
+
+// CTA destinations: H-30+ down to H-3 still point at the editor
+// (couples are still tweaking content). H-1, H-0, H+ pivot to the
+// public preview because last-minute editor sessions trigger
+// last-minute perfectionism — exactly what you don't want a couple
+// to do the night before. /preview is the dashboard's internal
+// "open the rendered invitation" link, which always resolves to
+// the same public page guests see.
+const CTA_DESIGN: Cta = { label: "Mulai Mendesain →", href: "/dashboard/website" };
+const CTA_EDIT: Cta = { label: "Sempurnakan →", href: "/dashboard/website" };
+const CTA_CHECK: Cta = { label: "Cek Undangan →", href: "/preview" };
+const CTA_VIEW: Cta = {
+  label: "Lihat Undangan →",
+  href: "/preview",
+  hideSecondary: true,
+};
+const CTA_MEMORIES: Cta = {
+  label: "Lihat Kenangan →",
+  href: "/preview",
+  hideSecondary: true,
+};
 
 function pickContent(hMinus: number | null): Content {
   if (hMinus === null || hMinus > 30) {
@@ -55,6 +90,7 @@ function pickContent(hMinus: number | null): Content {
         </>
       ),
       subtitle: "Satu langkah kecil hari ini, ketenangan besar di hari H.",
+      cta: CTA_DESIGN,
     };
   }
   if (hMinus > 7) {
@@ -67,6 +103,7 @@ function pickContent(hMinus: number | null): Content {
         </>
       ),
       subtitle: "Fondasi sudah kuat. Sekarang saatnya poles.",
+      cta: CTA_EDIT,
     };
   }
   if (hMinus > 3) {
@@ -79,6 +116,7 @@ function pickContent(hMinus: number | null): Content {
         </>
       ),
       subtitle: "Kalian sudah melangkah jauh. Hampir sampai.",
+      cta: CTA_EDIT,
     };
   }
   if (hMinus > 1) {
@@ -91,6 +129,7 @@ function pickContent(hMinus: number | null): Content {
         </>
       ),
       subtitle: "Kalian sudah hampir sampai. Tinggal sentuhan terakhir.",
+      cta: CTA_EDIT,
     };
   }
   if (hMinus === 1) {
@@ -103,6 +142,7 @@ function pickContent(hMinus: number | null): Content {
         </>
       ),
       subtitle: "Tarik napas. Kalian sudah mempersiapkan ini dengan indah.",
+      cta: CTA_CHECK,
     };
   }
   if (hMinus === 0) {
@@ -115,6 +155,7 @@ function pickContent(hMinus: number | null): Content {
         </>
       ),
       subtitle: "Selamat menempuh kehidupan baru.",
+      cta: CTA_VIEW,
     };
   }
   return {
@@ -127,6 +168,7 @@ function pickContent(hMinus: number | null): Content {
       </>
     ),
     subtitle: "Terima kasih sudah memilih UWU untuk hari istimewa kalian.",
+    cta: CTA_MEMORIES,
   };
 }
 export function ContextualHero({
@@ -166,19 +208,24 @@ export function ContextualHero({
       </div>
 
       <div className="flex shrink-0 gap-2">
+        {!c.cta.hideSecondary && (
+          <Link
+            href="/preview"
+            target="_blank"
+            rel="noreferrer"
+            className="d-mono inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--d-line-strong)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:flex-none lg:px-5 lg:py-2 lg:text-[11px]"
+          >
+            👁 Lihat Undangan
+          </Link>
+        )}
         <Link
-          href="/preview"
-          target="_blank"
-          rel="noreferrer"
-          className="d-mono inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--d-line-strong)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:flex-none lg:px-5 lg:py-2 lg:text-[11px]"
-        >
-          👁 Lihat Undangan
-        </Link>
-        <Link
-          href="/dashboard/website"
+          href={c.cta.href}
+          {...(c.cta.href === "/preview"
+            ? { target: "_blank", rel: "noreferrer" }
+            : {})}
           className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-3 py-1.5 text-[10px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 lg:flex-none lg:px-6 lg:py-2.5 lg:text-[12px]"
         >
-          Sempurnakan →
+          {c.cta.label}
         </Link>
       </div>
     </header>

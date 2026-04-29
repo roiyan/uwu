@@ -67,8 +67,8 @@ export function RecentActivity({ items }: { items: ActivityRow[] }) {
       )}
 
       {hasMore && (
-        <p className="d-mono mt-4 border-t border-[var(--d-line)] pt-3 text-right text-[10px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)]">
-          {groupedAll.length - 5} jejak lainnya tersimpan
+        <p className="d-mono mt-4 border-t border-[var(--d-line)] pt-3 text-right text-[12px] uppercase tracking-[0.10em] text-[var(--d-ink-faint)] opacity-70">
+          menampilkan {grouped.length} terbaru
         </p>
       )}
     </section>

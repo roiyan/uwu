@@ -46,9 +46,20 @@ export function TamuStatCard({
       <p className="mt-2 text-[12px] text-[var(--d-ink-dim)]">Tamu terdaftar</p>
 
       {typeof invitedCount === "number" && count > 0 && (
-        <p className="d-serif mt-3 text-[12px] italic text-[var(--d-ink-faint)]">
-          {invitedCount} dari {count} sudah dikirimi undangan
-        </p>
+        <>
+          <p className="d-serif mt-3 text-[12px] italic text-[var(--d-ink-faint)]">
+            {invitedCount} dari {count} sudah dikirimi undangan
+          </p>
+          {count - invitedCount > 0 && (
+            <Link
+              href="/dashboard/messages?tab=kirim-baru"
+              aria-label={`Kirim undangan ke ${count - invitedCount} tamu yang belum menerima`}
+              className="d-mono mt-1 inline-block text-[10.5px] uppercase tracking-[0.16em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)]"
+            >
+              Kirim ke {count - invitedCount} lainnya →
+            </Link>
+          )}
+        </>
       )}
 
       {typeof attendingGuests === "number" && attendingGuests > 0 && (

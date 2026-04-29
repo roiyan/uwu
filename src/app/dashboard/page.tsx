@@ -148,12 +148,17 @@ async function Hero({ userId }: { userId: string }) {
 async function JourneyKpiBlock({ userId }: { userId: string }) {
   const current = await getCurrentEventForUser(userId);
   if (!current) return null;
-  // Single SQL aggregate covers all four funnel tiers in one
-  // round-trip — total / invited (sendCount > 0) / opened / responded.
-  // sumAttendees lives on the Tamu card now; not wanted here because
-  // it's a pax sum that breaks funnel monotonicity.
-  const funnel = await getResponseFunnel(current.event.id);
+  // Single SQL aggregate + package limit so the Terdaftar cell can
+  // render the quota ratio (14 / 25) instead of a flat 100%. Couture-
+  // tier limits (>= 9999) are surfaced as null so the cell hides the
+  // ratio rather than rendering "1%".
+  const [funnel, packageInfo] = await Promise.all([
+    getResponseFunnel(current.event.id),
+    getEventPackageLimit(current.event.id),
+  ]);
   const notOpened = Math.max(0, funnel.invited - funnel.opened);
+  const quota =
+    packageInfo.limit && packageInfo.limit < 9999 ? packageInfo.limit : null;
 
   return (
     <JourneyKpi
@@ -161,6 +166,7 @@ async function JourneyKpiBlock({ userId }: { userId: string }) {
       opened={funnel.opened}
       responded={funnel.responded}
       notOpenedCount={notOpened}
+      guestQuota={quota}
     />
   );
 }
@@ -242,6 +248,8 @@ async function ChecklistBlock({ userId }: { userId: string }) {
       done: false,
       href: "/dashboard/messages?tab=kirim-baru",
       cta: "Kirim Pengingat →",
+      ariaLabel:
+        "Kirim pengingat ke tamu yang belum membuka dari daftar persiapan",
     });
   }
   items.push({
