@@ -104,10 +104,25 @@ function scoreEnthusiast(g: EnthusiastRow): number {
 }
 
 function EnthusiastCard({ rows }: { rows: EnthusiastRow[] }) {
+  // De-duplicate by normalized name BEFORE slicing the top 5 — the
+  // guests table can legitimately hold two rows for the same human
+  // (couples occasionally re-add a duplicate while building the list,
+  // and the soft-delete column means we keep the historical row). A
+  // duplicate name in the leaderboard reads as a UI bug to the
+  // operator, so we collapse same-name entries to the highest-scoring
+  // one. Source-of-truth fix lives in /dashboard/guests; this is the
+  // surface fix so the analytics card stops embarrassing us tonight.
+  const seen = new Set<string>();
   const ranked = rows
     .filter((g) => g.openedAt)
     .map((g) => ({ ...g, score: scoreEnthusiast(g) }))
     .sort((a, b) => b.score - a.score)
+    .filter((g) => {
+      const key = (g.name ?? "").trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
     .slice(0, 5);
 
   const medals = ["🥇", "🥈", "🥉", "4", "5"];

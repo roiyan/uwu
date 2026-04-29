@@ -53,7 +53,7 @@ function KpiCell({
   const neutral = delta === 0;
   return (
     <div className="relative border-r border-b border-[var(--d-line)] p-6 last:border-r-0 lg:border-b-0 lg:p-7">
-      <div className="d-mono flex items-center gap-2 text-[9.5px] uppercase tracking-[0.24em] text-[var(--d-ink-faint)]">
+      <div className="d-mono flex items-center gap-2 text-[12px] uppercase tracking-[0.20em] text-[var(--d-ink-dim)]">
         <span
           aria-hidden
           className="h-1.5 w-1.5 rounded-full"
