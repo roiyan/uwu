@@ -266,7 +266,7 @@ export function FunnelChart({
             <span className="text-[24px] text-[var(--d-ink-dim)]">%</span>
           </p>
           <p className="d-serif mt-2 text-[13px] italic leading-relaxed text-[var(--d-ink-dim)]">
-            dari total tamu akhirnya{" "}
+            dari total tamu yang akhirnya{" "}
             <em className="d-serif italic text-[var(--d-coral)]">hadir</em>.
           </p>
 

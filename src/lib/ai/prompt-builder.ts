@@ -115,11 +115,17 @@ function commonContext(input: AiMessageInput): string {
   const venue = ec.venue ?? "(lokasi menyusul)";
   const relation = RECIPIENT_RELATION_LABEL[input.recipientRelation] ?? "Umum";
 
-  return `DATA ACARA:
-- Mempelai: ${bride} & ${groom}
-- Acara: ${eventTypeLine(input.eventTypes)}
-- Tanggal: ${date}
-- Lokasi: ${venue}
+  // Data event dikirim sebagai REFERENSI saja — model harus
+  // menulisnya kembali sebagai placeholder ({bride}/{groom}/{date}/
+  // {venue}), bukan diinline. Mapping di sini membuat hubungan
+  // "nilai sebenarnya → placeholder" eksplisit sehingga model tidak
+  // bingung antara keduanya.
+  return `REFERENSI ACARA (untuk konteks penulisan saja — JANGAN tulis nilai ini langsung, gunakan placeholder yang ditunjukkan):
+- Mempelai wanita: ${bride}              → gunakan {bride}
+- Mempelai pria: ${groom}                → gunakan {groom}
+- Tanggal: ${date}                       → gunakan {date}
+- Lokasi: ${venue}                       → gunakan {venue}
+- Jenis acara: ${eventTypeLine(input.eventTypes)}
 
 PENERIMA: ${relation} — ${RELATION_LINES[input.recipientRelation]}
 
@@ -129,32 +135,33 @@ FORMAT:
 - Budaya: ${cultureCue(input.cultures, input.customCulture)}`;
 }
 
-// Earlier iterations told the model to emit {bride}/{groom}/{date}/
-// {venue} as template placeholders so per-guest substitution could
-// fill them in at send time. Two practical problems with that:
-//   1. Operators saw the literal "{date}" / "{venue}" in the AI
-//      preview and reported it as "data tidak terisi".
-//   2. The model often DROPPED the optional placeholders entirely
-//      on shorter outputs, so the rendered message had no where-
-//      and-when at all.
-// The new contract: event-level data is inlined directly from the
-// DATA PERNIKAHAN block above. Only per-guest variables (the tamu's
-// salutation and their personalised invitation link) stay as
-// templates because those genuinely need substitution per recipient.
-const VARIABLE_RULES = `VARIABEL TEMPLATE (HANYA dua ini, akan diganti otomatis per tamu saat kirim):
-- {panggilan} → sapaan personal tamu (mis. "Bpk Hadi") — WAJIB minimal 1×
-- {link_undangan} → link undangan personal tamu — WAJIB minimal 1×
+// Contract: emit ALL event-level data as `{key}` placeholders so the
+// editor's chip parser (template-chip-editor.tsx, regex /\{(\w+)\}/g)
+// turns each into a coloured pill. PR #160 briefly tried inlining the
+// values to fix a "data tidak terisi" misread of literal "{date}" in
+// the preview, but that broke chip continuity with curated templates
+// in templates/messages.ts and made the AI output feel hardcoded.
+// Going back to placeholder-only — per-guest substitution still
+// happens at send time via renderTemplate() in lib/templates/messages.
+const VARIABLE_RULES = `VARIABEL TEMPLATE — gunakan placeholder ini, BUKAN teks biasa:
 
-DATA EVENT (INLINE — tulis nilainya langsung di pesan, JANGAN pakai placeholder):
-- Nama mempelai → tulis nama lengkap dari DATA PERNIKAHAN di atas
-- Tanggal acara → tulis tanggal yang sebenarnya (mis. "Sabtu, 15 November 2025") — WAJIB ada untuk panjang sedang & lengkap
-- Lokasi → tulis nama venue yang sebenarnya — WAJIB ada untuk panjang sedang & lengkap
+WAJIB (harus muncul minimal 1× di pesan):
+- {panggilan} → sapaan tamu (contoh: "Yth. {panggilan}")
+- {link_undangan} → link undangan digital
+- {bride} → nama mempelai wanita
+- {groom} → nama mempelai pria
+- {date} → tanggal acara
+- {venue} → lokasi/nama venue acara
 
-DILARANG:
-- Pakai placeholder kurung kurawal {bride}, {groom}, {date}, {venue}, {nama} — gunakan nilai sebenarnya.
-- Pakai placeholder kurung siku [Nama], [Tanggal], [Lokasi] — itu salah, gunakan nilai sebenarnya.
-- Buat variabel template baru di luar {panggilan} dan {link_undangan}.
-- Output dalam HURUF KAPITAL semua.`;
+OPSIONAL:
+- {nama} → nama lengkap tamu (gunakan {panggilan} sebagai default jika tidak perlu)
+
+ATURAN KETAT:
+1. DILARANG menulis nama mempelai, tanggal, atau lokasi sebagai teks biasa — HARUS pakai placeholder di atas.
+2. DILARANG membuat variabel baru di luar 7 yang terdaftar.
+3. DILARANG pakai format lain seperti [Nama], <Nama>, atau {{Nama}} — hanya {key}.
+4. Placeholder HARUS ditulis persis seperti di atas (huruf kecil, tanpa spasi).
+5. DILARANG output dalam HURUF KAPITAL semua.`;
 
 function buildWaPrompt(input: AiMessageInput): string {
   const customNote = input.customNotes?.trim()

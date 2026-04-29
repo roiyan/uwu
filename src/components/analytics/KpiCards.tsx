@@ -69,9 +69,9 @@ function KpiCell({
           <span className="text-[14px] text-[var(--d-ink-dim)]">{suffix}</span>
         )}
       </div>
-      <div className="mt-3 flex items-center gap-2 text-[11px] text-[var(--d-ink-dim)]">
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-[var(--d-ink-dim)]">
         <span
-          className={`d-mono inline-flex items-center gap-1 rounded-[4px] px-1.5 py-0.5 text-[10.5px] font-medium tracking-[0.04em] ${
+          className={`d-mono inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-[4px] px-1.5 py-0.5 text-[10.5px] font-medium tracking-[0.04em] ${
             positive
               ? "bg-[rgba(126,211,164,0.12)] text-[var(--d-green)]"
               : neutral
@@ -82,7 +82,7 @@ function KpiCell({
           {positive ? "↑" : neutral ? "·" : "↓"} {Math.abs(delta)}
           {deltaUnit ? ` ${deltaUnit}` : ""}
         </span>
-        <span className="d-mono text-[10.5px] tracking-[0.04em]">
+        <span className="d-mono whitespace-nowrap text-[10.5px] tracking-[0.04em]">
           {compare}
         </span>
       </div>

@@ -180,7 +180,7 @@ export function ExportSection({ eventId }: { eventId: string }) {
               Abadikan perjalanan undangan kalian — dalam format yang bisa
               disimpan selamanya.
             </p>
-            <p className="mt-3 max-w-[500px] text-[12px] italic leading-relaxed text-[var(--d-ink-faint)]">
+            <p className="mt-3 max-w-[500px] text-[12px] leading-relaxed text-[var(--d-ink-dim)]">
               Bagikan infografis ke Instagram Story — ceritakan perjalanan
               kalian.
             </p>
