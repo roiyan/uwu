@@ -177,8 +177,12 @@ export function ExportSection({ eventId }: { eventId: string }) {
               atau dibagikan.
             </h2>
             <p className="mt-2 max-w-[500px] text-[13px] leading-relaxed text-[var(--d-ink-dim)]">
-              Semua ringkasan dan daftar tamu dalam satu dokumen — siap
-              dicetak.
+              Abadikan perjalanan undangan kalian — dalam format yang bisa
+              disimpan selamanya.
+            </p>
+            <p className="mt-3 max-w-[500px] text-[12px] italic leading-relaxed text-[var(--d-ink-faint)]">
+              Bagikan infografis ke Instagram Story — ceritakan perjalanan
+              kalian.
             </p>
           </div>
 

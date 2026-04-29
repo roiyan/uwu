@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { KpiCards, type KpiCardData } from "@/components/analytics/KpiCards";
 import {
   TimeSeriesChart,
@@ -27,6 +28,7 @@ import {
   type ArrivalSchedule,
 } from "@/components/analytics/ArrivalTimeline";
 import { ExportSection } from "@/components/analytics/ExportSection";
+import { rejectTestNames } from "@/lib/utils/test-name-filter";
 
 export type GuestStatus =
   | "baru"
@@ -106,10 +108,12 @@ function BabHeader({
   number,
   title,
   subtitle,
+  headingId,
 }: {
   number: number;
   title: React.ReactNode;
   subtitle: string;
+  headingId?: string;
 }) {
   return (
     <div className="mt-6">
@@ -119,7 +123,10 @@ function BabHeader({
           BAB {number}
         </span>
       </div>
-      <h2 className="d-serif mt-2 text-[24px] font-light leading-[1.2] tracking-[-0.015em] text-[var(--d-ink)] lg:text-[28px]">
+      <h2
+        id={headingId}
+        className="d-serif mt-2 text-[24px] font-light leading-[1.2] tracking-[-0.015em] text-[var(--d-ink)] lg:text-[28px]"
+      >
         {title}
       </h2>
       <p className="d-serif mt-1.5 text-[12.5px] italic text-[var(--d-ink-dim)]">
@@ -345,7 +352,7 @@ export function AnalyticsClient({
     {
       dot: "var(--d-coral)",
       color: "#F0A09C",
-      label: "Total Tamu",
+      label: "Terdaftar",
       value: total,
       suffix: `/${guestLimit}`,
       delta: deltaOf(sparkRegistered),
@@ -355,7 +362,7 @@ export function AnalyticsClient({
     {
       dot: "var(--d-blue)",
       color: "#8FA3D9",
-      label: "Dibuka",
+      label: "Membuka",
       value: filteredFunnel.opened,
       // Denominator is total guests (not "invited") so the percentage
       // can never exceed 100%. Direct-link opens land in `opened` even
@@ -383,7 +390,7 @@ export function AnalyticsClient({
       suffix: `${confirmedAttendees} orang`,
       delta: deltaOf(sparkAttending),
       deltaUnit: "orang",
-      compare: `paket ${packageName}`,
+      compare: "total kehadiran",
       spark: sparkAttending,
     },
   ];
@@ -474,8 +481,16 @@ export function AnalyticsClient({
   // Insight → action bridge for Bab 1. Each entry surfaces a specific
   // gap in the funnel and points the couple at the screen that
   // resolves it. Only the most pressing is shown so we don't overwhelm.
+  // Insight → action bridge for Bab 1. Surfaces ONE message keyed
+  // off whichever funnel gap is most pressing. Copy uses positive-
+  // intention framing so the tone stays collaborative.
   const insights = (() => {
-    const items: { id: string; message: string; href: string; cta: string }[] = [];
+    const items: {
+      id: string;
+      message: string;
+      href: string | null;
+      cta: string | null;
+    }[] = [];
     const notInvited = Math.max(0, total - filteredFunnel.invited);
     const notOpened = Math.max(
       0,
@@ -488,29 +503,46 @@ export function AnalyticsClient({
     if (notInvited > 0) {
       items.push({
         id: "not-invited",
-        message: `${notInvited} tamu terdaftar tapi belum dikirimi undangan.`,
-        href: "/dashboard/messages",
+        message: `${notInvited} tamu belum menerima undangan — pastikan mereka tidak terlewat.`,
+        href: "/dashboard/messages?tab=kirim-baru",
         cta: "Kirim undangan",
       });
-    }
-    if (notOpened > 0) {
+    } else if (notOpened > 3 && (daysToEvent === null || daysToEvent <= 3)) {
       items.push({
         id: "not-opened",
-        message: `${notOpened} tamu belum membuka — mereka mungkin belum sempat.`,
-        href: "/dashboard/messages",
-        cta: "Ingatkan mereka",
+        message: `${notOpened} tamu sudah dikirimi tapi belum membuka — mungkin butuh pengingat.`,
+        href: "/dashboard/messages?tab=kirim-baru",
+        cta: "Kirim pengingat",
       });
-    }
-    if (notConfirmed > 0) {
+    } else if (notConfirmed > 3) {
       items.push({
         id: "not-confirmed",
-        message: `${notConfirmed} sudah membuka tapi belum konfirmasi kehadiran.`,
-        href: "/dashboard/messages",
-        cta: "Kirim pengingat",
+        message: `${notConfirmed} tamu sudah membuka tapi belum konfirmasi — undangan kalian sudah dibaca!`,
+        href: null,
+        cta: null,
+      });
+    } else if (total > 0) {
+      items.push({
+        id: "all-clear",
+        message:
+          "✨ Semua tamu sudah menerima dan membuka undangan kalian. Tinggal menunggu hari H!",
+        href: null,
+        cta: null,
       });
     }
     return items.slice(0, 1);
   })();
+
+  // Filter dummy / placeholder seed names from the leaderboard +
+  // Daftar Lengkap so "Test 1" doesn't outrank real attendees.
+  const realResponses = useMemo(
+    () => rejectTestNames(filteredResponses),
+    [filteredResponses],
+  );
+  const realEnthusiasts = useMemo(
+    () => rejectTestNames(enthusiasts),
+    [enthusiasts],
+  );
 
   return (
     <main className="flex-1 overflow-x-hidden px-5 py-8 lg:px-12 lg:py-12">
@@ -527,155 +559,182 @@ export function AnalyticsClient({
       <div id="analytics-pdf-target">
 
       {/* ═══ BAB 1 — RINGKASAN ═══ */}
-      <BabHeader
-        number={1}
-        title={
-          <>
-            Ringkasan{" "}
-            <em className="d-serif italic text-[var(--d-coral)]">perjalanan</em>
-          </>
-        }
-        subtitle="Sekilas cerita undangan kalian — dari pengiriman hingga kehadiran."
-      />
-      <div className="mt-5">
-        <KpiCards cards={kpiCards} />
-      </div>
+      <section id="bab-1" aria-labelledby="bab-1-heading">
+        <BabHeader
+          number={1}
+          headingId="bab-1-heading"
+          title={
+            <>
+              Ringkasan{" "}
+              <em className="d-serif italic text-[var(--d-coral)]">perjalanan</em>
+            </>
+          }
+          subtitle="Sekilas cerita undangan kalian — dari pengiriman hingga pelukan."
+        />
+        <div className="mt-5">
+          <KpiCards cards={kpiCards} />
+        </div>
       {insights.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
+        <div
+          className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-[12px] border px-4 py-3"
           style={{
             background: "rgba(240,160,156,0.04)",
             borderColor: "rgba(240,160,156,0.12)",
           }}
         >
           <span className="d-serif text-[13px] italic text-[var(--d-ink-dim)]">
-            💡 {insights[0].message}
+            {insights[0].message.startsWith("✨") ? "" : "💡 "}
+            {insights[0].message}
           </span>
-          <a
-            href={insights[0].href}
-            className="d-mono shrink-0 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-coral)] hover:text-[var(--d-peach)]"
-          >
-            {insights[0].cta} →
-          </a>
+          {insights[0].href && insights[0].cta && (
+            <a
+              href={insights[0].href}
+              className="d-mono shrink-0 text-[10.5px] uppercase tracking-[0.18em] text-[var(--d-coral)] hover:text-[var(--d-peach)]"
+            >
+              {insights[0].cta} →
+            </a>
+          )}
         </div>
       )}
-      <details className="mt-4 rounded-[14px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-5 [&[open]>summary>span:first-child]:rotate-90">
-        <summary className="d-mono flex cursor-pointer list-none items-center gap-2 text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] [&::-webkit-details-marker]:hidden">
-          <span className="inline-block transition-transform">▸</span>
-          Detail perjalanan respons
-        </summary>
-        <div className="mt-5">
-          <FunnelChart
-            data={filteredFunnel}
-            groups={groups}
-            groupFilter={groupFilter}
-            onGroupChange={setGroupFilter}
-          />
-        </div>
-      </details>
+        <details
+          open
+          className="mt-4 min-h-[44px] rounded-[14px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-5 [&[open]>summary>span:first-child]:rotate-90"
+        >
+          <summary className="d-mono flex min-h-[44px] cursor-pointer list-none items-center gap-2 text-[10.5px] uppercase tracking-[0.22em] text-[var(--d-ink-dim)] [&::-webkit-details-marker]:hidden">
+            <span className="inline-block transition-transform">▸</span>
+            Detail Perjalanan Konfirmasi
+          </summary>
+          <div className="mt-5">
+            <FunnelChart
+              data={filteredFunnel}
+              groups={groups}
+              groupFilter={groupFilter}
+              onGroupChange={setGroupFilter}
+            />
+          </div>
+        </details>
+      </section>
 
       <BabSeparator />
 
-      {/* ═══ BAB 2 — PERILAKU TAMU ═══ */}
-      <BabHeader
-        number={2}
-        title={
-          <>
-            Perilaku{" "}
-            <em className="d-serif italic text-[var(--d-coral)]">tamu</em>
-          </>
-        }
-        subtitle="Bagaimana dan kapan tamu berinteraksi dengan undangan kalian."
-      />
-      <div className="mt-5 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
-        <TimeSeriesChart series={series} />
-        <BreakdownCards
-          source={trafficSource}
-          groups={groupEngagement}
-          totalGuests={total}
-          enthusiasts={enthusiasts}
-          variant="source-only"
+      {/* ═══ BAB 2 — JEJAK TAMU ═══ */}
+      <section id="bab-2" aria-labelledby="bab-2-heading">
+        <BabHeader
+          number={2}
+          headingId="bab-2-heading"
+          title={
+            <>
+              Jejak{" "}
+              <em className="d-serif italic text-[var(--d-coral)]">tamu</em>
+            </>
+          }
+          subtitle="Kapan mereka membuka, dari mana mereka datang."
         />
-      </div>
-      <div className="mt-6">
-        <ActivityHeatmap buckets={filteredHeatmap} />
-      </div>
+        <div className="mt-5 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
+          <TimeSeriesChart series={series} />
+          <BreakdownCards
+            source={trafficSource}
+            groups={groupEngagement}
+            totalGuests={total}
+            enthusiasts={realEnthusiasts}
+            variant="source-only"
+          />
+        </div>
+        <div className="mt-6">
+          <ActivityHeatmap buckets={filteredHeatmap} />
+        </div>
+      </section>
 
       {showHariH && (
         <>
           <BabSeparator />
           {/* ═══ BAB 3 — HARI H ═══ */}
-          <BabHeader
-            number={3}
-            title={
-              <>
-                Hari{" "}
-                <em className="d-serif italic text-[var(--d-coral)]">H</em>
-              </>
-            }
-            subtitle={
-              daysToEvent === null
-                ? "Bagaimana hari besar kalian berjalan."
-                : daysToEvent > 0
-                  ? "Bab ini akan terisi saat hari H tiba."
-                  : daysToEvent === 0
-                    ? "Hari ini — data terisi secara langsung."
-                    : "Hari besar sudah berlalu — ini ringkasannya."
-            }
-          />
-          {checkinStats.actualCheckin > 0 ? (
-            <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_2fr]">
-              <ShowUpRateCard stats={checkinStats} />
-              <ArrivalTimeline
-                arrivals={arrivals}
-                schedules={schedules}
-                timezone={eventTimezone}
-              />
-            </div>
-          ) : (
-            <div className="mt-5 rounded-[18px] border border-dashed border-[var(--d-line)] bg-[var(--d-bg-card)] px-6 py-12 text-center">
-              <div
-                className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
-                style={{
-                  background: "rgba(240,160,156,0.06)",
-                  border: "1px solid rgba(240,160,156,0.15)",
-                }}
-              >
-                <span className="text-[20px] opacity-60" aria-hidden>⏱</span>
+          <section id="bab-3" aria-labelledby="bab-3-heading">
+            <BabHeader
+              number={3}
+              headingId="bab-3-heading"
+              title={
+                <>
+                  Hari{" "}
+                  <em className="d-serif italic text-[var(--d-coral)]">H</em>
+                </>
+              }
+              subtitle={
+                daysToEvent === null
+                  ? "Bagaimana hari besar kalian berjalan."
+                  : daysToEvent > 0
+                    ? "Babak ini menunggu untuk ditulis — oleh kalian, besok."
+                    : daysToEvent === 0
+                      ? "Hari ini — data terisi secara langsung."
+                      : "Hari besar sudah berlalu — ini ringkasannya."
+              }
+            />
+            {checkinStats.actualCheckin > 0 ? (
+              <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_2fr]">
+                <ShowUpRateCard stats={checkinStats} />
+                <ArrivalTimeline
+                  arrivals={arrivals}
+                  schedules={schedules}
+                  timezone={eventTimezone}
+                />
               </div>
-              <p className="d-serif text-[16px] text-[var(--d-ink)]">
-                Menunggu hari{" "}
-                <em className="d-serif italic text-[var(--d-coral)]">H</em>
-              </p>
-              <p className="d-serif mt-1 text-[12.5px] italic text-[var(--d-ink-dim)]">
-                Data kehadiran akan muncul di sini saat acara berlangsung.
-              </p>
-            </div>
-          )}
+            ) : (
+              <div className="mt-5 rounded-[18px] border border-dashed border-[var(--d-line)] bg-[var(--d-bg-card)] px-6 py-12 text-center">
+                <div
+                  className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full"
+                  style={{
+                    background: "rgba(240,160,156,0.06)",
+                    border: "1px solid rgba(240,160,156,0.15)",
+                  }}
+                >
+                  <span className="text-[20px] opacity-60" aria-hidden>⏱</span>
+                </div>
+                <p className="d-serif text-[16px] text-[var(--d-ink)]">
+                  Menunggu hari{" "}
+                  <em className="d-serif italic text-[var(--d-coral)]">H</em>
+                </p>
+                <p className="d-serif mt-1 text-[12.5px] italic text-[var(--d-ink-dim)]">
+                  Saat Sambut Tamu diaktifkan, halaman ini akan merekam setiap
+                  kedatangan secara live.
+                </p>
+                {daysToEvent !== null && daysToEvent <= 1 && daysToEvent >= 0 && (
+                  <Link
+                    href="/dashboard/checkin"
+                    className="d-mono mt-6 inline-flex items-center gap-2 rounded-full border border-[var(--d-coral)] px-5 py-2.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-coral)] transition-colors hover:bg-[var(--d-coral)] hover:text-[#0B0B15]"
+                  >
+                    Aktifkan Sambut Tamu →
+                  </Link>
+                )}
+              </div>
+            )}
+          </section>
         </>
       )}
 
       <BabSeparator />
 
       {/* ═══ BAB 4 — DETAIL & AKSI ═══ */}
-      <BabHeader
-        number={showHariH ? 4 : 3}
-        title={
-          <>
-            Lebih{" "}
-            <em className="d-serif italic text-[var(--d-coral)]">dalam</em>
-          </>
-        }
-        subtitle="Siapa melakukan apa — dan aksi selanjutnya."
-      />
-      <div className="mt-5">
-        <BreakdownCards
-          source={trafficSource}
-          groups={groupEngagement}
-          totalGuests={total}
-          enthusiasts={enthusiasts}
-          variant="enthusiasts-and-groups"
+      <section id="bab-4" aria-labelledby="bab-4-heading">
+        <BabHeader
+          number={showHariH ? 4 : 3}
+          headingId="bab-4-heading"
+          title={
+            <>
+              Lebih{" "}
+              <em className="d-serif italic text-[var(--d-coral)]">dalam</em>
+            </>
+          }
+          subtitle="Siapa yang paling antusias, dan cerita di balik angka."
         />
-      </div>
+        <div className="mt-5">
+          <BreakdownCards
+            source={trafficSource}
+            groups={groupEngagement}
+            totalGuests={total}
+            enthusiasts={realEnthusiasts}
+            variant="enthusiasts-and-groups"
+          />
+        </div>
 
       {/* Daftar Lengkap — semantic <th scope="col"> + horizontal mobile scroll. */}
       <section className="mt-6 overflow-hidden rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)]">
@@ -684,7 +743,7 @@ export function AnalyticsClient({
             Daftar Lengkap
           </p>
           <h2 className="d-serif mt-2 text-[22px] font-light tracking-[-0.015em] text-[var(--d-ink)]">
-            {filteredResponses.length} tamu, diurutkan dari respons{" "}
+            {realResponses.length} tamu, diurutkan dari respons{" "}
             <em className="d-serif italic text-[var(--d-coral)]">terbaru</em>.
           </h2>
         </header>
@@ -694,13 +753,13 @@ export function AnalyticsClient({
               <tr className="border-b border-[var(--d-line)] bg-[var(--d-bg-card)] backdrop-blur-sm">
                 <Th scope="col">Nama</Th>
                 <Th scope="col">Status</Th>
-                <Th scope="col">Dibuka</Th>
+                <Th scope="col">Membuka</Th>
                 <Th scope="col">Dikonfirmasi</Th>
                 <Th scope="col">Asal</Th>
               </tr>
             </thead>
             <tbody>
-              {filteredResponses.length === 0 ? (
+              {realResponses.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
@@ -711,7 +770,7 @@ export function AnalyticsClient({
                   </td>
                 </tr>
               ) : (
-                filteredResponses.map((r) => (
+                realResponses.map((r) => (
                   <tr
                     key={r.id}
                     className="border-b border-[var(--d-line)] last:border-0 hover:bg-[rgba(255,255,255,0.018)]"
@@ -753,6 +812,7 @@ export function AnalyticsClient({
             </tbody>
           </table>
         </div>
+      </section>
       </section>
       </div>
       {/* /analytics-pdf-target */}

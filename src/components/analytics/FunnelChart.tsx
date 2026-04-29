@@ -29,17 +29,17 @@ const BASE_STAGES: Stage[] = [
   },
   {
     key: "invited",
-    label: "Diundang",
+    label: "Dikirimi",
     color: "#F4B8A3",
     pctOf: "total",
-    hint: (d) => `${Math.max(0, d.total - d.invited)} belum diundang`,
+    hint: (d) => `${Math.max(0, d.total - d.invited)} belum dikirimi`,
   },
   {
     key: "opened",
     label: "Dibuka",
     color: "#D4B896",
     pctOf: "invited",
-    hint: () => "dari diundang",
+    hint: () => "dari yang dikirimi",
   },
   {
     key: "responded",
@@ -67,7 +67,7 @@ const CHECKIN_STAGE: Stage = {
 
 const STAGE_LABEL: Record<keyof FunnelData, string> = {
   total: "total",
-  invited: "diundang",
+  invited: "dikirimi",
   opened: "dibuka",
   responded: "konfirmasi",
   attending: "konfirmasi hadir",
@@ -215,6 +215,12 @@ export function FunnelChart({
                   <span className="d-mono text-[9.5px] tracking-[0.04em] text-[var(--d-ink-faint)]">
                     {s.hint(data)}
                   </span>
+                  {pct > 100 && (
+                    <span className="d-mono text-[9px] tracking-[0.02em] text-[var(--d-ink-faint)] opacity-70">
+                      Bisa &gt; 100% — undangan kalian menyebar organik di luar
+                      daftar kirim.
+                    </span>
+                  )}
                 </div>
               );
             })}
