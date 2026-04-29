@@ -132,7 +132,7 @@ function EnthusiastCard({ rows }: { rows: EnthusiastRow[] }) {
       {ranked.length === 0 ? (
         <div className="mt-5 rounded-xl border border-dashed border-[var(--d-line-strong)] bg-[rgba(255,255,255,0.02)] px-4 py-8 text-center">
           <p className="d-serif text-[14px] italic text-[var(--d-ink-dim)]">
-            Undangan masih menunggu tamu pertamanya.
+            Leaderboard akan muncul saat lebih banyak tamu berinteraksi.
           </p>
         </div>
       ) : (
