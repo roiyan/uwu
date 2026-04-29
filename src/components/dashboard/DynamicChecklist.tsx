@@ -8,23 +8,22 @@ export type ChecklistItem = {
   cta?: string;
 };
 
-// Dynamic next-step list. Replaces the old static "Semua siap"
-// readiness card that always rendered the same canned items
-// regardless of state. Pending items surface a CTA per row; the
-// done-count is tucked into the footer so the rail doesn't look
-// cluttered once most steps are checked off.
+/**
+ * Dynamic preparation checklist. Renders ALL items so the couple can
+ * see what they've already done — completed rows fade with a strike
+ * so the active row is the visual anchor. CTA on pending rows is now
+ * a proper button-styled link with hover state, not a muted text link.
+ */
 export function DynamicChecklist({ items }: { items: ChecklistItem[] }) {
   const doneCount = items.filter((i) => i.done).length;
   const total = items.length;
   const progress = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-  const pending = items.filter((i) => !i.done).slice(0, 4);
-  const allDone = pending.length === 0;
 
   return (
     <section className="d-card p-6 lg:p-7">
       <div className="flex items-center justify-between">
         <p className="d-mono text-[9.5px] uppercase tracking-[0.22em] text-[var(--d-coral)]">
-          Langkah selanjutnya
+          Persiapan kalian
         </p>
         <p className="d-mono text-[10px] text-[var(--d-ink-faint)]">
           {doneCount}/{total}
@@ -48,54 +47,54 @@ export function DynamicChecklist({ items }: { items: ChecklistItem[] }) {
         />
       </div>
 
-      {allDone ? (
-        <div className="mt-6 text-center">
-          <p className="d-serif text-[16px] text-[var(--d-ink)]">
-            Semua langkah{" "}
-            <em className="d-serif italic text-[var(--d-green)]">selesai</em>.
-          </p>
-          <p className="d-serif mt-1 text-[12px] italic text-[var(--d-ink-dim)]">
-            Tinggal menunggu hari bahagia.
-          </p>
-        </div>
-      ) : (
-        <ul className="mt-5 divide-y divide-[var(--d-line)]">
-          {pending.map((item) => (
-            <li
-              key={item.id}
-              className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
-            >
-              <div className="flex min-w-0 items-center gap-2.5">
-                <span
-                  aria-hidden
-                  className="block h-[18px] w-[18px] shrink-0 rounded-[4px] border-[1.5px]"
-                  style={{ borderColor: "var(--d-line-strong)" }}
-                />
-                <span className="d-serif text-[13px] text-[var(--d-ink)]">
-                  {item.label}
-                </span>
-              </div>
-              {item.href && item.cta && (
-                <Link
-                  href={item.href}
-                  className="d-mono shrink-0 whitespace-nowrap text-[10px] uppercase tracking-[0.12em] text-[var(--d-coral)] transition-colors hover:text-[var(--d-peach)]"
-                >
-                  {item.cta}
-                </Link>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {!allDone && doneCount > 0 && (
-        <p className="d-serif mt-4 flex items-center gap-1.5 text-[12px] italic text-[var(--d-ink-faint)]">
-          <span aria-hidden className="text-[var(--d-green)]">
-            ✓
-          </span>
-          {doneCount} langkah sudah selesai
-        </p>
-      )}
+      <ul className="mt-5 divide-y divide-[var(--d-line)]">
+        {items.map((item) => (
+          <li
+            key={item.id}
+            className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+          >
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span
+                aria-hidden
+                className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border-[1.5px]"
+                style={{
+                  borderColor: item.done
+                    ? "var(--d-green)"
+                    : "var(--d-line-strong)",
+                  background: item.done ? "rgba(126,211,164,0.16)" : "transparent",
+                  color: "var(--d-green)",
+                  fontSize: "11px",
+                  lineHeight: 1,
+                }}
+              >
+                {item.done ? "✓" : ""}
+              </span>
+              <span
+                className={
+                  item.done
+                    ? "d-serif text-[13px] text-[var(--d-ink-dim)] opacity-60 line-through"
+                    : "d-serif text-[15px] text-[var(--d-ink)]"
+                }
+              >
+                {item.label}
+              </span>
+            </div>
+            {!item.done && item.href && item.cta && (
+              <Link
+                href={item.href}
+                className="d-mono inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[8px] border px-3.5 py-1.5 text-[11px] uppercase tracking-[0.12em] transition-all hover:bg-[var(--d-coral)] hover:text-[#0B0B15]"
+                style={{
+                  borderColor: "var(--d-coral)",
+                  color: "var(--d-coral)",
+                  minHeight: "36px",
+                }}
+              >
+                {item.cta}
+              </Link>
+            )}
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

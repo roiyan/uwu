@@ -599,7 +599,7 @@ export async function saveWebsiteDraftAction(
     await logActivity({
       eventId,
       action: "update_website",
-      summary: "Memperbarui konten website",
+      summary: "Menyempurnakan undangan",
     });
   }
   return result;
@@ -631,7 +631,7 @@ export async function publishEventAction(
     await logActivity({
       eventId,
       action: "publish_event",
-      summary: "Mempublikasikan undangan",
+      summary: "Undangan tayang",
     });
   }
   return result;
@@ -662,7 +662,7 @@ export async function unpublishEventAction(
     await logActivity({
       eventId,
       action: "unpublish_event",
-      summary: "Membatalkan publikasi undangan",
+      summary: "Undangan disembunyikan sementara",
     });
   }
   return result;

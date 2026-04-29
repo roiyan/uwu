@@ -24,8 +24,30 @@ function formatShortDate(date: Date | string | null): string | null {
   return `${d.getDate()} ${MONTHS_ID[d.getMonth()]}`;
 }
 
+const TEST_BLOCKLIST = new Set([
+  "test",
+  "tes",
+  "testing",
+  "coba",
+  "gtt",
+  "asdf",
+  "xxx",
+  "males",
+]);
+
+function isTestWish(message: string | null): boolean {
+  if (!message) return true;
+  const trimmed = message.trim();
+  if (TEST_BLOCKLIST.has(trimmed.toLowerCase())) return true;
+  // Reject very short noise (less than 10 chars AND less than 3 words).
+  if (trimmed.length < 10 && trimmed.split(/\s+/).filter(Boolean).length < 3) {
+    return true;
+  }
+  return false;
+}
+
 export function UcapanTamuCard({
-  wishes,
+  wishes: rawWishes,
   totalWishes,
   totalGuests,
 }: {
@@ -33,6 +55,7 @@ export function UcapanTamuCard({
   totalWishes: number;
   totalGuests: number;
 }) {
+  const wishes = rawWishes.filter((w) => !isTestWish(w.message));
   // Hooks must run unconditionally — keep the state declaration above
   // any early return so the empty-state path stays compatible with
   // the React hooks rules.

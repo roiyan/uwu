@@ -45,92 +45,90 @@ function getHMinus(iso: string | null): number | null {
 type Content = { eyebrow: string; title: ReactNode; subtitle: string };
 
 function pickContent(hMinus: number | null): Content {
-  if (hMinus === null) {
+  if (hMinus === null || hMinus > 30) {
     return {
-      eyebrow: "PERSIAPAN DIMULAI",
+      eyebrow: "PERSIAPAN AWAL",
       title: (
         <>
-          Mulai rangkai{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">cerita</em>{" "}
-          kalian.
+          Masih ada waktu — mari mulai dari yang{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">penting</em>.
         </>
       ),
-      subtitle: "Lengkapi data acara untuk melihat perjalanan undangan.",
-    };
-  }
-  if (hMinus > 30) {
-    return {
-      eyebrow: "PERSIAPAN DIMULAI",
-      title: (
-        <>
-          Mulai rangkai{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">cerita</em>{" "}
-          kalian.
-        </>
-      ),
-      subtitle: "Setiap langkah membawa kalian lebih dekat ke hari bahagia.",
+      subtitle: "Satu langkah kecil hari ini, ketenangan besar di hari H.",
     };
   }
   if (hMinus > 7) {
     return {
-      eyebrow: `${hMinus} HARI LAGI`,
+      eyebrow: "DUA MINGGU LAGI",
       title: (
         <>
-          Undangan sudah menyebar — pastikan semua{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">siap</em>.
+          Dua minggu lagi — waktunya memastikan{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">detail</em>.
         </>
       ),
-      subtitle: "Cek siapa yang belum membuka, dan siapkan hari H.",
+      subtitle: "Fondasi sudah kuat. Sekarang saatnya poles.",
     };
   }
-  if (hMinus > 2) {
+  if (hMinus > 3) {
     return {
       eyebrow: "SEMINGGU LAGI",
       title: (
         <>
-          Undangan sudah menyebar — pastikan semua{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">siap</em>.
+          Seminggu lagi — mari cek kesiapan{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">akhir</em>.
         </>
       ),
-      subtitle: "Cek siapa yang belum membuka, dan siapkan hari H.",
+      subtitle: "Kalian sudah melangkah jauh. Hampir sampai.",
     };
   }
-  if (hMinus > 0) {
+  if (hMinus > 1) {
     return {
-      eyebrow: "HAMPIR TIBA",
+      eyebrow: "MENGHITUNG HARI",
       title: (
         <>
-          Tinggal {hMinus} hari — ini yang perlu{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">dicek</em>.
+          Tinggal {hMinus} hari — pastikan semuanya{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">sempurna</em>.
         </>
       ),
-      subtitle: "Kalian sudah hampir sampai. Sedikit lagi.",
+      subtitle: "Kalian sudah hampir sampai. Tinggal sentuhan terakhir.",
+    };
+  }
+  if (hMinus === 1) {
+    return {
+      eyebrow: "BESOK",
+      title: (
+        <>
+          Besok hari besar kalian — semua{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">siap</em>?
+        </>
+      ),
+      subtitle: "Tarik napas. Kalian sudah mempersiapkan ini dengan indah.",
     };
   }
   if (hMinus === 0) {
     return {
-      eyebrow: "HARI INI",
+      eyebrow: "HARI INI ✨",
       title: (
         <>
-          Selamat menempuh{" "}
-          <em className="d-serif italic text-[var(--d-coral)]">hidup baru</em>.
+          Hari ini milik{" "}
+          <em className="d-serif italic text-[var(--d-coral)]">kalian</em>.
         </>
       ),
-      subtitle: "Semua persiapan telah menjadi cerita. Nikmati hari ini.",
+      subtitle: "Selamat menempuh kehidupan baru.",
     };
   }
   return {
-    eyebrow: "CERITA DIMULAI",
+    eyebrow: "SELAMAT!",
     title: (
       <>
-        Terima kasih kepada semua yang{" "}
-        <em className="d-serif italic text-[var(--d-coral)]">hadir</em>.
+        Resmi menjadi{" "}
+        <em className="d-serif italic text-[var(--d-coral)]">keluarga</em> —
+        selamat!
       </>
     ),
-    subtitle: "Unduh kenangan hari kemarin — untuk diingat selamanya.",
+    subtitle: "Terima kasih sudah memilih UWU untuk hari istimewa kalian.",
   };
 }
-
 export function ContextualHero({
   eventDate,
   eventLabel,
@@ -174,13 +172,13 @@ export function ContextualHero({
           rel="noreferrer"
           className="d-mono inline-flex flex-1 items-center justify-center gap-1.5 rounded-full border border-[var(--d-line-strong)] px-3 py-1.5 text-[10px] uppercase tracking-[0.22em] text-[var(--d-ink)] transition-colors hover:bg-[var(--d-bg-2)] lg:flex-none lg:px-5 lg:py-2 lg:text-[11px]"
         >
-          👁 Intip Undangan
+          👁 Lihat Undangan
         </Link>
         <Link
           href="/dashboard/website"
           className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-full bg-[linear-gradient(135deg,#8FA3D9_0%,#B89DD4_50%,#F0A09C_100%)] px-3 py-1.5 text-[10px] font-medium tracking-wide text-white shadow-[0_18px_40px_-18px_rgba(240,160,156,0.6)] transition-opacity hover:opacity-90 lg:flex-none lg:px-6 lg:py-2.5 lg:text-[12px]"
         >
-          Edit Undangan →
+          Sempurnakan →
         </Link>
       </div>
     </header>

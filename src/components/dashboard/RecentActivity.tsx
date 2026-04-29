@@ -16,8 +16,11 @@ export function RecentActivity({ items }: { items: ActivityRow[] }) {
   // Dedup consecutive same-actor + same-summary rows within an hour
   // and roll the remainder into a `× N perubahan` suffix. Without
   // this, editing the cover photo six times floods the panel with
-  // six identical rows.
-  const grouped = groupActivities(items as GroupableActivity[]);
+  // six identical rows. After grouping we cap the dashboard preview
+  // at 5 entries; the full timeline lives elsewhere.
+  const groupedAll = groupActivities(items as GroupableActivity[]);
+  const grouped = groupedAll.slice(0, 5);
+  const hasMore = groupedAll.length > 5;
 
   return (
     <section className="rounded-[18px] border border-[var(--d-line)] bg-[var(--d-bg-card)] p-[22px]">
@@ -61,6 +64,12 @@ export function RecentActivity({ items }: { items: ActivityRow[] }) {
             );
           })}
         </ul>
+      )}
+
+      {hasMore && (
+        <p className="d-mono mt-4 border-t border-[var(--d-line)] pt-3 text-right text-[10px] uppercase tracking-[0.16em] text-[var(--d-ink-faint)]">
+          {groupedAll.length - 5} jejak lainnya tersimpan
+        </p>
       )}
     </section>
   );

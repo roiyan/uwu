@@ -264,7 +264,10 @@ export async function checkinGuestAction(
     await logActivity({
       eventId,
       action: "checkin_guest",
-      summary: `Check-in ${result.data.name}`,
+      summary:
+        result.data.actualPax && result.data.actualPax > 1
+          ? `${result.data.name} hadir bersama ${result.data.actualPax - 1} pendamping ✓`
+          : `${result.data.name} hadir ✓`,
       targetType: "guest",
       targetId: result.data.id,
     });
@@ -300,7 +303,10 @@ export async function checkinWalkInAction(
     await logActivity({
       eventId,
       action: "checkin_guest",
-      summary: `Check-in walk-in ${result.data.name}`,
+      summary:
+        result.data.actualPax && result.data.actualPax > 1
+          ? `${result.data.name} (tamu langsung) hadir bersama ${result.data.actualPax - 1} pendamping ✓`
+          : `${result.data.name} (tamu langsung) hadir ✓`,
       targetType: "guest",
       targetId: result.data.id,
     });
