@@ -385,12 +385,17 @@ export function AnalyticsClient({
     {
       dot: "var(--d-green)",
       color: "#7ED3A4",
-      label: "Hadir",
+      // Rename: this tile reads RSVP intent (guests who said "hadir"),
+      // not physical arrivals. The Hari-H section below has the
+      // actual check-in count. Sharing the "Hadir" label between the
+      // two reads as inconsistent data on H-day when the operator is
+      // already stressed.
+      label: "Rencana Hadir",
       value: filteredFunnel.attending,
-      suffix: `${confirmedAttendees} orang`,
+      suffix: "konfirmasi hadir",
       delta: deltaOf(sparkAttending),
       deltaUnit: "orang",
-      compare: "total kehadiran",
+      compare: "vs pekan lalu",
       spark: sparkAttending,
     },
   ];
@@ -679,7 +684,30 @@ export function AnalyticsClient({
                       : "Hari besar sudah berlalu — ini ringkasannya."
               }
             />
-            {checkinStats.actualCheckin > 0 ? (
+            {/* Live-data context banner — shown on H-day and the day
+              before so an operator glancing at "X belum tiba" doesn't
+              mistake an in-progress count for a final tally. The
+              pulsing dot signals "this is moving" without needing a
+              percentage to ground it. */}
+          {daysToEvent !== null &&
+            daysToEvent >= 0 &&
+            daysToEvent <= 1 && (
+              <div className="mt-5 mb-3 flex items-center gap-2.5 rounded-[10px] border border-[var(--d-line)] bg-[rgba(255,255,255,0.02)] px-4 py-3">
+                <span
+                  aria-hidden
+                  className="uwu-pulse h-2 w-2 shrink-0 rounded-full"
+                  style={{
+                    background: "var(--d-green)",
+                    boxShadow: "0 0 8px rgba(126,211,164,0.6)",
+                  }}
+                />
+                <p className="d-mono text-[11px] text-[var(--d-ink-dim)]">
+                  Data diperbarui real-time — angka akan berubah selama acara
+                  berlangsung.
+                </p>
+              </div>
+            )}
+          {checkinStats.actualCheckin > 0 ? (
               <div className="mt-5 grid gap-6 lg:grid-cols-[1fr_2fr]">
                 <ShowUpRateCard stats={checkinStats} />
                 <ArrivalTimeline
