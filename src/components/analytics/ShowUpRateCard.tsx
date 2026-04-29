@@ -57,7 +57,7 @@ export function ShowUpRateCard({ stats }: { stats: ShowUpStats }) {
           </div>
           <p className="d-serif mt-1.5 text-[12.5px] italic text-[var(--d-ink-dim)]">
             {stats.rsvpHadirCheckedIn} dari {stats.rsvpHadir} yang
-            mengonfirmasi sudah tiba
+            berencana hadir sudah tiba
           </p>
         </div>
         <div className="d-mono flex items-center gap-3 text-[10px] uppercase tracking-[0.14em] text-[var(--d-ink-faint)]">
@@ -65,14 +65,14 @@ export function ShowUpRateCard({ stats }: { stats: ShowUpStats }) {
             <div className="d-serif text-[22px] font-light text-[var(--d-ink)]">
               {stats.actualPax}
             </div>
-            <div>orang sudah hadir</div>
+            <div>orang di lokasi</div>
           </div>
           <span className="text-[var(--d-line-strong)]">vs</span>
           <div>
             <div className="d-serif text-[22px] font-light text-[var(--d-ink-dim)]">
               {stats.rsvpHadirPax}
             </div>
-            <div>direncanakan</div>
+            <div>direncanakan hadir</div>
           </div>
         </div>
       </div>
